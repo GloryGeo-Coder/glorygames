@@ -1,0 +1,10 @@
+{
+  "title": "Swipe Racer",
+  "description": "Top-down racer. Swipe/drag to steer, avoid traffic, collect boosts, and survive as speed ramps up. Score is distance + near-miss bonus. Submit your best run to the GloryGames leaderboard.",
+  "tags": ["racing", "mobile", "touch", "endless", "2d", "score-attack"],
+  "controls": [
+    { "key": "Swipe/Drag", "action": "Steer left/right" },
+    { "key": "Tap", "action": "Boost (if available)" },
+    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
+  ]
+}

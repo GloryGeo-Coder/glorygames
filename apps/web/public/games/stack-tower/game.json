@@ -1,0 +1,9 @@
+{
+  "title": "Stack Tower",
+  "description": "Timing game. Tap to drop blocks and build the tallest tower possible. Perfect stacks score big — mistakes shrink your platform. Submit your best height to the GloryGames leaderboard.",
+  "tags": ["arcade", "mobile", "touch", "timing", "endless", "2d", "score-attack"],
+  "controls": [
+    { "key": "Tap", "action": "Drop block" },
+    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
+  ]
+}

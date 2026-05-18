@@ -1,0 +1,11 @@
+{
+  "title": "Neon Dodger (Template)",
+  "description": "A starter template: collect orbs, avoid shards, submit score to test leaderboards + overlay.",
+  "tags": ["arcade", "2d", "template", "keyboard"],
+  "controls": [
+    { "key": "Arrow Keys", "action": "Move" },
+    { "key": "Space", "action": "Boost" },
+    { "key": "R", "action": "Restart" },
+    { "key": "Shift + G", "action": "Toggle GloryGames Overlay" }
+  ]
+}

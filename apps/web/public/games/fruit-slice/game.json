@@ -1,0 +1,22 @@
+{
+  "slug": "fruit-slice",
+  "title": "Fruit Slice",
+  "description": "Swipe to slice fruit, avoid bombs, and chain quick combos for huge scores. Mobile-first arcade action.",
+  "category": "Arcade",
+  "tags": ["Swipe", "Reflex", "Casual", "Mobile"],
+  "minPlayers": 1,
+  "maxPlayers": 1,
+  "controls": {
+    "mobile": "Swipe anywhere to slice.",
+    "desktop": "Click and drag to slice."
+  },
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "pause": true,
+    "restart": true,
+    "autoSubmitScore": true
+  },
+  "difficulty": "Easy",
+  "version": "1.0.0"
+}

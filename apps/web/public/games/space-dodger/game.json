@@ -1,0 +1,10 @@
+{
+  "title": "Space Dodger",
+  "description": "Mobile-first endless space survival. Drag to move, dodge asteroids, collect stars, and submit your score to climb the GloryGames leaderboard.",
+  "tags": ["arcade", "mobile", "touch", "endless", "space", "2d"],
+  "controls": [
+    { "key": "Touch drag", "action": "Move ship" },
+    { "key": "Tap", "action": "Dash (short burst) / quick evade" },
+    { "key": "On-screen buttons", "action": "Pause / Submit score / Overlay" }
+  ]
+}

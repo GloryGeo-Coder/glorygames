@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#060a16"></stop>
+      <stop offset="0.45" stop-color="#14532d"></stop>
+      <stop offset="1" stop-color="#1d4ed8"></stop>
+    </linearGradient>
+
+    <linearGradient id="bubbleA" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#22c55e"></stop>
+      <stop offset="1" stop-color="#3b82f6"></stop>
+    </linearGradient>
+
+    <linearGradient id="bubbleB" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#facc15"></stop>
+      <stop offset="1" stop-color="#3b82f6"></stop>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"></rect>
+  <rect x="56" y="56" width="1088" height="563" rx="28" fill="rgba(0,0,0,0.22)" stroke="rgba(255,255,255,0.22)" stroke-width="2"></rect>
+
+  <!-- Bubbles -->
+  <g>
+    <circle cx="420" cy="330" r="78" fill="url(#bubbleA)" opacity="0.92"></circle>
+    <circle cx="520" cy="260" r="52" fill="url(#bubbleB)" opacity="0.92"></circle>
+    <circle cx="640" cy="360" r="64" fill="url(#bubbleA)" opacity="0.92"></circle>
+    <circle cx="760" cy="260" r="48" fill="url(#bubbleB)" opacity="0.92"></circle>
+    <circle cx="820" cy="360" r="40" fill="rgba(244,63,94,0.90)"></circle>
+  </g>
+
+  <!-- Shine -->
+  <g opacity="0.22" fill="rgba(255,255,255,0.95)">
+    <circle cx="392" cy="300" r="30"></circle>
+    <circle cx="500" cy="240" r="18"></circle>
+    <circle cx="618" cy="332" r="24"></circle>
+    <circle cx="742" cy="244" r="16"></circle>
+    <circle cx="804" cy="344" r="14"></circle>
+  </g>
+
+  <!-- Icons -->
+  <text x="820" y="368" text-anchor="middle" font-family="system-ui,Segoe UI" font-size="28" font-weight="900" fill="rgba(0,0,0,0.55)">💣</text>
+  <text x="520" y="268" text-anchor="middle" font-family="system-ui,Segoe UI" font-size="26" font-weight="900" fill="rgba(0,0,0,0.55)">⏱</text>
+
+  <text x="120" y="580" fill="rgba(255,255,255,0.92)" font-family="system-ui,Segoe UI" font-size="56" font-weight="900">Bubble Pop Arena</text>
+  <text x="120" y="632" fill="rgba(255,255,255,0.72)" font-family="system-ui,Segoe UI" font-size="24" font-weight="800">Mobile-first • Tap to pop • Combos &amp; multipliers • Avoid bombs</text>
+</svg>

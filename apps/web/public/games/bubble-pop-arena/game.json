@@ -1,0 +1,9 @@
+{
+  "title": "Bubble Pop Arena",
+  "description": "Bubble popping. Pop as many bubbles as you can before time runs out. Build combos, chase multipliers, and dodge 'bomb' bubbles that end your streak. Submit your best score to the GloryGames leaderboard.",
+  "tags": ["arcade", "mobile", "touch", "casual", "timed", "combo", "score-attack"],
+  "controls": [
+    { "key": "Tap", "action": "Pop bubbles" },
+    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
+  ]
+}

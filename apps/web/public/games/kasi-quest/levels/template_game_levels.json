@@ -1,0 +1,11 @@
+{
+  "meta": { "name": "Level X • Name", "timeLimit": 90 },
+  "tileSize": 32,
+  "w": 60,
+  "h": 18,
+  "tiles": [],
+  "spawn": { "x": 2, "y": 13 },
+  "exit": { "x": 56, "y": 13 },
+  "coins": [],
+  "hazards": []
+}

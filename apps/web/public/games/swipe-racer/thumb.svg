@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#060a16"></stop>
+      <stop offset="0.45" stop-color="#1d4ed8"></stop>
+      <stop offset="1" stop-color="#854d0e"></stop>
+    </linearGradient>
+
+    <linearGradient id="road" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="rgba(255,255,255,0.08)"></stop>
+      <stop offset="1" stop-color="rgba(255,255,255,0.04)"></stop>
+    </linearGradient>
+
+    <linearGradient id="player" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#facc15"></stop>
+      <stop offset="1" stop-color="#3b82f6"></stop>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="675" fill="url(#bg)"></rect>
+  <rect x="56" y="56" width="1088" height="563" rx="28" fill="rgba(0,0,0,0.22)" stroke="rgba(255,255,255,0.22)" stroke-width="2"></rect>
+
+  <!-- Road -->
+  <rect x="420" y="110" width="360" height="455" rx="26" fill="url(#road)" stroke="rgba(255,255,255,0.14)" stroke-width="2"></rect>
+  <line x1="540" y1="120" x2="540" y2="560" stroke="rgba(255,255,255,0.26)" stroke-dasharray="14 18" stroke-width="4"></line>
+  <line x1="660" y1="120" x2="660" y2="560" stroke="rgba(255,255,255,0.26)" stroke-dasharray="14 18" stroke-width="4"></line>
+
+  <!-- Traffic -->
+  <rect x="468" y="200" width="72" height="120" rx="18" fill="rgba(14,165,233,0.86)"></rect>
+  <rect x="708" y="250" width="88" height="160" rx="18" fill="rgba(244,63,94,0.86)"></rect>
+
+  <!-- Player -->
+  <rect x="564" y="410" width="72" height="140" rx="18" fill="url(#player)"></rect>
+  <rect x="578" y="430" width="44" height="40" rx="14" fill="rgba(255,255,255,0.22)"></rect>
+
+  <!-- Boost pickup -->
+  <circle cx="600" cy="330" r="18" fill="rgba(250,204,21,0.92)"></circle>
+  <text x="600" y="336" text-anchor="middle" font-family="system-ui,Segoe UI" font-size="18" font-weight="900" fill="rgba(0,0,0,0.55)">⚡</text>
+
+  <text x="120" y="580" fill="rgba(255,255,255,0.92)" font-family="system-ui,Segoe UI" font-size="56" font-weight="900">Swipe Racer</text>
+  <text x="120" y="632" fill="rgba(255,255,255,0.72)" font-family="system-ui,Segoe UI" font-size="24" font-weight="800">Mobile-first • Drag to steer • Tap to boost • Near-miss bonus</text>
+</svg>

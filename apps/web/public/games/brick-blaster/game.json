@@ -1,0 +1,10 @@
+{
+  "title": "Brick Blaster",
+  "description": "Drag to move the paddle, tap to launch, and smash bricks for high scores. Collect power-ups and submit your best run to the GloryGames leaderboard.",
+  "tags": ["arcade", "mobile", "touch", "brick-breaker", "2d", "score-attack"],
+  "controls": [
+    { "key": "Touch drag", "action": "Move paddle" },
+    { "key": "Tap", "action": "Launch ball / continue" },
+    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
+  ]
+}

@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+apps/web/node_modules/
+apps/realtime/node_modules/
+
+# Next.js
+.next/
+apps/web/.next/
+out/
+dist/
+build/
+
+# Turbopack / cache
+.turbo/
+apps/web/.turbo/
+apps/web/.next/dev/cache/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+apps/web/.env
+apps/web/.env.local
+apps/realtime/.env
+apps/realtime/.env.local
+
+# Prisma generated runtime/cache
+apps/web/node_modules/.prisma/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp

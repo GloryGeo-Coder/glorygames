@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GameCategory {
+  ARCADE
+  ACTION
+  ADVENTURE
+  EDUCATIONAL
+  PUZZLE
+  RACING
+  WORD_TRIVIA
+  STRATEGY
+  SPORTS
+  SIMULATION
+  DEFENSE
+  PLATFORMER
+  CASUAL
+  MULTIPLAYER
+  KIDS_FAMILY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  displayName  String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  scores       Score[]
+  sessions     GameSession[]
+  reviews      Review[]
+  dailyScores  DailyChallengeScore[]
+}
+
+model Game {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  title       String
+  description String?
+  category    GameCategory @default(ARCADE)
+  tags        String[]     @default([])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  dailyScores     DailyScore[]
+  scores          Score[]
+  sessions        GameSession[]
+  reviews         Review[]
+  dailyChallenges DailyChallenge[]
+
+  @@index([category, title])
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  userId    String
+  gameId    String
+  mode      String   @default("global")
+  value     Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, mode, value])
+  @@index([userId, createdAt])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@unique([gameId, userId])
+  @@index([gameId, createdAt])
+}
+
+model GameSession {
+  id          String   @id @default(cuid())
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  durationSec Int?
+  meta        Json?
+
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId String
+
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+
+  @@index([gameId, startedAt])
+  @@index([userId, startedAt])
+}
+
+//
+// DAILY CHALLENGE
+// - one challenge per game per day (day is "YYYY-MM-DD" in UTC)
+// - anonymous-friendly scores (playerName optional)
+//
+model DailyChallenge {
+  id        String   @id @default(cuid())
+  day       String   // "YYYY-MM-DD" (UTC)
+  seed      Int
+  createdAt DateTime @default(now())
+
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId String
+
+  scores DailyChallengeScore[]
+
+  @@unique([day, gameId])
+  @@index([gameId, day])
+}
+
+model DailyChallengeScore {
+  id          String   @id @default(cuid())
+  value       Int
+  playerName  String?
+  createdAt   DateTime @default(now())
+
+  challenge   DailyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challengeId String
+
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+
+  @@index([challengeId, value])
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+model DailyScore {
+  id         String   @id @default(cuid())
+  day        String   // "YYYY-MM-DD" (Africa/Johannesburg)
+  playerName String
+  score      Int
+
+  gameId     String
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([day, gameId, playerName])
+  @@index([day, gameId, score])
+}

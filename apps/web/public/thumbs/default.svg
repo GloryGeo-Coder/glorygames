@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#060a16"></stop>
+      <stop offset="0.5" stop-color="#1d4ed8"></stop>
+      <stop offset="1" stop-color="#a855f7"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"></rect>
+  <rect x="80" y="80" width="1040" height="515" rx="28" fill="rgba(0,0,0,0.22)" stroke="rgba(255,255,255,0.22)" stroke-width="2"></rect>
+  <text x="140" y="520" fill="rgba(255,255,255,0.92)" font-family="system-ui,Segoe UI" font-size="56" font-weight="900">GloryGames</text>
+  <text x="140" y="575" fill="rgba(255,255,255,0.72)" font-family="system-ui,Segoe UI" font-size="24" font-weight="800">Tap to play • Mobile-first • New games coming</text>
+</svg>

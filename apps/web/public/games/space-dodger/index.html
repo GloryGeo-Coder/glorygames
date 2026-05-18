@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#070b16" />
+  <title>Space Dodger</title>
+
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="/sdk/gg-sdk.css" />
+</head>
+
+<body>
+  <!-- Top HUD (mobile-first) -->
+  <header class="hud">
+    <div class="hudLeft">
+      <div class="brand" id="ggTitle">Space Dodger</div>
+      <div class="sub" id="ggSub">Drag to move • Tap to dash</div>
+    </div>
+
+    <div class="hudRight">
+      <div class="stat">
+        <div class="label">Score</div>
+        <div class="value" id="score">0</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Best</div>
+        <div class="value" id="best">0</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Fullscreen game stage -->
+  <main class="stage">
+    <canvas id="c"></canvas>
+
+    <!-- Start / Pause Overlay -->
+    <div class="panel" id="panel">
+      <div class="panelInner">
+        <div class="panelTitle" id="panelTitle">Space Dodger</div>
+        <div class="panelText" id="panelText">
+          Drag your ship to dodge asteroids. Collect stars for points. Tap to dash.
+        </div>
+
+        <div class="panelButtons">
+          <button class="btn primary" id="btnStart">Start</button>
+          <button class="btn" id="btnOverlay">Open Overlay</button>
+        </div>
+
+        <div class="panelHint">
+          <span class="pill">Mobile-first</span>
+          <span class="pill">Touch + Mouse</span>
+          <span class="pill">60fps target</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom action bar (thumb-friendly) -->
+    <nav class="actions">
+      <button class="chip" id="btnPause" aria-label="Pause">⏸</button>
+      <button class="chip" id="btnSubmit" aria-label="Submit Score">🏆 Submit</button>
+      <button class="chip" id="btnRestart" aria-label="Restart">↻</button>
+      <button class="chip" id="btnChat" aria-label="Overlay / Chat">💬</button>
+    </nav>
+  </main>
+
+  <script src="/sdk/gg-sdk.js"></script>
+  <script src="/games/_shared/gg-sdk.js"></script>
+  <script src="./game.js"></script>
+</body>
+</html>

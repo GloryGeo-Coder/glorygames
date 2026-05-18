@@ -1,0 +1,10 @@
+{
+  "image": "/games/kasi-quest/assets/atlas/kasi-quest-atlas.png",
+  "sprites": {
+    "player_idle": { "sx": 80, "sy": 80, "sw": 200, "sh": 200 },
+    "player_run_0": { "sx": 320, "sy": 80, "sw": 200, "sh": 200 },
+    "player_run_1": { "sx": 560, "sy": 80, "sw": 200, "sh": 200 },
+    "player_jump": { "sx": 80, "sy": 320, "sw": 200, "sh": 200 },
+    "player_fall": { "sx": 320, "sy": 320, "sw": 200, "sh": 200 }
+  }
+}

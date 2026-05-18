@@ -1,0 +1,10 @@
+{
+  "title": "Word Dash",
+  "description": "Word sprint. Type (or tap on-screen letters) to match the target word before time runs out. Build streaks for multipliers, earn extra time with perfect words, and submit your best score.",
+  "tags": ["word", "mobile", "touch", "typing", "puzzle", "score-attack"],
+  "controls": [
+    { "key": "Keyboard", "action": "Type the word (Enter to submit, Backspace to delete)" },
+    { "key": "On-screen keys", "action": "Tap letters (mobile-friendly)" },
+    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
+  ]
+}

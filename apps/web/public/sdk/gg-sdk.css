@@ -1,0 +1,73 @@
+:root { --gg-bg: rgba(10,16,34,.86); --gg-st: rgba(255,255,255,.14); --gg-t: rgba(255,255,255,.92); --gg-m: rgba(255,255,255,.68); }
+
+.ggBtn{
+  position: fixed; right: 14px; bottom: 14px; z-index: 999999;
+  border: 1px solid var(--gg-st);
+  background: linear-gradient(135deg, rgba(59,130,246,.92), rgba(168,85,247,.82));
+  color: white; font: 800 13px/1 system-ui;
+  border-radius: 14px; padding: 10px 12px; cursor: pointer;
+  box-shadow: 0 18px 40px rgba(0,0,0,.28);
+}
+
+.ggPanel{
+  position: fixed; right: 14px; bottom: 60px; z-index: 999999;
+  width: min(360px, calc(100vw - 28px));
+  border-radius: 18px;
+  border: 1px solid var(--gg-st);
+  background: var(--gg-bg);
+  backdrop-filter: blur(10px);
+  color: var(--gg-t);
+  box-shadow: 0 22px 60px rgba(0,0,0,.45);
+  overflow: hidden;
+  display: none;
+}
+
+.ggTop{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+}
+.ggTitle{ font: 900 13px system-ui; }
+.ggClose{ cursor:pointer; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); color: var(--gg-t); border-radius: 12px; padding: 6px 10px; }
+
+.ggTabs{ display:flex; }
+.ggTab{
+  flex:1; padding: 10px 8px; cursor:pointer; border:0;
+  background: transparent; color: rgba(255,255,255,.70); font: 900 12px system-ui;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.ggTab.active{ color: rgba(255,255,255,.95); background: rgba(255,255,255,.06); }
+
+.ggBody{ padding: 12px; }
+.ggMuted{ color: var(--gg-m); font: 600 12px system-ui; }
+.ggRow{ display:flex; gap: 10px; margin-top: 10px; }
+.ggInput{
+  flex:1; border-radius: 14px; border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06); color: var(--gg-t);
+  padding: 10px 12px; outline: none;
+}
+.ggCta{
+  border-radius: 14px; border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.10); color: var(--gg-t);
+  padding: 10px 12px; font: 900 12px system-ui; cursor:pointer;
+}
+.ggList{
+  height: 220px; overflow:auto;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  background: rgba(255,255,255,.04);
+  padding: 10px;
+  margin-top: 10px;
+}
+.ggMsg{ padding: 8px; border-radius: 12px; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); margin-bottom: 8px; }
+.ggMeta{ color: rgba(255,255,255,.55); font: 600 11px system-ui; margin-top: 4px; }
+
+.ggStars{ display:flex; gap: 6px; margin-top: 10px; }
+.ggStar{
+  width: 36px; height: 36px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  cursor:pointer; font: 900 14px system-ui; color: rgba(255,255,255,.8);
+}
+.ggStar.active{ background: rgba(245,158,11,.22); border-color: rgba(245,158,11,.35); color: rgba(255,255,255,.95); }

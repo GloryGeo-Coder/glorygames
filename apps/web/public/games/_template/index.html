@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title id="docTitle">Loading…</title>
+
+
+  <link rel="stylesheet" href="./styles.css" />
+
+  <!-- GloryGames SDK overlay (chat + rating + helpers) -->
+  <link rel="stylesheet" href="/sdk/gg-sdk.css" />
+</head>
+
+<body>
+  <div class="hud">
+    <div class="hudLeft">
+      <div class="brand" id="ggTitle">GloryGames • Loading…</div>
+      <div class="muted">Move: ← ↑ → ↓ • Boost: Space • Restart: R • Toggle Overlay: Shift+G</div>
+    </div>
+
+    <div class="hudRight">
+      <div class="stat">
+        <div class="label">Score</div>
+        <div class="value" id="score">0</div>
+      </div>
+      <div class="stat">
+        <div class="label">Time</div>
+        <div class="value" id="time">30.0</div>
+      </div>
+      <button class="btn" id="btnSubmit">Submit score</button>
+    </div>
+  </div>
+
+  <main class="stage">
+    <canvas id="c" width="960" height="540"></canvas>
+
+    <div class="card">
+      <div class="cardTitle" id="ggCardTitle">Loading…</div>
+      <div class="cardBody">
+        Collect orbs, avoid red shards. Submit your score to test leaderboard updates.
+      </div>
+
+      <div class="cardActions">
+        <button class="btn primary" id="btnStart">Start</button>
+        <button class="btn" id="btnOverlay">Open Overlay</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="/sdk/gg-sdk.js"></script>
+  <script src="./game.js"></script>
+</body>
+</html>
