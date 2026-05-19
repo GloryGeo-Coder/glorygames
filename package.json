@@ -17,11 +17,13 @@
     "prisma": "^6.19.2"
   },
   "dependencies": {
-    "@prisma/client": "^7.4.0",
+    "@prisma/client": "^7.8.0",
     "jose": "^6.1.3",
+    "next": "9.3.3",
     "redis": "^5.10.0",
-    "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3",
+    "socket.io": "^4.5.4",
+    "socket.io-client": "^4.2.0",
+    "wrangler": "3.107.3",
     "zod": "^4.3.6"
   }
 }
