@@ -43,3 +43,13 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+_deploy_excluded_backup/
+**/to zip/
+
+
+# OpenNext / Cloudflare build output
+.open-next/
+apps/web/.open-next/
+.wrangler/
+apps/web/.wrangler/

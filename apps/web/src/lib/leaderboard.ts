@@ -1,29 +1,45 @@
-import { ensureRedis, redis } from "@/lib/redis";
+// apps/web/src/lib/leaderboard.ts
+
 import { prisma } from "@/lib/prisma";
 
-export async function getLeaderboard(slug: string, mode = "global", limit = 10) {
-  const safeLimit = Math.min(Math.max(limit, 1), 200);
+export type LeaderboardEntry = {
+  rank: number;
+  userId: string;
+  displayName: string;
+  score: number;
+};
 
-  await ensureRedis();
-  const key = `lb:${slug}:${mode}`;
+export async function getLeaderboard(
+  slug: string,
+  _mode = "global",
+  limit = 10
+): Promise<LeaderboardEntry[]> {
+  const game = await prisma.game.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
 
-  // highest first
-  const raw = await redis.zRangeWithScores(key, 0, safeLimit - 1, { REV: true });
-  const userIds = raw.map((r) => r.value);
+  if (!game) return [];
 
-  const users = userIds.length
-    ? await prisma.user.findMany({
-        where: { id: { in: userIds } },
-        select: { id: true, displayName: true }
-      })
-    : [];
+  const rows = await prisma.dailyScore.findMany({
+    where: {
+      gameId: game.id,
+    },
+    orderBy: {
+      score: "desc",
+    },
+    take: limit,
+    select: {
+      id: true,
+      playerName: true,
+      score: true,
+    },
+  });
 
-  const map = new Map(users.map((u) => [u.id, u.displayName]));
-
-  return raw.map((r, idx) => ({
-    rank: idx + 1,
-    userId: r.value,
-    displayName: map.get(r.value) ?? "Unknown",
-    score: r.score
+  return rows.map((row, index) => ({
+    rank: index + 1,
+    userId: row.id,
+    displayName: row.playerName || "Player",
+    score: row.score,
   }));
 }

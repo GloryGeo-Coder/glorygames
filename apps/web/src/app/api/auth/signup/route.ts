@@ -1,31 +1,74 @@
-export const runtime = "nodejs";
+// apps/web/src/app/api/auth/signup/route.ts
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { setAuthCookie, signSession } from "@/lib/auth";
+import { createSession } from "@/lib/auth";
 
 const Body = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
-  displayName: z.string().min(2).max(40)
+  password: z.string().min(6),
+  displayName: z.string().min(2).max(40).optional(),
 });
 
-export async function POST(req: Request) {
-  const data = Body.parse(await req.json());
+export async function POST(req: NextRequest) {
+  try {
+    const json = await req.json().catch(() => null);
+    const parsed = Body.safeParse(json);
 
-  const existing = await prisma.user.findUnique({ where: { email: data.email } });
-  if (existing) return NextResponse.json({ error: "Email already in use" }, { status: 409 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid signup details" },
+        { status: 400 }
+      );
+    }
 
-  const passwordHash = await bcrypt.hash(data.password, 12);
+    const email = parsed.data.email.trim().toLowerCase();
+    const passwordHash = await bcrypt.hash(parsed.data.password, 10);
 
-  const user = await prisma.user.create({
-    data: { email: data.email, displayName: data.displayName, passwordHash }
-  });
+    const displayName =
+      parsed.data.displayName?.trim() ||
+      email.split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "") ||
+      "Player";
 
-  const token = await signSession({ id: user.id, email: user.email, displayName: user.displayName });
-  await setAuthCookie(token);
+    const existing = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
 
-  return NextResponse.json({ ok: true });
+    if (existing) {
+      return NextResponse.json(
+        { error: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        displayName,
+        passwordHash,
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+      },
+    });
+
+    await createSession(user);
+
+    return NextResponse.json({
+      ok: true,
+      user,
+    });
+  } catch (err) {
+    console.error("[auth/signup] failed", err);
+
+    return NextResponse.json(
+      { error: "Signup failed" },
+      { status: 500 }
+    );
+  }
 }

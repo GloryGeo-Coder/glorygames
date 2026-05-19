@@ -41,17 +41,33 @@ function categoryUrl(category?: string | null) {
 }
 
 export default function GameTile({ game }: { game: GameTileModel }) {
-  const thumbClass = "thumbWrap";
   const category = game.category ?? "ARCADE";
 
   return (
     <article className="tile">
       <div style={{ position: "relative" }}>
-        <GameThumb
-          slug={game.slug}
-          placeholder={game.placeholder}
-          className={thumbClass}
-        />
+        {game.placeholder ? (
+          <div
+            className="thumbWrap"
+            style={{
+              minHeight: 150,
+              display: "grid",
+              placeItems: "center",
+              borderRadius: 18,
+              background:
+                "radial-gradient(circle at 25% 15%, rgba(255,255,255,.12), transparent 34%), linear-gradient(135deg, rgba(56,189,248,.14), rgba(167,139,250,.12))",
+              border: "1px solid rgba(255,255,255,.10)",
+              color: "rgba(255,255,255,.75)",
+              fontWeight: 900,
+            }}
+          >
+            Coming Soon
+          </div>
+        ) : (
+          <div className="thumbWrap">
+            <GameThumb slug={game.slug} title={game.title} />
+          </div>
+        )}
 
         {!game.placeholder ? (
           <Link
@@ -84,22 +100,32 @@ export default function GameTile({ game }: { game: GameTileModel }) {
         <p className="tileDesc">{game.description}</p>
 
         <div className="badges">
-          <Link
-            className="badge"
-            href={`/games?category=${encodeURIComponent(categoryUrl(category))}`}
-          >
-            {categoryLabel(category)}
-          </Link>
-
-          {game.tags.slice(0, 3).map((t) => (
+          {!game.placeholder ? (
             <Link
-              key={t}
               className="badge"
-              href={`/games?q=${encodeURIComponent(t)}`}
+              href={`/games?category=${encodeURIComponent(categoryUrl(category))}`}
             >
-              #{t}
+              {categoryLabel(category)}
             </Link>
-          ))}
+          ) : (
+            <span className="badge">{categoryLabel(category)}</span>
+          )}
+
+          {game.tags.slice(0, 3).map((t) =>
+            game.placeholder ? (
+              <span key={t} className="badge">
+                #{t}
+              </span>
+            ) : (
+              <Link
+                key={t}
+                className="badge"
+                href={`/games?q=${encodeURIComponent(t)}`}
+              >
+                #{t}
+              </Link>
+            )
+          )}
         </div>
 
         {!game.placeholder ? (
@@ -130,7 +156,7 @@ export default function GameTile({ game }: { game: GameTileModel }) {
               In progress
             </span>
           ) : (
-            <div style={{ display: "flex", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <Link className="playBtn" href={`/play/${game.slug}`}>
                 Play
               </Link>
