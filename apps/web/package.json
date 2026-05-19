@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build --webpack",
+    "ensure:prisma": "npm install --workspaces=false --no-audit --no-fund @prisma/client@6.19.2 prisma@6.19.2",
+    "generate:prisma": "prisma generate",
+    "build": "npm run ensure:prisma && npm run generate:prisma && next build --webpack",
     "start": "next start",
     "prisma": "prisma",
     "preview:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
