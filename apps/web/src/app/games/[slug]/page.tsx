@@ -6,6 +6,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getLeaderboard } from "@/lib/leaderboard";
 import { GameThumb } from "@/components/GameThumb";
+import {
+  getFallbackGameBySlug,
+  getRelatedFallbackGames,
+} from "@/lib/fallbackGames";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +33,26 @@ const CATEGORY_LABELS: Record<string, string> = {
   KIDS_FAMILY: "Kids & Family",
 };
 
+type GameForPage = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  tags: string[];
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+type RelatedGame = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  tags: string[];
+};
+
 function categoryLabel(category?: string | null) {
   if (!category) return "Arcade";
   return CATEGORY_LABELS[category] ?? category.replace(/_/g, " ");
@@ -45,20 +69,66 @@ function titleFromSlug(slug: string) {
     .replace(/\b\w/g, (m) => m.toUpperCase());
 }
 
-async function getGame(slug: string) {
-  return prisma.game.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      category: true,
-      tags: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+function normalizeGame(game: GameForPage | null): GameForPage | null {
+  if (!game) return null;
+
+  return {
+    id: game.id,
+    slug: game.slug,
+    title: game.title,
+    description: game.description ?? null,
+    category: game.category ?? "ARCADE",
+    tags: game.tags ?? [],
+    createdAt: game.createdAt,
+    updatedAt: game.updatedAt,
+  };
+}
+
+function normalizeRelatedGames(
+  rows: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    description?: string | null;
+    category?: string | null;
+    tags?: string[];
+  }>
+): RelatedGame[] {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description ?? null,
+    category: row.category ?? "ARCADE",
+    tags: row.tags ?? [],
+  }));
+}
+
+async function getGame(slug: string): Promise<GameForPage | null> {
+  try {
+    if (!process.env.DATABASE_URL) {
+      return normalizeGame(getFallbackGameBySlug(slug));
+    }
+
+    const game = await prisma.game.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        category: true,
+        tags: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return normalizeGame(game as GameForPage | null) ?? normalizeGame(getFallbackGameBySlug(slug));
+  } catch (error) {
+    console.warn("[game-detail] Falling back to static game", error);
+    return normalizeGame(getFallbackGameBySlug(slug));
+  }
 }
 
 export async function generateMetadata({
@@ -121,31 +191,63 @@ export default async function GameDetailsPage({
   const { slug } = await params;
   const game = await getGame(slug);
 
-  if (!game) return notFound();
+  if (!game) {
+    notFound();
+  }
 
   const category = categoryLabel(game.category);
   const tags = game.tags ?? [];
 
-  // Uses your existing leaderboard helper from the uploaded reference file.
-  // This keeps the page compatible with your current leaderboard logic.
-  const leaderboard = await getLeaderboard(game.slug, "global", 10);
+  type LeaderboardRow = Awaited<ReturnType<typeof getLeaderboard>>[number];
 
-  const relatedGames = await prisma.game.findMany({
-    where: {
-      category: game.category,
-      NOT: { id: game.id },
-    },
-    orderBy: { title: "asc" },
-    take: 4,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      category: true,
-      tags: true,
-    },
-  });
+  let leaderboard: LeaderboardRow[] = [];
+
+  try {
+    if (process.env.DATABASE_URL) {
+      leaderboard = await getLeaderboard(game.slug, "global", 10);
+    }
+  } catch (error) {
+    console.warn("[game-detail] Leaderboard unavailable", error);
+    leaderboard = [];
+  }
+
+  let relatedGames: RelatedGame[] = normalizeRelatedGames(
+    getRelatedFallbackGames(game.slug, game.category)
+  );
+
+  try {
+    if (process.env.DATABASE_URL) {
+      const dbRelatedGames = await prisma.game.findMany({
+        where: {
+          category: game.category as any,
+          NOT: {
+            id: game.id,
+          },
+        },
+        orderBy: {
+          title: "asc",
+        },
+        take: 4,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          category: true,
+          tags: true,
+        },
+      });
+
+      relatedGames = dbRelatedGames.length
+        ? normalizeRelatedGames(dbRelatedGames)
+        : normalizeRelatedGames(getRelatedFallbackGames(game.slug, game.category));
+    }
+  } catch (error) {
+    console.warn("[game-detail] Related games fallback used", error);
+    relatedGames = normalizeRelatedGames(
+      getRelatedFallbackGames(game.slug, game.category)
+    );
+  }
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -365,5 +467,3 @@ export default async function GameDetailsPage({
     </>
   );
 }
-
-

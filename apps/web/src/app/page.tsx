@@ -5,6 +5,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DailyChallengeWidget } from "@/components/DailyChallengeWidget";
 import { GameThumb } from "@/components/GameThumb";
+import { getFallbackGames } from "@/lib/fallbackGames";
 
 export const dynamic = "force-dynamic";
 
@@ -93,44 +94,7 @@ function categoryUrl(category: string) {
 }
 
 async function getGames() {
-  const fallbackGames = [
-    {
-      id: "fallback-kasi-quest",
-      slug: "kasi-quest",
-      title: "Kasi Quest",
-      description:
-        "A mobile-first platform adventure with levels, coins, enemies, and township-inspired quests.",
-      category: "ADVENTURE",
-      tags: ["platformer", "levels", "story", "mobile"],
-    },
-    {
-      id: "fallback-fruit-slice",
-      slug: "fruit-slice",
-      title: "Fruit Slice",
-      description:
-        "Swipe to slice fruit, avoid bombs, and build high-score combos in this fast arcade game.",
-      category: "ARCADE",
-      tags: ["swipe", "reflex", "casual", "mobile"],
-    },
-    {
-      id: "fallback-brick-blaster",
-      slug: "brick-blaster",
-      title: "Brick Blaster",
-      description:
-        "Classic brick-breaking action with quick rounds, score chasing, and mobile-friendly controls.",
-      category: "ARCADE",
-      tags: ["classic", "blocks", "score", "casual"],
-    },
-    {
-      id: "fallback-bubble-pop-arena",
-      slug: "bubble-pop-arena",
-      title: "Bubble Pop Arena",
-      description:
-        "Pop, match, and clear bubbles in a colourful casual puzzle arena.",
-      category: "PUZZLE",
-      tags: ["bubbles", "matching", "casual", "mobile"],
-    },
-  ];
+  const fallbackGames = getFallbackGames();
 
   try {
     if (!process.env.DATABASE_URL) {

@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { GameThumb } from "@/components/GameThumb";
+import { getFallbackGames } from "@/lib/fallbackGames";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,15 @@ const SITE_URL = "https://glorygames.co.za";
 type SearchParams = {
   q?: string;
   category?: string;
+};
+
+type GameListItem = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  tags: string[];
 };
 
 const categories = [
@@ -53,6 +63,44 @@ function categoryUrlValue(value: string) {
 function categoryLabel(value?: string | null) {
   const found = categories.find((c) => c.value === value);
   return found?.label ?? "Arcade";
+}
+
+function normalizeGameRows(
+  rows: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    description?: string | null;
+    category?: string | null;
+    tags?: string[];
+  }>
+): GameListItem[] {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description ?? null,
+    category: row.category ?? "ARCADE",
+    tags: row.tags ?? [],
+  }));
+}
+
+function filterFallbackGames(q: string, category: string): GameListItem[] {
+  const query = q.toLowerCase();
+
+  return normalizeGameRows(getFallbackGames()).filter((game) => {
+    const matchCategory = !category || game.category === category;
+
+    const matchQ =
+      !query ||
+      game.title.toLowerCase().includes(query) ||
+      game.slug.toLowerCase().includes(query) ||
+      (game.description ?? "").toLowerCase().includes(query) ||
+      game.tags.join(" ").toLowerCase().includes(query) ||
+      categoryLabel(game.category).toLowerCase().includes(query);
+
+    return matchCategory && matchQ;
+  });
 }
 
 export async function generateMetadata({
@@ -153,20 +201,34 @@ export default async function GamesPage({
     ];
   }
 
-  const games = await prisma.game.findMany({
-    where: Object.keys(where).length ? where : undefined,
-    orderBy: [{ category: "asc" }, { title: "asc" }],
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      category: true,
-      tags: true,
-    },
-  });
+  let games: GameListItem[] = filterFallbackGames(q, category);
+  let totalGames = getFallbackGames().length;
 
-  const totalGames = await prisma.game.count();
+  try {
+    if (process.env.DATABASE_URL) {
+      const dbGames = await prisma.game.findMany({
+        where: Object.keys(where).length ? where : undefined,
+        orderBy: [{ category: "asc" }, { title: "asc" }],
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          description: true,
+          category: true,
+          tags: true,
+        },
+      });
+
+      const dbCount = await prisma.game.count();
+
+      games = dbGames.length ? normalizeGameRows(dbGames) : filterFallbackGames(q, category);
+      totalGames = dbCount || getFallbackGames().length;
+    }
+  } catch (error) {
+    console.warn("[games] Falling back to static game list", error);
+    games = filterFallbackGames(q, category);
+    totalGames = getFallbackGames().length;
+  }
 
   const jsonLd = {
     "@context": "https://schema.org",

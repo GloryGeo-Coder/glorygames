@@ -3,6 +3,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import PlayClient from "./play-client";
+import { getFallbackGameBySlug } from "@/lib/fallbackGames";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,16 @@ const CATEGORY_LABELS: Record<string, string> = {
   KIDS_FAMILY: "Kids & Family",
 };
 
+type PlayGame = {
+  id?: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  tags: string[];
+  updatedAt?: Date | string;
+};
+
 function titleFromSlug(slug: string) {
   return slug
     .replace(/[-_]+/g, " ")
@@ -37,19 +48,58 @@ function categoryLabel(category?: string | null) {
   return CATEGORY_LABELS[category] ?? category.replace(/_/g, " ");
 }
 
-async function getGame(slug: string) {
-  return prisma.game.findUnique({
-    where: { slug },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      category: true,
-      tags: true,
-      updatedAt: true,
-    },
-  });
+function hasUsableDatabaseUrl() {
+  const url = process.env.DATABASE_URL;
+
+  if (!url) return false;
+
+  // Cloudflare cannot connect to your laptop/local Docker database.
+  if (url.includes("127.0.0.1")) return false;
+  if (url.includes("localhost")) return false;
+
+  return true;
+}
+
+function normalizeGame(game: PlayGame | null): PlayGame | null {
+  if (!game) return null;
+
+  return {
+    id: game.id,
+    slug: game.slug,
+    title: game.title,
+    description: game.description ?? null,
+    category: game.category ?? "ARCADE",
+    tags: game.tags ?? [],
+    updatedAt: game.updatedAt,
+  };
+}
+
+async function getGame(slug: string): Promise<PlayGame | null> {
+  const fallback = normalizeGame(getFallbackGameBySlug(slug));
+
+  try {
+    if (!hasUsableDatabaseUrl()) {
+      return fallback;
+    }
+
+    const game = await prisma.game.findUnique({
+      where: { slug },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        description: true,
+        category: true,
+        tags: true,
+        updatedAt: true,
+      },
+    });
+
+    return normalizeGame(game as PlayGame | null) ?? fallback;
+  } catch (error) {
+    console.warn("[play] Falling back to static game", error);
+    return fallback;
+  }
 }
 
 export async function generateMetadata({
