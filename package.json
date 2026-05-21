@@ -10,6 +10,7 @@
     "dev:web": "npm run dev --prefix apps/web",
     "dev:rt": "npm run dev --prefix apps/realtime",
     "build": "npm run build --prefix apps/web",
+    "deploy:cf": "npm run deploy:cf --prefix apps/web",
     "lint": "npm run lint --prefix apps/web"
   },
   "devDependencies": {
