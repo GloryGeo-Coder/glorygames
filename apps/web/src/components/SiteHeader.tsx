@@ -1,33 +1,159 @@
-import Link from "next/link";
-import { getSessionUser } from "@/lib/auth";
-import LogoutButton from "@/components/LogoutButton";
+"use client";
 
-export default async function SiteHeader() {
-  const user = await getSessionUser();
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/games", label: "Games" },
+  { href: "/games?category=arcade", label: "Arcade" },
+  { href: "/games?category=adventure", label: "Adventure" },
+  { href: "/about", label: "About" },
+];
+
+export default function SiteHeader() {
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  const isPlayRoute = pathname?.startsWith("/play");
+
+  useEffect(() => {
+    setMenuOpen(false);
+    setHidden(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!isPlayRoute || menuOpen) return;
+
+    const timer = window.setTimeout(() => {
+      setHidden(true);
+    }, 1600);
+
+    return () => window.clearTimeout(timer);
+  }, [isPlayRoute, menuOpen, pathname]);
+
+  useEffect(() => {
+    let lastY = window.scrollY;
+
+    function onScroll() {
+      const currentY = window.scrollY;
+
+      setScrolled(currentY > 8);
+
+      if (menuOpen) {
+        setHidden(false);
+        lastY = currentY;
+        return;
+      }
+
+      const scrollingDown = currentY > lastY + 8;
+      const scrollingUp = currentY < lastY - 8;
+
+      if (scrollingDown && currentY > 80) {
+        setHidden(true);
+      }
+
+      if (scrollingUp || currentY < 40) {
+        setHidden(false);
+      }
+
+      lastY = currentY;
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
 
   return (
-    <header className="header">
-      <div className="container headerInner">
-        <Link className="brand" href="/">
-          <span className="brandMark" />
-          <span>WebGameArena</span>
+    <header
+      className={[
+        "wgaHeader",
+        scrolled ? "isScrolled" : "",
+        hidden ? "isHidden" : "",
+        menuOpen ? "isOpen" : "",
+        isPlayRoute ? "isPlayRoute" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <div className="wgaHeaderInner">
+        <Link className="wgaBrand" href="/" aria-label="WebGameArena home">
+          <span className="wgaBrandIcon">W</span>
+
+          <span className="wgaBrandText">
+            <strong>WebGameArena</strong>
+            <small>Free browser games</small>
+          </span>
         </Link>
 
-        <nav className="nav">
-          <Link className="pill" href="/games">Games</Link>
-          <span className="pill" aria-disabled="true">Community (soon)</span>
-          <span className="pill" aria-disabled="true">Creators (soon)</span>
+        <nav className="wgaDesktopNav" aria-label="Main navigation">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={pathname === link.href ? "active" : ""}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
-          {user ? (
-            <>
-              <span className="pill">Hi, {user.displayName}</span>
-              <LogoutButton />
-            </>
-          ) : (
-            <Link className="pill" href="/login">Sign in</Link>
-          )}
+        <div className="wgaDesktopActions">
+          <Link className="pill" href="/login">
+            Sign in
+          </Link>
 
-          <Link className="cta" href="/games">Play now</Link>
+          <Link className="cta smallCta" href="/signup">
+            Create account
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          className="wgaMenuButton"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          onClick={() => {
+            setHidden(false);
+            setMenuOpen((value) => !value);
+          }}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
+
+      <div className="wgaMobilePanel" aria-hidden={!menuOpen}>
+        <nav className="wgaMobileNav" aria-label="Mobile navigation">
+          {navLinks.map((link) => (
+            <Link key={link.href} href={link.href}>
+              {link.label}
+            </Link>
+          ))}
+
+          <div className="wgaMobileAuth">
+            <Link className="pill" href="/login">
+              Sign in
+            </Link>
+
+            <Link className="cta" href="/signup">
+              Create account
+            </Link>
+          </div>
         </nav>
       </div>
     </header>

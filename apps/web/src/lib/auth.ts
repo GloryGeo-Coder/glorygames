@@ -9,7 +9,13 @@ export type SessionUser = {
   displayName: string;
 };
 
-const cookieName = process.env.COOKIE_NAME ?? "gg_session";
+export function getSessionCookieName() {
+  return process.env.COOKIE_NAME ?? "gg_session";
+}
+
+export function isAuthConfigured() {
+  return Boolean(process.env.JWT_SECRET);
+}
 
 function getSecret() {
   const secret = process.env.JWT_SECRET;
@@ -19,6 +25,16 @@ function getSecret() {
   }
 
   return new TextEncoder().encode(secret);
+}
+
+export function getSessionCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  };
 }
 
 export async function signSession(user: SessionUser) {
@@ -43,27 +59,18 @@ export async function createSession(user: SessionUser) {
   const token = await signSession(user);
   const cookieStore = await cookies();
 
-  cookieStore.set(cookieName, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
+  cookieStore.set(getSessionCookieName(), token, getSessionCookieOptions());
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
   const key = getSecret();
 
-  // Important for build environments and public pages.
-  // If JWT_SECRET is not available, treat the user as signed out
-  // instead of crashing the whole app build.
   if (!key) {
     return null;
   }
 
   const cookieStore = await cookies();
-  const token = cookieStore.get(cookieName)?.value;
+  const token = cookieStore.get(getSessionCookieName())?.value;
 
   if (!token) {
     return null;
@@ -71,7 +78,6 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
   try {
     const verified = await jwtVerify(token, key);
-
     const payload = verified.payload as Partial<SessionUser>;
 
     if (!payload.id || !payload.email || !payload.displayName) {
@@ -91,7 +97,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 export async function destroySession() {
   const cookieStore = await cookies();
 
-  cookieStore.set(cookieName, "", {
+  cookieStore.set(getSessionCookieName(), "", {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
