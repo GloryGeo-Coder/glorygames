@@ -3,19 +3,21 @@
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
-  title: "Submit a Game | GloryGames",
+  title: "Submit a Game | WebGameArena",
   description:
-    "Submit a mobile-friendly HTML5 browser game for future consideration on GloryGames.",
+    "Submit a mobile-friendly HTML5 browser game for future consideration on WebGameArena.",
   alternates: {
     canonical: "/submit-game",
   },
   openGraph: {
-    title: "Submit a Game | GloryGames",
+    title: "Submit a Game | WebGameArena",
     description:
-      "Developers and creators can prepare mobile-friendly HTML5 games for future submission to GloryGames.",
-    url: "https://glorygames.co.za/submit-game",
-    siteName: "GloryGames",
+      "Developers and creators can prepare mobile-friendly HTML5 games for future submission to WebGameArena.",
+    url: "https://WebGameArena.com/submit-game",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
@@ -26,14 +28,14 @@ export default function SubmitGamePage() {
     <InfoPage
       eyebrow="Submit a Game"
       title="Build for players. Submit for the browser."
-      description="GloryGames is preparing a game submission pathway for creators who build mobile-friendly browser games that are fun, safe and easy to play."
+      description="WebGameArena is preparing a game submission pathway for creators who build mobile-friendly browser games that are fun, safe and easy to play."
       cta={{
         label: "Browse Current Games",
         href: "/games",
       }}
       sections={[
         {
-          title: "What kind of games fit GloryGames?",
+          title: "What kind of games fit WebGameArena?",
           body: [
             "Mobile-first HTML5 games that work smoothly on phones, tablets and desktop browsers.",
             "Games with clear controls, quick loading times and simple player onboarding.",

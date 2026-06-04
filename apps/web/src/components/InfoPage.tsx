@@ -18,7 +18,7 @@ type InfoPageProps = {
 };
 
 export default function InfoPage({
-  eyebrow = "GloryGames",
+  eyebrow = "WebGameArena",
   title,
   description,
   updated,

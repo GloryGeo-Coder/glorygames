@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import InfoPage from "@/components/InfoPage";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Contact WebGameArena | Support, Feedback & Partnerships",
   description:

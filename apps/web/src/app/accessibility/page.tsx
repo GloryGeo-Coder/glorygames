@@ -3,6 +3,8 @@
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 
+export const dynamic = "force-static";
+
 export const metadata: Metadata = {
   title: "Accessibility | WebGameArena",
   description:
