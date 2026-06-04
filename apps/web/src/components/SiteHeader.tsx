@@ -10,7 +10,7 @@ export default async function SiteHeader() {
       <div className="container headerInner">
         <Link className="brand" href="/">
           <span className="brandMark" />
-          <span>GloryGames</span>
+          <span>WebGameArena</span>
         </Link>
 
         <nav className="nav">

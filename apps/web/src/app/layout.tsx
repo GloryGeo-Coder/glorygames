@@ -6,7 +6,7 @@ import DailyChallengeBridge from "@/components/DailyChallengeBridge";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 export const metadata: Metadata = {
-  title: "GloryGames",
+  title: "WebGameArena",
   description: "Play, compete, and build communities in browser-based games.",
 };
 

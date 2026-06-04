@@ -25,7 +25,7 @@ const footerGroups = [
   {
     title: "Company",
     links: [
-      { label: "About GloryGames", href: "/about" },
+      { label: "About WebGameArena", href: "/about" },
       { label: "Contact", href: "/contact" },
       { label: "Submit a Game", href: "/submit-game" },
       { label: "Advertise", href: "/advertise" },
@@ -51,7 +51,7 @@ export default function SiteFooter() {
         <div className="footerTop">
           <div className="footerBrand">
             <Link href="/" className="footerLogo">
-              GloryGames
+              WebGameArena
             </Link>
 
             <p>
@@ -85,7 +85,7 @@ export default function SiteFooter() {
 
         <div className="footerBottom">
           <div>
-            © {year} GloryGames.co.za. All rights reserved.
+            © {year} WebGameArena.com All rights reserved.
             <span className="footerCredit"> Built by Glory Mulopo.</span>
           </div>
 

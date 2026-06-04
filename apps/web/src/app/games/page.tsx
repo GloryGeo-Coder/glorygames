@@ -8,7 +8,7 @@ import { getFallbackGames } from "@/lib/fallbackGames";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = "https://glorygames.co.za";
+const SITE_URL = "https://webgamearena.com";
 
 type SearchParams = {
   q?: string;
@@ -116,16 +116,16 @@ export async function generateMetadata({
   const label = category ? categoryLabel(category) : "";
 
   const title = category
-    ? `${label} Games | Free Browser Games on GloryGames`
+    ? `${label} Games | Free Browser Games on WebGameArena`
     : q
-      ? `Search: ${q} | GloryGames`
-      : "Games Library | Free Mobile Browser Games on GloryGames";
+      ? `Search: ${q} | WebGameArena`
+      : "Games Library | Free Mobile Browser Games on WebGameArena";
 
   const description = category
-    ? `Play free ${label.toLowerCase()} browser games on GloryGames. Discover mobile-first games built for instant play, high scores and quick fun.`
+    ? `Play free ${label.toLowerCase()} browser games on WebGameArena. Discover mobile-first games built for instant play, high scores and quick fun.`
     : q
-      ? `Search results for ${q} on GloryGames. Find free browser games across arcade, action, adventure, puzzle, racing, educational and casual categories.`
-      : "Browse free mobile-first browser games on GloryGames. Play arcade, action, adventure, educational, puzzle, racing, word, casual and strategy games instantly.";
+      ? `Search results for ${q} on WebGameArena. Find free browser games across arcade, action, adventure, puzzle, racing, educational and casual categories.`
+      : "Browse free mobile-first browser games on WebGameArena. Play arcade, action, adventure, educational, puzzle, racing, word, casual and strategy games instantly.";
 
   const canonical =
     category || q
@@ -139,7 +139,7 @@ export async function generateMetadata({
     title,
     description,
     keywords: [
-      "GloryGames",
+      "WebGameArena",
       "free browser games",
       "mobile games",
       "HTML5 games",
@@ -161,7 +161,7 @@ export async function generateMetadata({
       title,
       description,
       url: `${SITE_URL}${canonical}`,
-      siteName: "GloryGames",
+      siteName: "WebGameArena",
       type: "website",
       locale: "en_ZA",
     },
@@ -237,13 +237,13 @@ export default async function GamesPage({
       ? `${categoryLabel(category)} Games`
       : q
         ? `Search results for ${q}`
-        : "GloryGames Game Library",
+        : "WebGameArena Game Library",
     url: `${SITE_URL}/games`,
     description:
-      "Browse and play free mobile-first browser games on GloryGames.",
+      "Browse and play free mobile-first browser games on WebGameArena.",
     isPartOf: {
       "@type": "WebSite",
-      name: "GloryGames",
+      name: "WebGameArena",
       url: SITE_URL,
     },
   };

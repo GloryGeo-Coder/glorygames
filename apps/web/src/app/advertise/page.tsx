@@ -4,18 +4,18 @@ import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Advertise on GloryGames | Gaming Audience & Sponsorships",
+  title: "Advertise on WebGameArena | Gaming Audience & Sponsorships",
   description:
-    "Advertise on GloryGames through future sponsorships, featured game placements and player-friendly brand opportunities.",
+    "Advertise on WebGameArena through future sponsorships, featured game placements and player-friendly brand opportunities.",
   alternates: {
     canonical: "/advertise",
   },
   openGraph: {
-    title: "Advertise on GloryGames",
+    title: "Advertise on WebGameArena",
     description:
-      "Explore future advertising and sponsorship opportunities on GloryGames, a mobile-first browser gaming platform.",
-    url: "https://glorygames.co.za/advertise",
-    siteName: "GloryGames",
+      "Explore future advertising and sponsorship opportunities on WebGameArena, a mobile-first browser gaming platform.",
+    url: "https://webgamearena.com/advertise",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
@@ -26,7 +26,7 @@ export default function AdvertisePage() {
     <InfoPage
       eyebrow="Advertise"
       title="Reach players through a fun, mobile-first gaming experience."
-      description="GloryGames is being built as a browser gaming platform where brands can connect with players through respectful, relevant and player-friendly placements."
+      description="WebGameArena is being built as a browser gaming platform where brands can connect with players through respectful, relevant and player-friendly placements."
       cta={{
         label: "Explore Games",
         href: "/games",
@@ -34,7 +34,7 @@ export default function AdvertisePage() {
       sections={[
         {
           title: "Advertising vision",
-          body: "GloryGames aims to support advertising that fits naturally within a safe and enjoyable gaming environment. The goal is to create opportunities for sponsors and brands without interrupting gameplay or reducing player trust.",
+          body: "WebGameArena aims to support advertising that fits naturally within a safe and enjoyable gaming environment. The goal is to create opportunities for sponsors and brands without interrupting gameplay or reducing player trust.",
         },
         {
           title: "Potential ad opportunities",
@@ -66,7 +66,7 @@ export default function AdvertisePage() {
         },
         {
           title: "What comes next",
-          body: "As GloryGames grows, dedicated media kits, audience statistics and campaign packages can be added. For now, this page establishes the advertising direction and gives future partners a professional landing page.",
+          body: "As WebGameArena grows, dedicated media kits, audience statistics and campaign packages can be added. For now, this page establishes the advertising direction and gives future partners a professional landing page.",
         },
       ]}
     />

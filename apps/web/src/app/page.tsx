@@ -10,12 +10,12 @@ import { getFallbackGames } from "@/lib/fallbackGames";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://glorygames.co.za"),
-  title: "GloryGames | Play Free Mobile Browser Games",
+  metadataBase: new URL("https://webgamearena.com"),
+  title: "WebGameArena | Play Free Browser Games",
   description:
-    "Play free mobile-first browser games on GloryGames. Discover arcade, action, adventure, puzzle, racing, educational and casual games built for instant play.",
+    "Play free browser games on WebGameArena. Discover arcade, action, adventure, puzzle, racing, educational and casual games built for instant play.",
   keywords: [
-    "GloryGames",
+    "WebGameArena",
     "free browser games",
     "mobile games",
     "HTML5 games",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "puzzle games",
     "racing games",
     "casual games",
-    "South African games",
+    "games",
     "Online games",
     "Free games",
     "Multiplayer games",
@@ -35,19 +35,19 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "GloryGames | Play Free Mobile Browser Games",
+    title: "WebGameArena | Play Free Mobile Browser Games",
     description:
       "Jump into fast, mobile-first browser games. Play arcade, action, adventure, puzzle, racing and educational games instantly.",
-    url: "https://glorygames.co.za",
-    siteName: "GloryGames",
+    url: "https://webgamearena.com",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
   twitter: {
     card: "summary_large_image",
-    title: "GloryGames | Play Free Mobile Browser Games",
+    title: "WebGameArena | Play Free Mobile Browser Games",
     description:
-      "Play free mobile-first browser games instantly on GloryGames.",
+      "Play free mobile-first browser games instantly on WebGameArena.",
   },
   robots: {
     index: true,
@@ -137,13 +137,13 @@ export default async function HomePage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "GloryGames",
-    url: "https://glorygames.co.za",
+    name: "WebGameArena",
+    url: "https://webgamearena.com",
     description:
       "A free mobile-first browser gaming platform with arcade, action, adventure, puzzle, racing, educational and casual games.",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://glorygames.co.za/games?q={search_term_string}",
+      target: "https://webgamearena.com/games?q={search_term_string}",
       "query-input": "required name=search_term_string",
     },
   };
@@ -233,7 +233,7 @@ export default async function HomePage() {
                     maxWidth: 720,
                   }}
                 >
-                  GloryGames is a mobile-first gaming hub where you can jump
+                  WebGameArena is a mobile-first gaming hub where you can jump
                   straight into arcade, action, adventure, puzzle, racing and
                   learning games — built for quick sessions, high scores and
                   friendly competition.

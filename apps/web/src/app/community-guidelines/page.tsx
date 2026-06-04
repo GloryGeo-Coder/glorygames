@@ -4,18 +4,18 @@ import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Community Guidelines | GloryGames",
+  title: "Community Guidelines | WebGameArena",
   description:
-    "Read the GloryGames Community Guidelines for fair play, respectful chat, leaderboard behaviour and platform safety.",
+    "Read the WebGameArena Community Guidelines for fair play, respectful chat, leaderboard behaviour and platform safety.",
   alternates: {
     canonical: "/community-guidelines",
   },
   openGraph: {
-    title: "Community Guidelines | GloryGames",
+    title: "Community Guidelines | WebGameArena",
     description:
-      "Learn the rules for respectful play, chat, leaderboards and community behaviour on GloryGames.",
-    url: "https://glorygames.co.za/community-guidelines",
-    siteName: "GloryGames",
+      "Learn the rules for respectful play, chat, leaderboards and community behaviour on WebGameArena.",
+    url: "https://webgamearena.com/community-guidelines",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
@@ -25,8 +25,8 @@ export default function CommunityGuidelinesPage() {
   return (
     <InfoPage
       eyebrow="Community Guidelines"
-      title="Play fair. Be respectful. Keep GloryGames fun."
-      description="These guidelines explain the behaviour expected from players when using GloryGames, including chat, leaderboards, display names, game submissions and future community features."
+      title="Play fair. Be respectful. Keep WebGameArena fun."
+      description="These guidelines explain the behaviour expected from players when using WebGameArena, including chat, leaderboards, display names, game submissions and future community features."
       updated="18 May 2026"
       sections={[
         {
@@ -81,13 +81,13 @@ export default function CommunityGuidelinesPage() {
             "Submitted games should be safe, playable and mobile-friendly.",
             "Game content should not mislead players or contain hidden harmful behaviour.",
             "Creators should respect copyright, trademarks and the rights of others.",
-            "GloryGames may reject or remove games that do not meet platform standards.",
+            "WebGameArena may reject or remove games that do not meet platform standards.",
           ],
         },
         {
           title: "8. Moderation",
           body: [
-            "GloryGames may remove content, scores, messages or accounts that break these guidelines.",
+            "WebGameArena may remove content, scores, messages or accounts that break these guidelines.",
             "Leaderboards may be reviewed or reset if unfair activity is detected.",
             "Repeated or serious violations may lead to restrictions or removal from platform features.",
           ],
@@ -98,7 +98,7 @@ export default function CommunityGuidelinesPage() {
         },
         {
           title: "10. Our goal",
-          body: "GloryGames should feel fun, safe and welcoming. These guidelines help protect players, creators and the platform as the game library and community features grow.",
+          body: "WebGameArena should feel fun, safe and welcoming. These guidelines help protect players, creators and the platform as the game library and community features grow.",
         },
       ]}
     />

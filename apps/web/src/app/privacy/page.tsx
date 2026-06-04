@@ -4,18 +4,18 @@ import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | GloryGames",
+  title: "Privacy Policy | WebGameArena",
   description:
-    "Read the GloryGames Privacy Policy to understand what information may be collected, how it is used, and how player privacy is protected.",
+    "Read the WebGameArena Privacy Policy to understand what information may be collected, how it is used, and how player privacy is protected.",
   alternates: {
     canonical: "/privacy",
   },
   openGraph: {
-    title: "Privacy Policy | GloryGames",
+    title: "Privacy Policy | WebGameArena",
     description:
-      "Learn how GloryGames handles player information, gameplay data, cookies, analytics and safety.",
-    url: "https://glorygames.co.za/privacy",
-    siteName: "GloryGames",
+      "Learn how WebGameArena handles player information, gameplay data, cookies, analytics and safety.",
+    url: "https://webgamearena.com/privacy",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
@@ -26,7 +26,7 @@ export default function PrivacyPage() {
     <InfoPage
       eyebrow="Privacy Policy"
       title="Your privacy matters when you play."
-      description="This Privacy Policy explains how GloryGames may collect, use and protect information when players visit the website, create an account, play games, use chat features or interact with leaderboards."
+      description="This Privacy Policy explains how WebGameArena may collect, use and protect information when players visit the website, create an account, play games, use chat features or interact with leaderboards."
       updated="18 May 2026"
       sections={[
         {
@@ -59,15 +59,15 @@ export default function PrivacyPage() {
         },
         {
           title: "5. Cookies and analytics",
-          body: "GloryGames may use cookies or similar technologies to keep players logged in, remember preferences, measure site usage and improve the player experience. More details are available in the Cookie Policy.",
+          body: "WebGameArena may use cookies or similar technologies to keep players logged in, remember preferences, measure site usage and improve the player experience. More details are available in the Cookie Policy.",
         },
         {
           title: "6. Children and younger players",
-          body: "GloryGames is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, especially when creating accounts, using chat or sharing public scores.",
+          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, especially when creating accounts, using chat or sharing public scores.",
         },
         {
           title: "7. Advertising and third-party services",
-          body: "If advertising, analytics or third-party tools are added, those services may process limited technical information according to their own policies. GloryGames aims to use player-friendly services that do not interfere with gameplay.",
+          body: "If advertising, analytics or third-party tools are added, those services may process limited technical information according to their own policies. WebGameArena aims to use player-friendly services that do not interfere with gameplay.",
         },
         {
           title: "8. Data protection and security",
@@ -83,7 +83,7 @@ export default function PrivacyPage() {
         },
         {
           title: "10. Changes to this policy",
-          body: "This Privacy Policy may be updated as GloryGames adds new features, games, accounts, analytics, advertising or community tools. The updated date will show when changes were last made.",
+          body: "This Privacy Policy may be updated as WebGameArena adds new features, games, accounts, analytics, advertising or community tools. The updated date will show when changes were last made.",
         },
         {
           title: "11. Contact",

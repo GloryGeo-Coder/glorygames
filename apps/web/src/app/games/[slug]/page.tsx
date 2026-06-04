@@ -13,7 +13,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = "https://glorygames.co.za";
+const SITE_URL = "https://webgamearena.com";
 
 const CATEGORY_LABELS: Record<string, string> = {
   ARCADE: "Arcade",
@@ -144,11 +144,11 @@ export async function generateMetadata({
 
   const description =
     game?.description ||
-    `Play ${title}, a free mobile-first ${category.toLowerCase()} browser game on GloryGames. No downloads required.`;
+    `Play ${title}, a free mobile-first ${category.toLowerCase()} browser game on WebGameArena. No downloads required.`;
 
   return {
     metadataBase: new URL(SITE_URL),
-    title: `${title} Game | Free Browser Game on GloryGames`,
+    title: `${title} Game | Free Browser Game on WebGameArena`,
     description,
     keywords: [
       title,
@@ -157,23 +157,23 @@ export async function generateMetadata({
       "free browser game",
       "mobile game",
       "HTML5 game",
-      "GloryGames",
+      "WebGameArena",
       ...(game?.tags ?? []),
     ],
     alternates: {
       canonical: `/games/${slug}`,
     },
     openGraph: {
-      title: `${title} Game | GloryGames`,
+      title: `${title} Game | WebGameArena`,
       description,
       url: `${SITE_URL}/games/${slug}`,
-      siteName: "GloryGames",
+      siteName: "WebGameArena",
       type: "website",
       locale: "en_ZA",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} Game | GloryGames`,
+      title: `${title} Game | WebGameArena`,
       description,
     },
     robots: {
@@ -255,7 +255,7 @@ export default async function GameDetailsPage({
     name: game.title,
     description:
       game.description ||
-      `Play ${game.title}, a free mobile-first browser game on GloryGames.`,
+      `Play ${game.title}, a free mobile-first browser game on WebGameArena.`,
     url: `${SITE_URL}/games/${game.slug}`,
     applicationCategory: "Game",
     genre: category,
@@ -263,7 +263,7 @@ export default async function GameDetailsPage({
     operatingSystem: "Any",
     publisher: {
       "@type": "Organization",
-      name: "GloryGames",
+      name: "WebGameArena",
       url: SITE_URL,
     },
   };
@@ -291,7 +291,7 @@ export default async function GameDetailsPage({
 
                 <p>
                   {game.description ||
-                    `Play ${game.title} instantly on GloryGames. Built for quick browser play on mobile and desktop.`}
+                    `Play ${game.title} instantly on WebGameArena. Built for quick browser play on mobile and desktop.`}
                 </p>
 
                 <div className="gameDetailTags">

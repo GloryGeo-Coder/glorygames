@@ -5,26 +5,26 @@ import Link from "next/link";
 import InfoPage from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Contact GloryGames | Support, Feedback & Partnerships",
+  title: "Contact WebGameArena | Support, Feedback & Partnerships",
   description:
-    "Contact GloryGames for player support, feedback, game submissions, advertising and partnership opportunities.",
+    "Contact WebGameArena for player support, feedback, game submissions, advertising and partnership opportunities.",
   alternates: {
     canonical: "/contact",
   },
   openGraph: {
-    title: "Contact GloryGames",
+    title: "Contact WebGameArena",
     description:
-      "Get in touch with GloryGames for support, feedback, partnerships and game submissions.",
-    url: "https://glorygames.co.za/contact",
-    siteName: "GloryGames",
+      "Get in touch with WebGameArena for support, feedback, partnerships and game submissions.",
+    url: "https://webgamearena.com/contact",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Contact GloryGames",
+    title: "Contact WebGameArena",
     description:
-      "Contact GloryGames for player support, feedback and partnerships.",
+      "Contact WebGameArena for player support, feedback and partnerships.",
   },
 };
 
@@ -33,8 +33,8 @@ export default function ContactPage() {
     <>
       <InfoPage
         eyebrow="Contact"
-        title="Need help, have feedback, or want to work with GloryGames?"
-        description="We are building GloryGames into a player-friendly browser gaming platform. Reach out for support, suggestions, partnerships, game submissions or advertising enquiries."
+        title="Need help, have feedback, or want to work with WebGameArena?"
+        description="We are building WebGameArena into a player-friendly browser gaming platform. Reach out for support, suggestions, partnerships, game submissions or advertising enquiries."
         cta={{
           label: "Browse Games",
           href: "/games",
@@ -54,7 +54,7 @@ export default function ContactPage() {
           },
           {
             title: "Advertising and partnerships",
-            body: "GloryGames is open to future brand partnerships, sponsorships and advertising opportunities that fit a safe, player-focused gaming experience.",
+            body: "WebGameArena is open to future brand partnerships, sponsorships and advertising opportunities that fit a safe, player-focused gaming experience.",
           },
         ]}
       />

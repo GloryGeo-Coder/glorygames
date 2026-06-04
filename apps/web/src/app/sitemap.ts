@@ -3,7 +3,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-const SITE_URL = "https://glorygames.co.za";
+const SITE_URL = "https://webgamearena.com";
 
 export const dynamic = "force-dynamic";
 

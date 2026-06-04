@@ -1,7 +1,7 @@
 import AdminClient from "./admin-client";
 
 export const metadata = {
-  title: "Admin • GloryGames"
+  title: "Admin • WebGameArena"
 };
 
 export default function AdminPage() {

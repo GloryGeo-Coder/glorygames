@@ -7,7 +7,7 @@ import { getFallbackGameBySlug } from "@/lib/fallbackGames";
 
 export const dynamic = "force-dynamic";
 
-const SITE_URL = "https://glorygames.co.za";
+const SITE_URL = "https://WebGameArena.co.za";
 
 const CATEGORY_LABELS: Record<string, string> = {
   ARCADE: "Arcade",
@@ -115,18 +115,18 @@ export async function generateMetadata({
 
   const description =
     game?.description ||
-    `Play ${title} for free on GloryGames. A mobile-first ${category.toLowerCase()} browser game built for instant play.`;
+    `Play ${title} for free on WebGameArena. A mobile-first ${category.toLowerCase()} browser game built for instant play.`;
 
   const url = `${SITE_URL}/play/${slug}`;
 
   return {
-    title: `${title} | Play Free on GloryGames`,
+    title: `${title} | Play Free on WebGameArena`,
     description,
     keywords: [
       title,
       `${title} game`,
       `${category} game`,
-      "GloryGames",
+      "WebGameArena",
       "free browser games",
       "mobile games",
       "HTML5 games",
@@ -136,16 +136,16 @@ export async function generateMetadata({
       canonical: `/play/${slug}`,
     },
     openGraph: {
-      title: `${title} | Play Free on GloryGames`,
+      title: `${title} | Play Free on WebGameArena`,
       description,
       url,
-      siteName: "GloryGames",
+      siteName: "WebGameArena",
       type: "website",
       locale: "en_ZA",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | Play Free on GloryGames`,
+      title: `${title} | Play Free on WebGameArena`,
       description,
     },
     robots: {
@@ -166,7 +166,7 @@ export default async function PlayPage({
   const title = game?.title ?? titleFromSlug(slug);
   const description =
     game?.description ||
-    `Play ${title} instantly on GloryGames. No downloads required.`;
+    `Play ${title} instantly on WebGameArena. No downloads required.`;
 
   const category = categoryLabel(game?.category);
 
@@ -182,7 +182,7 @@ export default async function PlayPage({
     operatingSystem: "Any",
     publisher: {
       "@type": "Organization",
-      name: "GloryGames",
+      name: "WebGameArena",
       url: SITE_URL,
     },
   };

@@ -4,18 +4,18 @@ import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Accessibility | GloryGames",
+  title: "Accessibility | WebGameArena",
   description:
-    "Learn about GloryGames accessibility goals for mobile-first browser games, readable pages, keyboard support, responsive layouts and inclusive play.",
+    "Learn about WebGameArena accessibility goals for mobile-first browser games, readable pages, keyboard support, responsive layouts and inclusive play.",
   alternates: {
     canonical: "/accessibility",
   },
   openGraph: {
-    title: "Accessibility | GloryGames",
+    title: "Accessibility | WebGameArena",
     description:
-      "GloryGames aims to make browser games and platform pages accessible, readable and usable across devices.",
-    url: "https://glorygames.co.za/accessibility",
-    siteName: "GloryGames",
+      "WebGameArena aims to make browser games and platform pages accessible, readable and usable across devices.",
+    url: "https://WebGameArena.com/accessibility",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
@@ -25,13 +25,13 @@ export default function AccessibilityPage() {
   return (
     <InfoPage
       eyebrow="Accessibility"
-      title="Making GloryGames easier to play and browse."
-      description="GloryGames aims to create a browser gaming experience that is usable across mobile, tablet and desktop devices, with readable pages, responsive layouts and clear controls."
+      title="Making WebGameArena easier to play and browse."
+      description="WebGameArena aims to create a browser gaming experience that is usable across mobile, tablet and desktop devices, with readable pages, responsive layouts and clear controls."
       updated="18 May 2026"
       sections={[
         {
           title: "1. Our accessibility goal",
-          body: "GloryGames is being built to support a wide range of players, devices and screen sizes. The goal is to make games and platform pages easier to understand, navigate and play.",
+          body: "WebGameArena is being built to support a wide range of players, devices and screen sizes. The goal is to make games and platform pages easier to understand, navigate and play.",
         },
         {
           title: "2. Mobile-first design",
@@ -68,7 +68,7 @@ export default function AccessibilityPage() {
         },
         {
           title: "6. Continuous improvement",
-          body: "Accessibility is an ongoing process. As GloryGames grows, improvements may include better keyboard navigation, clearer game instructions, improved contrast, reduced-motion options and stronger testing across devices.",
+          body: "Accessibility is an ongoing process. As WebGameArena grows, improvements may include better keyboard navigation, clearer game instructions, improved contrast, reduced-motion options and stronger testing across devices.",
         },
         {
           title: "7. Reporting accessibility problems",

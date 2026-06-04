@@ -4,18 +4,18 @@ import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
 
 export const metadata: Metadata = {
-  title: "Parents & Safety | GloryGames",
+  title: "Parents & Safety | WebGameArena",
   description:
-    "Learn how GloryGames approaches player safety, younger players, chat, privacy, ads, game content and family-friendly browser gaming.",
+    "Learn how WebGameArena approaches player safety, younger players, chat, privacy, ads, game content and family-friendly browser gaming.",
   alternates: {
     canonical: "/parents-safety",
   },
   openGraph: {
-    title: "Parents & Safety | GloryGames",
+    title: "Parents & Safety | WebGameArena",
     description:
-      "Information for parents and guardians about GloryGames safety, privacy, chat, content and responsible play.",
-    url: "https://glorygames.co.za/parents-safety",
-    siteName: "GloryGames",
+      "Information for parents and guardians about WebGameArena safety, privacy, chat, content and responsible play.",
+    url: "https://webgamearena.com/parents-safety",
+    siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
   },
@@ -25,18 +25,18 @@ export default function ParentsSafetyPage() {
   return (
     <InfoPage
       eyebrow="Parents & Safety"
-      title="Helping families understand safe play on GloryGames."
-      description="GloryGames is designed as a mobile-first browser gaming platform. This page explains how the platform approaches player safety, younger users, privacy, chat, advertising and responsible play."
+      title="Helping families understand safe play on WebGameArena."
+      description="WebGameArena is designed as a mobile-first browser gaming platform. This page explains how the platform approaches player safety, younger users, privacy, chat, advertising and responsible play."
       updated="18 May 2026"
       sections={[
         {
-          title: "1. What is GloryGames?",
-          body: "GloryGames is a browser-based gaming platform where players can play free games instantly without downloads. The platform includes game categories, leaderboards, daily challenges and selected social features such as game chat.",
+          title: "1. What is WebGameArena?",
+          body: "WebGameArena is a browser-based gaming platform where players can play free games instantly without downloads. The platform includes game categories, leaderboards, daily challenges and selected social features such as game chat.",
         },
         {
           title: "2. Younger players",
           body: [
-            "Younger players should use GloryGames with guidance from a parent or guardian.",
+            "Younger players should use WebGameArena with guidance from a parent or guardian.",
             "Parents and guardians should help younger players choose suitable games and understand safe online behaviour.",
             "Players should not use personal information such as full names, addresses, phone numbers or school names in usernames or chat.",
           ],
@@ -46,7 +46,7 @@ export default function ParentsSafetyPage() {
           body: [
             "Some games may include chat or social interaction features.",
             "Players should keep chat respectful, avoid sharing private information and report unsafe or inappropriate behaviour.",
-            "GloryGames may moderate or restrict chat features where needed to protect players and platform safety.",
+            "WebGameArena may moderate or restrict chat features where needed to protect players and platform safety.",
           ],
         },
         {
@@ -59,15 +59,15 @@ export default function ParentsSafetyPage() {
         },
         {
           title: "5. Game content",
-          body: "GloryGames aims to offer browser games suitable for a broad player audience. As the platform grows, game categories and safety review processes will help players and parents understand the type of experience each game offers.",
+          body: "WebGameArena aims to offer browser games suitable for a broad player audience. As the platform grows, game categories and safety review processes will help players and parents understand the type of experience each game offers.",
         },
         {
           title: "6. Advertising and sponsorships",
-          body: "If advertising or sponsorships are added in future, GloryGames aims to keep ads clearly separated from gameplay, suitable for a broad audience and respectful of the player experience.",
+          body: "If advertising or sponsorships are added in future, WebGameArena aims to keep ads clearly separated from gameplay, suitable for a broad audience and respectful of the player experience.",
         },
         {
           title: "7. Privacy",
-          body: "GloryGames may collect limited information to support accounts, scores, leaderboards, chat, analytics and platform improvements. More information is available in the Privacy Policy and Cookie Policy.",
+          body: "WebGameArena may collect limited information to support accounts, scores, leaderboards, chat, analytics and platform improvements. More information is available in the Privacy Policy and Cookie Policy.",
         },
         {
           title: "8. Responsible play",
@@ -83,7 +83,7 @@ export default function ParentsSafetyPage() {
         },
         {
           title: "10. Our safety direction",
-          body: "As GloryGames grows, safety features may include clearer age guidance, reporting tools, moderation systems, improved content labels and more family-focused information on game pages.",
+          body: "As WebGameArena grows, safety features may include clearer age guidance, reporting tools, moderation systems, improved content labels and more family-focused information on game pages.",
         },
       ]}
     />
