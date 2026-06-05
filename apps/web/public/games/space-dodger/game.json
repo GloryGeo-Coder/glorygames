@@ -1,10 +1,19 @@
 {
   "title": "Space Dodger",
-  "description": "Mobile-first endless space survival. Drag to move, dodge asteroids, collect stars, and submit your score to climb the GloryGames leaderboard.",
-  "tags": ["arcade", "mobile", "touch", "endless", "space", "2d"],
+  "description": "Enhanced mobile-first space survival. Drag your ship through a 3D-feel starfield, dodge asteroids, collect crystals, grab shield and slow-time pickups, and dash to survive.",
+  "tags": ["arcade", "mobile", "touch", "endless", "space", "2d", "enhanced"],
   "controls": [
     { "key": "Touch drag", "action": "Move ship" },
-    { "key": "Tap", "action": "Dash (short burst) / quick evade" },
-    { "key": "On-screen buttons", "action": "Pause / Submit score / Overlay" }
-  ]
+    { "key": "Tap", "action": "Dash burst" },
+    { "key": "Arrow keys", "action": "Move on desktop" },
+    { "key": "Space", "action": "Dash on desktop" }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "enhancedAnimations": true,
+    "scoreEvents": ["GG_SCORE", "gg:score"],
+    "powerups": ["Shield", "Slow Time"]
+  },
+  "version": "2.0.0"
 }

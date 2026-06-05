@@ -1,8 +1,19 @@
 {
   "title": "Neon Orb Defender",
-  "description": null,
-  "tags": [
-    "arcade",
-    "3d"
-  ]
+  "description": "A mobile-first 3D defense game where the player rotates a shield around a glowing core, blocks enemy waves, and unleashes pulse blasts.",
+  "tags": ["arcade", "3d", "defense", "mobile", "neon"],
+  "controls": [
+    { "key": "Drag / Swipe", "action": "Rotate the shield" },
+    { "key": "Tap", "action": "Trigger pulse blast when charged" },
+    { "key": "Arrow Left / Right", "action": "Rotate shield on desktop" },
+    { "key": "Space / Enter", "action": "Pulse on desktop" }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "enhancedAnimations": true,
+    "backgrounds": ["nebula-a.png", "nebula-b.png"],
+    "scoreEvents": ["GG_SCORE", "gg:score"]
+  },
+  "version": "2.0.0"
 }

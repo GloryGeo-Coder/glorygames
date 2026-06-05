@@ -2,74 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#070b16" />
-  <title>Swipe Racer</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#060a16" />
+  <title>Swipe Racer • WebGameArena</title>
+  <meta name="description" content="Swipe Racer — swipe to steer, tap to boost, complete missions, and clear multiple levels across city, mountain, coast, and neon night routes." />
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="/sdk/gg-sdk.css" />
 </head>
-
 <body>
-  <!-- Top HUD -->
   <header class="hud">
     <div class="hudLeft">
       <div class="brand" id="ggTitle">Swipe Racer</div>
-      <div class="sub" id="ggSub">Swipe/drag to steer • Tap to boost</div>
+      <div class="sub" id="ggSub">Swipe to steer • Tap or press Boost to use nitro</div>
+      <span class="badge" id="levelBadge">Level 1 • Metro Rush</span>
     </div>
-
     <div class="hudRight">
-      <div class="stat">
-        <div class="label">Distance</div>
-        <div class="value" id="distance">0</div>
-      </div>
-      <div class="stat">
-        <div class="label">Near</div>
-        <div class="value" id="near">0</div>
-      </div>
-      <div class="stat">
-        <div class="label">Boost</div>
-        <div class="value" id="boost">0</div>
-      </div>
+      <div class="stat"><div class="label">Distance</div><div class="value" id="distance">0</div></div>
+      <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
+      <div class="stat"><div class="label">Lives</div><div class="value" id="lives">3</div></div>
+      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
     </div>
   </header>
 
   <main class="stage">
-    <canvas id="c"></canvas>
+    <canvas id="c" aria-label="Swipe Racer game canvas"></canvas>
 
-    <!-- Start / Pause / Game Over Panel -->
+    <div class="meters">
+      <div class="meterCard missionCard">
+        <div class="meterTop"><span>Mission</span><b id="missionProgress">0 / 0</b></div>
+        <div class="missionText" id="missionText">Reach the goal distance and avoid traffic.</div>
+      </div>
+      <div class="meterCard">
+        <div class="meterTop"><span>Nitro</span><b id="boostLabel">0 / 3</b></div>
+        <div class="meter"><div id="boostFill"></div></div>
+      </div>
+      <div class="meterCard">
+        <div class="meterTop"><span>Level Progress</span><b id="levelProgressLabel">0%</b></div>
+        <div class="meter alt"><div id="levelProgressFill"></div></div>
+      </div>
+    </div>
+
+    <div class="gestureHint"><div class="hintPill">👆 Drag to move across the road • Quick tap for nitro</div></div>
+
     <div class="panel" id="panel">
       <div class="panelInner">
         <div class="panelTitle" id="panelTitle">Swipe Racer</div>
-        <div class="panelText" id="panelText">
-          Swipe/drag to steer. Avoid traffic. Collect boost pickups and tap Boost for a burst. Near misses score bonus!
-        </div>
-
+        <div class="panelText" id="panelText">Swipe or drag left and right to steer through traffic. Complete missions across multiple routes and build your score.</div>
         <div class="panelButtons">
           <button class="btn primary" id="btnStart">Start</button>
-          <button class="btn" id="btnOverlay">Open Overlay</button>
+          <button class="btn" id="btnInfo">How to play</button>
         </div>
-
         <div class="panelHint">
+          <span class="pill">4 levels</span>
+          <span class="pill">Multiple missions</span>
+          <span class="pill">3D-style cars</span>
           <span class="pill">Mobile-first</span>
-          <span class="pill">Endless runner</span>
-          <span class="pill">Near-miss bonus</span>
         </div>
       </div>
     </div>
 
-    <!-- Bottom thumb bar -->
     <nav class="actions">
-      <button class="chip" id="btnPause" aria-label="Pause">⏸</button>
-      <button class="chip primary" id="btnBoost" aria-label="Boost">⚡ Boost</button>
-      <button class="chip" id="btnSubmit" aria-label="Submit Score">🏆 Submit</button>
-      <button class="chip" id="btnRestart" aria-label="Restart">↻</button>
-      <button class="chip" id="btnChat" aria-label="Overlay / Chat">💬</button>
+      <button class="chip" id="btnPause">Pause</button>
+      <button class="chip primary" id="btnBoost">Boost</button>
+      <button class="chip" id="btnSubmit">Submit</button>
+      <button class="chip" id="btnRestart">Restart</button>
+      <button class="chip" id="btnMute">Sound</button>
     </nav>
   </main>
 
-  <script src="/sdk/gg-sdk.js"></script>
-  <script src="/games/_shared/gg-sdk.js"></script>
   <script src="./game.js"></script>
 </body>
 </html>

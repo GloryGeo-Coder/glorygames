@@ -1,9 +1,53 @@
 {
   "title": "Stack Tower",
-  "description": "Timing game. Tap to drop blocks and build the tallest tower possible. Perfect stacks score big — mistakes shrink your platform. Submit your best height to the GloryGames leaderboard.",
-  "tags": ["arcade", "mobile", "touch", "timing", "endless", "2d", "score-attack"],
+  "description": "Enhanced timing game. Tap to drop glowing pseudo-3D blocks, build perfect combos, charge Focus Mode, and climb as high as possible.",
+  "tags": [
+    "arcade",
+    "mobile",
+    "touch",
+    "timing",
+    "endless",
+    "2d",
+    "3d-style",
+    "score-attack"
+  ],
   "controls": [
-    { "key": "Tap", "action": "Drop block" },
-    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
-  ]
+    {
+      "key": "Tap / Click",
+      "action": "Drop block"
+    },
+    {
+      "key": "Space / Enter",
+      "action": "Drop block on desktop"
+    },
+    {
+      "key": "Buttons",
+      "action": "Pause / Drop / Submit / Restart / Sound"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "enhancedAnimations": true,
+    "focusMode": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "assets": {
+      "backgrounds": [
+        "bg-tower-city.png",
+        "bg-tower-city-alt.png"
+      ],
+      "blocks": [
+        "block-emerald.png",
+        "block-blue.png",
+        "block-purple.png",
+        "block-gold.png",
+        "block-red.png"
+      ]
+    }
+  },
+  "version": "2.0.0"
 }

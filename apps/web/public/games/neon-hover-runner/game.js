@@ -1,892 +1,984 @@
-/* Neon Hover Runner — Babylon.js (pure-code 3D)
-   - No models/textures (.glb) required
-   - Primitives only + emissive neon materials
-   - Mobile-first controls: swipe steer + tap jump
-   - GloryGames score bridge: live score + best submit (top score)
-   - Host controls: GG_PAUSE / GG_MUTE / GG_RESTART
-
-   DOM IDs matched to index.html:
-   canvas: #c
-   HUD: #score #best #speed
-   Panel: #panel #panelTitle #panelText #btnStart #btnOverlay
-   Hidden: #btnPause #btnLaunch #btnSubmit #btnRestart #btnChat
-*/
 (() => {
   "use strict";
 
-  // -----------------------------
-  // DOM
-  // -----------------------------
   const canvas = document.getElementById("c");
-  if (!canvas) return;
+  const ctx = canvas?.getContext("2d", { alpha: false });
+  if (!canvas || !ctx) return;
 
-  const elScore = document.getElementById("score");
-  const elBest = document.getElementById("best");
-  const elSpeed = document.getElementById("speed");
+  const $ = (id) => document.getElementById(id);
+  const elScore = $("score");
+  const elBest = $("best");
+  const elSpeed = $("speed");
+  const elLives = $("lives");
+  const boostFill = $("boostFill");
+  const boostLabel = $("boostLabel");
 
-  const panel = document.getElementById("panel");
-  const panelTitle = document.getElementById("panelTitle");
-  const panelText = document.getElementById("panelText");
-  const btnStart = document.getElementById("btnStart");
-  const btnOverlay = document.getElementById("btnOverlay");
+  const panel = $("panel");
+  const panelTitle = $("panelTitle");
+  const panelText = $("panelText");
+  const btnStart = $("btnStart");
+  const btnOverlay = $("btnOverlay");
+  const btnPause = $("btnPause");
+  const btnLaunch = $("btnLaunch");
+  const btnSubmit = $("btnSubmit");
+  const btnRestart = $("btnRestart");
+  const btnChat = $("btnChat");
+  const uiPause = $("uiPause");
+  const uiMute = $("uiMute");
+  const uiRestart = $("uiRestart");
 
-  // hidden compat buttons
-  const btnPause = document.getElementById("btnPause");
-  const btnLaunch = document.getElementById("btnLaunch");
-  const btnSubmit = document.getElementById("btnSubmit");
-  const btnRestart = document.getElementById("btnRestart");
-  const btnChat = document.getElementById("btnChat");
-
-  const DEFAULT_PANEL_TITLE = (panelTitle?.textContent || "Neon Hover Runner").trim();
-  const DEFAULT_PANEL_TEXT = (panelText?.textContent || "").trim();
-
-  // Prevent scroll/zoom while playing (mobile)
-  canvas.style.touchAction = "none";
-
-  // -----------------------------
-  // GloryGames bridge
-  // -----------------------------
   const GAME_SLUG = "neon-hover-runner";
+  const BEST_KEY = "gg_neon_hover_runner_best_v2";
 
-  let GG_PAUSED = false;
-  let GG_MUTED = false;
+  const ASSETS = {
+    craft: "./assets/sprites/hovercraft.png",
+    coin: "./assets/sprites/energy-orb.png",
+    boost: "./assets/sprites/boost.png",
+    shield: "./assets/sprites/shield.png",
+    magnet: "./assets/sprites/magnet.png",
+    barrier: "./assets/sprites/barrier.png",
+    mine: "./assets/sprites/mine.png",
+    bg: "./assets/backgrounds/cyber-track.png",
+    bgAlt: "./assets/backgrounds/cyber-track-alt.png",
+  };
 
-  function ggToast(text) {
-    try {
-      window.parent?.postMessage?.({ type: "GG_TOAST", text }, window.location.origin);
-    } catch {}
-  }
+  let W = 1, H = 1, DPR = 1;
+  let running = false;
+  let paused = false;
+  let dead = false;
+  let muted = false;
+  let score = 0;
+  let best = Number(localStorage.getItem(BEST_KEY) || "0") || 0;
+  let lives = 3;
+  let distance = 0;
+  let speed = 1;
+  let speedPx = 0.22;
+  let boostMeter = 0;
+  let boostTimer = 0;
+  let shieldTimer = 0;
+  let magnetTimer = 0;
+  let combo = 0;
+  let comboTimer = 0;
+  let screenShake = 0;
+  let lastT = performance.now();
 
-  function ggSetSlug() {
-    try {
-      window.GG?.setSlug?.(GAME_SLUG);
-    } catch {}
-  }
-  ggSetSlug();
-  setTimeout(ggSetSlug, 250);
+  const player = {
+    x: 0,
+    targetX: 0,
+    yNorm: 0.80,
+    jump: 0,
+    vy: 0,
+    tilt: 0,
+    invuln: 0,
+  };
 
-  function ggPostMessageScore(scoreValue, mode = "live") {
-    const s = Math.max(0, scoreValue | 0);
-    try {
-      window.parent?.postMessage?.(
-        { type: "GG_SCORE", gameSlug: GAME_SLUG, score: s, mode, payload: { value: s, mode } },
-        window.location.origin
-      );
-    } catch {}
-  }
+  const objects = [];
+  const particles = [];
+  const floaters = [];
+  const trails = [];
+  const bgBubbles = [];
+  const images = {};
+  let spawnTimer = 0;
+  let pickupTimer = 0;
+  let lastLiveScore = -1;
+  let lastLiveAt = 0;
 
-  // Live score updates
-  let _lastLiveSent = 0;
-  function ggLiveScore(s) {
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const rand = (a, b) => a + Math.random() * (b - a);
+
+  function ggScore(mode = "live") {
+    const clean = Math.max(0, Math.floor(score));
     const t = performance.now();
-    if (t - _lastLiveSent < 120) return;
-    _lastLiveSent = t;
+    if (mode === "live" && clean === lastLiveScore && t - lastLiveAt < 160) return;
+    if (mode === "live" && t - lastLiveAt < 90) return;
+    lastLiveScore = clean;
+    lastLiveAt = t;
 
-    // Prefer GG SDK if present
-    try {
-      window.GG?.setScore?.(s, { gameSlug: GAME_SLUG });
-      return;
-    } catch {}
-    try {
-      window.GG?.setScore?.({ gameSlug: GAME_SLUG, score: s });
-      return;
-    } catch {}
-
-    ggPostMessageScore(s, "live");
+    const payload = {
+      gameSlug: GAME_SLUG,
+      slug: GAME_SLUG,
+      score: clean,
+      best,
+      mode,
+      speed: Number(speed.toFixed(2)),
+      lives,
+      distance: Math.floor(distance),
+      boost: Math.round(boostMeter * 100),
+    };
+    try { window.GG?.setScore?.(clean, { gameSlug: GAME_SLUG }); } catch {}
+    if (mode !== "live") {
+      try { window.GG?.submitScore?.(clean, { gameSlug: GAME_SLUG }); } catch {}
+      try { window.GG?.endRound?.(payload); } catch {}
+    }
+    try { window.parent?.postMessage?.({ type: "GG_SCORE", ...payload, payload }, "*"); } catch {}
+    try { window.parent?.postMessage?.({ type: "gg:score", ...payload, payload }, "*"); } catch {}
   }
 
-  // ✅ Final submit to update top score
-  let _lastGlobalSent = 0;
-  let _lastGlobalValue = 0;
-  function ggSubmitBest(bestScore) {
-    const s = Math.max(0, bestScore | 0);
-    const t = performance.now();
-    if (t - _lastGlobalSent < 900 && s <= _lastGlobalValue) return;
-    _lastGlobalSent = t;
-    if (s > _lastGlobalValue) _lastGlobalValue = s;
-
-    const gg = window.GG;
-
-    // Preferred: daily-aware endRound
-    if (gg && typeof gg.endRound === "function") {
-      try {
-        gg.endRound(s, { gameSlug: GAME_SLUG });
-        return;
-      } catch {}
-      try {
-        gg.endRound({ gameSlug: GAME_SLUG, score: s });
-        return;
-      } catch {}
-      try {
-        gg.endRound(s);
-        return;
-      } catch {}
-    }
-
-    // Fallback: submitScore
-    if (gg && typeof gg.submitScore === "function") {
-      try {
-        gg.submitScore({ gameSlug: GAME_SLUG, score: s });
-        return;
-      } catch {}
-      try {
-        gg.submitScore(s, GAME_SLUG);
-        return;
-      } catch {}
-      try {
-        gg.submitScore(s);
-        return;
-      } catch {}
-    }
-
-    ggPostMessageScore(s, "global");
+  function updateHUD() {
+    const clean = Math.floor(score);
+    if (elScore) elScore.textContent = String(clean);
+    if (elBest) elBest.textContent = String(Math.floor(best));
+    if (elSpeed) elSpeed.textContent = `${speed.toFixed(1)}x`;
+    if (elLives) elLives.textContent = String(lives);
+    if (boostFill) boostFill.style.width = `${Math.round(boostMeter * 100)}%`;
+    if (boostLabel) boostLabel.textContent = boostTimer > 0 ? "ACTIVE" : `${Math.round(boostMeter * 100)}%`;
+    ggScore("live");
   }
 
-  function ggRestart() {
-    if (typeof window.resetGame === "function") {
-      window.resetGame();
-      ggToast("Restarted");
-      return;
-    }
-    location.reload();
+  function showPanel(title, body) {
+    if (panel) panel.style.display = "flex";
+    if (panelTitle) panelTitle.textContent = title;
+    if (panelText) panelText.textContent = body;
+  }
+  function hidePanel() {
+    if (panel) panel.style.display = "none";
   }
 
-  window.addEventListener("message", (ev) => {
-    if (ev.origin !== window.location.origin) return;
-    const data = ev.data;
-    if (!data || typeof data !== "object") return;
-    const { type, payload } = data;
+  function resize() {
+    DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const r = canvas.getBoundingClientRect();
+    W = Math.max(1, Math.floor(r.width || window.innerWidth));
+    H = Math.max(1, Math.floor(r.height || window.innerHeight));
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
 
-    if (type === "GG_PAUSE") GG_PAUSED = !!payload?.paused;
-    if (type === "GG_MUTE") {
-      GG_MUTED = !!payload?.muted;
-      setMuted(GG_MUTED);
-    }
-    if (type === "GG_RESTART") ggRestart();
-  });
+  function loadImage(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
 
-  document.addEventListener("visibilitychange", () => {
-    GG_PAUSED = document.hidden ? true : false;
-  });
+  async function loadAssets() {
+    const entries = Object.entries(ASSETS);
+    const imgs = await Promise.all(entries.map(([, src]) => loadImage(src)));
+    entries.forEach(([key], i) => images[key] = imgs[i]);
+  }
 
   // -----------------------------
-  // SFX (WebAudio, pure code)
+  // Audio
   // -----------------------------
   let AC = null;
-  let MASTER = null;
+  let master = null;
+  let musicTimer = null;
+  let musicStep = 0;
 
   function ensureAudio() {
-    if (GG_MUTED) return null;
+    if (muted) return null;
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
     if (!AC) {
       AC = new Ctx();
-      MASTER = AC.createGain();
-      MASTER.gain.value = 0.12;
-      MASTER.connect(AC.destination);
+      master = AC.createGain();
+      master.gain.value = 0.13;
+      master.connect(AC.destination);
     }
     if (AC.state === "suspended") AC.resume().catch(() => {});
     return AC;
   }
 
-  function setMuted(m) {
-    if (MASTER) MASTER.gain.value = m ? 0 : 0.12;
+  function tone(freq, dur = 0.08, type = "sine", gain = 0.06, delay = 0) {
+    const ac = ensureAudio();
+    if (!ac || muted || paused) return;
+    const t0 = ac.currentTime + delay;
+    const osc = ac.createOscillator();
+    const g = ac.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(g);
+    g.connect(master || ac.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.03);
   }
 
-  function tone({ f = 440, d = 0.06, t = 0, type = "sine", v = 1 } = {}) {
-    const a = ensureAudio();
-    if (!a || GG_MUTED || GG_PAUSED) return;
-
-    const osc = a.createOscillator();
-    const gain = a.createGain();
-
-    osc.type = type;
-    osc.frequency.value = f;
-
-    const start = a.currentTime + t;
-    const end = start + d;
-
-    const peak = 0.12 * v;
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), start + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, end);
-
-    osc.connect(gain);
-    gain.connect(MASTER || a.destination);
-    osc.start(start);
-    osc.stop(end + 0.02);
+  function noise(dur = 0.12, gain = 0.04) {
+    const ac = ensureAudio();
+    if (!ac || muted) return;
+    const buffer = ac.createBuffer(1, Math.floor(ac.sampleRate * dur), ac.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+    const src = ac.createBufferSource();
+    const g = ac.createGain();
+    g.gain.value = gain;
+    src.buffer = buffer;
+    src.connect(g);
+    g.connect(master || ac.destination);
+    src.start();
+    src.stop(ac.currentTime + dur);
   }
 
   function sfx(name) {
-    if (name === "start") {
-      tone({ f: 330, d: 0.05, type: "triangle", v: 0.7 });
-      tone({ f: 660, d: 0.07, t: 0.05, type: "triangle", v: 0.7 });
-      return;
-    }
-    if (name === "jump") {
-      tone({ f: 520, d: 0.05, type: "sine", v: 0.7 });
-      tone({ f: 820, d: 0.05, t: 0.03, type: "sine", v: 0.55 });
-      return;
-    }
-    if (name === "coin") {
-      tone({ f: 1040, d: 0.04, type: "triangle", v: 0.6 });
-      tone({ f: 1560, d: 0.06, t: 0.02, type: "triangle", v: 0.55 });
-      return;
-    }
-    if (name === "hit") {
-      tone({ f: 180, d: 0.09, type: "sawtooth", v: 0.65 });
-      tone({ f: 120, d: 0.11, t: 0.05, type: "sine", v: 0.65 });
-      return;
-    }
-    if (name === "boost") {
-      tone({ f: 420, d: 0.05, type: "triangle", v: 0.6 });
-      tone({ f: 720, d: 0.08, t: 0.05, type: "triangle", v: 0.7 });
-      return;
-    }
-    if (name === "gameover") {
-      tone({ f: 220, d: 0.12, type: "sawtooth", v: 0.65 });
-      tone({ f: 160, d: 0.14, t: 0.10, type: "sine", v: 0.65 });
-      tone({ f: 110, d: 0.18, t: 0.22, type: "sine", v: 0.55 });
-      return;
-    }
+    if (name === "start") { tone(330, .05, "triangle", .055); tone(660, .07, "triangle", .045, .05); return; }
+    if (name === "jump") { tone(520, .05, "sine", .055); tone(820, .05, "sine", .04, .03); return; }
+    if (name === "coin") { tone(1040, .04, "triangle", .05); tone(1560, .06, "triangle", .038, .02); return; }
+    if (name === "boost") { tone(420, .05, "triangle", .052); tone(720, .08, "triangle", .055, .05); return; }
+    if (name === "shield") { tone(520, .06, "sine", .05); tone(420, .10, "triangle", .04, .04); return; }
+    if (name === "magnet") { tone(300, .04, "sawtooth", .03); tone(900, .08, "sine", .04, .04); return; }
+    if (name === "hit") { noise(.16, .07); tone(150, .13, "sawtooth", .07); tone(90, .18, "sine", .055, .05); return; }
+    if (name === "gameover") { tone(220, .12, "sawtooth", .06); tone(160, .14, "sine", .05, .1); tone(110, .18, "sine", .045, .22); return; }
   }
 
-  // unlock audio on first gesture
-  function unlockAudioOnce() {
-    ensureAudio();
-    window.removeEventListener("pointerdown", unlockAudioOnce);
-    window.removeEventListener("touchstart", unlockAudioOnce);
-    window.removeEventListener("mousedown", unlockAudioOnce);
+  function musicTick() {
+    if (!running || paused || muted) return;
+    const notes = [110, 147, 196, 220, 196, 147, 165, 220];
+    const n = notes[musicStep++ % notes.length];
+    tone(n, .13, "triangle", .014);
+    if (musicStep % 2 === 0) tone(n * 2, .07, "sine", .010, .03);
   }
-  window.addEventListener("pointerdown", unlockAudioOnce, { once: true, passive: true });
-  window.addEventListener("touchstart", unlockAudioOnce, { once: true, passive: true });
-  window.addEventListener("mousedown", unlockAudioOnce, { once: true, passive: true });
-
-  // -----------------------------
-  // Babylon setup
-  // -----------------------------
-  const engine = new BABYLON.Engine(canvas, true, {
-    preserveDrawingBuffer: false,
-    stencil: false,
-    disableWebGL2Support: false,
-  });
-
-  const scene = new BABYLON.Scene(engine);
-  scene.clearColor = new BABYLON.Color4(0.03, 0.04, 0.07, 1);
-
-  // Camera: follows player (no external assets)
-  const camera = new BABYLON.UniversalCamera("cam", new BABYLON.Vector3(0, 4.3, -9.5), scene);
-  camera.setTarget(new BABYLON.Vector3(0, 1.2, 6));
-  camera.attachControl(canvas, false);
-  camera.inputs.clear(); // we use our own touch controls, so disable default
-
-  // Lights
-  const hemi = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
-  hemi.intensity = 0.55;
-
-  const dir = new BABYLON.DirectionalLight("dir", new BABYLON.Vector3(0.2, -1, 0.4), scene);
-  dir.position = new BABYLON.Vector3(0, 10, -10);
-  dir.intensity = 0.9;
-
-  // Materials (neon emissive)
-  function neonMat(name, emissiveHex, alpha = 1) {
-    const m = new BABYLON.StandardMaterial(name, scene);
-    const c = BABYLON.Color3.FromHexString(emissiveHex);
-    m.diffuseColor = c.scale(0.15);
-    m.emissiveColor = c.scale(1.35);
-    m.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
-    m.alpha = alpha;
-    return m;
+  function startMusic() {
+    if (musicTimer || muted) return;
+    musicTimer = setInterval(musicTick, 220);
+  }
+  function stopMusic() {
+    if (musicTimer) clearInterval(musicTimer);
+    musicTimer = null;
   }
 
-  const matTrack = new BABYLON.StandardMaterial("track", scene);
-  matTrack.diffuseColor = new BABYLON.Color3(0.03, 0.035, 0.06);
-  matTrack.emissiveColor = new BABYLON.Color3(0.02, 0.03, 0.06);
-  matTrack.specularColor = new BABYLON.Color3(0.02, 0.02, 0.03);
-
-  const matRailL = neonMat("railL", "#7c5cff");
-  const matRailR = neonMat("railR", "#23c2ff");
-  const matPlayer = neonMat("player", "#ffffff");
-  const matObstacle = neonMat("obstacle", "#ef4444");
-  const matCoin = neonMat("coin", "#ffb020");
-  const matBoost = neonMat("boost", "#32d583");
-
-  // Ground fog for vibe
-  scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-  scene.fogDensity = 0.02;
-  scene.fogColor = new BABYLON.Color3(0.04, 0.04, 0.07);
-
   // -----------------------------
-  // World primitives
+  // Geometry helpers
   // -----------------------------
-  const TRACK_WIDTH = 4.2;
-  const LANE_MAX = 2.0; // x clamp
-  const TRACK_SEG_LEN = 14;
-  const SEGMENTS = [];
-  const SEG_COUNT = 10;
+  function horizonY() { return H * 0.34; }
+  function playerY() { return H * player.yNorm - player.jump; }
+  function centerX() { return W * 0.5; }
+  function lanePixels(progress) {
+    const p = Math.pow(progress, 1.35);
+    return lerp(W * 0.08, W * 0.44, p);
+  }
+  function worldToScreen(lane, progress) {
+    const p = clamp(progress, 0, 1.18);
+    const y = lerp(horizonY(), H * 0.92, Math.pow(p, 1.55));
+    const x = centerX() + lane * lanePixels(p);
+    const scale = lerp(0.18, 1.45, Math.pow(p, 1.25));
+    return { x, y, scale };
+  }
+  function rectsOverlap(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
 
-  function makeSegment(z) {
-    const root = new BABYLON.TransformNode("seg", scene);
-    root.position.z = z;
-
-    // Track plate
-    const plate = BABYLON.MeshBuilder.CreateBox("plate", { width: TRACK_WIDTH, height: 0.35, depth: TRACK_SEG_LEN }, scene);
-    plate.material = matTrack;
-    plate.position.y = 0;
-    plate.position.z = 0;
-    plate.parent = root;
-
-    // Rails
-    const railL = BABYLON.MeshBuilder.CreateBox("railL", { width: 0.14, height: 0.45, depth: TRACK_SEG_LEN }, scene);
-    railL.material = matRailL;
-    railL.position.set(-TRACK_WIDTH / 2 - 0.08, 0.22, 0);
-    railL.parent = root;
-
-    const railR = BABYLON.MeshBuilder.CreateBox("railR", { width: 0.14, height: 0.45, depth: TRACK_SEG_LEN }, scene);
-    railR.material = matRailR;
-    railR.position.set(TRACK_WIDTH / 2 + 0.08, 0.22, 0);
-    railR.parent = root;
-
-    // Grid lines (thin emissive strips)
-    for (let i = 0; i < 6; i++) {
-      const strip = BABYLON.MeshBuilder.CreateBox("strip", { width: 0.04, height: 0.36, depth: TRACK_SEG_LEN }, scene);
-      strip.material = i % 2 === 0 ? matRailL : matRailR;
-      strip.position.set(-TRACK_WIDTH / 2 + (i + 1) * (TRACK_WIDTH / 7), 0.01, 0);
-      strip.parent = root;
-      strip.visibility = 0.25;
+  function resetBackgroundParticles() {
+    bgBubbles.length = 0;
+    for (let i = 0; i < 70; i++) {
+      bgBubbles.push({
+        x: Math.random(),
+        y: Math.random(),
+        s: rand(1, 4),
+        a: rand(.08, .35),
+        sp: rand(.04, .12),
+        col: Math.random() < .5 ? "0,235,255" : Math.random() < .5 ? "168,85,247" : "255,62,187",
+      });
     }
-
-    return { root };
-  }
-
-  // Build initial segments ahead
-  for (let i = 0; i < SEG_COUNT; i++) {
-    const seg = makeSegment(i * TRACK_SEG_LEN);
-    SEGMENTS.push(seg);
-  }
-
-  // Stars (procedural particles with points)
-  const stars = BABYLON.MeshBuilder.CreatePlane("stars", { size: 1 }, scene);
-  stars.isVisible = false;
-  const starPS = new BABYLON.ParticleSystem("starsPS", 1400, scene);
-  starPS.particleTexture = null; // no texture
-  starPS.emitter = new BABYLON.Vector3(0, 0, 0);
-  starPS.minEmitBox = new BABYLON.Vector3(-20, 2, -20);
-  starPS.maxEmitBox = new BABYLON.Vector3(20, 18, 80);
-  starPS.color1 = new BABYLON.Color4(0.8, 0.9, 1.0, 1.0);
-  starPS.color2 = new BABYLON.Color4(0.7, 0.8, 1.0, 1.0);
-  starPS.minSize = 0.02;
-  starPS.maxSize = 0.06;
-  starPS.minLifeTime = 8;
-  starPS.maxLifeTime = 14;
-  starPS.emitRate = 170;
-  starPS.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
-  starPS.gravity = new BABYLON.Vector3(0, 0, 0);
-  starPS.direction1 = new BABYLON.Vector3(0, 0, 0);
-  starPS.direction2 = new BABYLON.Vector3(0, 0, 0);
-  starPS.minAngularSpeed = 0;
-  starPS.maxAngularSpeed = 0;
-  starPS.minEmitPower = 0;
-  starPS.maxEmitPower = 0;
-  starPS.updateSpeed = 0.02;
-  starPS.start();
-
-  // -----------------------------
-  // Player (hover pod, pure shapes)
-  // -----------------------------
-  const playerRoot = new BABYLON.TransformNode("playerRoot", scene);
-  playerRoot.position.set(0, 0.8, 2.2);
-
-  const pod = BABYLON.MeshBuilder.CreateBox("pod", { width: 0.9, height: 0.34, depth: 1.25 }, scene);
-  pod.material = matPlayer;
-  pod.parent = playerRoot;
-
-  // glow fins
-  const finL = BABYLON.MeshBuilder.CreateBox("finL", { width: 0.12, height: 0.18, depth: 1.05 }, scene);
-  finL.material = matRailL;
-  finL.position.set(-0.55, -0.05, 0);
-  finL.parent = playerRoot;
-
-  const finR = BABYLON.MeshBuilder.CreateBox("finR", { width: 0.12, height: 0.18, depth: 1.05 }, scene);
-  finR.material = matRailR;
-  finR.position.set(0.55, -0.05, 0);
-  finR.parent = playerRoot;
-
-  // thruster
-  const thr = BABYLON.MeshBuilder.CreateCylinder("thr", { diameter: 0.24, height: 0.22 }, scene);
-  thr.material = matBoost;
-  thr.rotation.x = Math.PI / 2;
-  thr.position.set(0, -0.06, -0.66);
-  thr.parent = playerRoot;
-  thr.visibility = 0.35;
-
-  // Shadow (fake)
-  const shadow = BABYLON.MeshBuilder.CreateDisc("shadow", { radius: 0.8, tessellation: 32 }, scene);
-  shadow.rotation.x = Math.PI / 2;
-  shadow.position.set(0, 0.18, playerRoot.position.z);
-  const matShadow = new BABYLON.StandardMaterial("shadowMat", scene);
-  matShadow.diffuseColor = new BABYLON.Color3(0, 0, 0);
-  matShadow.emissiveColor = new BABYLON.Color3(0, 0, 0);
-  matShadow.alpha = 0.18;
-  shadow.material = matShadow;
-
-  // -----------------------------
-  // Gameplay state
-  // -----------------------------
-  let running = false;
-  let dead = false;
-
-  let score = 0;
-  let best = 0;
-
-  let speed = 10.5; // base units/sec
-  let speedMult = 1.0;
-
-  let laneX = 0; // target x
-  let vx = 0;
-
-  // jump
-  let y = 0.8;
-  let vy = 0;
-  const GRAV = 24.0;
-  const JUMP_V = 10.8;
-  let grounded = true;
-
-  // spawn pools
-  const obstacles = [];
-  const pickups = [];
-
-  // Difficulty timers
-  let dist = 0;
-  let spawnZ = 20;
-  let nextObstacleAt = 0;
-  let nextPickupAt = 0;
-
-  // Auto-submit best periodically while running (for sidebar top score)
-  let lastAutoSubmitAt = 0;
-
-  function setHUD() {
-    if (elScore) elScore.textContent = String(score | 0);
-    if (elBest) elBest.textContent = String(best | 0);
-    if (elSpeed) elSpeed.textContent = `${speedMult.toFixed(1)}x`;
-  }
-
-  function showPanel(title, body) {
-    if (panel) panel.style.display = "flex";
-    if (panelTitle) panelTitle.textContent = title;
-    if (panelText) panelText.textContent = body;
-  }
-
-  function hidePanel() {
-    if (panel) panel.style.display = "none";
   }
 
   function resetGame() {
-    ggSetSlug();
-
     running = true;
+    paused = false;
     dead = false;
-
     score = 0;
-    speedMult = 1.0;
-    speed = 10.5;
-
-    dist = 0;
-    spawnZ = 20;
-    nextObstacleAt = 0;
-    nextPickupAt = 0;
-
-    laneX = 0;
-    vx = 0;
-
-    y = 0.8;
-    vy = 0;
-    grounded = true;
-
-    // clear entities
-    for (const o of obstacles) o.mesh.dispose();
-    obstacles.length = 0;
-
-    for (const p of pickups) p.mesh.dispose();
-    pickups.length = 0;
-
-    // reset track positions
-    for (let i = 0; i < SEGMENTS.length; i++) {
-      SEGMENTS[i].root.position.z = i * TRACK_SEG_LEN;
-    }
-
-    playerRoot.position.set(0, 0.8, 2.2);
-    shadow.position.set(0, 0.18, playerRoot.position.z);
-
-    setHUD();
-    ggLiveScore(0);
-    sfx("start");
+    lives = 3;
+    distance = 0;
+    speed = 1;
+    boostMeter = 0;
+    boostTimer = 0;
+    shieldTimer = 0;
+    magnetTimer = 0;
+    combo = 0;
+    comboTimer = 0;
+    screenShake = 0;
+    player.x = 0;
+    player.targetX = 0;
+    player.jump = 0;
+    player.vy = 0;
+    player.tilt = 0;
+    player.invuln = 1.2;
+    objects.length = 0;
+    particles.length = 0;
+    floaters.length = 0;
+    trails.length = 0;
+    spawnTimer = 0;
+    pickupTimer = 0;
+    lastLiveScore = -1;
+    resetBackgroundParticles();
     hidePanel();
+    sfx("start");
+    startMusic();
+    updateHUD();
+    for (let i = 0; i < 4; i++) spawnPickup(i % 2 === 0 ? "coin" : "boost", rand(.08,.25), rand(-.8,.8));
   }
   window.resetGame = resetGame;
 
-  function gameOver() {
+  function gameOver(reason = "Crashed!") {
+    if (dead) return;
     running = false;
     dead = true;
-
-    if (score > best) best = score;
-    setHUD();
-
-    // ✅ submit best (top score)
-    ggSubmitBest(best);
-
-    sfx("gameover");
-    showPanel("💥 Crashed!", `Score: ${score}\nBest: ${best}\n\nTap Start to try again.`);
-  }
-
-  // -----------------------------
-  // Entity creation (pure primitives)
-  // -----------------------------
-  function makeObstacle(z) {
-    const m = BABYLON.MeshBuilder.CreateBox("ob", { width: 1.05, height: 1.05, depth: 1.05 }, scene);
-    m.material = matObstacle;
-    m.position.set((Math.random() * 2 - 1) * 1.7, 0.75, z);
-    m.metadata = { type: "obstacle" };
-    return m;
-  }
-
-  function makeCoin(z) {
-    const m = BABYLON.MeshBuilder.CreateTorus("coin", { diameter: 0.7, thickness: 0.18, tessellation: 24 }, scene);
-    m.material = matCoin;
-    m.position.set((Math.random() * 2 - 1) * 1.8, 1.25, z);
-    m.rotation.x = Math.PI / 2;
-    m.metadata = { type: "coin" };
-    return m;
-  }
-
-  function makeBoost(z) {
-    const m = BABYLON.MeshBuilder.CreateCylinder("boost", { diameterTop: 0.55, diameterBottom: 0.8, height: 0.9, tessellation: 18 }, scene);
-    m.material = matBoost;
-    m.position.set((Math.random() * 2 - 1) * 1.75, 1.1, z);
-    m.metadata = { type: "boost" };
-    return m;
-  }
-
-  // Simple AABB collision
-  function aabb(mesh) {
-    const b = mesh.getBoundingInfo().boundingBox;
-    const min = b.minimumWorld;
-    const max = b.maximumWorld;
-    return { min, max };
-  }
-  function overlap(a, b) {
-    return !(
-      a.max.x < b.min.x || a.min.x > b.max.x ||
-      a.max.y < b.min.y || a.min.y > b.max.y ||
-      a.max.z < b.min.z || a.min.z > b.max.z
-    );
-  }
-
-  // -----------------------------
-  // Controls (mobile-first)
-  // -----------------------------
-  let lastPointerX = null;
-  let steer = 0; // -1..1
-  let tapPendingJump = false;
-
-  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-
-  canvas.addEventListener("pointerdown", (e) => {
-    if (!running && !dead) return; // panel handles start
-    ensureAudio();
-    lastPointerX = e.clientX;
-    tapPendingJump = true;
-  }, { passive: true });
-
-  canvas.addEventListener("pointermove", (e) => {
-    if (!running) return;
-    if (lastPointerX == null) return;
-
-    const dx = e.clientX - lastPointerX;
-    lastPointerX = e.clientX;
-
-    // swipe steer sensitivity (mobile)
-    const s = clamp(dx / 120, -1, 1);
-    steer = clamp(steer + s, -1, 1);
-
-    // if user moved enough, it's not a tap
-    if (Math.abs(dx) > 8) tapPendingJump = false;
-  }, { passive: true });
-
-  function pointerUp() {
-    lastPointerX = null;
-    // Apply jump if it was a tap
-    if (running && tapPendingJump) {
-      doJump();
+    stopMusic();
+    if (score > best) {
+      best = Math.floor(score);
+      localStorage.setItem(BEST_KEY, String(best));
     }
-    tapPendingJump = false;
-    // ease steer back to 0 over time in update()
+    sfx("gameover");
+    ggScore("game_over");
+    showPanel(`💥 ${reason}`, `Score: ${Math.floor(score)}\nBest: ${Math.floor(best)}\n\nSwipe to steer, tap to jump, and use boost to survive longer.`);
+    updateHUD();
   }
 
-  canvas.addEventListener("pointerup", pointerUp, { passive: true });
-  canvas.addEventListener("pointercancel", pointerUp, { passive: true });
+  function addFloater(x, y, text, color = "#fff", size = 20) {
+    floaters.push({ x, y, text, color, size, age: 0, life: .9, vy: rand(-40, -26) });
+  }
 
-  // Keyboard (desktop testing)
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") steer = clamp(steer - 0.35, -1, 1);
-    if (e.key === "ArrowRight") steer = clamp(steer + 0.35, -1, 1);
-    if (e.key === " " || e.key === "ArrowUp") doJump();
-  });
+  function addParticles(x, y, color, count = 16, speed = 180) {
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = rand(speed * .25, speed);
+      particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(1.8, 5.5), color, age: 0, life: rand(.35, .85) });
+    }
+  }
 
-  function doJump() {
-    if (!running || GG_PAUSED) return;
-    if (!grounded) return;
-    vy = JUMP_V;
-    grounded = false;
+  function spawnObstacle(kind = Math.random() < .35 ? "mine" : "barrier") {
+    const lane = rand(-.9, .9);
+    objects.push({
+      type: "obstacle",
+      kind,
+      lane,
+      progress: -0.08,
+      w: kind === "barrier" ? .31 : .22,
+      h: kind === "barrier" ? .19 : .22,
+      rot: rand(-.3, .3),
+      vr: kind === "mine" ? rand(-2, 2) : rand(-.45, .45),
+      hit: false,
+    });
+  }
+
+  function spawnPickup(kind = null, progress = -0.08, lane = rand(-.95, .95)) {
+    const types = ["coin", "coin", "coin", "boost", "shield", "magnet"];
+    kind = kind || types[(Math.random() * types.length) | 0];
+    objects.push({
+      type: "pickup",
+      kind,
+      lane,
+      progress,
+      w: .15,
+      h: .15,
+      rot: rand(0, Math.PI * 2),
+      vr: rand(-2, 2),
+      hit: false,
+    });
+  }
+
+  function collect(o, sx, sy) {
+    o.hit = true;
+    if (o.kind === "coin") {
+      combo += 1;
+      comboTimer = 2.2;
+      const gain = 35 + Math.min(120, combo * 6);
+      score += gain;
+      boostMeter = clamp(boostMeter + .035, 0, 1);
+      addFloater(sx, sy, `+${gain}`, "#ffd166", 20);
+      addParticles(sx, sy, "rgba(255,210,90,.9)", 16, 210);
+      sfx("coin");
+    } else if (o.kind === "boost") {
+      boostMeter = clamp(boostMeter + .35, 0, 1);
+      score += 60;
+      addFloater(sx, sy, "BOOST+", "#72ffe0", 21);
+      addParticles(sx, sy, "rgba(60,255,190,.9)", 20, 230);
+      sfx("boost");
+    } else if (o.kind === "shield") {
+      shieldTimer = 7.0;
+      score += 50;
+      addFloater(sx, sy, "SHIELD", "#70b8ff", 21);
+      addParticles(sx, sy, "rgba(70,170,255,.9)", 20, 230);
+      sfx("shield");
+    } else if (o.kind === "magnet") {
+      magnetTimer = 7.0;
+      score += 50;
+      addFloater(sx, sy, "MAGNET", "#ff68d4", 21);
+      addParticles(sx, sy, "rgba(255,90,210,.9)", 20, 230);
+      sfx("magnet");
+    }
+  }
+
+  function hitObstacle(o, sx, sy) {
+    if (o.hit) return;
+    o.hit = true;
+    if (shieldTimer > 0 || player.invuln > 0) {
+      shieldTimer = Math.max(0, shieldTimer - 2);
+      score += 25;
+      addFloater(sx, sy, "BLOCKED", "#a7f3ff", 20);
+      addParticles(sx, sy, "rgba(120,240,255,.9)", 24, 270);
+      screenShake = 8;
+      sfx("shield");
+      return;
+    }
+    lives -= 1;
+    combo = 0;
+    comboTimer = 0;
+    player.invuln = 1.35;
+    screenShake = 16;
+    addFloater(sx, sy, "-1 LIFE", "#ff7a9c", 22);
+    addParticles(sx, sy, "rgba(255,70,115,.95)", 32, 320);
+    sfx("hit");
+    if (lives <= 0) gameOver("Crashed!");
+  }
+
+  function activateBoost() {
+    if (!running || paused || dead) return;
+    if (boostMeter < .35 || boostTimer > 0) return;
+    ensureAudio();
+    boostTimer = 2.6 + boostMeter * 1.7;
+    boostMeter = 0;
+    screenShake = 5;
+    sfx("boost");
+    addFloater(W * .5, H * .34, "BOOST!", "#72ffe0", 26);
+  }
+
+  function jump() {
+    if (!running || paused || dead) return;
+    if (player.jump > 2) return;
+    player.vy = 880;
     sfx("jump");
   }
 
   // -----------------------------
-  // Update loop
+  // Controls
   // -----------------------------
-  const playerCollider = BABYLON.MeshBuilder.CreateBox("pCol", { width: 0.9, height: 0.5, depth: 1.1 }, scene);
-  playerCollider.isVisible = false;
-  playerCollider.parent = playerRoot;
-  playerCollider.position.y = 0.25;
+  let pointerActive = false;
+  let downX = 0, downY = 0, lastX = 0, lastY = 0;
+  let moved = false;
 
-  function update(dt) {
-    if (!running || GG_PAUSED) return;
-
-    // speed ramp
-    dist += (speed * speedMult) * dt;
-    const ramp = 1 + dist / 1400;
-    speedMult = clamp(ramp, 1, 3.2);
-
-    // score increases with distance
-    score += dt * 12 * speedMult;
-    const intScore = score | 0;
-    if (intScore > (best | 0)) best = intScore;
-    setHUD();
-    ggLiveScore(intScore);
-
-    // auto submit best every few seconds (helps sidebar top score)
-    const t = performance.now();
-    if (t - lastAutoSubmitAt > 2500) {
-      lastAutoSubmitAt = t;
-      ggSubmitBest(best | 0);
-    }
-
-    // Player steer (laneX target)
-    laneX += steer * 4.2 * dt;
-    laneX = clamp(laneX, -LANE_MAX, LANE_MAX);
-
-    // decay steer to center (makes control stable)
-    steer *= Math.pow(0.2, dt);
-
-    // smoothing
-    const targetX = laneX;
-    const dx = targetX - playerRoot.position.x;
-    vx += dx * 14 * dt;
-    vx *= Math.pow(0.06, dt);
-    playerRoot.position.x += vx * dt;
-    playerRoot.position.x = clamp(playerRoot.position.x, -LANE_MAX, LANE_MAX);
-
-    // Jump physics
-    vy -= GRAV * dt;
-    y += vy * dt;
-    if (y <= 0.8) {
-      y = 0.8;
-      vy = 0;
-      grounded = true;
-    }
-    playerRoot.position.y = y;
-
-    // Hover bob
-    const bob = Math.sin(performance.now() * 0.006) * 0.06;
-    pod.position.y = 0 + bob;
-    finL.position.y = -0.05 + bob;
-    finR.position.y = -0.05 + bob;
-
-    // Thruster visibility pulses with speed
-    thr.visibility = 0.25 + 0.15 * Math.sin(performance.now() * 0.02);
-
-    // Camera follow
-    const camTarget = new BABYLON.Vector3(playerRoot.position.x * 0.4, 1.2, playerRoot.position.z + 6);
-    camera.setTarget(camTarget);
-    camera.position.x = playerRoot.position.x * 0.55;
-    camera.position.y = 4.2 + (grounded ? 0 : 0.25);
-    camera.position.z = playerRoot.position.z - 9.5;
-
-    // Fake shadow
-    shadow.position.x = playerRoot.position.x;
-    shadow.position.z = playerRoot.position.z;
-    shadow.scaling.x = shadow.scaling.z = grounded ? 1 : 0.75;
-
-    // Recycle track segments
-    for (const seg of SEGMENTS) {
-      seg.root.position.z -= (speed * speedMult) * dt;
-    }
-    // If a segment goes behind camera, move it to the end
-    for (const seg of SEGMENTS) {
-      if (seg.root.position.z < -TRACK_SEG_LEN) {
-        // find max z among segments
-        let maxZ = -Infinity;
-        for (const s of SEGMENTS) maxZ = Math.max(maxZ, s.root.position.z);
-        seg.root.position.z = maxZ + TRACK_SEG_LEN;
-      }
-    }
-
-    // spawn ahead
-    spawnZ -= (speed * speedMult) * dt;
-
-    const worldFrontZ = 40; // spawn distance in front of player
-    // obstacles
-    if (dist >= nextObstacleAt) {
-      const z = worldFrontZ;
-      const ob = makeObstacle(z);
-      obstacles.push({ mesh: ob });
-      nextObstacleAt = dist + (12 + Math.random() * 18) / speedMult;
-    }
-    // pickups
-    if (dist >= nextPickupAt) {
-      const z = worldFrontZ + 2 + Math.random() * 8;
-      const make = Math.random() < 0.22 ? makeBoost : makeCoin;
-      const mesh = make(z);
-      pickups.push({ mesh, kind: mesh.metadata.type });
-      nextPickupAt = dist + (9 + Math.random() * 14) / speedMult;
-    }
-
-    // move entities toward player (illusion of forward motion)
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-      const ob = obstacles[i].mesh;
-      ob.position.z -= (speed * speedMult) * dt;
-
-      // rotate for style
-      ob.rotation.y += dt * 1.2;
-      ob.rotation.x += dt * 0.7;
-
-      // remove if behind
-      if (ob.position.z < -16) {
-        ob.dispose();
-        obstacles.splice(i, 1);
-      }
-    }
-
-    for (let i = pickups.length - 1; i >= 0; i--) {
-      const p = pickups[i].mesh;
-      p.position.z -= (speed * speedMult) * dt;
-
-      p.rotation.y += dt * 3.2;
-      p.rotation.x += dt * 1.6;
-
-      if (p.position.z < -16) {
-        p.dispose();
-        pickups.splice(i, 1);
-      }
-    }
-
-    // collisions
-    const pb = aabb(playerCollider);
-
-    // obstacle hit
-    for (const ob of obstacles) {
-      const b = aabb(ob.mesh);
-      if (overlap(pb, b)) {
-        sfx("hit");
-        gameOver();
-        return;
-      }
-    }
-
-    // pickup
-    for (let i = pickups.length - 1; i >= 0; i--) {
-      const p = pickups[i].mesh;
-      const b = aabb(p);
-      if (overlap(pb, b)) {
-        const kind = p.metadata.type;
-        if (kind === "coin") {
-          score += 40;
-          sfx("coin");
-        } else {
-          score += 60;
-          speedMult = Math.min(3.2, speedMult + 0.25);
-          sfx("boost");
-        }
-        const intScore2 = score | 0;
-        if (intScore2 > best) best = intScore2;
-        setHUD();
-        ggLiveScore(intScore2);
-
-        p.dispose();
-        pickups.splice(i, 1);
-      }
-    }
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
   }
 
-  // -----------------------------
-  // Render
-  // -----------------------------
-  let lastT = performance.now();
-  engine.runRenderLoop(() => {
-    const t = performance.now();
-    const dt = Math.min(0.033, (t - lastT) / 1000);
-    lastT = t;
+  canvas.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    ensureAudio();
+    if (!running || dead) {
+      resetGame();
+      return;
+    }
+    if (paused) {
+      paused = false;
+      hidePanel();
+      startMusic();
+      return;
+    }
+    pointerActive = true;
+    const p = pos(e);
+    downX = lastX = p.x;
+    downY = lastY = p.y;
+    moved = false;
+  }, { passive: false });
 
-    if (!GG_PAUSED) update(dt);
+  canvas.addEventListener("pointermove", (e) => {
+    if (!pointerActive || !running || paused) return;
+    const p = pos(e);
+    const dx = p.x - lastX;
+    const dy = p.y - lastY;
+    lastX = p.x;
+    lastY = p.y;
+    if (Math.abs(p.x - downX) > 8 || Math.abs(p.y - downY) > 8) moved = true;
 
-    scene.render();
+    player.targetX = clamp(player.targetX + dx / Math.max(160, W * .28), -1, 1);
+    if (dy < -34 && Math.abs(dy) > Math.abs(dx) * 1.1) {
+      activateBoost();
+    }
+  }, { passive: true });
+
+  function pointerUp(e) {
+    if (!pointerActive) return;
+    pointerActive = false;
+    const totalDx = lastX - downX;
+    const totalDy = lastY - downY;
+    if (totalDy < -40 && Math.abs(totalDy) > Math.abs(totalDx) * 1.15) activateBoost();
+    else if (!moved || Math.hypot(totalDx, totalDy) < 18) jump();
+  }
+  canvas.addEventListener("pointerup", pointerUp, { passive: true });
+  canvas.addEventListener("pointercancel", pointerUp, { passive: true });
+  canvas.addEventListener("pointerleave", pointerUp, { passive: true });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") player.targetX = clamp(player.targetX - .22, -1, 1);
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") player.targetX = clamp(player.targetX + .22, -1, 1);
+    if (e.key === " " || e.key === "ArrowUp" || e.key.toLowerCase() === "w") jump();
+    if (e.key.toLowerCase() === "b" || e.key === "Shift") activateBoost();
+    if (e.key.toLowerCase() === "p") togglePause();
   });
 
-  window.addEventListener("resize", () => engine.resize());
-
   // -----------------------------
-  // Panel + Buttons
+  // Update
   // -----------------------------
-  function showHowTo() {
-    showPanel(DEFAULT_PANEL_TITLE, DEFAULT_PANEL_TEXT || "Swipe to steer • Tap to jump.\nAvoid red blocks.\nCollect coins and green boosts.\n\nTap Start.");
-  }
+  function update(dt) {
+    if (!running || paused || dead) return;
 
-  function showPanel(title, body) {
-    if (panel) panel.style.display = "flex";
-    if (panelTitle) panelTitle.textContent = title;
-    if (panelText) panelText.textContent = body;
-  }
+    speed = clamp(1 + distance / 1400 + (boostTimer > 0 ? .75 : 0), 1, 3.4);
+    distance += dt * 100 * speed;
+    score += dt * 14 * speed;
+    if (score > best) best = Math.floor(score);
 
-  function hidePanel() {
-    if (panel) panel.style.display = "none";
-  }
+    if (boostTimer > 0) boostTimer = Math.max(0, boostTimer - dt);
+    if (shieldTimer > 0) shieldTimer = Math.max(0, shieldTimer - dt);
+    if (magnetTimer > 0) magnetTimer = Math.max(0, magnetTimer - dt);
+    if (player.invuln > 0) player.invuln = Math.max(0, player.invuln - dt);
+    if (comboTimer > 0) comboTimer = Math.max(0, comboTimer - dt);
+    else combo = 0;
+    screenShake = Math.max(0, screenShake - dt * 35);
 
-  // Start
-  if (btnStart) {
-    btnStart.onclick = () => {
-      ensureAudio();
-      resetGame();
-      GG_PAUSED = false;
-      hidePanel();
-    };
-  }
+    player.x = lerp(player.x, player.targetX, 1 - Math.pow(.001, dt));
+    player.tilt = lerp(player.tilt, (player.targetX - player.x) * -0.35, 1 - Math.pow(.01, dt));
 
-  // How to
-  if (btnOverlay) {
-    btnOverlay.onclick = () => {
-      if (panel && panel.style.display === "none") {
-        GG_PAUSED = true;
-        showHowTo();
-      } else {
-        showHowTo();
+    player.vy -= 2350 * dt;
+    player.jump += player.vy * dt;
+    if (player.jump <= 0) {
+      player.jump = 0;
+      player.vy = 0;
+    }
+
+    const travel = dt * speedPx * speed;
+    spawnTimer -= dt * speed;
+    pickupTimer -= dt * speed;
+
+    if (spawnTimer <= 0) {
+      spawnObstacle();
+      spawnTimer = rand(.72, 1.15) / speed;
+      if (speed > 2.1 && Math.random() < .25) {
+        const old = objects[objects.length - 1];
+        const lane = clamp(old.lane + rand(.45, .85) * (Math.random() < .5 ? -1 : 1), -1, 1);
+        setTimeout(() => objects.push({ type:"obstacle", kind:"mine", lane, progress:-0.08, w:.22, h:.22, rot:0, vr:rand(-2,2), hit:false }), 80);
       }
-    };
+    }
+
+    if (pickupTimer <= 0) {
+      spawnPickup();
+      if (Math.random() < .36) spawnPickup("coin", -0.14, clamp(objects[objects.length - 1]?.lane + rand(-.22,.22) || rand(-.8,.8), -1, 1));
+      pickupTimer = rand(.45, .82) / speed;
+    }
+
+    for (let i = objects.length - 1; i >= 0; i--) {
+      const o = objects[i];
+
+      if (magnetTimer > 0 && o.type === "pickup") {
+        const pull = clamp((o.progress - .45) * 2.2, 0, 1) * dt * 1.6;
+        o.lane = lerp(o.lane, player.x, pull);
+      }
+
+      o.progress += travel;
+      o.rot += (o.vr || 0) * dt;
+
+      const s = worldToScreen(o.lane, o.progress);
+      if (o.progress > 1.18) {
+        objects.splice(i, 1);
+        continue;
+      }
+
+      if (o.progress > .78 && o.progress < 1.04 && !o.hit) {
+        const pScreen = {
+          x: centerX() + player.x * lanePixels(1),
+          y: playerY(),
+          w: W * .14,
+          h: H * .10
+        };
+        const objRect = {
+          x: s.x - o.w * W * s.scale * .5,
+          y: s.y - o.h * H * s.scale * .5,
+          w: o.w * W * s.scale,
+          h: o.h * H * s.scale,
+        };
+        const playerRect = {
+          x: pScreen.x - pScreen.w * .5,
+          y: pScreen.y - pScreen.h * .5,
+          w: pScreen.w,
+          h: pScreen.h,
+        };
+
+        if (rectsOverlap(playerRect, objRect)) {
+          if (o.type === "pickup") {
+            collect(o, s.x, s.y);
+            objects.splice(i, 1);
+          } else {
+            const lowJumpSafe = o.kind === "barrier" && player.jump > H * .09;
+            if (lowJumpSafe) {
+              o.hit = true;
+              score += 45;
+              addFloater(s.x, s.y, "JUMPED!", "#9cfffb", 19);
+              addParticles(s.x, s.y, "rgba(80,240,255,.8)", 14, 210);
+            } else {
+              hitObstacle(o, s.x, s.y);
+              if (lives > 0) objects.splice(i, 1);
+            }
+          }
+        }
+      }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.age += dt;
+      if (p.age >= p.life) { particles.splice(i, 1); continue; }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 180 * dt;
+    }
+
+    for (let i = floaters.length - 1; i >= 0; i--) {
+      const f = floaters[i];
+      f.age += dt;
+      if (f.age >= f.life) { floaters.splice(i, 1); continue; }
+      f.y += f.vy * dt;
+    }
+
+    trails.push({ x: centerX() + player.x * lanePixels(1), y: playerY() + H * .04, age: 0, life: .38, boost: boostTimer > 0 });
+    for (let i = trails.length - 1; i >= 0; i--) {
+      trails[i].age += dt;
+      if (trails[i].age > trails[i].life) trails.splice(i, 1);
+    }
+
+    updateHUD();
   }
 
-  // Hidden compat buttons
-  if (btnPause) btnPause.onclick = () => (GG_PAUSED = !GG_PAUSED);
-  if (btnLaunch) btnLaunch.onclick = () => {
+  // -----------------------------
+  // Draw
+  // -----------------------------
+  function drawBackground(t) {
+    const bg = images.bg || images.bgAlt;
+    if (bg) {
+      const par = Math.sin(t * .00025) * 10;
+      ctx.drawImage(bg, 0, par - 12, W, H + 24);
+    } else {
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "#06101d");
+      g.addColorStop(1, "#050816");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.fillStyle = "rgba(1,4,14,.20)";
+    ctx.fillRect(0, 0, W, H);
+
+    for (const p of bgBubbles) {
+      const y = ((p.y * H + distance * p.sp) % (H + 40)) - 20;
+      const x = p.x * W + Math.sin(t * .001 + p.x * 8) * 10;
+      ctx.fillStyle = `rgba(${p.col},${p.a})`;
+      ctx.beginPath();
+      ctx.arc(x, y, p.s, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawTrack(t) {
+    const hy = horizonY();
+    const bottom = H * .98;
+    ctx.save();
+
+    const leftH = W * .43, rightH = W * .57;
+    const leftB = W * .04, rightB = W * .96;
+    const trackG = ctx.createLinearGradient(0, hy, 0, bottom);
+    trackG.addColorStop(0, "rgba(15,22,52,.60)");
+    trackG.addColorStop(1, "rgba(8,10,24,.92)");
+    ctx.fillStyle = trackG;
+    ctx.beginPath();
+    ctx.moveTo(leftH, hy);
+    ctx.lineTo(rightH, hy);
+    ctx.lineTo(rightB, bottom);
+    ctx.lineTo(leftB, bottom);
+    ctx.closePath();
+    ctx.fill();
+
+    // side glow rails
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = "rgba(0,240,255,.72)";
+    ctx.beginPath(); ctx.moveTo(leftH, hy); ctx.lineTo(leftB, bottom); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,62,187,.68)";
+    ctx.beginPath(); ctx.moveTo(rightH, hy); ctx.lineTo(rightB, bottom); ctx.stroke();
+
+    const laneXs = [-.66, -.33, 0, .33, .66];
+    for (let lx of laneXs) {
+      ctx.strokeStyle = lx === 0 ? "rgba(255,255,255,.16)" : "rgba(95,230,255,.20)";
+      ctx.lineWidth = lx === 0 ? 2 : 1.25;
+      ctx.beginPath();
+      for (let i = 0; i <= 20; i++) {
+        const p = i / 20;
+        const y = lerp(hy, bottom, Math.pow(p, 1.55));
+        const x = centerX() + lx * lanePixels(p);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    for (let i = 0; i < 15; i++) {
+      const prog = ((i / 15 + (distance * .003) % 1) % 1);
+      const y = lerp(hy, bottom, Math.pow(prog, 1.55));
+      const left = centerX() - lanePixels(prog);
+      const right = centerX() + lanePixels(prog);
+      ctx.strokeStyle = `rgba(255,255,255,${0.05 + prog * .16})`;
+      ctx.lineWidth = 1 + prog * 3;
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawImageCentered(img, x, y, w, h, rot = 0, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    if (img) ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    else {
+      ctx.fillStyle = "white";
+      ctx.fillRect(-w / 2, -h / 2, w, h);
+    }
+    ctx.restore();
+  }
+
+  function drawObjects() {
+    const sorted = [...objects].sort((a, b) => a.progress - b.progress);
+    for (const o of sorted) {
+      const s = worldToScreen(o.lane, o.progress);
+      const alpha = clamp((o.progress + .1) * 2, 0, 1);
+      if (o.type === "obstacle") {
+        const img = o.kind === "mine" ? images.mine : images.barrier;
+        const ww = (o.kind === "mine" ? 82 : 126) * s.scale;
+        const hh = (o.kind === "mine" ? 82 : 74) * s.scale;
+        ctx.save();
+        ctx.shadowColor = o.kind === "mine" ? "rgba(255,60,100,.9)" : "rgba(255,70,140,.75)";
+        ctx.shadowBlur = 22 * s.scale;
+        drawImageCentered(img, s.x, s.y, ww, hh, o.rot, alpha);
+        ctx.restore();
+      } else {
+        const img = o.kind === "coin" ? images.coin :
+          o.kind === "boost" ? images.boost :
+          o.kind === "shield" ? images.shield : images.magnet;
+        const size = (o.kind === "coin" ? 54 : 64) * s.scale;
+        ctx.save();
+        ctx.shadowColor = o.kind === "coin" ? "rgba(255,210,90,.85)" : "rgba(80,240,255,.75)";
+        ctx.shadowBlur = 18 * s.scale;
+        drawImageCentered(img, s.x, s.y, size, size, o.rot, alpha);
+        ctx.restore();
+      }
+    }
+  }
+
+  function drawPlayer(t) {
+    const x = centerX() + player.x * lanePixels(1);
+    const y = playerY();
+    const scale = clamp(W / 820, .78, 1.32);
+    const w = 118 * scale;
+    const h = 118 * scale;
+
+    // shadow
+    ctx.save();
+    ctx.globalAlpha = .28 * (1 - clamp(player.jump / (H * .30), 0, .65));
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.ellipse(x, H * .865, w * .42, h * .16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // trail
+    for (const tr of trails) {
+      const a = 1 - tr.age / tr.life;
+      ctx.save();
+      ctx.globalAlpha = a * (tr.boost ? .65 : .35);
+      ctx.fillStyle = tr.boost ? "rgba(60,255,210,.55)" : "rgba(0,230,255,.35)";
+      ctx.beginPath();
+      ctx.ellipse(tr.x, tr.y + h * .32, w * .25 * a, h * .16 * a, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    if (shieldTimer > 0 || player.invuln > 0) {
+      ctx.save();
+      ctx.strokeStyle = shieldTimer > 0 ? "rgba(90,190,255,.85)" : "rgba(255,255,255,.36)";
+      ctx.lineWidth = 4;
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 20;
+      ctx.beginPath();
+      ctx.arc(x, y, w * .62 + Math.sin(t * .008) * 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(player.tilt);
+    if (boostTimer > 0) {
+      ctx.globalAlpha = .8;
+      const flame = ctx.createRadialGradient(0, h * .35, 4, 0, h * .60, h * .55);
+      flame.addColorStop(0, "rgba(255,255,255,.95)");
+      flame.addColorStop(.35, "rgba(60,255,210,.75)");
+      flame.addColorStop(1, "rgba(60,255,210,0)");
+      ctx.fillStyle = flame;
+      ctx.beginPath();
+      ctx.ellipse(0, h * .50, w * .28, h * .38, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = (player.invuln > 0 && Math.sin(t * .04) > 0) ? .55 : 1;
+    if (images.craft) ctx.drawImage(images.craft, -w / 2, -h / 2, w, h);
+    else {
+      ctx.fillStyle = "#23c2ff";
+      ctx.beginPath(); ctx.arc(0, 0, w * .35, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      const a = 1 - p.age / p.life;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawFloaters() {
+    for (const f of floaters) {
+      const a = 1 - f.age / f.life;
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.font = `1000 ${f.size}px system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "rgba(0,0,0,.45)";
+      ctx.strokeText(f.text, f.x, f.y);
+      ctx.fillStyle = f.color;
+      ctx.fillText(f.text, f.x, f.y);
+      ctx.restore();
+    }
+  }
+
+  function drawPaused() {
+    if (!paused || !running) return;
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.32)";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(255,255,255,.94)";
+    ctx.font = "1000 30px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Paused", W * .5, H * .45);
+    ctx.font = "800 14px system-ui, sans-serif";
+    ctx.fillText("Tap Start, Pause, or the screen to continue", W * .5, H * .5);
+    ctx.restore();
+  }
+
+  function draw(t) {
+    const shake = screenShake > 0 ? { x: rand(-screenShake, screenShake), y: rand(-screenShake, screenShake) } : { x: 0, y: 0 };
+    ctx.save();
+    ctx.translate(shake.x, shake.y);
+    drawBackground(t);
+    drawTrack(t);
+    drawObjects();
+    drawParticles();
+    drawPlayer(t);
+    drawFloaters();
+    if (boostTimer > 0) {
+      ctx.fillStyle = `rgba(0,240,255,${0.035 + Math.sin(t * .025) * .02})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+    ctx.restore();
+    drawPaused();
+  }
+
+  function loop(t) {
+    const dt = Math.min(.033, Math.max(.001, (t - lastT) / 1000));
+    lastT = t;
+    update(dt);
+    draw(t);
+    requestAnimationFrame(loop);
+  }
+
+  function togglePause() {
+    if (!running || dead) return;
+    paused = !paused;
+    if (paused) {
+      stopMusic();
+      showPanel("Paused", "Tap Start or the screen to continue.\n\nSwipe to steer, tap to jump, and swipe up to boost.");
+    } else {
+      hidePanel();
+      startMusic();
+      lastT = performance.now();
+    }
+  }
+
+  // Buttons
+  btnStart && (btnStart.onclick = () => {
     ensureAudio();
-    if (!running) resetGame();
-    GG_PAUSED = false;
-    hidePanel();
-  };
-  if (btnRestart) btnRestart.onclick = () => ggRestart();
-  if (btnSubmit) btnSubmit.onclick = () => ggSubmitBest(best | 0);
-  if (btnChat) btnChat.onclick = () => ggToast("Chat coming soon");
+    if (!running || dead) resetGame();
+    else {
+      paused = false;
+      hidePanel();
+      startMusic();
+    }
+  });
 
-  // initial
-  showHowTo();
-  setHUD();
+  btnOverlay && (btnOverlay.onclick = () => {
+    paused = running && !dead ? true : paused;
+    stopMusic();
+    showPanel("How to play", "Drag left or right to steer your hovercraft.\nTap to jump over low red barriers.\nSwipe up to activate boost when the meter is charged.\nCollect yellow energy orbs, green boosts, blue shields, and pink magnets.\nAvoid barriers and mines.");
+  });
 
+  btnPause && (btnPause.onclick = togglePause);
+  btnLaunch && (btnLaunch.onclick = () => { ensureAudio(); resetGame(); });
+  btnRestart && (btnRestart.onclick = resetGame);
+  btnSubmit && (btnSubmit.onclick = () => ggScore("global"));
+  btnChat && (btnChat.onclick = () => {
+    try { window.parent?.postMessage?.({ type: "GG_TOAST", text: "Chat coming soon" }, "*"); } catch {}
+  });
+
+  uiPause && (uiPause.onclick = togglePause);
+  uiRestart && (uiRestart.onclick = () => { ensureAudio(); resetGame(); });
+  uiMute && (uiMute.onclick = () => {
+    muted = !muted;
+    uiMute.textContent = muted ? "Muted" : "Sound";
+    if (muted) stopMusic(); else if (running && !paused) startMusic();
+  });
+
+  window.addEventListener("message", (ev) => {
+    const data = ev.data || {};
+    const type = data.type || data.event;
+    if (type === "GG_PAUSE") {
+      paused = !!data.payload?.paused;
+      if (paused) stopMusic(); else if (running) startMusic();
+    }
+    if (type === "GG_MUTE") {
+      muted = !!data.payload?.muted;
+      if (uiMute) uiMute.textContent = muted ? "Muted" : "Sound";
+      if (muted) stopMusic();
+    }
+    if (type === "GG_RESTART") resetGame();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      paused = true;
+      stopMusic();
+    } else {
+      lastT = performance.now();
+    }
+  });
+
+  async function boot() {
+    await loadAssets();
+    resetBackgroundParticles();
+    resize();
+    showPanel("Neon Hover Runner", "Swipe or drag left and right to steer.\nTap to jump over low hazards.\nSwipe up to activate boost when the boost meter is ready.\nCollect energy, shields, magnets and boosts. Avoid barriers and mines.");
+    updateHUD();
+    try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
+    requestAnimationFrame(loop);
+  }
+  boot();
 })();

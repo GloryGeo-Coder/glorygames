@@ -2,71 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#070b16" />
-  <title>Space Dodger</title>
-
+  <title>Space Dodger • WebGameArena</title>
+  <meta name="description" content="Space Dodger — drag your ship through a 3D-feel starfield, dodge asteroids, collect crystals, and dash to survive." />
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="/sdk/gg-sdk.css" />
 </head>
-
 <body>
-  <!-- Top HUD (mobile-first) -->
   <header class="hud">
-    <div class="hudLeft">
+    <div class="brandCol">
       <div class="brand" id="ggTitle">Space Dodger</div>
-      <div class="sub" id="ggSub">Drag to move • Tap to dash</div>
+      <div class="sub" id="ggSub">Drag to move • Tap to dash • Dodge asteroids • Collect crystals</div>
+      <div class="badge">Enhanced Mobile Arcade</div>
     </div>
-
     <div class="hudRight">
-      <div class="stat">
-        <div class="label">Score</div>
-        <div class="value" id="score">0</div>
-      </div>
-
-      <div class="stat">
-        <div class="label">Best</div>
-        <div class="value" id="best">0</div>
-      </div>
+      <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
+      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+      <div class="stat"><div class="label">Shields</div><div class="value" id="lives">3</div></div>
     </div>
   </header>
 
-  <!-- Fullscreen game stage -->
   <main class="stage">
-    <canvas id="c"></canvas>
+    <canvas id="c" aria-label="Space Dodger game canvas"></canvas>
 
-    <!-- Start / Pause Overlay -->
+    <div class="meters">
+      <div class="meterCard">
+        <div class="meterTop"><span>Dash</span><b id="dashLabel">100%</b></div>
+        <div class="meter"><div id="dashFill"></div></div>
+      </div>
+      <div class="meterCard">
+        <div class="meterTop"><span>Combo</span><b id="comboLabel">x1</b></div>
+        <div class="meter combo"><div id="comboFill"></div></div>
+      </div>
+    </div>
+
+    <div class="gestureHint"><div class="hintPill">👆 Drag to steer • Tap for dash • Survive as long as possible</div></div>
+
     <div class="panel" id="panel">
       <div class="panelInner">
         <div class="panelTitle" id="panelTitle">Space Dodger</div>
-        <div class="panelText" id="panelText">
-          Drag your ship to dodge asteroids. Collect stars for points. Tap to dash.
-        </div>
-
+        <div class="panelText" id="panelText">Guide your ship through a neon deep-space lane.
+Dodge asteroids, collect crystals, grab shield and time pickups, and use dash to escape danger.</div>
         <div class="panelButtons">
           <button class="btn primary" id="btnStart">Start</button>
-          <button class="btn" id="btnOverlay">Open Overlay</button>
+          <button class="btn" id="btnOverlay">How to play</button>
         </div>
-
         <div class="panelHint">
-          <span class="pill">Mobile-first</span>
-          <span class="pill">Touch + Mouse</span>
-          <span class="pill">60fps target</span>
+          <span class="pill">3 shields</span>
+          <span class="pill">Dash ability</span>
+          <span class="pill">Power-ups</span>
+          <span class="pill">GG Score Events</span>
         </div>
       </div>
     </div>
 
-    <!-- Bottom action bar (thumb-friendly) -->
     <nav class="actions">
-      <button class="chip" id="btnPause" aria-label="Pause">⏸</button>
-      <button class="chip" id="btnSubmit" aria-label="Submit Score">🏆 Submit</button>
-      <button class="chip" id="btnRestart" aria-label="Restart">↻</button>
-      <button class="chip" id="btnChat" aria-label="Overlay / Chat">💬</button>
+      <button class="chip" id="btnPause">Pause</button>
+      <button class="chip" id="btnSubmit">Submit</button>
+      <button class="chip" id="btnRestart">Restart</button>
+      <button class="chip" id="btnMute">Sound</button>
     </nav>
   </main>
-
-  <script src="/sdk/gg-sdk.js"></script>
-  <script src="/games/_shared/gg-sdk.js"></script>
   <script src="./game.js"></script>
 </body>
 </html>

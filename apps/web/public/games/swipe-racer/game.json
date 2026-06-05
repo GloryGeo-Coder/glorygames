@@ -1,10 +1,27 @@
 {
   "title": "Swipe Racer",
-  "description": "Top-down racer. Swipe/drag to steer, avoid traffic, collect boosts, and survive as speed ramps up. Score is distance + near-miss bonus. Submit your best run to the GloryGames leaderboard.",
-  "tags": ["racing", "mobile", "touch", "endless", "2d", "score-attack"],
+  "description": "Enhanced mobile-first racing game. Swipe to steer a 3D-style car through traffic, use nitro, collect pickups, and clear multiple mission-based levels across city, mountain, coast, and neon night routes.",
+  "tags": ["racing", "mobile", "touch", "missions", "arcade", "3d-style", "endless", "score-attack"],
   "controls": [
-    { "key": "Swipe/Drag", "action": "Steer left/right" },
-    { "key": "Tap", "action": "Boost (if available)" },
-    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
-  ]
+    { "key": "Swipe / Drag", "action": "Steer left and right" },
+    { "key": "Tap", "action": "Use nitro if charged" },
+    { "key": "Boost button", "action": "Use nitro" },
+    { "key": "Buttons", "action": "Pause / Submit / Restart / Sound" }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "enhancedAnimations": true,
+    "scoreEvents": ["GG_SCORE", "gg:score"],
+    "levels": 4,
+    "missions": true,
+    "backgrounds": [
+      "bg-city-day.png",
+      "bg-mountain-pass.png",
+      "bg-coast-sunset.png",
+      "bg-neon-night.png"
+    ]
+  },
+  "version": "2.0.0"
 }

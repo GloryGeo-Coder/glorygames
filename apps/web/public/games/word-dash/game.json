@@ -1,10 +1,56 @@
 {
   "title": "Word Dash",
-  "description": "Word sprint. Type (or tap on-screen letters) to match the target word before time runs out. Build streaks for multipliers, earn extra time with perfect words, and submit your best score.",
-  "tags": ["word", "mobile", "touch", "typing", "puzzle", "score-attack"],
+  "description": "Enhanced word sprint game. Type or tap letters to match target words, build streaks, use power-ups, and complete mission-based levels across themed 3D-style backgrounds.",
+  "tags": [
+    "word",
+    "mobile",
+    "touch",
+    "typing",
+    "puzzle",
+    "missions",
+    "score-attack",
+    "enhanced"
+  ],
   "controls": [
-    { "key": "Keyboard", "action": "Type the word (Enter to submit, Backspace to delete)" },
-    { "key": "On-screen keys", "action": "Tap letters (mobile-friendly)" },
-    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
-  ]
+    {
+      "key": "Keyboard",
+      "action": "Type letters, Enter submits, Backspace deletes"
+    },
+    {
+      "key": "On-screen keys",
+      "action": "Tap letters on mobile"
+    },
+    {
+      "key": "Power-up buttons",
+      "action": "Use Hint, Freeze, or +Time"
+    },
+    {
+      "key": "Buttons",
+      "action": "Pause / Submit / Restart / Sound"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "enhancedAnimations": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "levels": 4,
+    "missions": true,
+    "powerups": [
+      "Hint",
+      "Freeze",
+      "+Time"
+    ],
+    "backgrounds": [
+      "bg-library.png",
+      "bg-city-words.png",
+      "bg-mountain-focus.png",
+      "bg-neon-letters.png"
+    ]
+  },
+  "version": "2.0.0"
 }

@@ -1,8 +1,42 @@
 {
   "title": "Neon Hover Runner",
-  "description": null,
+  "description": "Swipe, jump, boost, and survive a neon cyber track. Collect energy orbs, shields, magnets and boosts while avoiding barriers and mines.",
   "tags": [
     "arcade",
-    "3d"
-  ]
+    "runner",
+    "mobile",
+    "neon",
+    "hover",
+    "score-attack"
+  ],
+  "controls": [
+    {
+      "key": "Drag / Swipe",
+      "action": "Steer left and right"
+    },
+    {
+      "key": "Tap",
+      "action": "Jump"
+    },
+    {
+      "key": "Swipe up",
+      "action": "Activate boost when charged"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "enhancedAnimations": true,
+    "powerups": [
+      "Boost",
+      "Shield",
+      "Magnet",
+      "Energy Orb"
+    ],
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ]
+  },
+  "version": "2.0.0"
 }

@@ -1,57 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Brick Blaster">
   <defs>
-    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#0b122c"></stop>
-      <stop offset="0.45" stop-color="#4c1d95"></stop>
-      <stop offset="1" stop-color="#0369a1"></stop>
-    </linearGradient>
-
-    <linearGradient id="brickA" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0" stop-color="#3b82f6"></stop>
-      <stop offset="1" stop-color="#a855f7"></stop>
-    </linearGradient>
-
-    <linearGradient id="brickB" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0" stop-color="#22c55e"></stop>
-      <stop offset="1" stop-color="#0ea5e9"></stop>
-    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#020617"/><stop offset="0.45" stop-color="#0f172a"/><stop offset="1" stop-color="#312e81"/></linearGradient>
+    <linearGradient id="p" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="0.55" stop-color="#a78bfa"/><stop offset="1" stop-color="#f0abfc"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
-
-  <rect width="1200" height="675" fill="url(#bg)"></rect>
-  <rect x="56" y="56" width="1088" height="563" rx="28" fill="rgba(0,0,0,0.22)" stroke="rgba(255,255,255,0.22)" stroke-width="2"></rect>
-
-  <!-- Bricks -->
-  <g>
-    <rect x="140" y="150" width="120" height="38" rx="10" fill="url(#brickA)"></rect>
-    <rect x="272" y="150" width="120" height="38" rx="10" fill="url(#brickB)"></rect>
-    <rect x="404" y="150" width="120" height="38" rx="10" fill="url(#brickA)"></rect>
-    <rect x="536" y="150" width="120" height="38" rx="10" fill="url(#brickB)"></rect>
-    <rect x="668" y="150" width="120" height="38" rx="10" fill="url(#brickA)"></rect>
-    <rect x="800" y="150" width="120" height="38" rx="10" fill="url(#brickB)"></rect>
-
-    <rect x="200" y="204" width="120" height="38" rx="10" fill="url(#brickB)"></rect>
-    <rect x="332" y="204" width="120" height="38" rx="10" fill="url(#brickA)"></rect>
-    <rect x="464" y="204" width="120" height="38" rx="10" fill="url(#brickB)"></rect>
-    <rect x="596" y="204" width="120" height="38" rx="10" fill="url(#brickA)"></rect>
-    <rect x="728" y="204" width="120" height="38" rx="10" fill="url(#brickB)"></rect>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <circle cx="210" cy="110" r="240" fill="#38bdf8" opacity="0.16"/>
+  <circle cx="990" cy="140" r="260" fill="#a78bfa" opacity="0.18"/>
+  <g filter="url(#glow)">
+    <g transform="translate(160 135)">
+      <rect width="130" height="52" rx="16" fill="#38bdf8"/>
+      <rect x="150" width="130" height="52" rx="16" fill="#60a5fa"/>
+      <rect x="300" width="130" height="52" rx="16" fill="#a78bfa"/>
+      <rect x="450" width="130" height="52" rx="16" fill="#facc15"/>
+      <rect x="600" width="130" height="52" rx="16" fill="#fb7185"/>
+      <rect y="76" width="130" height="52" rx="16" fill="#22c55e"/>
+      <rect x="150" y="76" width="130" height="52" rx="16" fill="#14b8a6"/>
+      <rect x="300" y="76" width="130" height="52" rx="16" fill="#f97316"/>
+      <rect x="450" y="76" width="130" height="52" rx="16" fill="#e879f9"/>
+      <rect x="600" y="76" width="130" height="52" rx="16" fill="#818cf8"/>
+    </g>
+    <rect x="410" y="530" width="380" height="42" rx="21" fill="url(#p)"/>
+    <circle cx="610" cy="435" r="34" fill="#e0f2fe"/>
+    <circle cx="610" cy="435" r="44" fill="none" stroke="#a78bfa" stroke-width="9" opacity="0.8"/>
   </g>
-
-  <!-- Ball -->
-  <circle cx="600" cy="360" r="22" fill="rgba(168,85,247,0.92)"></circle>
-  <circle cx="600" cy="360" r="10" fill="rgba(255,255,255,0.22)"></circle>
-
-  <!-- Paddle -->
-  <rect x="440" y="500" width="320" height="26" rx="13" fill="rgba(59,130,246,0.95)"></rect>
-
-  <!-- Power-ups -->
-  <g>
-    <circle cx="360" cy="410" r="16" fill="rgba(34,197,94,0.92)"></circle>
-    <text x="360" y="416" text-anchor="middle" font-family="system-ui,Segoe UI" font-size="16" font-weight="900" fill="rgba(0,0,0,0.55)">W</text>
-
-    <circle cx="840" cy="410" r="16" fill="rgba(14,165,233,0.92)"></circle>
-    <text x="840" y="416" text-anchor="middle" font-family="system-ui,Segoe UI" font-size="16" font-weight="900" fill="rgba(0,0,0,0.55)">S</text>
-  </g>
-
-  <text x="120" y="580" fill="rgba(255,255,255,0.92)" font-family="system-ui,Segoe UI" font-size="56" font-weight="900">Brick Blaster</text>
-  <text x="120" y="632" fill="rgba(255,255,255,0.72)" font-family="system-ui,Segoe UI" font-size="24" font-weight="800">Mobile-first • Drag paddle • Tap to launch • Power-ups</text>
+  <text x="600" y="630" text-anchor="middle" font-family="system-ui,Segoe UI,Arial" font-size="76" font-weight="1000" fill="white" letter-spacing="-5">Brick Blaster</text>
 </svg>

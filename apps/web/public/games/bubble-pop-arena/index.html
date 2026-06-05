@@ -2,68 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#070b16" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#06101f" />
   <title>Bubble Pop Arena</title>
-
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="/sdk/gg-sdk.css" />
 </head>
-
 <body>
-  <!-- Top HUD -->
   <header class="hud">
     <div class="hudLeft">
       <div class="brand" id="ggTitle">Bubble Pop Arena</div>
-      <div class="sub" id="ggSub">Tap bubbles • Build combos • Avoid bombs</div>
+      <div class="sub" id="ggSub">Drag or tap to pop • Catch time bubbles • Avoid bombs</div>
     </div>
-
     <div class="hudRight">
-      <div class="stat">
-        <div class="label">Score</div>
-        <div class="value" id="score">0</div>
-      </div>
-      <div class="stat">
-        <div class="label">Time</div>
-        <div class="value" id="time">30.0</div>
-      </div>
-      <div class="stat">
-        <div class="label">Combo</div>
-        <div class="value" id="combo">0</div>
-      </div>
+      <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
+      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
+      <div class="stat"><div class="label">Time</div><div class="value" id="time">45.0</div></div>
+      <div class="stat"><div class="label">Combo</div><div class="value" id="combo">0</div></div>
     </div>
   </header>
 
   <main class="stage">
     <canvas id="c"></canvas>
 
-    <!-- Start / Pause / Game Over Panel -->
+    <div class="statusBar">
+      <div class="statusPill"><span>Freeze</span><strong id="freeze">0.0s</strong></div>
+      <div class="statusPill"><span>Fever</span><strong id="fever">0%</strong></div>
+    </div>
+
     <div class="panel" id="panel">
       <div class="panelInner">
         <div class="panelTitle" id="panelTitle">Bubble Pop Arena</div>
-        <div class="panelText" id="panelText">
-          Pop bubbles for points. Chain pops quickly for combos and multipliers. Bomb bubbles reset your combo—avoid them!
-        </div>
-
+        <div class="panelText" id="panelText">Pop bubbles for points, build combos, grab time bubbles, and avoid bombs.</div>
         <div class="panelButtons">
           <button class="btn primary" id="btnStart">Start</button>
           <button class="btn" id="btnOverlay">Open Overlay</button>
         </div>
-
         <div class="panelHint">
-          <span class="pill">Timed rounds</span>
-          <span class="pill">Combo multipliers</span>
-          <span class="pill">Satisfying taps</span>
+          <span class="pill">Tap bubbles</span>
+          <span class="pill">Drag to chain pops</span>
+          <span class="pill">Freeze + bonus bubbles</span>
         </div>
       </div>
     </div>
 
-    <!-- Bottom thumb bar -->
     <nav class="actions">
-      <button class="chip" id="btnPause" aria-label="Pause">⏸</button>
+      <button class="chip" id="btnPause" aria-label="Pause">⏸ Pause</button>
       <button class="chip" id="btnSubmit" aria-label="Submit Score">🏆 Submit</button>
-      <button class="chip" id="btnRestart" aria-label="Restart">↻</button>
-      <button class="chip" id="btnChat" aria-label="Overlay / Chat">💬</button>
+      <button class="chip" id="btnRestart" aria-label="Restart">↻ Restart</button>
+      <button class="chip" id="btnChat" aria-label="Overlay / Chat">💬 Overlay</button>
     </nav>
   </main>
 
