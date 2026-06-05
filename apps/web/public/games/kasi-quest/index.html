@@ -2,22 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
-
     <meta name="theme-color" content="#070b18" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-
     <title>Kasi Quest</title>
     <meta
       name="description"
-      content="Kasi Quest — a mobile-first platformer on GloryGames."
+      content="Kasi Quest — a mobile-first WebGameArena platformer with missions, bosses, upgrades, and daily challenges."
     />
-
     <link rel="stylesheet" href="./styles.css" />
   </head>
 
@@ -25,125 +21,80 @@
     <div id="wrap" class="gameShell">
       <canvas id="c" tabindex="0" aria-label="Kasi Quest game canvas"></canvas>
 
-      <!-- HUD -->
       <header id="hud" class="hud">
         <div class="hudGroup">
-          <div class="chip">
-            <span class="k">Level</span>
-            <strong class="v">
-              <span id="levelNum">1</span>
-            </strong>
-          </div>
-
-          <div class="chip">
-            <span class="k">Coins</span>
-            <strong class="v" id="coins">0</strong>
-          </div>
+          <div class="chip"><span class="k">Level</span><strong class="v"><span id="levelNum">1</span></strong></div>
+          <div class="chip"><span class="k">Coins</span><strong class="v" id="coins">0</strong></div>
+          <div class="chip optional"><span class="k">Wallet</span><strong class="v" id="wallet">0</strong></div>
         </div>
-
         <div class="hudGroup hudGroupRight">
-          <div class="chip">
-            <span class="k">Score</span>
-            <strong class="v" id="score">0</strong>
-          </div>
-
-          <div class="chip">
-            <span class="k">Best</span>
-            <strong class="v" id="best">0</strong>
-          </div>
-
-          <div class="chip">
-            <span class="k">Time</span>
-            <strong class="v" id="time">0.0</strong>
-          </div>
+          <div class="chip optional"><span class="k">Lives</span><strong class="v" id="lives">3</strong></div>
+          <div class="chip optional"><span class="k">Combo</span><strong class="v" id="combo">x1</strong></div>
+          <div class="chip"><span class="k">Score</span><strong class="v" id="score">0</strong></div>
+          <div class="chip optional"><span class="k">Best</span><strong class="v" id="best">0</strong></div>
+          <div class="chip"><span class="k">Time</span><strong class="v" id="time">0.0</strong></div>
         </div>
       </header>
 
-      <!-- Touch Controls -->
       <div id="touch" class="touchLayer" aria-label="Touch controls">
         <div class="padL">
-          <button
-            class="padBtn"
-            id="btnLeft"
-            type="button"
-            aria-label="Move left"
-          >
-            ◀
-          </button>
-
-          <button
-            class="padBtn"
-            id="btnRight"
-            type="button"
-            aria-label="Move right"
-          >
-            ▶
-          </button>
+          <button class="padBtn" id="btnLeft" type="button" aria-label="Move left">◀</button>
+          <button class="padBtn" id="btnRight" type="button" aria-label="Move right">▶</button>
         </div>
-
         <div class="padR">
-          <button
-            class="padBtn big"
-            id="btnJump"
-            type="button"
-            aria-label="Jump"
-          >
-            ⤒
-          </button>
-
-          <button
-            class="padBtn big"
-            id="btnAction"
-            type="button"
-            aria-label="Action"
-          >
-            A
-          </button>
+          <button class="padBtn big" id="btnJump" type="button" aria-label="Jump">⤒</button>
+          <button class="padBtn big" id="btnAction" type="button" aria-label="Shoot">●</button>
         </div>
       </div>
 
-      <!-- Overlay panel -->
       <section id="panel" class="panelOverlay">
-        <div class="panelCard">
+        <div class="panelCard enhancedPanel">
           <div class="panelTop">
             <div class="panelCopy">
               <h1 class="title">Kasi Quest</h1>
-
               <p class="sub">
-                Mobile-first platformer. Use <b>◀ ▶</b> to move, <b>⤒</b> to
-                jump, and <b>A</b> for dash or power action.
+                Mobile-first kasi platformer. Complete NPC missions, collect kasi items,
+                defeat moving bots and mini-bosses, unlock gates, and send scores back to WebGameArena.
                 <br />
-                Keyboard: <b>A/D</b> or arrow keys, <b>Space</b> to jump.
+                Touch: <b>◀ ▶</b> move, <b>⤒</b> jump, <b>●</b> shoot.
+                Keyboard: <b>A/D</b>, <b>Space</b>, <b>E/Enter/Shift</b>.
               </p>
             </div>
 
             <div class="btnRow">
-              <button class="primary" id="btnStart" type="button">
-                Start
-              </button>
-
-              <button id="btnPause" type="button" title="Pause or resume">
-                Pause
-              </button>
-
-              <button id="btnMute" type="button" title="Mute or unmute">
-                Mute
-              </button>
+              <button class="primary" id="btnStart" type="button">Start</button>
+              <button id="btnDaily" type="button" title="Play today's generated challenge">Daily</button>
+              <button id="btnPause" type="button" title="Pause or resume">Pause</button>
+              <button id="btnMute" type="button" title="Mute or unmute">Mute</button>
+              <button id="btnMusic" type="button" title="Background music">Music</button>
             </div>
+          </div>
+
+          <div class="statusStrip">
+            <div><span>Current</span><b id="levelLabel">1</b></div>
+            <div><span>Stars</span><b id="starSummary">0/24</b></div>
+            <div><span>Wallet</span><b id="walletPanel">0</b></div>
+            <div><span>Daily Best</span><b id="dailyBest">0</b></div>
+          </div>
+
+          <div class="missionBox">
+            <div class="tiny upper">NPC Mission</div>
+            <p id="missionText">Speak to the NPC in each level, complete the task, defeat the boss, then reach the gate.</p>
+          </div>
+
+          <div class="shopWrap">
+            <div class="levelHead">
+              <div class="tiny"><b>Upgrade Shop</b> — spend wallet coins earned from collectibles.</div>
+              <div class="tiny">Upgrades persist on this device.</div>
+            </div>
+            <div class="shopGrid" id="shopGrid"></div>
           </div>
 
           <div class="levelWrap">
             <div class="levelHead">
-              <div class="tiny">
-                Select a level. Current:
-                <b id="levelLabel">1</b>
-              </div>
-
-              <div class="tiny">
-                Tip: Tap <b>Start</b> again to restart the level.
-              </div>
+              <div class="tiny">Select a campaign level. Bosses appear near each level end.</div>
+              <div class="tiny">Stars: time + collection + clean combat.</div>
             </div>
-
             <div class="levelGrid" id="levelGrid"></div>
           </div>
         </div>

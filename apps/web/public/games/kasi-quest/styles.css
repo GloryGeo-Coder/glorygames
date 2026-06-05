@@ -1,1 +1,91 @@
 :root { --bg0: #050816; --bg1: #08111f; --bg2: #101827; --panel: rgba(255, 255, 255, 0.08); --panel2: rgba(255, 255, 255, 0.12); --stroke: rgba(255, 255, 255, 0.14); --stroke2: rgba(255, 255, 255, 0.22); --text: rgba(255, 255, 255, 0.94); --muted: rgba(255, 255, 255, 0.68); --accent: #38bdf8; --accent2: #a78bfa; --good: #86efac; --danger: #fb7185; --gold: #facc15; --shadow: rgba(0, 0, 0, 0.45); } * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; touch-action: none; } body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: var(--text); background: radial-gradient(900px 460px at 18% 5%, rgba(56, 189, 248, 0.18), transparent 58%), radial-gradient(760px 420px at 85% 25%, rgba(167, 139, 250, 0.18), transparent 60%), radial-gradient(680px 420px at 50% 100%, rgba(34, 197, 94, 0.12), transparent 60%), linear-gradient(180deg, var(--bg0), var(--bg1) 55%, var(--bg2)); } button { font: inherit; cursor: pointer; } .gameShell { position: relative; width: 100%; height: 100dvh; min-height: 100dvh; overflow: hidden; background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)), transparent; } canvas#c { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: transparent; outline: none; touch-action: none; user-select: none; } /* ========================= HUD ========================= */ .hud { position: absolute; top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right)); z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 10px; pointer-events: none; } .hudGroup { display: flex; align-items: center; gap: 8px; min-width: 0; } .hudGroupRight { justify-content: flex-end; } .chip { min-width: 76px; padding: 8px 10px; border-radius: 999px; border: 1px solid var(--stroke); background: rgba(0, 0, 0, 0.34); box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; } .k { font-size: 11px; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; } .v { font-size: 14px; color: var(--text); font-weight: 1000; font-variant-numeric: tabular-nums; } /* ========================= Touch controls ========================= */ .touchLayer { position: absolute; inset: 0; z-index: 12; pointer-events: none; } .padL, .padR { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); display: flex; gap: 10px; pointer-events: auto; } .padL { left: max(14px, env(safe-area-inset-left)); } .padR { right: max(14px, env(safe-area-inset-right)); } .padBtn { width: 56px; height: 56px; border-radius: 18px; border: 1px solid var(--stroke2); color: rgba(255, 255, 255, 0.95); background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06)), rgba(0, 0, 0, 0.28); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.15); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); font-size: 22px; font-weight: 1000; display: inline-flex; align-items: center; justify-content: center; user-select: none; touch-action: none; } .padBtn.big { width: 62px; height: 62px; border-radius: 20px; font-size: 24px; } .padBtn:active, .padBtn.active { transform: translateY(1px) scale(0.98); background: linear-gradient(135deg, rgba(56, 189, 248, 0.42), rgba(167, 139, 250, 0.35)), rgba(0, 0, 0, 0.32); border-color: rgba(255, 255, 255, 0.35); } /* ========================= Overlay / Start Panel ========================= */ .panelOverlay { position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; padding: 18px; background: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.58)), rgba(0, 0, 0, 0.20); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); } .panelOverlay.hidden, .panelOverlay.isHidden, .panelOverlay[hidden] { display: none !important; } .panelCard { width: min(920px, 100%); max-height: min(86dvh, 720px); overflow: auto; border-radius: 28px; border: 1px solid var(--stroke2); background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.075)), rgba(5, 8, 22, 0.82); box-shadow: 0 28px 95px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: clamp(18px, 4vw, 30px); } .panelTop { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start; } .panelCopy { min-width: 0; } .title { margin: 0; font-size: clamp(32px, 7vw, 64px); line-height: 0.92; letter-spacing: -0.07em; font-weight: 1000; background: linear-gradient(135deg, #fff, #bae6fd 42%, #ddd6fe); -webkit-background-clip: text; background-clip: text; color: transparent; } .sub { margin: 14px 0 0; color: var(--muted); font-size: clamp(13px, 2.3vw, 16px); font-weight: 700; line-height: 1.45; } .btnRow { display: flex; align-items: stretch; justify-content: flex-end; gap: 10px; flex-wrap: wrap; } .primary, #btnPause, #btnMute { min-height: 44px; border-radius: 16px; border: 1px solid var(--stroke2); padding: 12px 16px; color: var(--text); font-weight: 1000; letter-spacing: -0.01em; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25); } .primary { background: linear-gradient(135deg, rgba(56, 189, 248, 0.95), rgba(167, 139, 250, 0.92)); } #btnPause, #btnMute { background: rgba(255, 255, 255, 0.08); } .primary:active, #btnPause:active, #btnMute:active { transform: translateY(1px) scale(0.99); } .levelWrap { margin-top: 22px; border-radius: 22px; border: 1px solid var(--stroke); background: rgba(0, 0, 0, 0.20); padding: 14px; } .levelHead { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; } .tiny { color: var(--muted); font-size: 12px; line-height: 1.35; font-weight: 800; } .levelGrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; } .levelGrid button, .levelGrid .levelBtn { min-height: 44px; border-radius: 16px; border: 1px solid var(--stroke); color: var(--text); background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.055)), rgba(255, 255, 255, 0.04); font-weight: 1000; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); } .levelGrid button:hover, .levelGrid .levelBtn:hover { border-color: rgba(255, 255, 255, 0.32); background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(167, 139, 250, 0.18)), rgba(255, 255, 255, 0.06); } .levelGrid button.active, .levelGrid .levelBtn.active, .levelGrid button.isActive, .levelGrid .levelBtn.isActive { border-color: rgba(250, 204, 21, 0.5); background: linear-gradient(135deg, rgba(250, 204, 21, 0.26), rgba(56, 189, 248, 0.16)), rgba(255, 255, 255, 0.06); } /* ========================= Responsive ========================= */ @media (max-width: 820px) { .hud { flex-direction: column; align-items: stretch; gap: 8px; } .hudGroup, .hudGroupRight { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; gap: 7px; } .chip { min-width: 0; padding: 7px 6px; } .k { font-size: 10px; } .v { font-size: 13px; } .panelOverlay { align-items: flex-end; padding: 12px; } .panelCard { border-radius: 24px; padding: 18px; } .panelTop { grid-template-columns: 1fr; } .btnRow { justify-content: stretch; display: grid; grid-template-columns: 1fr; } .primary, #btnPause, #btnMute { width: 100%; } .levelHead { align-items: flex-start; flex-direction: column; gap: 6px; } .levelGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .padBtn { width: 52px; height: 52px; border-radius: 17px; } .padBtn.big { width: 58px; height: 58px; border-radius: 19px; } } @media (max-width: 520px) { .hud { top: 8px; left: 8px; right: 8px; } .hudGroup, .hudGroupRight { grid-template-columns: repeat(3, minmax(0, 1fr)); } .chip { gap: 4px; padding: 6px 5px; } .k { display: none; } .v { font-size: 13px; } .padL, .padR { bottom: 12px; gap: 8px; } .padL { left: 10px; } .padR { right: 10px; } .levelGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } } @media (max-height: 560px) and (orientation: landscape) { .hud { top: 6px; left: 6px; right: 6px; flex-direction: row; } .hudGroup, .hudGroupRight { display: flex; width: auto; } .chip { min-width: 64px; padding: 5px 7px; } .k { display: none; } .v { font-size: 12px; } .padL, .padR { bottom: 8px; } .padBtn { width: 46px; height: 46px; border-radius: 15px; font-size: 18px; } .padBtn.big { width: 50px; height: 50px; border-radius: 16px; font-size: 20px; } .panelOverlay { align-items: center; padding: 8px; } .panelCard { max-height: 84dvh; padding: 14px; border-radius: 20px; } .title { font-size: 32px; } .sub { font-size: 12px; margin-top: 8px; } .levelWrap { margin-top: 12px; padding: 10px; } .levelGrid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; } .levelGrid button, .levelGrid .levelBtn { min-height: 34px; border-radius: 12px; } .primary, #btnPause, #btnMute { min-height: 36px; padding: 8px 11px; border-radius: 13px; } } /* Hide touch controls on pointer/keyboard desktop if the game adds desktop class later */ @media (hover: hover) and (pointer: fine) { .touchLayer { opacity: 0.65; } }
+/* ========================= Enhanced Kasi Quest UI ========================= */
+#btnDaily, #btnMusic {
+  min-height: 44px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke2);
+  padding: 12px 16px;
+  color: var(--text);
+  font-weight: 1000;
+  letter-spacing: -0.01em;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}
+#btnDaily:active, #btnMusic:active { transform: translateY(1px) scale(0.99); }
+.enhancedPanel { width: min(1040px, 100%); }
+.statusStrip {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.statusStrip > div {
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background: rgba(0,0,0,.22);
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+.statusStrip span, .upper {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+.statusStrip b { font-variant-numeric: tabular-nums; }
+.missionBox, .shopWrap {
+  margin-top: 14px;
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  background: rgba(0, 0, 0, 0.20);
+  padding: 14px;
+}
+.missionBox p {
+  margin: 6px 0 0;
+  color: rgba(255,255,255,.86);
+  font-weight: 750;
+  line-height: 1.45;
+  font-size: 13px;
+}
+.shopGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.shopBtn {
+  min-height: 72px;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.045)), rgba(255,255,255,.035);
+  padding: 10px;
+  text-align: left;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+}
+.shopBtn b { display: block; font-size: 13px; margin-bottom: 3px; }
+.shopBtn span { display: block; color: var(--muted); font-size: 11px; line-height: 1.25; font-weight: 800; }
+.shopBtn.canBuy { border-color: rgba(134,239,172,.45); background: linear-gradient(135deg, rgba(34,197,94,.16), rgba(56,189,248,.08)), rgba(255,255,255,.035); }
+.shopBtn.maxed { opacity: .72; }
+.levelGrid button .stars { display: block; font-size: 11px; margin-top: 3px; color: var(--gold); letter-spacing: .04em; }
+@media (max-width: 720px) {
+  .optional { display: none; }
+  .panelTop { grid-template-columns: 1fr; }
+  .btnRow { justify-content: stretch; }
+  .btnRow button { flex: 1 1 calc(50% - 6px); }
+  .statusStrip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shopGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .levelGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .chip { min-width: auto; padding: 7px 9px; }
+  .k { font-size: 10px; }
+  .v { font-size: 13px; }
+}
+@media (max-width: 420px) {
+  .levelGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+  .shopGrid { gap: 8px; }
+  .padBtn { width: 54px; height: 54px; }
+  .padBtn.big { width: 58px; height: 58px; }
+}

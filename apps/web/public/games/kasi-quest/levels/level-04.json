@@ -1,18 +1,18 @@
 {
   "meta": {
-    "name": "Level 3 \u2022 Rooftop Boosts",
-    "timeLimit": 154,
-    "parTime": 110
+    "name": "Level 4 \u2022 Market Street Run",
+    "timeLimit": 167,
+    "parTime": 120
   },
   "tileSize": 32,
-  "w": 136,
+  "w": 148,
   "h": 18,
   "spawn": {
     "x": 2,
     "y": 13
   },
   "exit": {
-    "x": 131,
+    "x": 143,
     "y": 13,
     "w": 1,
     "h": 2
@@ -21,43 +21,43 @@
     {
       "x": 0,
       "y": 15,
+      "w": 22,
+      "h": 3
+    },
+    {
+      "x": 25,
+      "y": 15,
+      "w": 19,
+      "h": 3
+    },
+    {
+      "x": 48,
+      "y": 15,
       "w": 17,
       "h": 3
     },
     {
-      "x": 20,
+      "x": 68,
       "y": 15,
       "w": 21,
       "h": 3
     },
     {
-      "x": 45,
+      "x": 94,
       "y": 15,
       "w": 18,
       "h": 3
     },
     {
-      "x": 66,
+      "x": 116,
       "y": 15,
-      "w": 16,
+      "w": 22,
       "h": 3
     },
     {
-      "x": 87,
+      "x": 141,
       "y": 15,
-      "w": 20,
-      "h": 3
-    },
-    {
-      "x": 111,
-      "y": 15,
-      "w": 17,
-      "h": 3
-    },
-    {
-      "x": 131,
-      "y": 15,
-      "w": 5,
+      "w": 7,
       "h": 3
     },
     {
@@ -67,37 +67,37 @@
       "h": 1
     },
     {
-      "x": 27,
+      "x": 28,
       "y": 10,
       "w": 6,
       "h": 1
     },
     {
-      "x": 44,
+      "x": 46,
       "y": 12,
       "w": 5,
       "h": 1
     },
     {
-      "x": 60,
+      "x": 62,
       "y": 9,
       "w": 6,
       "h": 1
     },
     {
-      "x": 81,
+      "x": 84,
       "y": 11,
       "w": 7,
       "h": 1
     },
     {
-      "x": 101,
+      "x": 104,
       "y": 10,
       "w": 6,
       "h": 1
     },
     {
-      "x": 109,
+      "x": 121,
       "y": 12,
       "w": 6,
       "h": 1
@@ -187,71 +187,84 @@
     {
       "x": 127,
       "y": 14
+    },
+    {
+      "x": 133,
+      "y": 11
+    },
+    {
+      "x": 139,
+      "y": 14
     }
   ],
   "collectibles": [
     {
       "x": 14,
       "y": 9,
-      "type": "badge"
+      "type": "data"
     },
     {
       "x": 29,
       "y": 10,
-      "type": "data"
+      "type": "airtime"
     },
     {
       "x": 44,
       "y": 11,
-      "type": "airtime"
+      "type": "taxi"
     },
     {
       "x": 59,
       "y": 12,
-      "type": "taxi"
+      "type": "lunch"
     },
     {
       "x": 74,
       "y": 9,
-      "type": "lunch"
+      "type": "badge"
     },
     {
       "x": 89,
       "y": 10,
-      "type": "badge"
+      "type": "data"
     },
     {
       "x": 104,
       "y": 11,
-      "type": "data"
+      "type": "airtime"
     },
     {
       "x": 119,
       "y": 12,
-      "type": "airtime"
+      "type": "taxi"
+    },
+    {
+      "x": 134,
+      "y": 9,
+      "type": "lunch"
     }
   ],
   "hazards": [
     {
-      "x": 24,
+      "x": 25,
       "y": 14,
       "w": 2,
       "h": 1
     },
     {
-      "x": 52,
+      "x": 53,
       "y": 14,
       "w": 2,
       "h": 1
     },
     {
-      "x": 80,
+      "x": 81,
       "y": 14,
       "w": 2,
       "h": 1
     },
     {
-      "x": 108,
+      "x": 109,
       "y": 14,
       "w": 2,
       "h": 1
@@ -259,20 +272,20 @@
   ],
   "powerups": [
     {
-      "x": 61,
-      "y": 8,
-      "type": "jump"
+      "x": 22,
+      "y": 10,
+      "type": "shield"
     }
   ],
   "enemies": [
     {
-      "type": "shooter",
+      "type": "patrol",
       "x": 18,
       "y": 13,
       "minX": 13,
       "maxX": 23,
-      "speed": 98,
-      "hp": 1
+      "speed": 104,
+      "hp": 2
     },
     {
       "type": "patrol",
@@ -280,77 +293,86 @@
       "y": 13,
       "minX": 31,
       "maxX": 41,
-      "speed": 108,
-      "hp": 1
-    },
-    {
-      "type": "patrol",
-      "x": 54,
-      "y": 13,
-      "minX": 49,
-      "maxX": 59,
-      "speed": 118,
+      "speed": 114,
       "hp": 1
     },
     {
       "type": "chaser",
-      "x": 72,
+      "x": 54,
       "y": 13,
-      "minX": 67,
-      "maxX": 77,
-      "speed": 98,
+      "minX": 49,
+      "maxX": 59,
+      "speed": 124,
       "hp": 1
     },
     {
       "type": "shooter",
+      "x": 72,
+      "y": 13,
+      "minX": 67,
+      "maxX": 77,
+      "speed": 104,
+      "hp": 1
+    },
+    {
+      "type": "patrol",
       "x": 90,
       "y": 13,
       "minX": 85,
       "maxX": 95,
-      "speed": 108,
+      "speed": 114,
+      "hp": 2
+    },
+    {
+      "type": "patrol",
+      "x": 108,
+      "y": 13,
+      "minX": 103,
+      "maxX": 113,
+      "speed": 124,
       "hp": 1
     }
   ],
   "boss": {
-    "name": "Rooftop Bruiser",
+    "name": "Market Boss",
     "type": "mini",
-    "x": 122,
+    "x": 134,
     "y": 12,
-    "minX": 116,
-    "maxX": 129,
-    "hp": 6,
-    "speed": 105
+    "minX": 128,
+    "maxX": 141,
+    "hp": 7,
+    "speed": 110
   },
   "npcs": [
     {
-      "name": "Zee",
+      "name": "Aunty Pat",
       "x": 4,
       "y": 13,
-      "message": "Find airtime and lunch packs for the crew, then stop the rooftop boss.",
+      "message": "Market day! Collect badges, dodge taxis and falling crates, then open the gate.",
       "completeMessage": "Sharp! The mission is complete. Head to the open gate."
     }
   ],
   "obstacles": [
     {
       "type": "taxi",
-      "x": 34,
+      "x": 36,
       "y": 14.05,
       "w": 2.5,
       "h": 0.9,
-      "minX": 31,
-      "maxX": 45,
-      "speed": 117
+      "minX": 33,
+      "maxX": 47,
+      "speed": 121
     },
     {
       "type": "trampoline",
-      "x": 50,
+      "x": 52,
       "y": 14.65,
       "w": 1.4,
       "h": 0.35
     },
     {
       "type": "crate",
-      "x": 73,
+      "x": 76,
       "y": 3,
       "w": 1,
       "h": 1,
@@ -359,7 +381,7 @@
     },
     {
       "type": "collapse",
-      "x": 84,
+      "x": 86,
       "y": 10,
       "w": 5,
       "h": 0.55,
@@ -368,19 +390,19 @@
     },
     {
       "type": "movingPlatform",
-      "x": 97,
+      "x": 109,
       "y": 11,
       "w": 5,
       "h": 0.55,
-      "minX": 93,
-      "maxX": 105,
-      "speed": 61
+      "minX": 105,
+      "maxX": 117,
+      "speed": 63
     }
   ],
   "doors": [
     {
       "id": "main",
-      "x": 106,
+      "x": 118,
       "y": 13,
       "w": 1,
       "h": 2,
@@ -390,18 +412,18 @@
   "switches": [
     {
       "id": "main",
-      "x": 96,
+      "x": 108,
       "y": 14.55,
       "w": 0.9,
       "h": 0.35
     }
   ],
   "objective": {
-    "coinsRequired": 18,
-    "collectiblesRequired": 4,
-    "enemiesRequired": 5,
+    "coinsRequired": 20,
+    "collectiblesRequired": 5,
+    "enemiesRequired": 6,
     "bossRequired": true,
     "switchesRequired": 1,
-    "message": "Find airtime and lunch packs for the crew, then stop the rooftop boss."
+    "message": "Market day! Collect badges, dodge taxis and falling crates, then open the gate."
   }
 }

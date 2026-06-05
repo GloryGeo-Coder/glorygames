@@ -1,8 +1,5 @@
 {
   "title": "Kasi Quest",
-  "description": null,
-  "tags": [
-    "arcade",
-    "2d"
-  ]
+  "description": "Mobile-first kasi platformer with NPC missions, collectibles, upgrade shop, bosses, daily challenge mode, combo scoring and WebGameArena score events.",
+  "tags": ["arcade", "platformer", "2d", "mobile", "boss", "daily"]
 }
