@@ -8,8 +8,19 @@ const nextConfig = {
     root: path.resolve(__dirname),
   },
 
-  // GloryGames uses server routes, Prisma, auth, leaderboards, sitemap, etc.
-  // Do not add output: "export".
+  webpack: (config) => {
+    config.experiments = {
+      ...(config.experiments || {}),
+      asyncWebAssembly: true,
+    };
+
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: "webassembly/async",
+    });
+
+    return config;
+  },
 };
 
 module.exports = nextConfig;
