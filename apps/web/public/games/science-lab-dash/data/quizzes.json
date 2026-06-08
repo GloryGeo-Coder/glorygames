@@ -1,0 +1,123 @@
+{
+  "lab_safety": {
+    "question": "Which item protects your eyes in the lab?",
+    "options": [
+      "Safety goggles",
+      "Open beaker",
+      "Loose paper",
+      "Weather card"
+    ],
+    "answer": "Safety goggles",
+    "explanation": "Safety goggles protect your eyes from splashes and particles."
+  },
+  "matter": {
+    "question": "Which state of matter takes the shape of its container but keeps its volume?",
+    "options": [
+      "Solid",
+      "Liquid",
+      "Gas",
+      "Plasma only"
+    ],
+    "answer": "Liquid",
+    "explanation": "A liquid flows to take the shape of its container but keeps its volume."
+  },
+  "ph": {
+    "question": "What does pH help us describe?",
+    "options": [
+      "Acidic, neutral, or basic",
+      "Mass only",
+      "Wind speed",
+      "Genetic code"
+    ],
+    "answer": "Acidic, neutral, or basic",
+    "explanation": "pH describes how acidic or basic a solution is."
+  },
+  "filtration": {
+    "question": "What is filtration used for?",
+    "options": [
+      "Separating solids from liquids",
+      "Making gravity disappear",
+      "Creating DNA",
+      "Changing climate"
+    ],
+    "answer": "Separating solids from liquids",
+    "explanation": "A filter can trap solid particles while liquid passes through."
+  },
+  "cell_biology": {
+    "question": "What is the basic unit of life?",
+    "options": [
+      "Cell",
+      "Battery",
+      "Cloud",
+      "Magnet"
+    ],
+    "answer": "Cell",
+    "explanation": "Cells are the basic units of living organisms."
+  },
+  "dna": {
+    "question": "What does DNA carry?",
+    "options": [
+      "Genetic information",
+      "Only heat",
+      "Wind direction",
+      "pH colour"
+    ],
+    "answer": "Genetic information",
+    "explanation": "DNA stores genetic information used by living organisms."
+  },
+  "circuits": {
+    "question": "What is needed for a bulb to light in a simple circuit?",
+    "options": [
+      "A complete path",
+      "A broken wire",
+      "No battery",
+      "Only water"
+    ],
+    "answer": "A complete path",
+    "explanation": "A complete circuit allows electric current to flow."
+  },
+  "magnetism": {
+    "question": "Magnets can attract some materials made from...",
+    "options": [
+      "Iron",
+      "Paper only",
+      "Glass only",
+      "Water only"
+    ],
+    "answer": "Iron",
+    "explanation": "Magnets attract ferromagnetic materials such as iron."
+  },
+  "ecosystems": {
+    "question": "What does a food web show?",
+    "options": [
+      "Energy flow between organisms",
+      "Only the weather today",
+      "Only lab PPE",
+      "Only pH levels"
+    ],
+    "answer": "Energy flow between organisms",
+    "explanation": "Food webs show feeding relationships and energy transfer."
+  },
+  "climate": {
+    "question": "Climate describes...",
+    "options": [
+      "Long-term weather patterns",
+      "One minute of weather",
+      "Only the pH of water",
+      "DNA sequence"
+    ],
+    "answer": "Long-term weather patterns",
+    "explanation": "Climate is based on long-term patterns over many years."
+  },
+  "science_fair": {
+    "question": "Why is a lab notebook useful?",
+    "options": [
+      "It records evidence and observations",
+      "It replaces safety rules",
+      "It hides mistakes",
+      "It changes the result"
+    ],
+    "answer": "It records evidence and observations",
+    "explanation": "A notebook helps scientists track evidence, observations, and conclusions."
+  }
+}

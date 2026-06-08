@@ -1,0 +1,120 @@
+{
+  "title": "Science Lab Dash",
+  "slug": "science-lab-dash",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "category": "Educational",
+  "description": "A deeper educational science game combining dash-runner resource collection, lab hub progression, mission board, inventory, crafting, safety inspections, virtual experiments, lab notebook, debrief quizzes, upgrades, and a science tech tree.",
+  "tags": [
+    "education",
+    "science",
+    "lab safety",
+    "chemistry",
+    "biology",
+    "physics",
+    "earth science",
+    "scientific method",
+    "inventory",
+    "crafting",
+    "virtual lab",
+    "notebook",
+    "tech tree",
+    "quiz",
+    "mobile",
+    "arcade"
+  ],
+  "controls": [
+    {
+      "key": "Tap / Click UI",
+      "action": "Navigate hub, missions, inventory, experiments, notebook, tech tree, and upgrades"
+    },
+    {
+      "key": "Lane Buttons",
+      "action": "Move left, middle, or right during dash missions"
+    },
+    {
+      "key": "Swipe",
+      "action": "Change lanes during dash missions on mobile"
+    },
+    {
+      "key": "Arrow keys or 1/2/3",
+      "action": "Keyboard lane control"
+    },
+    {
+      "key": "Shield / Slow Time",
+      "action": "Use dash mission power-ups"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "levels": 11,
+    "missions": true,
+    "labHub": true,
+    "missionBoard": true,
+    "inventorySystem": true,
+    "craftingSystem": true,
+    "safetyProtocolMinigame": true,
+    "experimentMiniGames": true,
+    "virtualLabNotebook": true,
+    "quizDebrief": true,
+    "upgradeShop": true,
+    "scienceTechTree": true,
+    "localSave": true,
+    "dataDriven": true,
+    "dataFiles": [
+      "data/items.json",
+      "data/missions.json",
+      "data/experiments.json",
+      "data/quizzes.json",
+      "data/upgrades.json",
+      "data/tech-tree.json"
+    ],
+    "backgrounds": [
+      "bg-cell-biology.png",
+      "bg-earth-climate.png",
+      "bg-ecosystem-web.png",
+      "bg-energy-lab.png",
+      "bg-lab-safety.png",
+      "bg-science-boss.png",
+      "bg-scientific-method.png",
+      "bg-states-matter.png"
+    ],
+    "sprites": [
+      "item-beaker.png",
+      "item-cell.png",
+      "item-climate.png",
+      "item-dna.png",
+      "item-ecosystem.png",
+      "item-energy.png",
+      "item-gas.png",
+      "item-gloves.png",
+      "item-goggles.png",
+      "item-hazard.png",
+      "item-liquid.png",
+      "item-method.png",
+      "item-solid.png",
+      "scientist-runner.png"
+    ],
+    "topics": [
+      "lab safety",
+      "states of matter",
+      "pH",
+      "filtration",
+      "microscope focus",
+      "DNA",
+      "circuits",
+      "magnetism",
+      "ecosystems",
+      "climate data",
+      "science fair"
+    ]
+  },
+  "version": "2.0.0"
+}

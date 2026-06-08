@@ -1,0 +1,122 @@
+[
+  {
+    "id": "goggles",
+    "name": "Safety Goggles",
+    "category": "PPE",
+    "description": "Protects eyes during lab investigations."
+  },
+  {
+    "id": "gloves",
+    "name": "Lab Gloves",
+    "category": "PPE",
+    "description": "Protects hands and prevents contamination."
+  },
+  {
+    "id": "beaker",
+    "name": "Beaker",
+    "category": "Tool",
+    "description": "Used for measuring and mixing safe virtual samples."
+  },
+  {
+    "id": "indicator",
+    "name": "pH Indicator",
+    "category": "Chemistry",
+    "description": "Changes colour to suggest acidic, neutral, or basic conditions."
+  },
+  {
+    "id": "unknown_liquid",
+    "name": "Unknown Liquid",
+    "category": "Chemistry",
+    "description": "A fictional classroom sample for virtual pH testing."
+  },
+  {
+    "id": "filter_paper",
+    "name": "Filter Paper",
+    "category": "Chemistry",
+    "description": "Used to separate mixtures in a filtration test."
+  },
+  {
+    "id": "water_sample",
+    "name": "Water Sample",
+    "category": "Earth Science",
+    "description": "A sample used in water cycle and filtration missions."
+  },
+  {
+    "id": "microscope",
+    "name": "Microscope Lens",
+    "category": "Biology",
+    "description": "Used to observe cells more clearly."
+  },
+  {
+    "id": "slide",
+    "name": "Microscope Slide",
+    "category": "Biology",
+    "description": "Holds a virtual sample for viewing."
+  },
+  {
+    "id": "plant_sample",
+    "name": "Plant Sample",
+    "category": "Biology",
+    "description": "A safe virtual biological sample."
+  },
+  {
+    "id": "cell",
+    "name": "Cell Card",
+    "category": "Biology",
+    "description": "Represents the basic unit of life."
+  },
+  {
+    "id": "dna",
+    "name": "DNA Piece",
+    "category": "Biology",
+    "description": "Represents genetic information."
+  },
+  {
+    "id": "battery",
+    "name": "Battery",
+    "category": "Physics",
+    "description": "Provides energy in circuit experiments."
+  },
+  {
+    "id": "wire",
+    "name": "Wire",
+    "category": "Physics",
+    "description": "Connects circuit components."
+  },
+  {
+    "id": "bulb",
+    "name": "Bulb",
+    "category": "Physics",
+    "description": "Lights up when the circuit is complete."
+  },
+  {
+    "id": "magnet",
+    "name": "Magnet",
+    "category": "Physics",
+    "description": "Attracts certain metal materials."
+  },
+  {
+    "id": "soil",
+    "name": "Soil Sample",
+    "category": "Earth Science",
+    "description": "Used in absorption and environmental science tests."
+  },
+  {
+    "id": "weather_card",
+    "name": "Weather Data Card",
+    "category": "Earth Science",
+    "description": "Records temperature, rainfall, and climate clues."
+  },
+  {
+    "id": "energy",
+    "name": "Energy Cell",
+    "category": "Energy",
+    "description": "Represents energy transfer in virtual experiments."
+  },
+  {
+    "id": "hazard",
+    "name": "Hazard Symbol",
+    "category": "Hazard",
+    "description": "Unsafe item. Avoid it during dash missions."
+  }
+]

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#07111f" />
+  <title>Physics Force Lab</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hud">
+    <div class="hud-left">
+      <div class="brand">Physics Force Lab</div>
+      <div class="sub">Launch the force ball • solve practical physics scenarios • learn through motion</div>
+      <div class="level-pill" id="levelPill">Level 1 • Gravity Lab</div>
+    </div>
+    <div class="hud-right">
+      <div class="stat"><span>Score</span><strong id="scoreValue">0</strong></div>
+      <div class="stat"><span>Attempts</span><strong id="attemptValue">0</strong></div>
+      <div class="stat"><span>Energy</span><strong id="energyValue">100</strong></div>
+      <div class="stat"><span>Best</span><strong id="bestValue">0</strong></div>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="side-panel">
+      <div class="panel-card">
+        <div class="card-head"><span>Mission</span><b id="missionPct">0%</b></div>
+        <div class="mission-text" id="missionText">Hit the target using force, angle, and timing.</div>
+        <div class="meter"><div id="missionFill"></div></div>
+      </div>
+
+      <div class="panel-card">
+        <div class="card-head"><span>Concept</span><b id="conceptType">Force</b></div>
+        <div class="question-box" id="conceptText">Tap Start to begin.</div>
+      </div>
+
+      <div class="panel-card">
+        <div class="card-head"><span>Physics Tip</span><b>Learn</b></div>
+        <div class="tip-list" id="learningTip">Use force, angle, gravity, friction, and energy to solve each challenge.</div>
+      </div>
+    </aside>
+
+    <section class="game-shell">
+      <canvas id="gameCanvas" width="1280" height="720" aria-label="Physics Force Lab game canvas"></canvas>
+
+      <div class="control-pad">
+        <button class="pad-btn" id="angleDownBtn">Angle −</button>
+        <button class="pad-btn" id="powerDownBtn">Power −</button>
+        <button class="pad-btn launch" id="launchBtn">Launch</button>
+        <button class="pad-btn" id="powerUpBtn">Power +</button>
+        <button class="pad-btn" id="angleUpBtn">Angle +</button>
+      </div>
+
+      <div class="overlay" id="overlay">
+        <div class="overlay-card">
+          <h1 id="overlayTitle">Physics Force Lab</h1>
+          <p id="overlayText">Launch the force ball through practical real-world physics scenarios using angle, power, gravity, friction, wind, buoyancy, springs, magnetism, energy, and orbit motion.</p>
+          <div class="overlay-actions">
+            <button id="startBtn" class="btn primary">Start</button>
+            <button id="helpBtn" class="btn">How to Play</button>
+          </div>
+          <div class="overlay-tags">
+            <span>18 levels</span>
+            <span>Practical scenarios</span>
+            <span>Real mechanics</span>
+            <span>Sounds</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bottom-bar">
+    <button class="chip" id="pauseBtn">Pause</button>
+    <button class="chip" id="resetShotBtn">Reset Shot</button>
+    <button class="chip" id="hintBtn">Hint</button>
+    <button class="chip" id="submitBtn">Submit Score</button>
+    <button class="chip" id="restartBtn">Restart</button>
+    <button class="chip" id="muteBtn">Sound</button>
+  </footer>
+
+  <script src="./game.js"></script>
+</body>
+</html>

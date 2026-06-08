@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#1b1f36" />
+  <title>City Quest: Rise of the Guardian</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="brand">City Quest: Rise of the Guardian</div>
+        <div class="tagline">Story adventure through rooftops, streets, markets, taxi ranks, and hidden caves</div>
+      </div>
+      <div class="score-grid">
+        <div class="score-box"><span>Score</span><b id="scoreValue">0</b></div>
+        <div class="score-box"><span>Coins</span><b id="coinsValue">0</b></div>
+        <div class="score-box"><span>Lives</span><b id="livesValue">3</b></div>
+        <div class="score-box"><span>Level</span><b id="levelValue">1</b></div>
+      </div>
+    </header>
+
+    <main class="main-wrap no-sidebar">
+      <section class="game-column">
+        <div class="canvas-shell">
+          <canvas id="gameCanvas" width="1280" height="720" aria-label="City Quest game canvas"></canvas>
+
+          <div class="floating-actions">
+            <button id="submitScoreBtn">Submit Score</button>
+            <button id="muteBtn">Sound On</button>
+            <button id="pauseBtn">Pause</button>
+          </div>
+
+          <div class="floating-info mission-window" id="missionWindow">
+            <div class="floating-title">Mission</div>
+            <p id="missionText">Talk to the mentor and recover the city tokens.</p>
+            <div class="meter"><div id="progressBar"></div></div>
+            <div class="small" id="objectiveText">0 / 0</div>
+          </div>
+
+          <div class="floating-info story-window" id="storyWindow">
+            <div class="floating-title">Story</div>
+            <p id="storyText">The city needs a new guardian. Restore order across the township and defeat the rogue taxi boss.</p>
+          </div>
+
+          <div class="floating-skins" id="skinWindow">
+            <div class="floating-title">Skins</div>
+            <div class="pill-list">
+              <button class="pill" id="skinBlueBtn">Blue</button>
+              <button class="pill" id="skinGreenBtn">Green</button>
+              <button class="pill" id="skinShadowBtn">Shadow</button>
+            </div>
+            <p class="small" id="skinHint">Unlock skins by collecting coins.</p>
+          </div>
+
+          <div class="overlay active" id="startOverlay">
+            <div class="overlay-card hero-card">
+              <h1>City Quest: Rise of the Guardian</h1>
+              <p>When a mysterious gang disrupts life across the township, a young guardian rises to restore balance. Run across rooftops, help local characters, recover lost tokens, and face the rogue taxi boss.</p>
+              <div class="feature-row">
+                <span>Story mode</span>
+                <span>Platform jumping</span>
+                <span>NPC missions</span>
+                <span>Boss stages</span>
+                <span>Unlockable skins</span>
+              </div>
+              <div class="action-row">
+                <button class="primary" id="playBtn">Start Story</button>
+                <button id="howBtn">How to Play</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay" id="helpOverlay">
+            <div class="overlay-card">
+              <h2>How to Play</h2>
+              <ul>
+                <li>Reach the mentor or guide character to receive your mission.</li>
+                <li>Collect coins, taxi tokens, and badges while avoiding enemies and obstacles.</li>
+                <li>Use jump to clear gaps, taxis, crates, spikes, and moving platforms.</li>
+                <li>Use Shoot to fire guardian energy at walkers, drones, and bosses.</li>
+                <li>Flying drones can fire back, so dodge their energy bolts.</li>
+                <li>Collect shield, heart, and blaster power-ups to survive harder stages.</li>
+                <li>Finish a level to unlock the map and continue the story.</li>
+              </ul>
+              <button class="primary" id="closeHelpBtn">Close</button>
+            </div>
+          </div>
+
+          <div class="overlay" id="mapOverlay">
+            <div class="overlay-card hero-card">
+              <h2>City Map</h2>
+              <p>Select an unlocked mission.</p>
+              <div class="map-grid" id="mapGrid"></div>
+              <div class="action-row">
+                <button class="primary" id="closeMapBtn">Close Map</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay" id="levelOverlay">
+            <div class="overlay-card">
+              <h2 id="levelTitle">Mission Complete</h2>
+              <p id="levelSummary">You cleared the mission.</p>
+              <div class="stars" id="starRow">★ ★ ★</div>
+              <p id="rewardText">Score +500</p>
+              <div class="action-row">
+                <button class="primary" id="nextLevelBtn">Next Mission</button>
+                <button id="mapBtn">Open Map</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay" id="gameOverOverlay">
+            <div class="overlay-card">
+              <h2 id="gameOverTitle">Mission Failed</h2>
+              <p id="gameOverSummary">Try again and rise once more.</p>
+              <div class="action-row">
+                <button class="primary" id="restartBtn">Restart Mission</button>
+                <button id="gameOverMapBtn">Map</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <button id="leftBtn">Left</button>
+          <button id="jumpBtn">Jump</button>
+          <button id="shootBtn">Shoot</button>
+          <button id="actionBtn">Action</button>
+          <button id="mapOpenBtn">Map</button>
+          <button id="rightBtn">Right</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="./game.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+  "title": "Recycle Rush",
+  "description": "Educational sorting game with polished HD graphics, animated gameplay, 3D-style waste item art, sound effects, background music, and eight difficulty-progressive levels.",
+  "tags": [
+    "education",
+    "environment",
+    "recycling",
+    "climate",
+    "sustainability",
+    "mobile",
+    "touch",
+    "arcade"
+  ],
+  "controls": [
+    {
+      "key": "Swipe Left / Right",
+      "action": "Change the active recycling bin"
+    },
+    {
+      "key": "Tap bin",
+      "action": "Jump directly to a visible bin"
+    },
+    {
+      "key": "Tap orange hazard",
+      "action": "Remove mixed-waste contamination"
+    },
+    {
+      "key": "Pause / Restart / Sound",
+      "action": "Control the run"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "enhancedAnimations": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "levels": 8,
+    "educational": true,
+    "missions": true,
+    "backgrounds": [
+      "bg-school-cleanup.png",
+      "bg-community-day.png",
+      "bg-park-clean-sweep.png",
+      "bg-buyback-centre.png",
+      "bg-material-recovery-facility.png",
+      "bg-landfill-diversion.png",
+      "bg-ewaste-dropoff.png",
+      "bg-circular-challenge.png"
+    ]
+  },
+  "version": "1.1.0"
+}

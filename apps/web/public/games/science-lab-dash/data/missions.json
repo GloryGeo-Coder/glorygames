@@ -1,0 +1,300 @@
+[
+  {
+    "id": "ppe_inspection",
+    "title": "PPE Inspection",
+    "module": "Lab Safety",
+    "type": "safety",
+    "goal": "Pass the lab safety check by selecting the correct PPE.",
+    "required": [
+      "goggles",
+      "gloves"
+    ],
+    "dashCollect": [
+      "goggles",
+      "gloves",
+      "beaker"
+    ],
+    "experiment": "safety_scan",
+    "quiz": "lab_safety",
+    "unlock": [
+      "states_of_matter"
+    ],
+    "xp": 80,
+    "coins": 40
+  },
+  {
+    "id": "states_of_matter",
+    "title": "States of Matter",
+    "module": "Chemistry",
+    "type": "dash_experiment",
+    "goal": "Collect matter samples and identify solids, liquids, and gases.",
+    "required": [
+      "beaker"
+    ],
+    "dashCollect": [
+      "solid",
+      "liquid",
+      "gas",
+      "beaker"
+    ],
+    "experiment": "matter_sort",
+    "quiz": "matter",
+    "unlock": [
+      "ph_mystery"
+    ],
+    "xp": 110,
+    "coins": 55
+  },
+  {
+    "id": "ph_mystery",
+    "title": "pH Mystery Liquid",
+    "module": "Chemistry",
+    "type": "craft_experiment",
+    "goal": "Craft a pH test and determine whether the unknown liquid is acidic, neutral, or basic.",
+    "required": [
+      "beaker",
+      "indicator",
+      "unknown_liquid"
+    ],
+    "dashCollect": [
+      "beaker",
+      "indicator",
+      "unknown_liquid",
+      "goggles"
+    ],
+    "craft": [
+      "beaker",
+      "indicator",
+      "unknown_liquid"
+    ],
+    "craftResult": "ph_test",
+    "experiment": "ph_test",
+    "quiz": "ph",
+    "unlock": [
+      "filtration_challenge",
+      "microscope_focus"
+    ],
+    "xp": 130,
+    "coins": 65
+  },
+  {
+    "id": "filtration_challenge",
+    "title": "Filtration Challenge",
+    "module": "Chemistry",
+    "type": "craft_experiment",
+    "goal": "Collect filtration tools and separate a mixture using a safe virtual filter.",
+    "required": [
+      "beaker",
+      "filter_paper",
+      "water_sample"
+    ],
+    "dashCollect": [
+      "beaker",
+      "filter_paper",
+      "water_sample",
+      "gloves"
+    ],
+    "craft": [
+      "beaker",
+      "filter_paper",
+      "water_sample"
+    ],
+    "craftResult": "filtered_sample",
+    "experiment": "filtration",
+    "quiz": "filtration",
+    "unlock": [
+      "circuit_builder"
+    ],
+    "xp": 140,
+    "coins": 70
+  },
+  {
+    "id": "microscope_focus",
+    "title": "Microscope Focus",
+    "module": "Biology",
+    "type": "tool_experiment",
+    "goal": "Prepare a slide and focus the microscope to observe a plant cell.",
+    "required": [
+      "microscope",
+      "slide",
+      "plant_sample"
+    ],
+    "dashCollect": [
+      "microscope",
+      "slide",
+      "plant_sample",
+      "cell"
+    ],
+    "craft": [
+      "microscope",
+      "slide",
+      "plant_sample"
+    ],
+    "craftResult": "prepared_slide",
+    "experiment": "microscope",
+    "quiz": "cell_biology",
+    "unlock": [
+      "dna_builder",
+      "ecosystem_web"
+    ],
+    "xp": 150,
+    "coins": 75
+  },
+  {
+    "id": "dna_builder",
+    "title": "DNA Builder",
+    "module": "Biology",
+    "type": "puzzle",
+    "goal": "Collect DNA pieces and complete a simple base-pair pattern.",
+    "required": [
+      "dna",
+      "cell"
+    ],
+    "dashCollect": [
+      "dna",
+      "cell",
+      "method",
+      "goggles"
+    ],
+    "experiment": "dna_pattern",
+    "quiz": "dna",
+    "unlock": [
+      "science_fair"
+    ],
+    "xp": 160,
+    "coins": 80
+  },
+  {
+    "id": "circuit_builder",
+    "title": "Circuit Builder",
+    "module": "Physics",
+    "type": "tool_experiment",
+    "goal": "Collect circuit components and build a complete circuit.",
+    "required": [
+      "battery",
+      "wire",
+      "bulb"
+    ],
+    "dashCollect": [
+      "battery",
+      "wire",
+      "bulb",
+      "energy"
+    ],
+    "craft": [
+      "battery",
+      "wire",
+      "bulb"
+    ],
+    "craftResult": "complete_circuit",
+    "experiment": "circuit",
+    "quiz": "circuits",
+    "unlock": [
+      "magnet_sorter"
+    ],
+    "xp": 160,
+    "coins": 85
+  },
+  {
+    "id": "magnet_sorter",
+    "title": "Magnet Sorter",
+    "module": "Physics",
+    "type": "sorting",
+    "goal": "Use a magnet to sort materials by magnetic attraction.",
+    "required": [
+      "magnet"
+    ],
+    "dashCollect": [
+      "magnet",
+      "solid",
+      "method",
+      "energy"
+    ],
+    "experiment": "magnet_sort",
+    "quiz": "magnetism",
+    "unlock": [
+      "climate_lab"
+    ],
+    "xp": 170,
+    "coins": 90
+  },
+  {
+    "id": "ecosystem_web",
+    "title": "Food Web Rescue",
+    "module": "Earth & Life Science",
+    "type": "logic",
+    "goal": "Collect ecosystem evidence and connect energy flow in a food web.",
+    "required": [
+      "ecosystem",
+      "energy",
+      "cell"
+    ],
+    "dashCollect": [
+      "ecosystem",
+      "energy",
+      "cell",
+      "climate"
+    ],
+    "experiment": "food_web",
+    "quiz": "ecosystems",
+    "unlock": [
+      "climate_lab"
+    ],
+    "xp": 175,
+    "coins": 95
+  },
+  {
+    "id": "climate_lab",
+    "title": "Climate Data Lab",
+    "module": "Earth Science",
+    "type": "data",
+    "goal": "Use weather cards and climate clues to interpret long-term patterns.",
+    "required": [
+      "weather_card",
+      "climate",
+      "water_sample"
+    ],
+    "dashCollect": [
+      "weather_card",
+      "climate",
+      "water_sample",
+      "method"
+    ],
+    "experiment": "climate_graph",
+    "quiz": "climate",
+    "unlock": [
+      "science_fair"
+    ],
+    "xp": 180,
+    "coins": 100
+  },
+  {
+    "id": "science_fair",
+    "title": "Science Fair Boss Challenge",
+    "module": "Final Science Fair",
+    "type": "boss",
+    "goal": "Design a safe investigation, run an experiment, record results, and pass the final debrief.",
+    "required": [
+      "method",
+      "beaker",
+      "goggles",
+      "gloves",
+      "energy"
+    ],
+    "dashCollect": [
+      "method",
+      "beaker",
+      "goggles",
+      "gloves",
+      "energy",
+      "cell",
+      "climate",
+      "dna"
+    ],
+    "experiment": "science_fair",
+    "quiz": "science_fair",
+    "unlock": [],
+    "xp": 250,
+    "coins": 150
+  }
+]

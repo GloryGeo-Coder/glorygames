@@ -1,0 +1,63 @@
+{
+  "title": "Cyber Shield Academy",
+  "slug": "cyber-shield-academy",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "category": "Educational Arcade",
+  "description": "A defensive cybersecurity educational arcade game with 10 levels, animated cyber sprites, high-quality backgrounds, power-ups, safe cyber habit learning, quiz debriefs, sound, and score bridge support.",
+  "tags": [
+    "education",
+    "cybersecurity",
+    "digital safety",
+    "privacy",
+    "passwords",
+    "phishing awareness",
+    "software updates",
+    "backups",
+    "firewall",
+    "secure wifi",
+    "mobile",
+    "arcade"
+  ],
+  "controls": [
+    {
+      "key": "Swipe / Drag",
+      "action": "Move the shield drone left and right"
+    },
+    {
+      "key": "Buttons",
+      "action": "Move and activate defensive abilities"
+    },
+    {
+      "key": "Arrow keys",
+      "action": "Desktop movement"
+    },
+    {
+      "key": "F / S / Z",
+      "action": "Firewall / Scan / Freeze"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "animatedSpriteAssets": true,
+    "defensiveCyberSafety": true,
+    "quizDebriefs": true,
+    "powerUps": [
+      "firewall",
+      "scan",
+      "freeze"
+    ],
+    "levels": 10,
+    "bossLevel": true,
+    "highQualityBackgrounds": true,
+    "highQualityThumbnail": true
+  },
+  "version": "1.0.0"
+}

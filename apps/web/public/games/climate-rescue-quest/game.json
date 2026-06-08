@@ -1,0 +1,63 @@
+{
+  "title": "Climate Rescue Quest v2",
+  "slug": "climate-rescue-quest",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "category": "Educational Arcade",
+  "description": "A greener, more polished version of Climate Rescue Quest with 10 levels, leafy environmental visuals, high-quality backgrounds, animated transparent sprite frames, sound, and boss progression.",
+  "tags": [
+    "educational",
+    "climate change",
+    "environment",
+    "arcade",
+    "mobile",
+    "power-ups",
+    "renewable energy",
+    "forest",
+    "water",
+    "ocean",
+    "wetlands",
+    "recycling",
+    "boss battle"
+  ],
+  "controls": [
+    {
+      "key": "Swipe / Drag",
+      "action": "Move the hero left and right"
+    },
+    {
+      "key": "Buttons",
+      "action": "Move and activate power-ups"
+    },
+    {
+      "key": "Arrow keys",
+      "action": "Desktop movement"
+    },
+    {
+      "key": "S / M / F",
+      "action": "Shield / Magnet / Freeze"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "animatedSpriteAssets": true,
+    "powerUps": [
+      "shield",
+      "magnet",
+      "freeze"
+    ],
+    "levels": 10,
+    "bossLevel": true,
+    "leafyGreenTheme": true,
+    "highQualityBackgrounds": true,
+    "highQualityThumbnail": true
+  },
+  "version": "2.0.0"
+}

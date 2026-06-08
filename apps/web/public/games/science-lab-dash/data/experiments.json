@@ -1,0 +1,68 @@
+[
+  {
+    "id": "safety_scan",
+    "title": "Safety Scan",
+    "type": "safety",
+    "instruction": "Select all unsafe hazards and confirm PPE before entering the lab."
+  },
+  {
+    "id": "matter_sort",
+    "title": "Matter Sort",
+    "type": "sort",
+    "instruction": "Sort items into solid, liquid, and gas."
+  },
+  {
+    "id": "ph_test",
+    "title": "pH Test",
+    "type": "slider",
+    "instruction": "Dip the pH strip and match the colour to the chart."
+  },
+  {
+    "id": "filtration",
+    "title": "Filtration",
+    "type": "sequence",
+    "instruction": "Place the mixture, filter paper, and beaker in the correct order."
+  },
+  {
+    "id": "microscope",
+    "title": "Microscope Focus",
+    "type": "dial",
+    "instruction": "Adjust focus until the cell image is sharp."
+  },
+  {
+    "id": "dna_pattern",
+    "title": "DNA Pattern",
+    "type": "pattern",
+    "instruction": "Complete the base-pair pattern."
+  },
+  {
+    "id": "circuit",
+    "title": "Circuit Builder",
+    "type": "circuit",
+    "instruction": "Connect battery, wire, switch, and bulb to complete the circuit."
+  },
+  {
+    "id": "magnet_sort",
+    "title": "Magnet Sorter",
+    "type": "sort",
+    "instruction": "Move magnetic materials to the magnet side."
+  },
+  {
+    "id": "food_web",
+    "title": "Food Web Rescue",
+    "type": "logic",
+    "instruction": "Connect Sun \u2192 producer \u2192 consumer \u2192 decomposer."
+  },
+  {
+    "id": "climate_graph",
+    "title": "Climate Data Lab",
+    "type": "graph",
+    "instruction": "Read the data and identify the long-term climate pattern."
+  },
+  {
+    "id": "science_fair",
+    "title": "Science Fair",
+    "type": "boss",
+    "instruction": "Use the notebook, run the final simulation, and answer the debrief."
+  }
+]

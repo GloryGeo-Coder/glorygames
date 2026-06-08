@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#08111c" />
+  <title>Climate Rescue Quest</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand">Climate Rescue Quest</div>
+        <div class="tagline">Fast-paced climate action arcade adventure</div>
+      </div>
+      <div class="score-grid">
+        <div class="score-box"><span>Score</span><b id="scoreValue">0</b></div>
+        <div class="score-box"><span>Level</span><b id="levelValue">1</b></div>
+        <div class="score-box"><span>Lives</span><b id="livesValue">3</b></div>
+        <div class="score-box"><span>Combo</span><b id="comboValue">x1</b></div>
+      </div>
+    </header>
+
+    <main class="main-wrap">
+      <section class="side-panel">
+        <div class="panel-card">
+          <h3>Mission</h3>
+          <p id="missionText">Collect clean-energy and climate-friendly items while avoiding pollution hazards.</p>
+          <div class="meter"><div id="progressBar"></div></div>
+          <div class="small" id="objectiveText">0 / 10</div>
+        </div>
+
+        <div class="panel-card">
+          <h3>Power-ups</h3>
+          <div class="pill-list">
+            <span class="pill" id="shieldState">Shield: 1</span>
+            <span class="pill" id="magnetState">Magnet: 1</span>
+            <span class="pill" id="freezeState">Freeze: 1</span>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h3>Climate Fact</h3>
+          <p id="factText">Healthy forests help absorb carbon dioxide and protect biodiversity.</p>
+        </div>
+
+        <div class="panel-card">
+          <h3>Controls</h3>
+          <p class="small">Swipe left/right, drag the hero, or use the movement buttons below the game. Tap power-ups when needed.</p>
+        </div>
+      </section>
+
+      <section class="game-column">
+        <div class="canvas-shell">
+          <canvas id="gameCanvas" width="1280" height="720" aria-label="Climate Rescue Quest game canvas"></canvas>
+
+          <div class="overlay start active" id="startOverlay">
+            <div class="overlay-card hero-card">
+              <h1>Climate Rescue Quest</h1>
+              <p>Save cities, forests, rivers, and oceans by collecting eco-action items, building combos, and defeating the Carbon Boss.</p>
+              <div class="feature-row">
+                <span>6 levels</span>
+                <span>Animated game elements</span>
+                <span>Arcade power-ups</span>
+                <span>Mobile first</span>
+              </div>
+              <div class="action-row">
+                <button class="primary" id="playBtn">Play Now</button>
+                <button id="howBtn">How to Play</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay" id="helpOverlay">
+            <div class="overlay-card">
+              <h2>How to Play</h2>
+              <ul>
+                <li>Move the hero left or right to collect the correct eco-items.</li>
+                <li>Avoid hazards like pollution clouds, factories, and wildfire.</li>
+                <li>Build combos to boost your score.</li>
+                <li>Use Shield, Magnet, and Freeze power-ups wisely.</li>
+                <li>Complete each level objective to unlock the next mission.</li>
+              </ul>
+              <button class="primary" id="closeHelpBtn">Close</button>
+            </div>
+          </div>
+
+          <div class="overlay" id="levelOverlay">
+            <div class="overlay-card">
+              <h2 id="levelTitle">Level 1 Complete</h2>
+              <p id="levelSummary">You restored the city environment.</p>
+              <div class="stars" id="starRow">★ ★ ★</div>
+              <p id="rewardText">Score +500</p>
+              <div class="action-row">
+                <button class="primary" id="nextLevelBtn">Next Level</button>
+                <button id="replayBtn">Replay Level</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overlay" id="gameOverOverlay">
+            <div class="overlay-card">
+              <h2 id="gameOverTitle">Game Over</h2>
+              <p id="gameOverSummary">The climate mission needs another try.</p>
+              <div class="action-row">
+                <button class="primary" id="restartBtn">Restart Game</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-bar">
+          <button id="leftBtn">Left</button>
+          <button id="shieldBtn">Shield</button>
+          <button id="magnetBtn">Magnet</button>
+          <button id="freezeBtn">Freeze</button>
+          <button id="rightBtn">Right</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footerbar">
+      <button id="submitScoreBtn">Submit Score</button>
+      <button id="muteBtn">Sound On</button>
+      <button id="pauseBtn">Pause</button>
+    </footer>
+  </div>
+
+  <script src="./game.js"></script>
+</body>
+</html>

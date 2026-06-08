@@ -1,0 +1,49 @@
+[
+  {
+    "id": "safety",
+    "name": "Lab Safety",
+    "unlocked": true,
+    "children": [
+      "chemistry"
+    ]
+  },
+  {
+    "id": "chemistry",
+    "name": "Chemistry",
+    "unlocked": false,
+    "children": [
+      "biology",
+      "physics"
+    ]
+  },
+  {
+    "id": "biology",
+    "name": "Biology",
+    "unlocked": false,
+    "children": [
+      "environment"
+    ]
+  },
+  {
+    "id": "physics",
+    "name": "Physics",
+    "unlocked": false,
+    "children": [
+      "environment"
+    ]
+  },
+  {
+    "id": "environment",
+    "name": "Earth & Environment",
+    "unlocked": false,
+    "children": [
+      "science_fair"
+    ]
+  },
+  {
+    "id": "science_fair",
+    "name": "Science Fair",
+    "unlocked": false,
+    "children": []
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "bigger_inventory",
+    "name": "Bigger Inventory",
+    "cost": 80,
+    "effect": "inventorySlots",
+    "value": 4,
+    "description": "Carry more collected items between missions."
+  },
+  {
+    "id": "extra_shield",
+    "name": "Extra Shield",
+    "cost": 110,
+    "effect": "shieldBonus",
+    "value": 1,
+    "description": "Start dash missions with one extra shield."
+  },
+  {
+    "id": "longer_slow",
+    "name": "Longer Slow Time",
+    "cost": 130,
+    "effect": "slowBonus",
+    "value": 2,
+    "description": "Slow Time lasts longer during dash missions."
+  },
+  {
+    "id": "better_microscope",
+    "name": "Better Microscope Lens",
+    "cost": 160,
+    "effect": "focusHelp",
+    "value": 1,
+    "description": "Microscope focus mini-games become easier."
+  },
+  {
+    "id": "advanced_notebook",
+    "name": "Advanced Notebook",
+    "cost": 200,
+    "effect": "xpBonus",
+    "value": 0.1,
+    "description": "Earn bonus XP after debrief quizzes."
+  }
+]

@@ -1,0 +1,59 @@
+{
+  "title": "Map Master Africa",
+  "description": "Educational geography and GIS game with a world overview, continent identification, an Africa-focused political and physical map, South Africa provinces, map-tap questions, multiple-choice rounds, sounds, animated markers, and score bridge support.",
+  "tags": [
+    "educational",
+    "geography",
+    "GIS",
+    "Africa",
+    "world map",
+    "capitals",
+    "countries",
+    "rivers",
+    "mountains",
+    "provinces",
+    "coordinates",
+    "mobile",
+    "quiz"
+  ],
+  "controls": [
+    {
+      "key": "Tap glowing marker",
+      "action": "Answer map-location questions"
+    },
+    {
+      "key": "Tap answer button",
+      "action": "Answer multiple-choice questions"
+    },
+    {
+      "key": "Skip",
+      "action": "Skip a hard question for a score penalty"
+    },
+    {
+      "key": "Pause / Restart / Sound",
+      "action": "Control the run"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "enhancedAnimations": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "levels": 6,
+    "educational": true,
+    "missions": true,
+    "topics": [
+      "World overview",
+      "Continents",
+      "African countries and capitals",
+      "African physical geography",
+      "South African provinces",
+      "GIS coordinates and map elements"
+    ]
+  },
+  "version": "2.0.0"
+}

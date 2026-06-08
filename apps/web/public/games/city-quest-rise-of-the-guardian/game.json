@@ -1,0 +1,98 @@
+{
+  "title": "City Quest: Rise of the Guardian",
+  "slug": "city-quest-rise-of-the-guardian",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "category": "Adventure Platformer",
+  "description": "Township adventure platformer with story mode, NPC missions, platform jumping, player shooting, shooting drones, moving platforms, enemies, obstacles, power-ups, unlockable skins, boss stages, map progression, sounds, and score bridge support.",
+  "tags": [
+    "adventure",
+    "platformer",
+    "story mode",
+    "township",
+    "rooftops",
+    "streets",
+    "market",
+    "taxi rank",
+    "hidden caves",
+    "shooting enemies",
+    "flying drones",
+    "moving platforms",
+    "power ups",
+    "boss",
+    "collectibles",
+    "mobile"
+  ],
+  "controls": [
+    {
+      "key": "Arrow keys / A D",
+      "action": "Move left and right"
+    },
+    {
+      "key": "Space / Up / W",
+      "action": "Jump"
+    },
+    {
+      "key": "J / Ctrl",
+      "action": "Shoot guardian energy"
+    },
+    {
+      "key": "E / Enter",
+      "action": "Interact / Complete exit"
+    },
+    {
+      "key": "M",
+      "action": "Open map"
+    },
+    {
+      "key": "Mobile buttons",
+      "action": "Move / Jump / Shoot / Action / Map"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "responsiveScaledCanvas": true,
+    "sound": true,
+    "backgroundMusic": true,
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "storyMode": true,
+    "floatingMissionGuidance": true,
+    "floatingStoryGuidance": true,
+    "animatedCharacterMovement": true,
+    "platformJumping": true,
+    "playerShooting": true,
+    "shootingEnemies": true,
+    "flyingShootingDrones": true,
+    "movingPlatforms": true,
+    "enemiesAndObstacles": true,
+    "powerUps": [
+      "shield",
+      "heart",
+      "blaster"
+    ],
+    "coinsAndCollectibles": true,
+    "townshipWorlds": [
+      "rooftops",
+      "streets",
+      "markets",
+      "taxi ranks",
+      "hidden caves",
+      "rail yard",
+      "skyline bridge",
+      "underground vault",
+      "final trial"
+    ],
+    "missionNPCs": true,
+    "moreNPCs": true,
+    "unlockableSkins": true,
+    "levelMap": true,
+    "bossStages": true,
+    "highQualityThumbnail": true,
+    "levels": 10
+  },
+  "version": "2.0.0"
+}
