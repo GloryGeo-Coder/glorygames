@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -14,6 +15,8 @@ const navLinks = [
 
 export default function SiteHeader() {
   const pathname = usePathname();
+  const { user, loading } = useCurrentUser();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -77,6 +80,41 @@ export default function SiteHeader() {
     };
   }, [menuOpen]);
 
+  async function signOut() {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    window.dispatchEvent(new Event("wga:user-changed"));
+    window.location.href = "/";
+  }
+
+  const activePath = pathname || "/";
+
+  const authControls = user ? (
+    <>
+      <span className="wgaUserPill" title={user.email}>
+        👤 {user.displayName}
+      </span>
+
+      <button type="button" className="wgaLogoutButton" onClick={signOut}>
+        Sign out
+      </button>
+    </>
+  ) : (
+    <>
+      <Link className="pill" href="/login">
+        {loading ? "Checking…" : "Sign in"}
+      </Link>
+
+      <Link className="cta smallCta" href="/signup">
+        Create account
+      </Link>
+    </>
+  );
+
   return (
     <header
       className={[
@@ -104,22 +142,14 @@ export default function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className={pathname === link.href ? "active" : ""}
+              className={activePath === link.href ? "active" : ""}
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="wgaDesktopActions">
-          <Link className="pill" href="/login">
-            Sign in
-          </Link>
-
-          <Link className="cta smallCta" href="/signup">
-            Create account
-          </Link>
-        </div>
+        <div className="wgaDesktopActions">{authControls}</div>
 
         <button
           type="button"
@@ -145,15 +175,7 @@ export default function SiteHeader() {
             </Link>
           ))}
 
-          <div className="wgaMobileAuth">
-            <Link className="pill" href="/login">
-              Sign in
-            </Link>
-
-            <Link className="cta" href="/signup">
-              Create account
-            </Link>
-          </div>
+          <div className="wgaMobileAuth">{authControls}</div>
         </nav>
       </div>
     </header>
