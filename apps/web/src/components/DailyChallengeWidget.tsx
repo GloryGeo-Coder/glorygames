@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 type Row = { name: string; score: number };
 
@@ -12,40 +13,56 @@ export function DailyChallengeWidget({
   gameSlug: string;
   title: string;
 }) {
+  const { user, loading: userLoading } = useCurrentUser();
+
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
     "idle"
   );
   const [rows, setRows] = useState<Row[]>([]);
   const [myScore, setMyScore] = useState<number | null>(null);
 
-  // IMPORTANT: do not read localStorage during render (SSR hydration mismatch)
-  const [playerName, setPlayerName] = useState("Player");
+  // Do not read localStorage during render. This avoids SSR hydration mismatch.
+  // This is only used when the visitor is not logged in.
+  const [guestName, setGuestName] = useState("Guest Player");
+
+  const effectivePlayerName =
+    user?.displayName?.trim() || guestName.trim() || "Guest Player";
 
   useEffect(() => {
-    // Runs only on client after mount -> no hydration mismatch
     try {
-      const key = `gg_player_name`;
+      const key = "wga_guest_player_name";
       const existing = localStorage.getItem(key);
+
       if (existing && existing.trim()) {
-        setPlayerName(existing.trim());
+        setGuestName(existing.trim());
         return;
       }
-      const newName = `Player-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const newName = `Guest-${Math.floor(1000 + Math.random() * 9000)}`;
       localStorage.setItem(key, newName);
-      setPlayerName(newName);
+      setGuestName(newName);
     } catch {
-      // keep "Player"
+      setGuestName("Guest Player");
     }
   }, []);
 
   const refresh = useMemo(() => {
     return async () => {
       setStatus("loading");
+
       try {
-        const res = await fetch(`/api/daily-challenge?gameSlug=${gameSlug}`, {
-          cache: "no-store",
+        const params = new URLSearchParams({
+          gameSlug,
+          playerName: effectivePlayerName,
         });
+
+        const res = await fetch(`/api/daily-challenge?${params.toString()}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         const data = (await res.json()) as {
           rows: Row[];
           me?: { name: string; score: number } | null;
@@ -59,11 +76,12 @@ export function DailyChallengeWidget({
         setStatus("error");
       }
     };
-  }, [gameSlug]);
+  }, [gameSlug, effectivePlayerName]);
 
   useEffect(() => {
+    if (userLoading) return;
     refresh();
-  }, [refresh]);
+  }, [refresh, userLoading]);
 
   return (
     <div className="heroCard" style={{ padding: 14 }}>
@@ -71,7 +89,9 @@ export function DailyChallengeWidget({
         <div>
           <b>{title}</b>
           <div className="mutedTiny" style={{ marginTop: 6 }}>
-            <span className="badge">{playerName}</span>
+            <span className="badge">
+              {user ? `Signed in as ${effectivePlayerName}` : effectivePlayerName}
+            </span>
           </div>
         </div>
 
@@ -84,10 +104,10 @@ export function DailyChallengeWidget({
             className="pill"
             type="button"
             onClick={refresh}
-            disabled={status === "loading"}
+            disabled={status === "loading" || userLoading}
             title="Refresh leaderboard"
           >
-            {status === "loading" ? "Loading…" : "Refresh"}
+            {status === "loading" || userLoading ? "Loading…" : "Refresh"}
           </button>
         </div>
       </div>
@@ -122,25 +142,37 @@ export function DailyChallengeWidget({
           </div>
 
           <div style={{ display: "grid", gap: 6 }}>
-            {(rows || []).slice(0, 5).map((r, i) => (
-              <div
-                key={`${r.name}-${i}`}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  padding: "8px 10px",
-                  borderRadius: 12,
-                  background: "rgba(255,255,255,.06)",
-                }}
-              >
-                <div style={{ display: "flex", gap: 10 }}>
-                  <span className="badge">#{i + 1}</span>
-                  <span>{r.name}</span>
+            {(rows || []).slice(0, 5).map((r, i) => {
+              const isCurrentPlayer =
+                r.name?.trim().toLowerCase() ===
+                effectivePlayerName.trim().toLowerCase();
+
+              return (
+                <div
+                  key={`${r.name}-${i}`}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    padding: "8px 10px",
+                    borderRadius: 12,
+                    background: isCurrentPlayer
+                      ? "rgba(56,189,248,.14)"
+                      : "rgba(255,255,255,.06)",
+                    border: isCurrentPlayer
+                      ? "1px solid rgba(56,189,248,.24)"
+                      : "1px solid transparent",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <span className="badge">#{i + 1}</span>
+                    <span>{r.name}</span>
+                  </div>
+
+                  <b>{Number(r.score || 0).toLocaleString()}</b>
                 </div>
-                <b>{Number(r.score || 0).toLocaleString()}</b>
-              </div>
-            ))}
+              );
+            })}
 
             {!rows?.length && status === "ready" ? (
               <div style={{ color: "rgba(255,255,255,.7)" }}>
