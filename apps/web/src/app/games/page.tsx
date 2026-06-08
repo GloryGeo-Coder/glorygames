@@ -5,6 +5,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { GameThumb } from "@/components/GameThumb";
 import { getFallbackGames } from "@/lib/fallbackGames";
+import { games } from "@/data/games.generated";
 
 export const dynamic = "force-dynamic";
 
