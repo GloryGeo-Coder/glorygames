@@ -2,15 +2,17 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { getGamesFromDatabase } from "@/lib/gamesDb";
 import { DailyChallengeWidget } from "@/components/DailyChallengeWidget";
 import { GameThumb } from "@/components/GameThumb";
 import { getFallbackGames } from "@/lib/fallbackGames";
 
 export const dynamic = "force-dynamic";
 
+const SITE_URL = "https://webgamearena.com";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://webgamearena.com"),
+  metadataBase: new URL(SITE_URL),
   title: "WebGameArena | Play Free Browser Games",
   description:
     "Play free browser games on WebGameArena. Discover arcade, action, adventure, puzzle, racing, educational and casual games built for instant play.",
@@ -27,9 +29,9 @@ export const metadata: Metadata = {
     "racing games",
     "casual games",
     "games",
-    "Online games",
-    "Free games",
-    "Multiplayer games",
+    "online games",
+    "free games",
+    "multiplayer games",
   ],
   alternates: {
     canonical: "/",
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
     title: "WebGameArena | Play Free Mobile Browser Games",
     description:
       "Jump into fast, mobile-first browser games. Play arcade, action, adventure, puzzle, racing and educational games instantly.",
-    url: "https://webgamearena.com",
+    url: SITE_URL,
     siteName: "WebGameArena",
     type: "website",
     locale: "en_ZA",
@@ -53,6 +55,15 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+};
+
+type HomeGame = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  tags: string[];
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -93,27 +104,37 @@ function categoryUrl(category: string) {
   return category.toLowerCase().replace(/_/g, "-");
 }
 
-async function getGames() {
-  const fallbackGames = getFallbackGames();
+function normalizeGames(
+  rows: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    description?: string | null;
+    category?: string | null;
+    tags?: string[];
+  }>
+): HomeGame[] {
+  return rows.map((game) => ({
+    id: game.id,
+    slug: game.slug,
+    title: game.title,
+    description: game.description ?? null,
+    category: game.category ?? "ARCADE",
+    tags: game.tags ?? [],
+  }));
+}
+
+async function getGames(): Promise<HomeGame[]> {
+  const fallbackGames = normalizeGames(getFallbackGames());
 
   try {
-    if (!process.env.DATABASE_URL) {
-      return fallbackGames;
+    const dbGames = await getGamesFromDatabase();
+
+    if (dbGames.length) {
+      return normalizeGames(dbGames);
     }
 
-    const games = await prisma.game.findMany({
-      orderBy: [{ category: "asc" }, { title: "asc" }],
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        description: true,
-        category: true,
-        tags: true,
-      },
-    });
-
-    return games.length ? games : fallbackGames;
+    return fallbackGames;
   } catch (error) {
     console.warn("[home] Falling back to static game list", error);
     return fallbackGames;
@@ -131,19 +152,20 @@ export default async function HomePage() {
   const featuredSlug = featuredGame?.slug || "fruit-slice";
   const featuredTitle = featuredGame?.title || "Fruit Slice";
 
-  const playNowGames = games.slice(0, 8);
+  // Important: show all games from Neon on the homepage.
+  const playNowGames = games;
   const gameCount = games.length;
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "WebGameArena",
-    url: "https://webgamearena.com",
+    url: SITE_URL,
     description:
       "A free mobile-first browser gaming platform with arcade, action, adventure, puzzle, racing, educational and casual games.",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://webgamearena.com/games?q={search_term_string}",
+      target: `${SITE_URL}/games?q={search_term_string}`,
       "query-input": "required name=search_term_string",
     },
   };
@@ -198,7 +220,7 @@ export default async function HomePage() {
               }}
             />
 
-              <div className="homeHeroGrid">
+            <div className="homeHeroGrid">
               <div>
                 <div
                   className="badge"
@@ -221,7 +243,7 @@ export default async function HomePage() {
                     maxWidth: 780,
                   }}
                 >
-                  Play fast, fun and Educational games built for your browser.
+                  Play fast, fun and educational games built for your browser.
                 </h1>
 
                 <p
@@ -434,164 +456,170 @@ export default async function HomePage() {
         </div>
       </section>
 
-        {/* PLAYER VALUE STRIP */}
-<section className="section playerValueSection">
-  <div className="container">
-    <div className="playerValueGrid">
-      <div className="playerValueCard">
-        <div className="playerValueIcon">⚡</div>
-        <div>
-          <div className="playerValueLabel">Instant play</div>
-          <h3>No installs. No waiting.</h3>
-          <p>
-            Open a game and start playing directly in your browser. No downloads,
-            no setup, no friction.
-          </p>
-        </div>
-      </div>
+      {/* PLAYER VALUE STRIP */}
+      <section className="section playerValueSection">
+        <div className="container">
+          <div className="playerValueGrid">
+            <div className="playerValueCard">
+              <div className="playerValueIcon">⚡</div>
+              <div>
+                <div className="playerValueLabel">Instant play</div>
+                <h3>No installs. No waiting.</h3>
+                <p>
+                  Open a game and start playing directly in your browser. No
+                  downloads, no setup, no friction.
+                </p>
+              </div>
+            </div>
 
-      <div className="playerValueCard featuredValueCard">
-        <div className="playerValueIcon">🏆</div>
-        <div>
-          <div className="playerValueLabel">Compete daily</div>
-          <h3>Chase high scores.</h3>
-          <p>
-            Leaderboards, daily challenges and score tracking make every run
-            feel worth improving.
-          </p>
-        </div>
-      </div>
+            <div className="playerValueCard featuredValueCard">
+              <div className="playerValueIcon">🏆</div>
+              <div>
+                <div className="playerValueLabel">Compete daily</div>
+                <h3>Chase high scores.</h3>
+                <p>
+                  Leaderboards, daily challenges and score tracking make every
+                  run feel worth improving.
+                </p>
+              </div>
+            </div>
 
-      <div className="playerValueCard">
-        <div className="playerValueIcon">📱</div>
-        <div>
-          <div className="playerValueLabel">Mobile-first</div>
-          <h3>Built for touch controls.</h3>
-          <p>
-            Play comfortably on phones, tablets and desktop screens with
-            responsive layouts and simple controls.
-          </p>
+            <div className="playerValueCard">
+              <div className="playerValueIcon">📱</div>
+              <div>
+                <div className="playerValueLabel">Mobile-first</div>
+                <h3>Built for touch controls.</h3>
+                <p>
+                  Play comfortably on phones, tablets and desktop screens with
+                  responsive layouts and simple controls.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* DAILY CHALLENGE */}
-<section className="section dailyChallengeSection">
-  <div className="container">
-    <div className="dailyChallengeShell">
-      <div className="dailyChallengeIntro">
-        <div className="badge dailyBadge">🔥 Today’s Challenge</div>
+      <section className="section dailyChallengeSection">
+        <div className="container">
+          <div className="dailyChallengeShell">
+            <div className="dailyChallengeIntro">
+              <div className="badge dailyBadge">🔥 Today’s Challenge</div>
 
-        <h2>One featured game. One score to beat.</h2>
+              <h2>One featured game. One score to beat.</h2>
 
-        <p>
-          Take on the daily challenge, post your best score and come back
-          tomorrow for a fresh run. It is quick, competitive and built for
-          players who love improving every day.
-        </p>
+              <p>
+                Take on the daily challenge, post your best score and come back
+                tomorrow for a fresh run. It is quick, competitive and built for
+                players who love improving every day.
+              </p>
 
-        <div className="dailyChallengeActions">
-          <Link className="cta" href={`/play/${featuredSlug}`}>
-            Play Today’s Challenge →
-          </Link>
+              <div className="dailyChallengeActions">
+                <Link className="cta" href={`/play/${featuredSlug}`}>
+                  Play Today’s Challenge →
+                </Link>
 
-          <Link className="pill" href="/games">
-            Browse more games
-          </Link>
+                <Link className="pill" href="/games">
+                  Browse more games
+                </Link>
+              </div>
+            </div>
+
+            <div className="dailyChallengeWidgetWrap">
+              <DailyChallengeWidget
+                gameSlug={featuredSlug}
+                title={`Daily Challenge • ${featuredTitle}`}
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="dailyChallengeWidgetWrap">
-        <DailyChallengeWidget
-          gameSlug={featuredSlug}
-          title={`Daily Challenge • ${featuredTitle}`}
-        />
-      </div>
-    </div>
-  </div>
-</section>
+      {/* GAME GRID */}
+      <section className="section popularGamesSection">
+        <div className="container">
+          <div className="popularGamesHeader">
+            <div>
+              <div className="badge popularBadge">🎯 Game Arena</div>
+              <h2>Jump into a game</h2>
+              <p>
+                Quick-play browser games built for short breaks, high scores and
+                mobile-friendly fun. Choose a title, launch instantly and start
+                climbing the leaderboard.
+              </p>
+            </div>
 
+            <Link className="pill" href="/games">
+              Browse full library →
+            </Link>
+          </div>
 
+          <div className="popularGamesGrid">
+            {playNowGames.map((g, index) => (
+              <Link
+                key={g.id}
+                href={`/play/${g.slug}`}
+                className={`popularGameCard ${
+                  index === 0 ? "featuredGameCard" : ""
+                }`}
+                aria-label={`Play ${g.title}`}
+              >
+                <div className="popularThumb">
+                  <GameThumb slug={g.slug} title={g.title} />
 
-{/* GAME GRID */}
-<section className="section popularGamesSection">
-  <div className="container">
-    <div className="popularGamesHeader">
-      <div>
-        <div className="badge popularBadge">🎯 Popular Picks</div>
-        <h2>Jump into a game</h2>
-        <p>
-          Quick-play browser games built for short breaks, high scores and
-          mobile-friendly fun. Choose a title, launch instantly and start
-          climbing the leaderboard.
-        </p>
-      </div>
+                  <span className="badge popularCategoryBadge">
+                    {categoryLabel(g.category)}
+                  </span>
 
-      <Link className="pill" href="/games">
-        Browse full library →
-      </Link>
-    </div>
+                  {index === 0 ? (
+                    <span className="badge popularFeaturedBadge">
+                      Featured
+                    </span>
+                  ) : null}
+                </div>
 
-    <div className="popularGamesGrid">
-      {playNowGames.map((g, index) => (
-        <Link
-          key={g.id}
-          href={`/play/${g.slug}`}
-          className={`popularGameCard ${index === 0 ? "featuredGameCard" : ""}`}
-          aria-label={`Play ${g.title}`}
-        >
-          <div className="popularThumb">
-            <GameThumb slug={g.slug} title={g.title} />
+                <div className="popularGameBody">
+                  <div className="popularGameTitle">{g.title}</div>
 
-            <span className="badge popularCategoryBadge">
-              {categoryLabel(g.category)}
-            </span>
+                  <div className="popularGameDesc">
+                    {g.description ||
+                      "Tap to play instantly. Built for mobile and desktop."}
+                  </div>
 
-            {index === 0 ? (
-              <span className="badge popularFeaturedBadge">Featured</span>
+                  <div className="popularGameTags">
+                    <span className="badge">{categoryLabel(g.category)}</span>
+
+                    {(g.tags || []).slice(0, 3).map((tag) => (
+                      <span key={tag} className="badge">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="popularGameFooter">
+                    <span className="playBtn">Play now →</span>
+                    <span className="popularMeta">Instant browser play</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+
+            {!playNowGames.length ? (
+              <div className="heroCard popularEmptyCard">
+                <b>No games found.</b>
+                <div
+                  style={{
+                    color: "rgba(255,255,255,.7)",
+                    marginTop: 6,
+                  }}
+                >
+                  Seed the database or sync your public games folder.
+                </div>
+              </div>
             ) : null}
           </div>
-
-          <div className="popularGameBody">
-            <div className="popularGameTitle">{g.title}</div>
-
-            <div className="popularGameDesc">
-              {g.description ||
-                "Tap to play instantly. Built for mobile and desktop."}
-            </div>
-
-            <div className="popularGameTags">
-              <span className="badge">{categoryLabel(g.category)}</span>
-
-              {(g.tags || []).slice(0, 3).map((tag) => (
-                <span key={tag} className="badge">
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="popularGameFooter">
-              <span className="playBtn">Play now →</span>
-              <span className="popularMeta">Instant browser play</span>
-            </div>
-          </div>
-        </Link>
-      ))}
-
-      {!playNowGames.length ? (
-        <div className="heroCard popularEmptyCard">
-          <b>No games found.</b>
-          <div style={{ color: "rgba(255,255,255,.7)", marginTop: 6 }}>
-            Seed the database or sync your public games folder.
-          </div>
         </div>
-      ) : null}
-    </div>
-  </div>
-</section>
-
+      </section>
     </>
   );
 }
