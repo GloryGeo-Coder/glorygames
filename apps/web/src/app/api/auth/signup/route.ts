@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { getPrisma, hasUsableDatabaseUrl } from "@/lib/prisma";
+import { createId, getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
 import {
   getSessionCookieName,
   getSessionCookieOptions,
@@ -19,48 +19,20 @@ const Body = z.object({
   displayName: z.string().min(2).max(40).optional(),
 });
 
-function authUnavailable(message: string) {
-  return NextResponse.json(
-    {
-      error: message,
-    },
-    { status: 503 }
-  );
-}
-
-function friendlyDatabaseError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-
-  if (
-    message.includes("P1001") ||
-    message.toLowerCase().includes("can't reach database") ||
-    message.toLowerCase().includes("connection")
-  ) {
-    return "Account signup is temporarily unavailable because the database cannot be reached.";
-  }
-
-  if (
-    message.includes("P2021") ||
-    message.includes("P2022") ||
-    message.toLowerCase().includes("does not exist") ||
-    message.toLowerCase().includes("relation")
-  ) {
-    return "Account signup is temporarily unavailable because the database tables have not been created yet.";
-  }
-
-  return "Signup failed. Please try again later.";
+function unavailable(message: string, status = 503) {
+  return NextResponse.json({ error: message }, { status });
 }
 
 export async function POST(req: NextRequest) {
   try {
-    if (!hasUsableDatabaseUrl()) {
-      return authUnavailable(
+    if (!hasUsableNeonDatabaseUrl()) {
+      return unavailable(
         "Account signup is temporarily unavailable because the production database is not configured."
       );
     }
 
     if (!isAuthConfigured()) {
-      return authUnavailable(
+      return unavailable(
         "Account signup is temporarily unavailable because the session secret is not configured."
       );
     }
@@ -70,10 +42,15 @@ export async function POST(req: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid signup details. Password must be at least 8 characters." },
+        {
+          error:
+            "Invalid signup details. Password must be at least 8 characters.",
+        },
         { status: 400 }
       );
     }
+
+    const sql = getNeonSql();
 
     const email = parsed.data.email.trim().toLowerCase();
     const passwordHash = await bcrypt.hash(parsed.data.password, 10);
@@ -83,32 +60,47 @@ export async function POST(req: NextRequest) {
       email.split("@")[0].replace(/[^a-zA-Z0-9_-]/g, "") ||
       "Player";
 
-    const prisma = getPrisma();
+    const existing = await sql`
+      SELECT id
+      FROM "User"
+      WHERE email = ${email}
+      LIMIT 1
+    `;
 
-    const existing = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true },
-    });
-
-    if (existing) {
+    if (existing.length > 0) {
       return NextResponse.json(
         { error: "An account with this email already exists" },
         { status: 409 }
       );
     }
 
-    const user = await prisma.user.create({
-      data: {
+    const id = createId();
+
+    const rows = await sql`
+      INSERT INTO "User" (
+        id,
         email,
-        displayName,
-        passwordHash,
-      },
-      select: {
-        id: true,
-        email: true,
-        displayName: true,
-      },
-    });
+        "displayName",
+        "passwordHash",
+        "createdAt",
+        "updatedAt"
+      )
+      VALUES (
+        ${id},
+        ${email},
+        ${displayName},
+        ${passwordHash},
+        NOW(),
+        NOW()
+      )
+      RETURNING id, email, "displayName"
+    `;
+
+    const user = rows[0] as {
+      id: string;
+      email: string;
+      displayName: string;
+    };
 
     const token = await signSession(user);
 
@@ -127,8 +119,12 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[auth/signup] failed", error);
 
+    const message = error instanceof Error ? error.message : String(error);
+
     return NextResponse.json(
-      { error: friendlyDatabaseError(error) },
+      {
+        error: `Signup failed: ${message}`,
+      },
       { status: 500 }
     );
   }

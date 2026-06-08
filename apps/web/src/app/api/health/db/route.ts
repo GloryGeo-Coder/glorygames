@@ -1,7 +1,7 @@
 // apps/web/src/app/api/health/db/route.ts
 
 import { NextResponse } from "next/server";
-import { getPrisma, hasUsableDatabaseUrl } from "@/lib/prisma";
+import { hasUsableNeonDatabaseUrl, getNeonSql } from "@/lib/neon";
 import { isAuthConfigured } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +11,7 @@ function maskDatabaseUrl(url?: string | null) {
 
   try {
     const parsed = new URL(url);
+
     return {
       protocol: parsed.protocol,
       hostname: parsed.hostname,
@@ -33,8 +34,9 @@ export async function GET() {
   const report = {
     ok: false,
     runtime: "cloudflare-worker",
+    driver: "neon-serverless-http",
     hasDatabaseUrl: Boolean(databaseUrl),
-    usableDatabaseUrl: hasUsableDatabaseUrl(),
+    usableDatabaseUrl: hasUsableNeonDatabaseUrl(),
     database: maskDatabaseUrl(databaseUrl),
     hasJwtSecret: isAuthConfigured(),
     cookieName: process.env.COOKIE_NAME ?? "gg_session",
@@ -42,7 +44,7 @@ export async function GET() {
   };
 
   try {
-    if (!hasUsableDatabaseUrl()) {
+    if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json(
         {
           ...report,
@@ -53,18 +55,23 @@ export async function GET() {
       );
     }
 
-    const prisma = getPrisma();
+    const sql = getNeonSql();
 
-    const [userCount, gameCount] = await Promise.all([
-      prisma.user.count(),
-      prisma.game.count(),
-    ]);
+    const userRows = await sql`
+      SELECT COUNT(*)::int AS count
+      FROM "User"
+    `;
+
+    const gameRows = await sql`
+      SELECT COUNT(*)::int AS count
+      FROM "Game"
+    `;
 
     return NextResponse.json({
       ...report,
       ok: true,
-      userCount,
-      gameCount,
+      userCount: userRows[0]?.count ?? 0,
+      gameCount: gameRows[0]?.count ?? 0,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

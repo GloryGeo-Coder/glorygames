@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { getPrisma, hasUsableDatabaseUrl } from "@/lib/prisma";
+import { getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
 import {
   getSessionCookieName,
   getSessionCookieOptions,
@@ -18,48 +18,20 @@ const Body = z.object({
   password: z.string().min(1),
 });
 
-function authUnavailable(message: string) {
-  return NextResponse.json(
-    {
-      error: message,
-    },
-    { status: 503 }
-  );
-}
-
-function friendlyDatabaseError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
-
-  if (
-    message.includes("P1001") ||
-    message.toLowerCase().includes("can't reach database") ||
-    message.toLowerCase().includes("connection")
-  ) {
-    return "Account login is temporarily unavailable because the database cannot be reached.";
-  }
-
-  if (
-    message.includes("P2021") ||
-    message.includes("P2022") ||
-    message.toLowerCase().includes("does not exist") ||
-    message.toLowerCase().includes("relation")
-  ) {
-    return "Account login is temporarily unavailable because the database tables have not been created yet.";
-  }
-
-  return "Login failed. Please try again later.";
+function unavailable(message: string, status = 503) {
+  return NextResponse.json({ error: message }, { status });
 }
 
 export async function POST(req: NextRequest) {
   try {
-    if (!hasUsableDatabaseUrl()) {
-      return authUnavailable(
+    if (!hasUsableNeonDatabaseUrl()) {
+      return unavailable(
         "Account login is temporarily unavailable because the production database is not configured."
       );
     }
 
     if (!isAuthConfigured()) {
-      return authUnavailable(
+      return unavailable(
         "Account login is temporarily unavailable because the session secret is not configured."
       );
     }
@@ -74,29 +46,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const sql = getNeonSql();
+
     const email = parsed.data.email.trim().toLowerCase();
     const password = parsed.data.password;
 
-    const prisma = getPrisma();
+    const rows = await sql`
+      SELECT id, email, "displayName", "passwordHash"
+      FROM "User"
+      WHERE email = ${email}
+      LIMIT 1
+    `;
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        displayName: true,
-        passwordHash: true,
-      },
-    });
+    const userRow = rows[0] as
+      | {
+          id: string;
+          email: string;
+          displayName: string;
+          passwordHash: string;
+        }
+      | undefined;
 
-    if (!user) {
+    if (!userRow) {
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }
       );
     }
 
-    const passwordOk = await bcrypt.compare(password, user.passwordHash);
+    const passwordOk = await bcrypt.compare(password, userRow.passwordHash);
 
     if (!passwordOk) {
       return NextResponse.json(
@@ -105,17 +83,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const sessionUser = {
-      id: user.id,
-      email: user.email,
-      displayName: user.displayName,
+    const user = {
+      id: userRow.id,
+      email: userRow.email,
+      displayName: userRow.displayName,
     };
 
-    const token = await signSession(sessionUser);
+    const token = await signSession(user);
 
     const response = NextResponse.json({
       ok: true,
-      user: sessionUser,
+      user,
     });
 
     response.cookies.set(
@@ -128,8 +106,12 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("[auth/login] failed", error);
 
+    const message = error instanceof Error ? error.message : String(error);
+
     return NextResponse.json(
-      { error: friendlyDatabaseError(error) },
+      {
+        error: `Login failed: ${message}`,
+      },
       { status: 500 }
     );
   }
