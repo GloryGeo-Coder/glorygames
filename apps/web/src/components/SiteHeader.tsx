@@ -8,10 +8,9 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/games", label: "Games" },
-  { href: "/games?category=arcade", label: "Arcade" },
-  { href: "/games?category=adventure", label: "Adventure" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact Us" },
 ];
 
 export default function SiteHeader() {
