@@ -9,14 +9,14 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "Contact WebGameArena | Support, Feedback & Partnerships",
   description:
-    "Contact WebGameArena for player support, feedback, game submissions, advertising and partnership opportunities.",
+    "Contact WebGameArena for player support, privacy enquiries, game submissions, advertising and partnership opportunities.",
   alternates: {
     canonical: "/contact",
   },
   openGraph: {
     title: "Contact WebGameArena",
     description:
-      "Get in touch with WebGameArena for support, feedback, partnerships and game submissions.",
+      "Get in touch with WebGameArena for support, feedback, privacy enquiries, partnerships and game submissions.",
     url: "https://webgamearena.com/contact",
     siteName: "WebGameArena",
     type: "website",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Contact WebGameArena",
     description:
-      "Contact WebGameArena for player support, feedback and partnerships.",
+      "Contact WebGameArena for player support, feedback, privacy enquiries and partnerships.",
   },
 };
 
@@ -36,7 +36,7 @@ export default function ContactPage() {
       <InfoPage
         eyebrow="Contact"
         title="Need help, have feedback, or want to work with WebGameArena?"
-        description="We are building WebGameArena into a player-friendly browser gaming platform. Reach out for support, suggestions, partnerships, game submissions or advertising enquiries."
+        description="We are building WebGameArena into a player-friendly browser gaming platform. Reach out for support, suggestions, privacy enquiries, partnerships, game submissions or advertising enquiries."
         cta={{
           label: "Browse Games",
           href: "/games",
@@ -44,19 +44,23 @@ export default function ContactPage() {
         sections={[
           {
             title: "Player support",
-            body: "If a game is not loading, a score is not saving, or something does not work as expected, please include the game name, your browser, your device type and a short description of the problem.",
+            body: "If a game is not loading, a score is not saving, or something does not work as expected, please email support@webgamearena.com and include the game name, your browser, your device type and a short description of the problem.",
+          },
+          {
+            title: "Privacy enquiries",
+            body: "For privacy questions, account data questions, cookie questions or advertising-cookie enquiries, please email privacy@webgamearena.com.",
           },
           {
             title: "Feedback and suggestions",
-            body: "Player feedback helps improve the platform. You can suggest new game categories, report confusing controls, recommend features or share ideas for new games.",
+            body: "Player feedback helps improve the platform. You can suggest new game categories, report confusing controls, recommend features or share ideas for new games by emailing support@webgamearena.com.",
           },
           {
             title: "Game submissions",
-            body: "Developers and creators will soon be able to submit mobile-friendly HTML5 browser games for review. Submitted games should work on desktop and mobile, include clear controls, and avoid harmful or inappropriate content.",
+            body: "Developers and creators can contact games@webgamearena.com about mobile-friendly HTML5 browser games for review. Submitted games should work on desktop and mobile, include clear controls, and avoid harmful or inappropriate content.",
           },
           {
             title: "Advertising and partnerships",
-            body: "WebGameArena is open to future brand partnerships, sponsorships and advertising opportunities that fit a safe, player-focused gaming experience.",
+            body: "For advertising, sponsorships, partnerships or brand enquiries, please email ads@webgamearena.com. Advertising should fit a safe, player-focused gaming experience and should not interfere with game controls, chat, navigation or play buttons.",
           },
         ]}
       />
@@ -68,7 +72,57 @@ export default function ContactPage() {
               Contact Options
             </div>
 
-            <h2 style={{ marginTop: 12 }}>Quick links</h2>
+            <h2 style={{ marginTop: 12 }}>Email WebGameArena</h2>
+
+            <p
+              style={{
+                color: "rgba(255,255,255,.68)",
+                marginTop: 8,
+                lineHeight: 1.6,
+              }}
+            >
+              Use the correct email address below so your message reaches the
+              right place.
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 12,
+                marginTop: 16,
+              }}
+            >
+              <a className="heroCard" style={{ padding: 14, textDecoration: "none" }} href="mailto:support@webgamearena.com">
+                <b>Player support</b>
+                <div className="mutedTiny" style={{ marginTop: 6 }}>
+                  support@webgamearena.com
+                </div>
+              </a>
+
+              <a className="heroCard" style={{ padding: 14, textDecoration: "none" }} href="mailto:privacy@webgamearena.com">
+                <b>Privacy enquiries</b>
+                <div className="mutedTiny" style={{ marginTop: 6 }}>
+                  privacy@webgamearena.com
+                </div>
+              </a>
+
+              <a className="heroCard" style={{ padding: 14, textDecoration: "none" }} href="mailto:games@webgamearena.com">
+                <b>Game submissions</b>
+                <div className="mutedTiny" style={{ marginTop: 6 }}>
+                  games@webgamearena.com
+                </div>
+              </a>
+
+              <a className="heroCard" style={{ padding: 14, textDecoration: "none" }} href="mailto:ads@webgamearena.com">
+                <b>Advertising</b>
+                <div className="mutedTiny" style={{ marginTop: 6 }}>
+                  ads@webgamearena.com
+                </div>
+              </a>
+            </div>
+
+            <h2 style={{ marginTop: 24 }}>Quick links</h2>
 
             <div
               style={{
@@ -84,6 +138,14 @@ export default function ContactPage() {
 
               <Link className="pill" href="/advertise">
                 Advertise
+              </Link>
+
+              <Link className="pill" href="/privacy">
+                Privacy Policy
+              </Link>
+
+              <Link className="pill" href="/cookies">
+                Cookie Policy
               </Link>
 
               <Link className="pill" href="/community-guidelines">
@@ -102,6 +164,9 @@ export default function ContactPage() {
                 lineHeight: 1.6,
               }}
             >
+              For safety, please do not send passwords, private account
+              credentials, personal addresses, payment information or sensitive
+              information through email.
             </p>
           </div>
         </div>
