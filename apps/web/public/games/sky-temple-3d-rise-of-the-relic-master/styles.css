@@ -1,0 +1,116 @@
+:root{
+  --bg:#090e22;
+  --panel:rgba(10,16,36,.70);
+  --stroke:rgba(255,255,255,.14);
+  --text:rgba(248,251,255,.98);
+  --muted:rgba(222,232,255,.76);
+  --gold:#ffd66f;
+  --cyan:#66e7ff;
+  --violet:#a98bff;
+  --pink:#ff8ac8;
+  --green:#75efb0;
+  --red:#ff6f7f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 16% 10%,rgba(102,231,255,.18),transparent 26%),
+    radial-gradient(circle at 88% 14%,rgba(169,139,255,.18),transparent 24%),
+    linear-gradient(180deg,#121936 0%,#070b19 100%);
+  overflow:hidden;
+}
+button{font:inherit;color:var(--text);cursor:pointer}
+.game-shell{height:100%;display:grid;grid-template-rows:auto 1fr}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;background:rgba(7,10,22,.78);border-bottom:1px solid var(--stroke);backdrop-filter:blur(14px)
+}
+.brand{font-size:26px;font-weight:1000;letter-spacing:.2px}
+.tagline{font-size:13px;color:var(--muted);font-weight:800;margin-top:3px}
+.tagline b{color:var(--gold)}
+.hud-grid{display:grid;grid-template-columns:repeat(6,86px);gap:8px}
+.hud-box{
+  padding:7px 8px 9px;border-radius:15px;background:rgba(255,255,255,.055);border:1px solid var(--stroke);text-align:center
+}
+.hud-box span{display:block;font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.35px}
+.hud-box b{display:block;margin-top:3px;font-size:18px;font-weight:1000}
+.play-wrap{min-height:0;display:grid;grid-template-rows:1fr auto;gap:8px;padding:10px}
+.canvas-shell{
+  position:relative;min-height:0;border-radius:28px;overflow:hidden;background:#081022;border:1px solid var(--stroke);
+  box-shadow:0 32px 90px rgba(0,0,0,.35)
+}
+#gameCanvas{display:block;width:100%;height:100%}
+.floating-actions{
+  position:absolute;right:14px;top:14px;z-index:6;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end
+}
+.floating-actions button,.controls button,.action-row button{
+  min-height:42px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.075);padding:0 13px;font-weight:1000
+}
+.floating-actions button{font-size:12px;min-height:38px;background:rgba(10,16,36,.58);backdrop-filter:blur(10px)}
+.floating-card{
+  position:absolute;z-index:5;max-width:min(430px,46vw);padding:12px;border-radius:18px;background:rgba(10,16,36,.56);
+  border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);box-shadow:0 18px 48px rgba(0,0,0,.25)
+}
+.mission-card{left:14px;top:14px}
+.story-card{left:14px;bottom:14px;max-width:min(560px,56vw)}
+.card-title{font-weight:1000;color:#fff8de;margin-bottom:5px;font-size:13px;text-transform:uppercase;letter-spacing:.6px}
+.floating-card p{margin:0;color:var(--muted);font-size:12px;font-weight:780;line-height:1.38}
+#powerText{display:inline-block;margin-top:6px;color:#fff4c8;font-weight:900;font-size:12px}
+.meter{height:10px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;margin:8px 0 4px}
+.meter>div{height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--cyan),var(--gold));box-shadow:0 0 18px rgba(102,231,255,.44)}
+.overlay{
+  position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:10;background:rgba(5,8,18,.62);backdrop-filter:blur(8px)
+}
+.overlay.active{display:flex}
+.overlay-card{
+  width:min(92%,840px);max-height:90vh;overflow:auto;padding:24px;border-radius:30px;background:rgba(10,14,30,.94);
+  border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 80px rgba(0,0,0,.45)
+}
+.overlay-card h1{margin:0;font-size:50px;color:#fff8dd}
+.overlay-card h2{margin:0 0 10px;color:var(--cyan)}
+.overlay-card p,.overlay-card li{color:var(--muted);font-weight:760;line-height:1.5}
+.feature-row{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.feature-row span{
+  padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:12px;font-weight:900
+}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.action-row .primary,.controls button:nth-child(3),.controls button:nth-child(4){
+  background:linear-gradient(135deg,var(--violet),var(--cyan));color:#07112a;border:0
+}
+.stars{font-size:34px;color:var(--gold);margin:10px 0 4px;letter-spacing:5px}
+.controls{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.controls button{background:rgba(10,16,36,.85)}
+.cutscene-label{
+  display:inline-block;padding:8px 12px;border-radius:999px;background:rgba(255,214,111,.12);
+  border:1px solid rgba(255,214,111,.35);font-weight:1000;color:var(--gold);font-size:12px;margin-bottom:12px
+}
+.map-grid,.shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px}
+.map-node,.shop-card-item{
+  padding:14px;border-radius:20px;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);text-align:left;min-height:96px
+}
+.map-node.unlocked{background:linear-gradient(135deg,rgba(102,231,255,.13),rgba(169,139,255,.10))}
+.map-node.locked,.shop-card-item.locked{opacity:.56;filter:grayscale(.25)}
+.map-node strong,.shop-card-item strong{display:block;margin-bottom:5px;color:#fff8de}
+.map-node small,.shop-card-item small{display:block;color:var(--muted);font-weight:780;line-height:1.35}
+.shop-swatch{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.55);display:inline-block;margin:0 8px -9px 0;box-shadow:0 0 18px rgba(255,255,255,.18)}
+.shop-card-item.equipped{outline:2px solid var(--cyan);box-shadow:0 0 24px rgba(102,231,255,.18)}
+@media (max-width:980px){
+  body{overflow:auto}
+  .topbar{flex-direction:column;align-items:flex-start}
+  .hud-grid{width:100%;grid-template-columns:repeat(3,1fr)}
+  .canvas-shell{height:64vh}
+  .floating-card{max-width:calc(100% - 28px)}
+  .mission-card{left:10px;right:10px;top:10px}
+  .story-card{left:10px;right:10px;bottom:10px}
+  .floating-actions{right:10px;top:auto;bottom:88px}
+}
+@media (max-width:560px){
+  .hud-grid{grid-template-columns:repeat(2,1fr)}
+  .overlay-card h1{font-size:34px}
+  .controls{grid-template-columns:repeat(3,1fr)}
+  .brand{font-size:22px}
+}

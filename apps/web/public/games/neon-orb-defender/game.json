@@ -1,19 +1,22 @@
 {
-  "title": "Neon Orb Defender",
-  "description": "A mobile-first 3D defense game where the player rotates a shield around a glowing core, blocks enemy waves, and unleashes pulse blasts.",
-  "tags": ["arcade", "3d", "defense", "mobile", "neon"],
-  "controls": [
-    { "key": "Drag / Swipe", "action": "Rotate the shield" },
-    { "key": "Tap", "action": "Trigger pulse blast when charged" },
-    { "key": "Arrow Left / Right", "action": "Rotate shield on desktop" },
-    { "key": "Space / Enter", "action": "Pulse on desktop" }
-  ],
+  "title": "Neon Orb: Base Defence",
+  "slug": "neon-orb-base-defence",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "category": "Action",
+  "description": "A futuristic military-base arcade shooter where the player protects the Neon Orb, rescues friendly AI units, collects powerups and defeats rogue AI robots and drones.",
+  "orientation": "landscape",
+  "version": "1.0.0",
   "features": {
-    "mobileFirst": true,
-    "sound": true,
-    "enhancedAnimations": true,
-    "backgrounds": ["nebula-a.png", "nebula-b.png"],
-    "scoreEvents": ["GG_SCORE", "gg:score"]
-  },
-  "version": "2.0.0"
+    "levels": 9,
+    "storyMode": true,
+    "bossFight": true,
+    "mobileControls": true,
+    "soundEffects": true,
+    "backgroundMusic": true,
+    "scoreBridge": [
+      "GG_SCORE",
+      "gg:score"
+    ]
+  }
 }

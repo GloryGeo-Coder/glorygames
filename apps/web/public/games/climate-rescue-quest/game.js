@@ -211,6 +211,43 @@
 
   const player = { x: 0, y: 0, w: 112, h: 112, bob: 0 };
 
+  const BASE_PLAYER_SIZE = 112;
+  const MIN_PLAYER_SIZE = 78;
+  const MAX_PLAYER_SIZE = 118;
+
+  function bottomSafeGap() {
+    const h = getH();
+    const w = getW();
+
+    // Keeps the hero above the lower UI/footer/controls area on large screens,
+    // while giving a little more breathing room on smaller mobile screens.
+    const ratioGap = h * (w < 760 ? 0.19 : 0.145);
+    return Math.round(clamp(ratioGap, 86, 156));
+  }
+
+  function playerHomeY() {
+    return Math.max(96, getH() - player.h - bottomSafeGap());
+  }
+
+  function updatePlayerScale() {
+    const w = getW();
+    const h = getH();
+    const scale = clamp(Math.min(w / 1150, h / 680), 0.70, 1.05);
+    const size = Math.round(clamp(BASE_PLAYER_SIZE * scale, MIN_PLAYER_SIZE, MAX_PLAYER_SIZE));
+    player.w = size;
+    player.h = size;
+  }
+
+  function applyResponsivePlayerPosition(keepX = true) {
+    const w = getW();
+    if (!keepX || !Number.isFinite(player.x)) {
+      player.x = (w - player.w) / 2;
+    }
+    player.x = clamp(player.x, 16, w - player.w - 16);
+    player.y = playerHomeY();
+  }
+
+
   function loadState() {
     try {
       const saved = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
@@ -347,11 +384,13 @@
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
     canvas.width = Math.max(1, Math.round(rect.width * dpr));
     canvas.height = Math.max(1, Math.round(rect.height * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    player.x = (rect.width - player.w) / 2;
-    player.y = rect.height - 152;
+
+    updatePlayerScale();
+    applyResponsivePlayerPosition(true);
   }
 
   function rand(a, b) { return a + Math.random() * (b - a); }
@@ -435,6 +474,7 @@
   }
 
   function movePlayer(delta) {
+    applyResponsivePlayerPosition(true);
     player.x = clamp(player.x + delta, 16, getW() - player.w - 16);
   }
 
@@ -560,6 +600,9 @@
     if (!state.started || state.paused || state.levelComplete || state.gameOver) return;
     const lv = currentLevel();
     state.time += dt;
+
+    // Prevent the hero from being pushed under the lower UI/footer area.
+    applyResponsivePlayerPosition(true);
 
     if (Math.random() < (lv.boss ? 0.038 : 0.028) + state.levelIndex * 0.003) spawnItem();
 
@@ -809,6 +852,7 @@
       if (!dragActive) return;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
+      applyResponsivePlayerPosition(true);
       player.x = clamp(x - dragOffsetX, 16, getW() - player.w - 16);
     });
     canvas.addEventListener('pointerup', () => dragActive = false);
@@ -826,6 +870,11 @@
     }, {passive:true});
 
     window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 160));
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', resizeCanvas);
+      window.visualViewport.addEventListener('scroll', resizeCanvas);
+    }
 
     window.addEventListener('message', ev => {
       const data = ev.data || {};
@@ -847,6 +896,7 @@
   loadImages().then(() => {
     bindEvents();
     resizeCanvas();
+    setTimeout(resizeCanvas, 80);
     syncUI();
     requestAnimationFrame(loop);
   });

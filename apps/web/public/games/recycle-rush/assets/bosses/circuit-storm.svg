@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<radialGradient id="glow" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#55e7ff" stop-opacity=".95"/><stop offset="1" stop-color="#020814" stop-opacity="0"/></radialGradient>
+<linearGradient id="cyan" x1="0" x2="1"><stop stop-color="#48f1ff"/><stop offset="1" stop-color="#2ce39f"/></linearGradient>
+<linearGradient id="pink" x1="0" x2="1"><stop stop-color="#ff4aa5"/><stop offset="1" stop-color="#ff7b3d"/></linearGradient>
+<filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity=".45"/></filter>
+</defs>
+<rect width="512" height="512" fill="transparent"/><circle cx="256" cy="256" r="240" fill="#a379ff" opacity=".18"/><g filter="url(#shadow)"><path d="M85 295c-28-120 73-214 184-197 86 13 169 76 161 171-7 86-68 144-154 155-92 12-168-21-191-129z" fill="#071126" stroke="#a379ff" stroke-width="16"/><circle cx="214" cy="236" r="24" fill="#a379ff"/><circle cx="308" cy="236" r="24" fill="#a379ff"/><path d="M190 320q66 46 134 0" fill="none" stroke="#a379ff" stroke-width="18" stroke-linecap="round"/><text x="256" y="76" text-anchor="middle" font-family="Arial" font-weight="900" font-size="36" fill="#ffffff">CIRCUIT-STORM</text></g>
+</svg>

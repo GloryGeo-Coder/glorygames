@@ -1,113 +1,23 @@
 {
-  "title": "Physics Force Lab",
-  "description": "Educational physics launch game with 18 practical scenario levels, HD-style backgrounds, animated force-ball gameplay, angle and power controls, physics simulation, water drag and buoyancy, fan/wind zones, spring pads, moving targets, sounds, background music, missions, and score bridge support.",
-  "tags": [
-    "education",
-    "physics",
-    "science",
-    "gravity",
-    "force",
-    "friction",
-    "projectile motion",
-    "magnetism",
-    "energy",
-    "electricity",
-    "orbit",
-    "buoyancy",
-    "spring",
-    "wind",
-    "practical scenarios",
-    "mobile",
-    "arcade"
-  ],
-  "controls": [
-    {
-      "key": "Angle \u2212 / Angle +",
-      "action": "Adjust launch angle"
-    },
-    {
-      "key": "Power \u2212 / Power +",
-      "action": "Adjust launch force"
-    },
-    {
-      "key": "Launch",
-      "action": "Fire the force ball"
-    },
-    {
-      "key": "Hint",
-      "action": "Receive a level-specific physics hint for a small score penalty"
-    },
-    {
-      "key": "Keyboard arrows",
-      "action": "Adjust angle and power"
-    },
-    {
-      "key": "Space / Enter",
-      "action": "Launch"
-    }
-  ],
+  "title": "Physics Force Lab: Rise of the Young Physicist",
+  "slug": "physics-force-lab",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "category": "Educational",
+  "description": "A story-based physics adventure where a young physicist learns force, motion, gravity, friction, energy, simple machines, circuits, magnetism, waves, pressure, space physics and combined revision through missions, puzzles and collectables.",
+  "orientation": "landscape",
+  "version": "3.0.0",
   "features": {
-    "mobileFirst": true,
-    "sound": true,
+    "levels": 12,
+    "storyMode": true,
+    "curriculum": true,
+    "animatedSprites": true,
+    "soundEffects": true,
     "backgroundMusic": true,
-    "enhancedAnimations": true,
-    "physicsSimulation": true,
-    "practicalScenarios": true,
-    "movingTargets": true,
-    "fanZones": true,
-    "waterDragAndBuoyancy": true,
-    "springPads": true,
-    "scoreEvents": [
+    "mobileControls": true,
+    "scoreBridge": [
       "GG_SCORE",
       "gg:score"
-    ],
-    "levels": 18,
-    "educational": true,
-    "missions": true,
-    "backgrounds": [
-      "bg-bicycle-momentum.png",
-      "bg-bridge-clearance.png",
-      "bg-cargo-ramp.png",
-      "bg-circuit-room.png",
-      "bg-crane-yard.png",
-      "bg-energy-park.png",
-      "bg-friction-track.png",
-      "bg-gravity-lab.png",
-      "bg-magnet-zone.png",
-      "bg-magnetic-recycling.png",
-      "bg-mars-test.png",
-      "bg-orbit-space.png",
-      "bg-physics-boss.png",
-      "bg-playground-slide.png",
-      "bg-projectile-range.png",
-      "bg-safety-brake-zone.png",
-      "bg-solar-boost.png",
-      "bg-springboard-energy.png",
-      "bg-stadium-throw.png",
-      "bg-storm-rescue.png",
-      "bg-water-rescue.png",
-      "bg-windy-drone-delivery.png"
-    ],
-    "topics": [
-      "gravity",
-      "inclined planes",
-      "friction and braking",
-      "wind and air resistance",
-      "projectile motion",
-      "trajectory planning",
-      "magnetism",
-      "electric energy",
-      "buoyancy and water drag",
-      "elastic potential energy",
-      "precision and gravity",
-      "work and ramps",
-      "momentum",
-      "energy transfer",
-      "weather forces",
-      "low gravity",
-      "orbital motion",
-      "combined forces"
     ]
-  },
-  "version": "2.0.0"
+  }
 }

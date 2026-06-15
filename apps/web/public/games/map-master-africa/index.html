@@ -4,76 +4,111 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#07111f" />
-  <title>Map Master Africa</title>
+  <title>Map Master Africa: Explorer Missions</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="hud">
-    <div class="hud-left">
-      <div class="brand">Map Master Africa</div>
-      <div class="sub">Geography • GIS basics • capitals • landforms • map thinking</div>
-      <div class="level-pill" id="levelPill">Level 1 • African Regions</div>
-    </div>
-    <div class="hud-right">
-      <div class="stat"><span>Score</span><strong id="scoreValue">0</strong></div>
-      <div class="stat"><span>Lives</span><strong id="livesValue">3</strong></div>
-      <div class="stat"><span>Streak</span><strong id="streakValue">0</strong></div>
-      <div class="stat"><span>Best</span><strong id="bestValue">0</strong></div>
-    </div>
-  </header>
-
   <main class="app-shell">
-    <aside class="side-panel">
-      <div class="panel-card">
-        <div class="card-head"><span>Mission</span><b id="missionPct">0%</b></div>
-        <div class="mission-text" id="missionText">Answer map questions to unlock the next level.</div>
-        <div class="meter"><div id="missionFill"></div></div>
-      </div>
-
-      <div class="panel-card">
-        <div class="card-head"><span>Question</span><b id="questionType">Map Tap</b></div>
-        <div class="question-box" id="questionText">Tap Start to begin.</div>
-      </div>
-
-      <div class="panel-card">
-        <div class="card-head"><span>Learning Tip</span><b>Geo Skill</b></div>
-        <div class="tip-list" id="learningTip">
-          Use relative position, direction, region, and location clues to answer.
+    <header class="topbar">
+      <div class="brand-block">
+        <img src="./assets/ui/compass-v3.png" alt="" />
+        <div>
+          <strong>Map Master Africa</strong>
+          <span>Explorer Missions • Geography + GIS</span>
         </div>
       </div>
-    </aside>
 
-    <section class="game-shell">
-      <canvas id="gameCanvas" width="1280" height="720" aria-label="Map Master Africa game canvas"></canvas>
-
-      <div class="choices" id="choices"></div>
-
-      <div class="overlay" id="overlay">
-        <div class="overlay-card">
-          <h1 id="overlayTitle">Map Master Africa</h1>
-          <p id="overlayText">Learn the world first, then focus on Africa through countries, capitals, rivers, mountains, South African provinces, and GIS coordinate questions.</p>
-          <div class="overlay-actions">
-            <button id="startBtn" class="btn primary">Start</button>
-            <button id="helpBtn" class="btn">How to Play</button>
-          </div>
-          <div class="overlay-tags">
-            <span>6 levels</span>
-            <span>World + Africa</span>
-            <span>Map tapping</span>
-            <span>GIS basics</span>
-          </div>
-        </div>
+      <div class="stats">
+        <div><span>Score</span><b id="scoreValue">0</b></div>
+        <div><span>Lives</span><b id="livesValue">3</b></div>
+        <div><span>Streak</span><b id="streakValue">0</b></div>
+        <div><span>Stars</span><b id="starsValue">0</b></div>
+        <div><span>Best</span><b id="bestValue">0</b></div>
       </div>
+    </header>
+
+    <section class="main-grid">
+      <aside class="side-panel">
+        <section class="panel mission-card">
+          <div class="panel-title">
+            <span>Mission</span>
+            <b id="missionNumber">1 / 15</b>
+          </div>
+          <h2 id="missionTitle">Explorer Training</h2>
+          <p id="missionText">Tap Start to begin your expedition.</p>
+          <div class="mission-progress">
+            <div id="missionFill"></div>
+          </div>
+          <div class="mission-meta">
+            <span id="missionPct">0%</span>
+            <span id="missionMode">Tap</span>
+          </div>
+        </section>
+
+        <section class="panel question-card">
+          <div class="panel-title">
+            <span>Current Task</span>
+            <b id="questionType">Map</b>
+          </div>
+          <p id="questionText">Your geography mission will appear here.</p>
+          <div id="choiceList" class="choice-list"></div>
+        </section>
+
+        <section class="panel passport-card">
+          <div class="panel-title">
+            <span>Explorer Passport</span>
+            <b id="badgeCount">0</b>
+          </div>
+          <div class="passport-row">
+            <img src="./assets/ui/passport.png" alt="" />
+            <p id="passportText">Complete missions to unlock badges.</p>
+          </div>
+          <div id="badgeGrid" class="badge-grid"></div>
+        </section>
+      </aside>
+
+      <section class="game-column">
+        <section class="canvas-shell">
+          <canvas id="gameCanvas" width="1280" height="720" aria-label="Map Master Africa Explorer Missions game canvas"></canvas>
+
+          <div class="toast" id="toast">Ready</div>
+
+          <div class="overlay active" id="overlay">
+            <div class="overlay-card">
+              <img src="./assets/ui/trophy-map-master.png" alt="" />
+              <h1 id="overlayTitle">Map Master Africa</h1>
+              <h2>Explorer Missions</h2>
+              <p id="overlayText">
+                Travel across Africa, complete geography missions, learn countries, capitals,
+                rivers, mountains, deserts, islands, South African provinces, compass skills,
+                coordinates, and GIS basics.
+              </p>
+              <div class="overlay-tags">
+                <span>15 missions</span>
+                <span>Animated routes</span>
+                <span>Passport badges</span>
+                <span>GIS basics</span>
+              </div>
+              <div class="overlay-actions">
+                <button id="startBtn" class="primary">Start Expedition</button>
+                <button id="helpBtn">How to Play</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="bottombar">
+          <button id="pauseBtn">Pause</button>
+          <button id="hintBtn">Hint</button>
+          <button id="skipBtn">Skip Task</button>
+          <button id="mapBtn">Mission Map</button>
+          <button id="submitBtn">Submit Score</button>
+          <button id="restartBtn">Restart</button>
+          <button id="muteBtn">Sound On</button>
+        </footer>
+      </section>
     </section>
   </main>
-
-  <footer class="bottom-bar">
-    <button class="chip" id="pauseBtn">Pause</button>
-    <button class="chip" id="skipBtn">Skip</button>
-    <button class="chip" id="submitBtn">Submit Score</button>
-    <button class="chip" id="restartBtn">Restart</button>
-    <button class="chip" id="muteBtn">Sound</button>
-  </footer>
 
   <script src="./game.js"></script>
 </body>

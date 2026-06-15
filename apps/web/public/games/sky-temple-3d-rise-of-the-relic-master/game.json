@@ -1,0 +1,134 @@
+{
+  "title": "Sky Temple 3D: Rise of the Relic Master v2.1 Asset Edition",
+  "slug": "sky-temple-3d-rise-of-the-relic-master",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "category": "3D Adventure",
+  "description": "A 3D adventure game where the player explores floating islands, ancient temples, bridges, caves, and sky platforms while collecting relics and fighting enemies.",
+  "tags": [
+    "3d",
+    "adventure",
+    "platformer",
+    "floating islands",
+    "temple",
+    "relics",
+    "multiple worlds",
+    "fly power",
+    "shop",
+    "skins",
+    "cutscenes",
+    "bosses",
+    "enemy AI",
+    "mobile",
+    "cartoon",
+    "canvas"
+  ],
+  "controls": [
+    {
+      "key": "W / Arrow Up",
+      "action": "Move forward"
+    },
+    {
+      "key": "S / Arrow Down",
+      "action": "Move backward"
+    },
+    {
+      "key": "A / Arrow Left",
+      "action": "Move left"
+    },
+    {
+      "key": "D / Arrow Right",
+      "action": "Move right"
+    },
+    {
+      "key": "Space / F",
+      "action": "Jump or fly when fly power is active"
+    },
+    {
+      "key": "J / Ctrl",
+      "action": "Shoot energy blast"
+    },
+    {
+      "key": "M",
+      "action": "Open world map"
+    },
+    {
+      "key": "P",
+      "action": "Open shop"
+    },
+    {
+      "key": "Mobile buttons",
+      "action": "Move / Jump / Fly / Shoot"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "threeDStyleProjection": true,
+    "thirdPersonCamera": true,
+    "multipleWorlds": [
+      "Sky Garden",
+      "Crystal Caverns",
+      "Storm Citadel",
+      "Solar Sanctuary"
+    ],
+    "levels": 8,
+    "flyPower": true,
+    "playerPowers": [
+      "shield",
+      "fly",
+      "energy blast",
+      "extra life",
+      "speed boost"
+    ],
+    "enemyAI": [
+      "patrol",
+      "engage",
+      "hunter chase",
+      "predictive shooting",
+      "drone patrol",
+      "turret shooting"
+    ],
+    "unlockableSkins": [
+      "Sky Guardian",
+      "Solar Relic",
+      "Violet Master",
+      "Emerald Wind",
+      "Shadow Relic"
+    ],
+    "shopSystem": true,
+    "cutscenes": true,
+    "bosses": [
+      "Garden Sentinel",
+      "Crystal Warden",
+      "Thunder Golem",
+      "Relic Master"
+    ],
+    "lightingAndEffects": [
+      "world-based sky gradients",
+      "sun glow",
+      "fog layer",
+      "screen shake",
+      "screen flash",
+      "glowing projectiles",
+      "relic particles",
+      "fly wing effect"
+    ],
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "versionNotes": "Version 2 remains a self-contained browser game with no external libraries. It uses custom canvas-based 3D-style projection for strong compatibility.",
+    "assetEdition": true,
+    "assetsAdded": {
+      "worldBackgrounds": 4,
+      "playerSkins": 5,
+      "enemySprites": 3,
+      "bossSprites": 4,
+      "itemAndPowerIcons": 7,
+      "platformTextures": 4,
+      "portalEffects": 1
+    }
+  },
+  "version": "2.1.0"
+}

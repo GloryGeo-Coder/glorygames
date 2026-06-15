@@ -2,138 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#07111f" />
-  <title>Cyber Shield Academy</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cyber Shield Academy: Terminal Ops</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
+  <main class="app" id="app">
     <header class="topbar">
-      <div>
-        <div class="brand">Cyber Shield Academy</div>
-        <div class="tagline">Defensive cybersecurity arcade training</div>
+      <div class="brand">
+        <img src="assets/sprites/shield-ethics.png" alt="" />
+        <div>
+          <strong>Cyber Shield Academy</strong>
+          <span>Terminal Ops: Case BIT</span>
+        </div>
       </div>
-      <div class="score-grid">
-        <div class="score-box"><span>Score</span><b id="scoreValue">0</b></div>
-        <div class="score-box"><span>Level</span><b id="levelValue">1</b></div>
-        <div class="score-box"><span>Lives</span><b id="livesValue">3</b></div>
-        <div class="score-box"><span>Combo</span><b id="comboValue">x1</b></div>
+      <div class="hud">
+        <div><small>Score</small><b id="scoreValue">0</b></div>
+        <div><small>Trust</small><b id="trustValue">100</b></div>
+        <div><small>Trace</small><b id="traceValue">0%</b></div>
+        <div><small>Level</small><b id="levelValue">1</b></div>
       </div>
     </header>
 
-    <main class="main-wrap">
-      <aside class="side-panel">
-        <div class="panel-card">
-          <h3>Mission</h3>
-          <p id="missionText">Collect safe cyber habits and avoid risky digital threats.</p>
-          <div class="meter"><div id="progressBar"></div></div>
-          <div class="small" id="objectiveText">0 / 10</div>
+    <section class="desktop">
+      <aside class="window mission-window">
+        <div class="win-title"><span></span> Mission Briefing</div>
+        <div id="missionText" class="mission-text"></div>
+        <div class="objectives">
+          <h3>Objectives</h3>
+          <ul id="objectiveList"></ul>
         </div>
-
-        <div class="panel-card">
-          <h3>Abilities</h3>
-          <div class="pill-list">
-            <span class="pill" id="firewallState">Firewall: 1</span>
-            <span class="pill" id="scanState">Scan: 1</span>
-            <span class="pill" id="freezeState">Freeze: 1</span>
-          </div>
-        </div>
-
-        <div class="panel-card">
-          <h3>Cyber Tip</h3>
-          <p id="factText">Use strong, unique passwords and enable multi-factor authentication when available.</p>
-        </div>
-
-        <div class="panel-card">
-          <h3>Controls</h3>
-          <p class="small">Drag the shield drone, swipe left/right, use arrow keys, or tap the movement buttons. Use abilities to stay safe.</p>
+        <div class="principle">
+          <h3>Cyber principle</h3>
+          <p id="principleText"></p>
         </div>
       </aside>
 
-      <section class="game-column">
-        <div class="canvas-shell">
-          <canvas id="gameCanvas" width="1280" height="720" aria-label="Cyber Shield Academy game canvas"></canvas>
-
-          <div class="overlay active" id="startOverlay">
-            <div class="overlay-card hero-card">
-              <h1>Cyber Shield Academy</h1>
-              <p>Train as a cyber defender. Collect good digital habits, avoid risky threats, answer short debrief questions, and clear all academy missions.</p>
-              <div class="feature-row">
-                <span>10 levels</span>
-                <span>Animated sprites</span>
-                <span>Defensive learning</span>
-                <span>Mobile first</span>
-              </div>
-              <div class="action-row">
-                <button class="primary" id="playBtn">Start Training</button>
-                <button id="howBtn">How to Play</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="overlay" id="helpOverlay">
-            <div class="overlay-card">
-              <h2>How to Play</h2>
-              <ul>
-                <li>Collect safe items such as locks, keys, updates, backups, shields, and secure Wi‑Fi.</li>
-                <li>Avoid risky items such as phishing mail, weak passwords, malware bugs, and trackers.</li>
-                <li>Use Firewall, Scan Pulse, and Freeze to survive harder levels.</li>
-                <li>Complete the level objective, then answer a short defensive cyber question.</li>
-              </ul>
-              <button class="primary" id="closeHelpBtn">Close</button>
-            </div>
-          </div>
-
-          <div class="overlay" id="quizOverlay">
-            <div class="overlay-card">
-              <h2 id="quizTitle">Debrief</h2>
-              <p id="quizQuestion">Question</p>
-              <div class="choice-grid" id="quizChoices"></div>
-              <p class="feedback" id="quizFeedback"></p>
-            </div>
-          </div>
-
-          <div class="overlay" id="levelOverlay">
-            <div class="overlay-card">
-              <h2 id="levelTitle">Level Complete</h2>
-              <p id="levelSummary">You cleared the cyber mission.</p>
-              <div class="stars" id="starRow">★ ★ ★</div>
-              <p id="rewardText">Score +500</p>
-              <div class="action-row">
-                <button class="primary" id="nextLevelBtn">Next Level</button>
-                <button id="replayBtn">Replay Level</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="overlay" id="gameOverOverlay">
-            <div class="overlay-card">
-              <h2 id="gameOverTitle">Training Failed</h2>
-              <p id="gameOverSummary">The academy needs another attempt.</p>
-              <div class="action-row">
-                <button class="primary" id="restartBtn">Restart Training</button>
-              </div>
-            </div>
-          </div>
+      <section class="window terminal-window">
+        <div class="win-title">
+          <span></span>
+          <b>secure-terminal</b>
+          <em id="connectionBadge">local</em>
         </div>
-
-        <div class="controls-bar">
-          <button id="leftBtn">Left</button>
-          <button id="firewallBtn">Firewall</button>
-          <button id="scanBtn">Scan</button>
-          <button id="freezeBtn">Freeze</button>
-          <button id="rightBtn">Right</button>
+        <div class="terminal-output" id="terminalOutput" aria-live="polite"></div>
+        <form id="terminalForm" class="terminal-input">
+          <label id="promptLabel" for="cmdInput">cadet@shield:~$</label>
+          <input id="cmdInput" autocomplete="off" spellcheck="false" autofocus />
+          <button type="submit">run</button>
+        </form>
+        <div class="command-help">
+          <span>Try:</span>
+          <button data-cmd="help">help</button>
+          <button data-cmd="briefing">briefing</button>
+          <button data-cmd="ls">ls</button>
+          <button data-cmd="network">network</button>
+          <button data-cmd="inventory">inventory</button>
+          <button data-cmd="status">status</button>
         </div>
       </section>
-    </main>
+
+      <aside class="right-stack">
+        <section class="window map-window">
+          <div class="win-title"><span></span> Network Map</div>
+          <div id="networkMap" class="network-map"></div>
+        </section>
+
+        <section class="window files-window">
+          <div class="win-title"><span></span> File System</div>
+          <div id="fileTree" class="file-tree"></div>
+        </section>
+
+        <section class="window tools-window">
+          <div class="win-title"><span></span> Toolkit</div>
+          <div id="toolList" class="tool-list"></div>
+        </section>
+      </aside>
+    </section>
 
     <footer class="footerbar">
-      <button id="submitScoreBtn">Submit Score</button>
+      <button id="startBtn">Start Training</button>
+      <button id="hintBtn">Hint</button>
       <button id="muteBtn">Sound On</button>
-      <button id="pauseBtn">Pause</button>
+      <button id="resetBtn">Reset Case</button>
+      <button id="submitBtn">Submit Score</button>
     </footer>
+  </main>
+
+  <div class="overlay active" id="startOverlay">
+    <div class="overlay-card">
+      <img src="assets/sprites/bit-ai.png" alt="" />
+      <h1>Cyber Shield Academy</h1>
+      <h2>Terminal Ops: Case BIT</h2>
+      <p>
+        Join an ethical security crew and investigate the disappearance of <strong>Bit</strong>,
+        creator of the ShieldOS platform. Use safe simulated UNIX-like commands, inspect files,
+        analyze logs, verify evidence, and protect systems.
+      </p>
+      <div class="pill-row">
+        <span>Simulated lab only</span>
+        <span>UNIX-like commands</span>
+        <span>Defensive security</span>
+        <span>Story puzzles</span>
+      </div>
+      <button id="overlayStartBtn">Enter ShieldOS</button>
+    </div>
   </div>
-  <script src="./game.js"></script>
+
+  <script src="game.js"></script>
 </body>
 </html>

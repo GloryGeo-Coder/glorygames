@@ -1,63 +1,9 @@
 {
   "title": "Math Sprint Arena",
-  "description": "Educational maths sprint game with HD-style animated arena graphics, answer lanes, runner sprite, sound effects, background music, power-ups, missions, and score bridge support.",
-  "tags": [
-    "education",
-    "maths",
-    "arithmetic",
-    "multiplication",
-    "fractions",
-    "geometry",
-    "algebra",
-    "brain training",
-    "mobile",
-    "arcade"
-  ],
-  "controls": [
-    {
-      "key": "Tap answer",
-      "action": "Choose the correct answer lane"
-    },
-    {
-      "key": "Keyboard 1/2/3",
-      "action": "Select an answer"
-    },
-    {
-      "key": "Arrow keys",
-      "action": "Move runner between lanes"
-    },
-    {
-      "key": "+Time / Shield",
-      "action": "Use level power-ups"
-    }
-  ],
-  "features": {
-    "mobileFirst": true,
-    "sound": true,
-    "backgroundMusic": true,
-    "enhancedAnimations": true,
-    "scoreEvents": [
-      "GG_SCORE",
-      "gg:score"
-    ],
-    "levels": 6,
-    "educational": true,
-    "missions": true,
-    "topics": [
-      "arithmetic",
-      "multiplication",
-      "fractions",
-      "percentages",
-      "geometry",
-      "algebra",
-      "mixed challenge"
-    ]
-  },
-  "version": "2.0.2",
-  "fixes": [
-    "Added missing rand helper used by speed-line and shake animations",
-    "Answer clicks submit immediately",
-    "Correct and wrong answers reliably schedule nextProblem()",
-    "Timeout answer path no longer calculates effects from invalid lane index"
-  ]
+  "slug": "math-sprint-arena",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "category": "Educational",
+  "description": "Neon math curriculum runner with arithmetic, fractions, multiplication, geometry and algebra gates.",
+  "version": "3.1.0-asset-ready"
 }

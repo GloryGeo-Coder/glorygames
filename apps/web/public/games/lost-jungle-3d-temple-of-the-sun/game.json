@@ -1,0 +1,115 @@
+{
+  "title": "Lost Jungle 2D: Temple of the Sun",
+  "slug": "lost-jungle-2d-temple-of-the-sun",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "category": "2D Adventure",
+  "description": "A mobile-first 2D jungle side-scrolling adventure converted from the 3D version while keeping the same assets, textures, backgrounds, items, sprites, bosses, sound effects, levels, challenges, and score bridge support.",
+  "tags": [
+    "2d",
+    "adventure",
+    "jungle",
+    "temple",
+    "platformer",
+    "side-scroller",
+    "relics",
+    "keys",
+    "gates",
+    "traps",
+    "bosses",
+    "mobile",
+    "canvas",
+    "score bridge"
+  ],
+  "controls": [
+    {
+      "key": "A / Arrow Left",
+      "action": "Move left"
+    },
+    {
+      "key": "D / Arrow Right",
+      "action": "Move right"
+    },
+    {
+      "key": "Forward mobile button",
+      "action": "Move right"
+    },
+    {
+      "key": "Back mobile button",
+      "action": "Move left"
+    },
+    {
+      "key": "Space",
+      "action": "Jump"
+    },
+    {
+      "key": "Shift / J",
+      "action": "Dash attack"
+    },
+    {
+      "key": "M",
+      "action": "Open expedition map"
+    },
+    {
+      "key": "Mobile buttons",
+      "action": "Move / Jump / Dash"
+    }
+  ],
+  "features": {
+    "mobileFirst": true,
+    "gameplay": "2D side-scrolling platform adventure",
+    "levels": 10,
+    "backgrounds": 10,
+    "platformTextures": 10,
+    "storyCutscenes": true,
+    "expeditionMap": true,
+    "autoLevelProgression": true,
+    "continuousChallenges": true,
+    "collectibles": [
+      "Sun Relics",
+      "coins",
+      "keys"
+    ],
+    "puzzles": [
+      "locked gates",
+      "pressure plates"
+    ],
+    "obstacles": [
+      "spikes",
+      "water pits",
+      "lava pits",
+      "dart traps",
+      "boulder chase",
+      "gaps"
+    ],
+    "powers": [
+      "dash",
+      "torch",
+      "shield",
+      "healing fruit"
+    ],
+    "enemies": [
+      "snake",
+      "spider",
+      "bat",
+      "stone monkey"
+    ],
+    "bosses": [
+      "Monkey King",
+      "Spider Queen",
+      "Sun Guardian"
+    ],
+    "audio": [
+      "sound effects",
+      "background music"
+    ],
+    "scoreEvents": [
+      "GG_SCORE",
+      "gg:score"
+    ],
+    "versionNotes": "Converted to a grounded 2D platformer while preserving the generated art assets and textures."
+  },
+  "version": "2.3.0-reviewed",
+  "versionNotes": "Reviewed and cleaned package: folder renamed to 2D slug, missing enemy sprites present, generated item images integrated, lava logic corrected, and game.js validated."
+}

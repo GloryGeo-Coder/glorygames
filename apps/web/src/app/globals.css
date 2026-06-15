@@ -2989,3 +2989,42 @@ button, input{ font:inherit; }
   }
 }
 
+
+.wgaUserPill {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 850;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(56, 189, 248, 0.13);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  white-space: nowrap;
+}
+
+.wgaLogoutButton {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.wgaLogoutButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.wgaMobileAuth .wgaUserPill,
+.wgaMobileAuth .wgaLogoutButton {
+  width: 100%;
+}

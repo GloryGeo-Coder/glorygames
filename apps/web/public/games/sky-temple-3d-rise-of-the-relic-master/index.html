@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#10152d" />
+  <title>Sky Temple 3D: Rise of the Relic Master v2</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="game-shell">
+    <header class="topbar">
+      <div>
+        <div class="brand">Sky Temple 3D</div>
+        <div class="tagline">Rise of the Relic Master <b>v2</b></div>
+      </div>
+      <div class="hud-grid">
+        <div class="hud-box"><span>Score</span><b id="scoreValue">0</b></div>
+        <div class="hud-box"><span>Coins</span><b id="coinsValue">0</b></div>
+        <div class="hud-box"><span>Relics</span><b id="relicValue">0/0</b></div>
+        <div class="hud-box"><span>Lives</span><b id="livesValue">3</b></div>
+        <div class="hud-box"><span>World</span><b id="worldValue">1</b></div>
+        <div class="hud-box"><span>Level</span><b id="levelValue">1</b></div>
+      </div>
+    </header>
+
+    <main class="play-wrap">
+      <section class="canvas-shell">
+        <canvas id="gameCanvas" width="1280" height="720" aria-label="Sky Temple 3D game canvas"></canvas>
+
+        <div class="floating-actions">
+          <button id="submitScoreBtn">Submit</button>
+          <button id="shopBtn">Shop</button>
+          <button id="mapBtn">Map</button>
+          <button id="muteBtn">Sound On</button>
+          <button id="pauseBtn">Pause</button>
+        </div>
+
+        <div class="floating-card mission-card">
+          <div class="card-title">Mission</div>
+          <p id="missionText">Collect relics and unlock the sky portal.</p>
+          <div class="meter"><div id="progressBar"></div></div>
+          <span id="powerText">Power: None</span>
+        </div>
+
+        <div class="floating-card story-card">
+          <div class="card-title">World Story</div>
+          <p id="storyText">The sky temple has expanded into multiple worlds.</p>
+        </div>
+
+        <div class="overlay active" id="startOverlay">
+          <div class="overlay-card hero-card">
+            <h1>Sky Temple 3D</h1>
+            <h2>Rise of the Relic Master v2</h2>
+            <p>Explore multiple sky worlds, unlock skins, use powers like flying, defeat smarter enemies, fight bosses, and master the relic path.</p>
+            <div class="feature-row">
+              <span>Multiple Worlds</span>
+              <span>Fly Power</span>
+              <span>Smarter Enemy AI</span>
+              <span>Unlockable Skins</span>
+              <span>Shop System</span>
+              <span>More Bosses</span>
+              <span>Cutscenes</span>
+              <span>Stronger Effects</span>
+            </div>
+            <div class="action-row">
+              <button class="primary" id="playBtn">Start v2 Quest</button>
+              <button id="howBtn">How to Play</button>
+              <button id="openShopStartBtn">Open Shop</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="helpOverlay">
+          <div class="overlay-card">
+            <h2>How to Play</h2>
+            <ul>
+              <li>Move through 8 levels across 4 worlds.</li>
+              <li>Collect relics to unlock each level portal.</li>
+              <li>Use Jump and Fly power to cross difficult sky gaps.</li>
+              <li>Shoot enemies and dodge their aimed energy bolts.</li>
+              <li>Collect coins and unlock skins in the shop.</li>
+              <li>Boss levels appear at the end of each world.</li>
+            </ul>
+            <button class="primary" id="closeHelpBtn">Close</button>
+          </div>
+        </div>
+
+        <div class="overlay" id="cutsceneOverlay">
+          <div class="overlay-card cutscene-card">
+            <div class="cutscene-label" id="cutsceneLabel">WORLD 1</div>
+            <h2 id="cutsceneTitle">Sky Garden Awakens</h2>
+            <p id="cutsceneText">The first relic gate opens above the clouds.</p>
+            <div class="action-row">
+              <button class="primary" id="continueCutsceneBtn">Continue</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="mapOverlay">
+          <div class="overlay-card map-card">
+            <h2>World Map</h2>
+            <p>Select an unlocked level.</p>
+            <div id="mapGrid" class="map-grid"></div>
+            <div class="action-row">
+              <button class="primary" id="closeMapBtn">Close Map</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="shopOverlay">
+          <div class="overlay-card shop-card">
+            <h2>Relic Shop</h2>
+            <p id="shopCoinsText">Coins: 0</p>
+            <div id="shopGrid" class="shop-grid"></div>
+            <div class="action-row">
+              <button class="primary" id="closeShopBtn">Close Shop</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="completeOverlay">
+          <div class="overlay-card">
+            <h2 id="completeTitle">Level Complete</h2>
+            <p id="completeSummary">You cleared the temple route.</p>
+            <div class="stars" id="starRow">★ ★ ★</div>
+            <p id="rewardText">Bonus +500</p>
+            <div class="action-row">
+              <button class="primary" id="nextLevelBtn">Next Level</button>
+              <button id="shopAfterBtn">Shop</button>
+              <button id="mapAfterBtn">Map</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="gameOverOverlay">
+          <div class="overlay-card">
+            <h2 id="gameOverTitle">Quest Failed</h2>
+            <p id="gameOverSummary">The temple calls for another attempt.</p>
+            <div class="action-row">
+              <button class="primary" id="retryBtn">Retry</button>
+              <button id="resetRunBtn">Restart From Level 1</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <nav class="controls">
+        <button id="leftBtn">Left</button>
+        <button id="forwardBtn">Forward</button>
+        <button id="jumpBtn">Jump / Fly</button>
+        <button id="shootBtn">Shoot</button>
+        <button id="backBtn">Back</button>
+        <button id="rightBtn">Right</button>
+      </nav>
+    </main>
+  </div>
+
+  <script src="./game.js"></script>
+</body>
+</html>

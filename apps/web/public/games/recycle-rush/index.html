@@ -1,76 +1,119 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#07111f" />
-  <title>Recycle Rush</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Recycle Rush 2.0</title>
+  <link rel="preload" as="image" href="thumb.png" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="hud">
-    <div class="hud-left">
-      <div class="brand">Recycle Rush</div>
-      <div class="sub">Sort waste, build combos, and learn the circular economy.</div>
-      <div class="level-pill" id="levelPill">Level 1 • School Clean-up</div>
-    </div>
-    <div class="hud-right">
-      <div class="stat"><span>Score</span><strong id="scoreValue">0</strong></div>
-      <div class="stat"><span>Lives</span><strong id="livesValue">3</strong></div>
-      <div class="stat"><span>Combo</span><strong id="comboValue">0</strong></div>
-      <div class="stat"><span>Best</span><strong id="bestValue">0</strong></div>
-    </div>
-  </header>
-
-  <main class="app-shell">
-    <section class="side-panel">
-      <div class="panel-card mission-card">
-        <div class="card-head"><span>Mission</span><b id="missionPct">0%</b></div>
-        <div class="mission-text" id="missionText">Sort 14 items correctly to clear the school grounds.</div>
-        <div class="meter"><div id="missionFill"></div></div>
-      </div>
-      <div class="panel-card info-card">
-        <div class="card-head"><span>Tip</span><b>How to play</b></div>
-        <div class="tip-list">
-          <div>Swipe <b>left / right</b> to switch bins.</div>
-          <div>Tap a visible bin to select it faster.</div>
-          <div>Tap <b>mixed waste</b> hazards before they land.</div>
+  <main class="game-shell">
+    <header class="hud">
+      <section class="identity">
+        <img id="circuitAvatar" src="assets/sprites/circuit-neutral.svg" alt="Circuit" />
+        <div>
+          <h1>Recycle Rush 2.0</h1>
+          <p id="objectiveText">Sort • Build • Save Verdale</p>
         </div>
-      </div>
-      <div class="panel-card legend-card">
-        <div class="card-head"><span>Categories</span><b>What to sort</b></div>
-        <div class="legend-grid" id="legendGrid"></div>
-      </div>
+      </section>
+      <section class="stats" aria-label="Game statistics">
+        <div><span>Level</span><strong id="levelValue">1/20</strong></div>
+        <div><span>Score</span><strong id="scoreValue">0</strong></div>
+        <div><span>Lives</span><strong id="livesValue">3</strong></div>
+        <div><span>Combo</span><strong id="comboValue">0</strong></div>
+        <div><span>Stars</span><strong id="starsValue">0</strong></div>
+      </section>
+    </header>
+
+    <section class="mentor-row">
+      <img src="assets/sprites/professor-loop.svg" alt="Professor Loop" />
+      <div id="professorBubble">Welcome, Circuit. Verdale needs The Loop restored.</div>
     </section>
 
-    <section class="game-shell">
-      <canvas id="gameCanvas" width="1280" height="720" aria-label="Recycle Rush game canvas"></canvas>
-      <div class="overlay" id="overlay">
-        <div class="overlay-card">
-          <h1 id="overlayTitle">Recycle Rush</h1>
-          <p id="overlayText">Sort waste into the correct bin. Build combos, clear level goals, and protect the planet.</p>
-          <div class="overlay-actions">
-            <button id="startBtn" class="btn primary">Start</button>
-            <button id="helpBtn" class="btn">How to Play</button>
-          </div>
-          <div class="overlay-tags">
-            <span>8 levels</span>
-            <span>Polished art</span>
-            <span>Touch controls</span>
-            <span>Sounds</span>
-          </div>
-        </div>
-      </div>
+    <section id="bossPanel" class="boss-panel" hidden>
+      <span id="bossName">Grime Boss</span>
+      <div class="boss-bar"><div id="bossFill"></div></div>
     </section>
+
+    <section class="progress-strip">
+      <div id="progressText">Hub progress: 0%</div>
+      <div class="progress-bar"><div id="progressFill"></div></div>
+      <div id="powerSlot">Power: None</div>
+    </section>
+
+    <canvas id="gameCanvas" aria-label="Recycle Rush 2.0 game canvas"></canvas>
+
+    <footer class="controls">
+      <button id="leftBtn" type="button">◀ Bin</button>
+      <button id="rightBtn" type="button">Bin ▶</button>
+      <button id="powerBtn" type="button">Use Power</button>
+      <button id="pauseBtn" type="button">Pause</button>
+      <button id="muteBtn" type="button">Sound</button>
+      <button id="restartBtn" type="button">Map</button>
+    </footer>
   </main>
 
-  <footer class="bottom-bar">
-    <button class="chip" id="pauseBtn">Pause</button>
-    <button class="chip" id="restartBtn">Restart</button>
-    <button class="chip" id="submitBtn">Submit Score</button>
-    <button class="chip" id="muteBtn">Sound</button>
-  </footer>
+  <section id="screenOverlay" class="screen-overlay active">
+    <div id="mapScreen" class="panel map-panel">
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Verdale Circular Economy Mission</p>
+          <h2>World Map</h2>
+          <p>Clear each eco-hub, defeat Grime and recharge The Loop.</p>
+        </div>
+        <div class="top-actions">
+          <button id="startNextBtn" type="button">Continue Campaign</button>
+          <button id="loopBtn" type="button">Loop Mode</button>
+          <button id="badgesBtn" type="button">Eco-Badges</button>
+          <button id="settingsBtn" type="button">Settings</button>
+        </div>
+      </div>
 
-  <script src="./game.js"></script>
+      <section class="thumbnail-hero" aria-label="Recycle Rush 2.0 hero artwork">
+        <img src="thumb.png" alt="Recycle Rush 2.0: Circuit vs Grime in Verdale" />
+        <div class="thumbnail-copy">
+          <span class="hero-kicker">Story Campaign</span>
+          <h3>Circuit vs Grime</h3>
+          <p id="heroStatusText">Circuit must sort recyclables, clear Grime hazards and restore colour to Verdale.</p>
+          <div class="category-chips" aria-label="Sorting categories">
+            <span>Paper</span><span>Plastic</span><span>Glass</span><span>Metal</span><span>E-Waste</span><span>Organics</span><span>Hazmat</span><span>Textiles</span>
+          </div>
+        </div>
+      </section>
+
+      <div id="mapGrid" class="map-grid"></div>
+      <div class="map-note">Controls: A/D or ◀/▶ selects bins. Tap Grime hazards during boss fights. Use power-ups with Space or the button.</div>
+    </div>
+
+    <div id="comicScreen" class="panel comic-panel" hidden>
+      <div class="panel-head">
+        <div>
+          <p class="eyebrow">Story Beat</p>
+          <h2 id="comicTitle">The Loop Awakens</h2>
+        </div>
+      </div>
+      <div id="comicPanels" class="comic-grid"></div>
+      <button id="comicContinueBtn" type="button" class="primary">Start Mission</button>
+    </div>
+
+    <div id="settingsScreen" class="panel settings-panel" hidden>
+      <h2>Settings</h2>
+      <label>Music Volume <input id="musicVolume" type="range" min="0" max="1" step="0.05" /></label>
+      <label>SFX Volume <input id="sfxVolume" type="range" min="0" max="1" step="0.05" /></label>
+      <label><input id="reducedMotion" type="checkbox" /> Reduced motion</label>
+      <label><input id="colorblindMode" type="checkbox" /> Colorblind-friendly palette</label>
+      <button id="restartCampaignBtn" class="danger" type="button">Restart Campaign</button>
+      <button class="backToMap" type="button">Back to Map</button>
+    </div>
+
+    <div id="badgesScreen" class="panel badges-panel" hidden>
+      <h2>Eco-Badges</h2>
+      <div id="badgeGrid" class="badge-grid"></div>
+      <button class="backToMap" type="button">Back to Map</button>
+    </div>
+  </section>
+
+  <script src="game.js"></script>
 </body>
 </html>

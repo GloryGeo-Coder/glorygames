@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#12321f" />
+  <title>Lost Jungle 2D: Temple of the Sun</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="game-shell">
+    <header class="topbar">
+      <div>
+        <div class="brand">Lost Jungle 2D</div>
+        <div class="tagline">Temple of the Sun</div>
+      </div>
+
+      <div class="hud-grid">
+        <div class="hud-box"><span>Score</span><b id="scoreValue">0</b></div>
+        <div class="hud-box"><span>Coins</span><b id="coinsValue">0</b></div>
+        <div class="hud-box"><span>Relics</span><b id="relicValue">0/0</b></div>
+        <div class="hud-box"><span>Keys</span><b id="keysValue">0</b></div>
+        <div class="hud-box"><span>Lives</span><b id="livesValue">3</b></div>
+        <div class="hud-box"><span>Level</span><b id="levelValue">1</b></div>
+      </div>
+    </header>
+
+    <main class="play-wrap">
+      <section class="canvas-shell">
+        <canvas id="gameCanvas" width="1280" height="720" aria-label="Lost Jungle 2D game canvas"></canvas>
+
+        <div class="floating-actions">
+          <button id="submitScoreBtn">Submit</button>
+          <button id="mapBtn">Map</button>
+          <button id="muteBtn">Sound On</button>
+          <button id="pauseBtn">Pause</button>
+        </div>
+
+        <div class="floating-card mission-card">
+          <div class="card-title">Mission</div>
+          <p id="missionText">Find the Sun Relics and reach the temple gate.</p>
+          <div class="meter"><div id="progressBar"></div></div>
+          <span id="powerText">Tool: None</span>
+        </div>
+
+        <div class="floating-card story-card">
+          <div class="card-title">Expedition Log</div>
+          <p id="storyText">A hidden jungle path leads toward the Temple of the Sun.</p>
+        </div>
+
+        <div class="overlay active" id="startOverlay">
+          <div class="overlay-card hero-card">
+            <h1>Lost Jungle 2D</h1>
+            <h2>Temple of the Sun</h2>
+            <p>Explore jungle ruins, cross rivers, dodge traps, unlock gates, collect sun relics, and defeat ancient guardians in a 2D side-scrolling browser adventure.</p>
+            <div class="feature-row">
+              <span>10 Levels</span>
+              <span>Jungle Ruins</span>
+              <span>Keys + Gates</span>
+              <span>Pressure Plates</span>
+              <span>Boulder Chase</span>
+              <span>Bosses</span>
+              <span>Mobile Controls</span>
+              <span>Score Bridge</span>
+            </div>
+            <div class="action-row">
+              <button class="primary" id="playBtn">Start Expedition</button>
+              <button id="howBtn">How to Play</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="helpOverlay">
+          <div class="overlay-card">
+            <h2>How to Play</h2>
+            <ul>
+              <li>Move forward through the jungle path and collect Sun Relics.</li>
+              <li>Collect keys to open locked gates.</li>
+              <li>Step on glowing pressure plates to unlock hidden bridges.</li>
+              <li>Use Jump, Dash, and Torch powers to survive traps and enemies.</li>
+              <li>Dodge snakes, spiders, bats, stone monkeys, rolling boulders, spikes, and darts.</li>
+              <li>Defeat boss guardians at key temple stages.</li>
+            </ul>
+            <button class="primary" id="closeHelpBtn">Close</button>
+          </div>
+        </div>
+
+        <div class="overlay" id="cutsceneOverlay">
+          <div class="overlay-card cutscene-card">
+            <div class="cutscene-label" id="cutsceneLabel">LEVEL 1</div>
+            <h2 id="cutsceneTitle">Jungle Entrance</h2>
+            <p id="cutsceneText">The expedition begins at the edge of the ancient jungle.</p>
+            <div class="action-row">
+              <button class="primary" id="continueCutsceneBtn">Continue</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="mapOverlay">
+          <div class="overlay-card map-card">
+            <h2>Expedition Map</h2>
+            <p>Select an unlocked jungle stage.</p>
+            <div id="mapGrid" class="map-grid"></div>
+            <div class="action-row">
+              <button class="primary" id="closeMapBtn">Close Map</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="completeOverlay">
+          <div class="overlay-card">
+            <h2 id="completeTitle">Level Complete</h2>
+            <p id="completeSummary">You reached the next jungle gate.</p>
+            <div class="stars" id="starRow">★ ★ ★</div>
+            <p id="rewardText">Bonus +500</p>
+            <div class="action-row">
+              <button class="primary" id="nextLevelBtn">Next Level</button>
+              <button id="mapAfterBtn">Map</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay" id="gameOverOverlay">
+          <div class="overlay-card">
+            <h2 id="gameOverTitle">Expedition Failed</h2>
+            <p id="gameOverSummary">The jungle calls for another attempt.</p>
+            <div class="action-row">
+              <button class="primary" id="retryBtn">Retry Level</button>
+              <button id="resetRunBtn">Restart Expedition</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <nav class="controls">
+        <button id="leftBtn">Left</button>
+        <button id="forwardBtn">Forward</button>
+        <button id="jumpBtn">Jump</button>
+        <button id="dashBtn">Dash</button>
+        <button id="backBtn">Back</button>
+        <button id="rightBtn">Right</button>
+      </nav>
+    </main>
+  </div>
+
+  <script src="./game.js"></script>
+</body>
+</html>

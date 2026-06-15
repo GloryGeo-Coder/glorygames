@@ -117,3 +117,267 @@ button{font:inherit;color:var(--text);cursor:pointer}
   .controls-bar button:nth-child(4){grid-column:1/2}
   .controls-bar button:nth-child(5){grid-column:3/4}
 }
+
+
+/* Responsive layout and footer-safe gameplay fix */
+html,
+body {
+  min-height: 100%;
+  height: 100%;
+}
+
+body.game-body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.app-shell {
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.topbar,
+.footerbar {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 12;
+}
+
+.main-wrap {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.game-column {
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.canvas-shell {
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  contain: layout paint;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  touch-action: none;
+}
+
+.controls-bar {
+  flex: 0 0 auto;
+  min-height: 52px;
+  padding-bottom: max(0px, env(safe-area-inset-bottom));
+}
+
+.controls-bar button,
+.footerbar button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.footerbar {
+  min-height: 54px;
+  padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+  align-items: center;
+  flex-wrap: wrap;
+  background: rgba(5,14,8,.86);
+}
+
+@media (min-width: 1001px) {
+  .canvas-shell {
+    /* Ensures the game area ends above the controls/footer instead of sliding underneath them. */
+    min-height: 360px;
+  }
+
+  .footerbar {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 1001px) {
+  .topbar {
+    padding: 8px 12px;
+  }
+
+  .brand {
+    font-size: 22px;
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .score-box {
+    padding: 6px 8px 7px;
+  }
+
+  .score-box b {
+    font-size: 17px;
+  }
+
+  .main-wrap {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .side-panel {
+    display: none;
+  }
+
+  .main-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .controls-bar {
+    min-height: 46px;
+  }
+
+  .controls-bar button,
+  .footerbar button {
+    min-height: 38px;
+  }
+
+  .footerbar {
+    min-height: 46px;
+    padding: 6px 10px max(6px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 1000px) {
+  body.game-body {
+    overflow: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100dvh;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .main-wrap {
+    overflow: visible;
+  }
+
+  .game-column {
+    overflow: visible;
+  }
+
+  .canvas-shell {
+    height: min(62dvh, 620px);
+    min-height: 360px;
+  }
+
+  .footerbar {
+    position: sticky;
+    bottom: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 740px) {
+  .topbar {
+    padding: 10px 12px;
+  }
+
+  .main-wrap {
+    padding: 10px;
+  }
+
+  .canvas-shell {
+    height: min(58dvh, 520px);
+    min-height: 330px;
+    border-radius: 22px;
+  }
+
+  .controls-bar {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .controls-bar button {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .footerbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .footerbar button {
+    width: 100%;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 520px) {
+  .canvas-shell {
+    height: min(56dvh, 460px);
+    min-height: 315px;
+  }
+
+  .controls-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .controls-bar button:nth-child(4),
+  .controls-bar button:nth-child(5) {
+    grid-column: auto;
+  }
+
+  .footerbar {
+    grid-template-columns: 1fr;
+  }
+
+  .overlay-card {
+    padding: 18px;
+    max-height: 86dvh;
+    overflow: auto;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .topbar {
+    display: none;
+  }
+
+  .main-wrap {
+    padding: 6px;
+  }
+
+  .side-panel {
+    display: none;
+  }
+
+  .main-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .canvas-shell {
+    height: calc(100dvh - 104px);
+    min-height: 260px;
+  }
+
+  .footerbar {
+    min-height: 42px;
+    padding: 4px 8px max(4px, env(safe-area-inset-bottom));
+  }
+
+  .controls-bar {
+    min-height: 42px;
+  }
+}
+

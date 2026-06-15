@@ -7,7 +7,7 @@
   <title>Climate Rescue Quest</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body>
+<body class="game-body">
   <div class="app-shell">
     <header class="topbar">
       <div class="brand-wrap">
@@ -51,7 +51,7 @@
         </div>
       </section>
 
-      <section class="game-column">
+      <section class="game-column" aria-label="Game area">
         <div class="canvas-shell">
           <canvas id="gameCanvas" width="1280" height="720" aria-label="Climate Rescue Quest game canvas"></canvas>
 
@@ -110,7 +110,7 @@
           </div>
         </div>
 
-        <div class="controls-bar">
+        <div class="controls-bar" aria-label="Movement and power controls">
           <button id="leftBtn">Left</button>
           <button id="shieldBtn">Shield</button>
           <button id="magnetBtn">Magnet</button>
@@ -120,7 +120,7 @@
       </section>
     </main>
 
-    <footer class="footerbar">
+    <footer class="footerbar" aria-label="Game actions">
       <button id="submitScoreBtn">Submit Score</button>
       <button id="muteBtn">Sound On</button>
       <button id="pauseBtn">Pause</button>

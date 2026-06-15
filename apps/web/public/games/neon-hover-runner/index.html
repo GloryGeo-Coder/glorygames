@@ -3,85 +3,97 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#060a18" />
+  <meta name="theme-color" content="#060917" />
   <title>Neon Hover Runner • GloryGames</title>
-  <meta name="description" content="Neon Hover Runner — swipe, jump, boost, and survive the cyber track." />
+  <meta name="description" content="A neon cyber-runner with missions, levels, animated sprites, synth sound effects and responsive controls." />
   <link rel="stylesheet" href="./styles.css" />
 </head>
-
 <body>
   <div class="wrap">
     <main class="gameArea">
-      <canvas id="c" tabindex="0" aria-label="Neon Hover Runner canvas"></canvas>
+      <canvas id="c" tabindex="0" aria-label="Neon Hover Runner game canvas"></canvas>
 
       <header class="hud">
-        <div class="pill brand">
-          <b id="ggTitle">Neon Hover Runner</b>
-          <span id="ggSub">Swipe to steer • Tap to jump • Collect boosts</span>
-          <span class="badge" id="modeBadge">Enhanced Mobile</span>
-        </div>
+        <section class="glass brandCard">
+          <div class="brandRow">
+            <div>
+              <div class="eyebrow">GloryGames • Neon Campaign</div>
+              <h1>Neon Hover Runner</h1>
+            </div>
+            <span class="tag" id="zoneNumber">Zone 1 / 5</span>
+          </div>
+          <div class="subcopy">Ride the skyline lanes, recover data shards, and outpace the blackout across five cyber districts.</div>
+          <div class="missionBlock">
+            <span class="missionLabel">Current Mission</span>
+            <strong id="zoneName">Skyline Warmup</strong>
+            <span id="missionText">Collect 12 energy orbs while learning the lanes.</span>
+          </div>
+        </section>
 
-        <div class="pill stats">
-          <div class="stat">
-            <div class="k">Score</div>
-            <div class="v" id="score">0</div>
+        <section class="glass statsCard">
+          <div class="statGrid">
+            <div class="stat"><span class="k">Score</span><span class="v" id="score">0</span></div>
+            <div class="stat"><span class="k">Best</span><span class="v" id="best">0</span></div>
+            <div class="stat"><span class="k">Speed</span><span class="v" id="speed">1.0x</span></div>
+            <div class="stat"><span class="k">Lives</span><span class="v" id="lives">3</span></div>
+            <div class="stat"><span class="k">Rewards</span><span class="v" id="rewards">0</span></div>
+            <div class="stat"><span class="k">Combo</span><span class="v" id="comboBadge">x1</span></div>
           </div>
-          <div class="stat">
-            <div class="k">Best</div>
-            <div class="v" id="best">0</div>
-          </div>
-          <div class="stat">
-            <div class="k">Speed</div>
-            <div class="v" id="speed">1.0x</div>
-          </div>
-          <div class="stat">
-            <div class="k">Lives</div>
-            <div class="v" id="lives">3</div>
-          </div>
-        </div>
+        </section>
       </header>
 
-      <div class="powerBar">
-        <div class="barText">
-          <span>Boost</span>
-          <strong id="boostLabel">0%</strong>
+      <section class="meters">
+        <div class="glass meterCard">
+          <div class="meterHead"><span>Boost</span><strong id="boostLabel">0%</strong></div>
+          <div class="meter"><div id="boostFill"></div></div>
         </div>
-        <div class="bar"><div id="boostFill"></div></div>
-      </div>
+        <div class="glass meterCard">
+          <div class="meterHead"><span>Shield</span><strong id="shieldLabel">OFF</strong></div>
+          <div class="meter shield"><div id="shieldFill"></div></div>
+        </div>
+        <div class="glass meterCard">
+          <div class="meterHead"><span>Zone Progress</span><strong id="progressLabel">0%</strong></div>
+          <div class="meter progress"><div id="progressFill"></div></div>
+        </div>
+      </section>
 
       <div class="gestureHint">
-        <div class="hintPill">👆 Drag to steer • Tap to jump • Swipe up to boost</div>
+        <div class="hintPill">◀ ▶ Swipe / drag to change lanes • Tap to jump • Swipe up / Shift to boost</div>
       </div>
 
-      <div id="panel" style="display:flex;">
-        <div class="card">
-          <div class="cardTop">
-            <div class="titles">
-              <b id="panelTitle">Neon Hover Runner</b>
-              <span>Cyber hover-racing score attack</span>
+      <div id="panel" class="overlay" style="display:flex;">
+        <div class="panelCard">
+          <div class="panelGlow"></div>
+          <div class="panelTop">
+            <div>
+              <div class="eyebrow">Story Mode</div>
+              <h2 id="panelTitle">Neon Hover Runner</h2>
             </div>
+            <span class="tag">Responsive Edition</span>
           </div>
-          <div class="cardBody" id="panelText">Swipe or drag left and right to steer.
-Tap to jump over low hazards.
-Swipe up to activate boost when the boost meter is ready.
-Collect energy, shields, magnets and boosts. Avoid barriers and mines.</div>
+
+          <div class="panelBody" id="panelText">The city grid is failing. You are the lead hover courier racing across five neon districts to restore the power spine.
+
+Use quick lane changes, perfect jumps, shields, magnets, and boost bursts to survive.
+Complete missions, earn rewards, and master each district before the blackout reaches the core.</div>
+
+          <div class="featureList">
+            <span>5 campaign zones</span>
+            <span>Animated pickups</span>
+            <span>Dynamic synth audio</span>
+            <span>Mobile friendly controls</span>
+          </div>
 
           <div class="btnRow">
-            <button class="btn primary" id="btnStart">Start</button>
-            <button class="btn" id="btnOverlay">How to play</button>
+            <button class="btn primary" id="btnStart">Start Run</button>
+            <button class="btn" id="btnOverlay">How to Play</button>
           </div>
 
-          <div class="tiny">Sound unlocks on first tap. Designed for iframe play on GloryGames.</div>
-
-          <button id="btnPause" style="display:none;"></button>
-          <button id="btnLaunch" style="display:none;"></button>
-          <button id="btnSubmit" style="display:none;"></button>
-          <button id="btnRestart" style="display:none;"></button>
-          <button id="btnChat" style="display:none;"></button>
+          <div class="tiny">Sound unlocks on first interaction. Works in standalone play or embedded play.</div>
         </div>
       </div>
 
-      <nav class="dock">
+      <nav class="dock" aria-label="Game controls">
         <button class="dockBtn" id="uiPause">Pause</button>
         <button class="dockBtn" id="uiMute">Sound</button>
         <button class="dockBtn" id="uiRestart">Restart</button>

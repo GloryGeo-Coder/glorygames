@@ -1,59 +1,60 @@
 {
-  "title": "Map Master Africa",
-  "description": "Educational geography and GIS game with a world overview, continent identification, an Africa-focused political and physical map, South Africa provinces, map-tap questions, multiple-choice rounds, sounds, animated markers, and score bridge support.",
+  "title": "Map Master Africa: Explorer Missions",
+  "slug": "map-master-africa-explorer-missions",
+  "entry": "index.html",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "category": "Educational",
+  "description": "A mission-based African geography and GIS game with 15 explorer missions, animated map pins, route tracing, coordinate challenges, passport badges, background music, sound effects, and score bridge support.",
   "tags": [
-    "educational",
     "geography",
-    "GIS",
     "Africa",
-    "world map",
-    "capitals",
+    "GIS",
+    "education",
+    "maps",
     "countries",
+    "capitals",
     "rivers",
     "mountains",
-    "provinces",
-    "coordinates",
-    "mobile",
-    "quiz"
+    "South Africa",
+    "coordinates"
   ],
   "controls": [
     {
-      "key": "Tap glowing marker",
-      "action": "Answer map-location questions"
+      "key": "Tap / click",
+      "action": "Select map pins and coordinate points"
     },
     {
-      "key": "Tap answer button",
-      "action": "Answer multiple-choice questions"
+      "key": "Choice buttons",
+      "action": "Answer quiz missions"
+    },
+    {
+      "key": "Hint",
+      "action": "Show mission hint"
     },
     {
       "key": "Skip",
-      "action": "Skip a hard question for a score penalty"
-    },
-    {
-      "key": "Pause / Restart / Sound",
-      "action": "Control the run"
+      "action": "Skip current task with score penalty"
     }
   ],
   "features": {
     "mobileFirst": true,
-    "sound": true,
+    "levels": 15,
+    "missionTypes": [
+      "tap",
+      "choice",
+      "route",
+      "coordinate"
+    ],
+    "passportBadges": true,
+    "animatedRoutes": true,
+    "animatedMapPins": true,
     "backgroundMusic": true,
-    "enhancedAnimations": true,
-    "scoreEvents": [
+    "soundEffects": true,
+    "scoreBridge": [
       "GG_SCORE",
       "gg:score"
-    ],
-    "levels": 6,
-    "educational": true,
-    "missions": true,
-    "topics": [
-      "World overview",
-      "Continents",
-      "African countries and capitals",
-      "African physical geography",
-      "South African provinces",
-      "GIS coordinates and map elements"
     ]
   },
-  "version": "2.0.0"
+  "version": "4.0.0-explorer-missions"
 }

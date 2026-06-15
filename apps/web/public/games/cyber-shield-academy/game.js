@@ -1,296 +1,936 @@
 (() => {
   'use strict';
 
-  const GAME_SLUG = 'cyber-shield-academy';
-  const BEST_KEY = 'gg_cyber_shield_academy_best_v1';
+  const GAME_SLUG = 'cyber-shield-academy-terminal';
+  const BEST_KEY = 'csa_terminal_best_v1';
 
-  const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d');
+  const $ = sel => document.querySelector(sel);
+  const terminalOutput = $('#terminalOutput');
+  const form = $('#terminalForm');
+  const input = $('#cmdInput');
 
   const ui = {
-    scoreValue: document.getElementById('scoreValue'),
-    levelValue: document.getElementById('levelValue'),
-    livesValue: document.getElementById('livesValue'),
-    comboValue: document.getElementById('comboValue'),
-    missionText: document.getElementById('missionText'),
-    objectiveText: document.getElementById('objectiveText'),
-    factText: document.getElementById('factText'),
-    progressBar: document.getElementById('progressBar'),
-    firewallState: document.getElementById('firewallState'),
-    scanState: document.getElementById('scanState'),
-    freezeState: document.getElementById('freezeState'),
-    startOverlay: document.getElementById('startOverlay'),
-    helpOverlay: document.getElementById('helpOverlay'),
-    quizOverlay: document.getElementById('quizOverlay'),
-    levelOverlay: document.getElementById('levelOverlay'),
-    gameOverOverlay: document.getElementById('gameOverOverlay'),
-    quizTitle: document.getElementById('quizTitle'),
-    quizQuestion: document.getElementById('quizQuestion'),
-    quizChoices: document.getElementById('quizChoices'),
-    quizFeedback: document.getElementById('quizFeedback'),
-    levelTitle: document.getElementById('levelTitle'),
-    levelSummary: document.getElementById('levelSummary'),
-    rewardText: document.getElementById('rewardText'),
-    starRow: document.getElementById('starRow'),
-    gameOverTitle: document.getElementById('gameOverTitle'),
-    gameOverSummary: document.getElementById('gameOverSummary'),
-    muteBtn: document.getElementById('muteBtn'),
-    pauseBtn: document.getElementById('pauseBtn')
+    score: $('#scoreValue'),
+    trust: $('#trustValue'),
+    trace: $('#traceValue'),
+    level: $('#levelValue'),
+    mission: $('#missionText'),
+    objectives: $('#objectiveList'),
+    principle: $('#principleText'),
+    map: $('#networkMap'),
+    files: $('#fileTree'),
+    tools: $('#toolList'),
+    badge: $('#connectionBadge'),
+    prompt: $('#promptLabel'),
+    startOverlay: $('#startOverlay'),
+    startBtn: $('#startBtn'),
+    overlayStartBtn: $('#overlayStartBtn'),
+    hintBtn: $('#hintBtn'),
+    muteBtn: $('#muteBtn'),
+    resetBtn: $('#resetBtn'),
+    submitBtn: $('#submitBtn')
   };
 
-  const spriteDefs = {
-    hero: ['./assets/sprites/hero_01.png','./assets/sprites/hero_02.png','./assets/sprites/hero_03.png'],
-    shield: ['./assets/sprites/shield_01.png','./assets/sprites/shield_02.png'],
-    lock: ['./assets/sprites/lock_01.png','./assets/sprites/lock_02.png'],
-    key: ['./assets/sprites/key_01.png','./assets/sprites/key_02.png'],
-    update: ['./assets/sprites/update_01.png','./assets/sprites/update_02.png'],
-    backup: ['./assets/sprites/backup_01.png','./assets/sprites/backup_02.png'],
-    wifi: ['./assets/sprites/wifi_01.png','./assets/sprites/wifi_02.png'],
-    bug: ['./assets/sprites/bug_01.png','./assets/sprites/bug_02.png'],
-    phishing: ['./assets/sprites/phishing_01.png','./assets/sprites/phishing_02.png'],
-    weak_pass: ['./assets/sprites/weak_pass_01.png','./assets/sprites/weak_pass_02.png'],
-    tracker: ['./assets/sprites/tracker_01.png','./assets/sprites/tracker_02.png']
+  const safeNotice = 'Training note: every host and tool in this game is simulated. Use these skills only in systems where you have permission.';
+
+  const TOOLS = {
+    ScanKit: { label: 'ScanKit', unlock: 1, desc: 'Maps simulated hosts and services.' },
+    ProbeLite: { label: 'ProbeLite', unlock: 1, desc: 'Identifies defensive layers in the lab.' },
+    PortPatch: { label: 'PortPatch', unlock: 2, desc: 'Solves a simulated service-hardening puzzle.' },
+    LogAudit: { label: 'LogAudit', unlock: 3, desc: 'Reviews and preserves security logs.' },
+    HashCheck: { label: 'HashCheck', unlock: 4, desc: 'Verifies file integrity by comparing hashes.' },
+    ProxyBalance: { label: 'ProxyBalance', unlock: 5, desc: 'Balances simulated proxy load in a lab-safe puzzle.' },
+    CryptoLens: { label: 'CryptoLens', unlock: 6, desc: 'Solves toy ciphers used in the story.' },
+    ReportKit: { label: 'ReportKit', unlock: 7, desc: 'Builds a final incident report.' }
   };
 
-  const backgrounds = Array.from({length: 10}, (_, i) => `./assets/backgrounds/level-${String(i+1).padStart(2,'0')}.png`);
-
-  const levels = [
+  const chapters = [
     {
       id: 1,
-      title: 'Password Vault',
-      mission: 'Collect locks and keys. Avoid weak password traps.',
-      fact: 'Strong, unique passwords reduce the chance that one compromised account affects others.',
-      target: 10,
-      good: ['lock','key','shield'],
-      hazard: ['weak_pass','phishing'],
-      speed: 168,
-      quiz: {
-        q: 'Which password habit is safest?',
-        options: ['Use a unique strong password', 'Reuse the same password everywhere', 'Use 123456', 'Share passwords in group chats'],
-        answer: 'Use a unique strong password',
-        explain: 'A unique strong password protects each account separately.'
+      title: 'Orientation: ShieldOS',
+      host: 'local',
+      bg: 'bg-terminal-lab.png',
+      principle: 'Ethical hacking starts with authorization, scope, documentation, and safety.',
+      mission: 'Join the Cyber Shield group and learn to navigate the training terminal. The first clue about Bit is hidden in the local case files.',
+      objectives: [
+        ['list_home', 'Use ls to list files in your home directory.'],
+        ['read_brief', 'Use cat briefing.txt to read your authorization brief.'],
+        ['read_case', 'Use cat case_bit.txt to inspect the first clue.']
+      ],
+      hint: 'Try: ls, then cat briefing.txt, then cat case_bit.txt.',
+      fs: {
+        '/home/cadet': {
+          'briefing.txt': 'AUTHORIZATION BRIEF\\nScope: Cyber Shield Academy training lab only.\\nGoal: learn defensive investigation skills through simulated UNIX-like commands.\\nRule: document actions, preserve evidence, and never target real systems.\\nCommand tip: use ls, cd, cat, grep, network, status, inventory.',
+          'case_bit.txt': 'CASE BIT\\nBit created ShieldOS, then disappeared after warning about a hidden weakness called ORCHID.\\nLast known note: \"Trust the logs. The noisy node is not always the guilty node.\"\\nNext step: open the network map.'
+        },
+        '/tools': {
+          'ScanKit.exe': 'Simulated scanner. Command: run ScanKit',
+          'ProbeLite.exe': 'Simulated probe. Command: run ProbeLite'
+        }
       }
     },
     {
       id: 2,
-      title: 'Phishing Patrol',
-      mission: 'Collect shields and locks. Avoid suspicious messages.',
-      fact: 'Phishing messages often try to make you click quickly. Pause and verify before trusting links.',
-      target: 12,
-      good: ['shield','lock','key'],
-      hazard: ['phishing','tracker'],
-      speed: 180,
-      quiz: {
-        q: 'What should you do before clicking a suspicious link?',
-        options: ['Verify the source first', 'Click quickly', 'Forward it to everyone', 'Enter your password'],
-        answer: 'Verify the source first',
-        explain: 'Checking the sender and link destination helps avoid phishing.'
+      title: 'Recon Without Trespass',
+      host: 'atlas-gateway',
+      bg: 'bg-network-map.png',
+      principle: 'Reconnaissance must stay inside the agreed scope. Scanning without permission is not acceptable.',
+      mission: 'Connect to the Atlas Gateway and use safe scan/probe commands to map its simulated defenses.',
+      objectives: [
+        ['connect_atlas', 'connect atlas-gateway'],
+        ['scan_atlas', 'scan atlas-gateway'],
+        ['probe_atlas', 'probe atlas-gateway'],
+        ['run_portpatch', 'run PortPatch']
+      ],
+      hint: 'Try: network, connect atlas-gateway, scan atlas-gateway, probe atlas-gateway, run PortPatch.',
+      defenses: { firewall: 2, ports: ['22/sim-ssh', '443/sim-web'], proxy: 0 },
+      fs: {
+        '/': { 'banner.txt': 'ATLAS GATEWAY\\nAuthorized lab node. Use probe results to choose a safe simulated tool.' },
+        '/logs': { 'access.log': 'cadet connected under training token CSA-ALLOW-01.' }
       }
     },
     {
       id: 3,
-      title: 'Update Rush',
-      mission: 'Collect update icons and backups. Avoid bugs.',
-      fact: 'Software updates often fix security weaknesses and improve reliability.',
-      target: 13,
-      good: ['update','backup','shield'],
-      hazard: ['bug','weak_pass'],
-      speed: 190,
-      quiz: {
-        q: 'Why are software updates important?',
-        options: ['They can fix security weaknesses', 'They make passwords public', 'They remove backups', 'They create phishing emails'],
-        answer: 'They can fix security weaknesses',
-        explain: 'Updates often include security fixes and stability improvements.'
+      title: 'Log Integrity',
+      host: 'archive-node',
+      bg: 'bg-case-bit.png',
+      principle: 'Good responders preserve logs and create evidence chains instead of hiding activity.',
+      mission: 'Access the archive node, review logs, and preserve the suspicious entry linked to Bit.',
+      objectives: [
+        ['connect_archive', 'connect archive-node'],
+        ['scan_archive', 'scan archive-node'],
+        ['cat_logs', 'cat /logs/access.log'],
+        ['preserve_logs', 'preserve /logs/access.log']
+      ],
+      hint: 'Try: connect archive-node, scan archive-node, cd /logs, cat access.log, preserve access.log.',
+      defenses: { firewall: 1, ports: ['443/sim-web'], proxy: 0 },
+      fs: {
+        '/': { 'readme.txt': 'Archive node for training evidence.' },
+        '/logs': {
+          'access.log': '02:14 user=bit action=commit hash=8fa3\\n02:18 user=orchid action=config-change hash=??\\n02:21 user=bit action=warning \"verify kernel.sig\"'
+        },
+        '/evidence': { 'chain.txt': 'Evidence chain is empty until you preserve relevant files.' }
       }
     },
     {
       id: 4,
-      title: 'Privacy Dome',
-      mission: 'Collect shields, keys, and secure Wi‑Fi. Avoid trackers.',
-      fact: 'Privacy settings help control what information apps and websites can access.',
-      target: 14,
-      good: ['shield','key','wifi'],
-      hazard: ['tracker','phishing'],
-      speed: 200,
-      quiz: {
-        q: 'What is a good privacy habit?',
-        options: ['Review app permissions', 'Share private codes online', 'Ignore privacy settings', 'Post personal details everywhere'],
-        answer: 'Review app permissions',
-        explain: 'Reviewing permissions helps limit unnecessary access to your data.'
+      title: 'Hash Verification',
+      host: 'kernel-vault',
+      bg: 'bg-terminal-lab.png',
+      principle: 'Integrity checks help confirm whether a file was altered.',
+      mission: 'The ShieldOS kernel signature may have changed. Verify the signature and analyze the warning file.',
+      objectives: [
+        ['connect_kernel', 'connect kernel-vault'],
+        ['run_hash', 'hash kernel.sig'],
+        ['analyze_warning', 'analyze warning.memo'],
+        ['download_evidence', 'collect warning.memo']
+      ],
+      hint: 'Try: connect kernel-vault, ls, cat warning.memo, hash kernel.sig, analyze warning.memo, collect warning.memo.',
+      defenses: { firewall: 2, ports: ['22/sim-ssh', '443/sim-web'], proxy: 0 },
+      fs: {
+        '/': {
+          'kernel.sig': 'sha256: SIM-4F77-ORCHID-MISMATCH',
+          'warning.memo': 'Bit note: ORCHID is not malware. It is a governance bypass hidden as an update scheduler.'
+        }
       }
     },
     {
       id: 5,
-      title: 'Backup Bay',
-      mission: 'Collect backups, locks, and updates. Avoid bugs.',
-      fact: 'Backups help recover important data after device loss, damage, or account problems.',
-      target: 15,
-      good: ['backup','lock','update'],
-      hazard: ['bug','phishing'],
-      speed: 210,
-      quiz: {
-        q: 'Why are backups useful?',
-        options: ['They help recover lost data', 'They weaken accounts', 'They delete all files', 'They replace safe passwords'],
-        answer: 'They help recover lost data',
-        explain: 'Backups make recovery easier when something goes wrong.'
+      title: 'Proxy Balance Lab',
+      host: 'proxy-ring',
+      bg: 'bg-proxy-lab.png',
+      principle: 'Availability matters. Security teams test resilience in controlled labs, not against real services.',
+      mission: 'A simulated proxy buffer blocks the path. Use the lab-safe ProxyBalance puzzle to stabilize it.',
+      objectives: [
+        ['connect_proxy', 'connect proxy-ring'],
+        ['scan_proxy', 'scan proxy-ring'],
+        ['probe_proxy', 'probe proxy-ring'],
+        ['balance_proxy', 'run ProxyBalance alpha beta gamma']
+      ],
+      hint: 'Try: connect proxy-ring, scan proxy-ring, probe proxy-ring, run ProxyBalance alpha beta gamma.',
+      defenses: { firewall: 2, ports: ['443/sim-web'], proxy: 3 },
+      fs: {
+        '/': { 'proxy.txt': 'Proxy buffer puzzle: three lab agents named alpha, beta, gamma must be balanced together.' },
+        '/logs': { 'proxy.log': 'buffer=high agents=[alpha,beta,gamma] expected=balanced' }
       }
     },
     {
       id: 6,
-      title: 'Firewall Forge',
-      mission: 'Collect shields and updates. Avoid malware bugs and fake messages.',
-      fact: 'Firewalls and security tools can help block unwanted traffic and suspicious activity.',
-      target: 16,
-      good: ['shield','update','key'],
-      hazard: ['bug','phishing','tracker'],
-      speed: 220,
-      quiz: {
-        q: 'What does a firewall generally help with?',
-        options: ['Blocking unwanted network traffic', 'Creating weak passwords', 'Sharing private files', 'Turning off updates'],
-        answer: 'Blocking unwanted network traffic',
-        explain: 'A firewall can help control network access and reduce unwanted traffic.'
+      title: 'Toy Cipher Trail',
+      host: 'cipher-bay',
+      bg: 'bg-case-bit.png',
+      principle: 'Cryptography is not magic. Use clear assumptions, verify results, and avoid inventing evidence.',
+      mission: 'Bit left a toy cipher for the Academy. Decode it to reveal the next server.',
+      objectives: [
+        ['connect_cipher', 'connect cipher-bay'],
+        ['cat_cipher', 'cat cipher.txt'],
+        ['run_crypto', 'run CryptoLens cipher.txt'],
+        ['collect_cipher', 'collect decoded_note.txt']
+      ],
+      hint: 'Try: connect cipher-bay, cat cipher.txt, run CryptoLens cipher.txt, cat decoded_note.txt, collect decoded_note.txt.',
+      defenses: { firewall: 1, ports: ['443/sim-web'], proxy: 0 },
+      fs: {
+        '/': {
+          'cipher.txt': 'Toy cipher: shift each letter back by 1. psdije-sppu',
+          'decoded_note.txt': ''
+        }
       }
     },
     {
       id: 7,
-      title: 'Secure Wi‑Fi',
-      mission: 'Collect secure Wi‑Fi and lock icons. Avoid trackers.',
-      fact: 'Secure Wi‑Fi and careful network choices help protect your online activity.',
-      target: 17,
-      good: ['wifi','lock','shield'],
-      hazard: ['tracker','weak_pass','phishing'],
-      speed: 230,
-      quiz: {
-        q: 'Which network choice is usually safer?',
-        options: ['A trusted secure network', 'An unknown open network', 'Any network with a funny name', 'A random hotspot asking for passwords'],
-        answer: 'A trusted secure network',
-        explain: 'Trusted secure networks reduce unnecessary risk.'
+      title: 'Containment Timer',
+      host: 'orchid-relay',
+      bg: 'bg-proxy-lab.png',
+      principle: 'Incident response focuses on containment, least privilege, and audited recovery.',
+      mission: 'The relay starts a simulated trace timer. Contain the session by reviewing logs and locking a risky token.',
+      objectives: [
+        ['connect_relay', 'connect orchid-relay'],
+        ['run_logaudit', 'run LogAudit'],
+        ['lock_token', 'lock token-orchid'],
+        ['preserve_relay', 'preserve /logs/session.log']
+      ],
+      hint: 'Try: connect orchid-relay, run LogAudit, cat /logs/session.log, lock token-orchid, preserve /logs/session.log.',
+      trace: true,
+      defenses: { firewall: 3, ports: ['22/sim-ssh', '443/sim-web'], proxy: 1 },
+      fs: {
+        '/': { 'token-orchid': 'STATUS=RISKY\\nprivilege=overbroad\\nowner=unknown' },
+        '/logs': { 'session.log': 'relay opened by unknown scheduler. recommended action: lock token-orchid, preserve session.log' }
       }
     },
     {
       id: 8,
-      title: 'Data Defense',
-      mission: 'Collect backups, keys, and shields. Avoid data trackers.',
-      fact: 'Good data habits include protecting sensitive information and sharing only what is necessary.',
-      target: 18,
-      good: ['backup','key','shield'],
-      hazard: ['tracker','bug','phishing'],
-      speed: 238,
-      quiz: {
-        q: 'Which is a good data protection habit?',
-        options: ['Share only what is needed', 'Post all private details', 'Send passwords in plain messages', 'Ignore privacy notices'],
-        answer: 'Share only what is needed',
-        explain: 'Limiting what you share helps protect personal information.'
-      }
-    },
-    {
-      id: 9,
-      title: 'Incident Response',
-      mission: 'Collect backups, updates, and shields. Avoid all threats.',
-      fact: 'When something suspicious happens, report it quickly and preserve useful evidence.',
-      target: 20,
-      good: ['backup','update','shield','lock'],
-      hazard: ['bug','phishing','weak_pass','tracker'],
-      speed: 248,
-      quiz: {
-        q: 'What is a good first step after noticing suspicious account activity?',
-        options: ['Report it and secure the account', 'Ignore it forever', 'Share the issue publicly with passwords', 'Click more suspicious links'],
-        answer: 'Report it and secure the account',
-        explain: 'Reporting and securing the account helps limit harm.'
-      }
-    },
-    {
-      id: 10,
-      title: 'Breach Boss',
-      mission: 'Final exam: collect every cyber defense item and survive the toughest wave.',
-      fact: 'Cyber defense works best through layered habits: strong passwords, updates, backups, privacy checks, and careful clicking.',
-      target: 24,
-      good: ['lock','key','shield','update','backup','wifi'],
-      hazard: ['bug','phishing','weak_pass','tracker'],
-      speed: 262,
-      boss: true,
-      quiz: {
-        q: 'Which answer is the best overall cyber defense approach?',
-        options: ['Use layered safe habits', 'Only use one password', 'Ignore updates and backups', 'Trust every message'],
-        answer: 'Use layered safe habits',
-        explain: 'Cyber safety works best when multiple good habits are used together.'
+      title: 'Root of Trust',
+      host: 'root-of-trust',
+      bg: 'bg-final-node.png',
+      principle: 'The strongest systems combine technical controls with governance, accountability, and review.',
+      mission: 'Finish the case by compiling the evidence report. The answer is not a villain; it is a broken approval process.',
+      objectives: [
+        ['connect_root', 'connect root-of-trust'],
+        ['cat_final', 'cat final.txt'],
+        ['report', 'run ReportKit'],
+        ['submit_case', 'submit report']
+      ],
+      hint: 'Try: connect root-of-trust, cat final.txt, inventory, run ReportKit, submit report.',
+      defenses: { firewall: 1, ports: ['443/sim-web'], proxy: 0 },
+      fs: {
+        '/': { 'final.txt': 'Bit found that ORCHID bypassed review because emergency updates had weak approval controls. Your report must recommend stronger change management, audit review, and least privilege.' }
       }
     }
   ];
 
-  const defaultState = () => ({
-    score: 0,
-    best: Number(localStorage.getItem(BEST_KEY) || '0') || 0,
-    levelIndex: 0,
-    lives: 3,
-    combo: 1,
-    comboChain: 0,
-    collected: 0,
-    started: false,
-    paused: false,
-    muted: false,
-    levelComplete: false,
-    gameOver: false,
-    firewall: 1,
-    scan: 1,
-    freeze: 1,
-    firewallActive: false,
-    firewallTimer: 0,
-    freezeTimer: 0,
-    items: [],
-    particles: [],
-    floats: [],
-    stars: 3,
-    time: 0
-  });
+  let state;
+  let AC = null;
+  let master = null;
+  let musicTimer = null;
+  let ambient = null;
 
-  let state = defaultState();
-  const images = {};
-  let last = performance.now();
-  let lastLiveScore = -1;
-  let lastLiveAt = 0;
-  let dragActive = false;
-  let dragOffsetX = 0;
-
-  const player = { x: 0, y: 0, w: 112, h: 112, bob: 0 };
-
-  function playerBottomOffset() {
-    const h = getH();
-    // Keep the player comfortably above the footer/controls on large screens,
-    // while preserving enough play space on small mobile screens.
-    return h >= 760 ? 240 : h >= 620 ? 210 : 158;
+  function freshState() {
+    return {
+      started: false,
+      muted: false,
+      score: 0,
+      trust: 100,
+      trace: 0,
+      levelIndex: 0,
+      cwd: '/home/cadet',
+      connected: 'local',
+      rooted: false,
+      completed: {},
+      evidence: [],
+      history: [],
+      historyIndex: 0,
+      files: {},
+      defenses: {},
+      unlocked: ['local'],
+      commandCount: 0,
+      lastCommand: '',
+      pendingReport: false,
+      gameOver: false
+    };
   }
 
-  function updatePlayerFloor() {
-    player.y = Math.max(118, getH() - playerBottomOffset());
-    player.x = clamp(player.x, 16, getW() - player.w - 16);
+  function cloneFS(fs) {
+    return JSON.parse(JSON.stringify(fs || {}));
   }
 
-  function allImages() {
-    const sprites = [];
-    Object.values(spriteDefs).forEach(frames => sprites.push(...frames));
-    return [...sprites, ...backgrounds];
+  function currentChapter() {
+    return chapters[state.levelIndex] || chapters[0];
   }
 
-  function loadImages() {
-    return Promise.all(allImages().map(src => new Promise(resolve => {
-      const img = new Image();
-      images[src] = img;
-      img.onload = resolve;
-      img.onerror = resolve;
-      img.src = src;
-    })));
+  function currentFS() {
+    return state.files[state.connected] || {};
   }
 
-  function currentLevel() { return levels[Math.min(state.levelIndex, levels.length - 1)]; }
-  function getW() { return canvas.getBoundingClientRect().width || 960; }
-  function getH() { return canvas.getBoundingClientRect().height || 540; }
-  function rand(a,b) { return a + Math.random() * (b-a); }
-  function pick(arr) { return arr[(Math.random()*arr.length)|0]; }
-  function clamp(v,a,b) { return Math.max(a, Math.min(b, v)); }
+  function currentDefenses() {
+    return state.defenses[state.connected] || { firewall: 0, proxy: 0, ports: [] };
+  }
 
-  // Audio
-  let AC = null, master = null, musicInt = null, musicStep = 0;
+  function pathNormalize(path) {
+    if (!path || path === '.') return state.cwd;
+    if (path === '~') return '/home/cadet';
+    let full = path.startsWith('/') ? path : (state.cwd.replace(/\/$/, '') + '/' + path);
+    const parts = [];
+    full.split('/').forEach(p => {
+      if (!p || p === '.') return;
+      if (p === '..') parts.pop();
+      else parts.push(p);
+    });
+    return '/' + parts.join('/');
+  }
+
+  function dirAt(path) {
+    const fs = currentFS();
+    const clean = pathNormalize(path);
+    if (clean === '/') return fs['/'] || {};
+    return fs[clean] || null;
+  }
+
+  function fileAt(path) {
+    const clean = pathNormalize(path);
+    const dir = clean.includes('/') ? clean.slice(0, clean.lastIndexOf('/')) || '/' : state.cwd;
+    const file = clean.split('/').pop();
+    const obj = dirAt(dir);
+    if (obj && Object.prototype.hasOwnProperty.call(obj, file)) return obj[file];
+    return null;
+  }
+
+  function fileExists(path) {
+    return fileAt(path) !== null;
+  }
+
+  function mark(key, points = 75) {
+    if (state.completed[key]) return;
+    state.completed[key] = true;
+    state.score += points;
+    sfx('good');
+    syncUI();
+    checkLevelComplete();
+  }
+
+  function line(text = '', cls = '') {
+    const div = document.createElement('div');
+    div.className = `line ${cls}`.trim();
+    div.textContent = text;
+    terminalOutput.appendChild(div);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+  }
+
+  function typeLines(lines, cls = '') {
+    lines.forEach(l => line(l, cls));
+  }
+
+  function clearTerminal() {
+    terminalOutput.innerHTML = '';
+  }
+
+  function help() {
+    typeLines([
+      'Core commands:',
+      '  help                 show this help',
+      '  briefing             show current mission',
+      '  missions             list all chapters',
+      '  status               show score, trust, trace, connection',
+      '  network              display available lab hosts',
+      '  inventory            show tools and evidence',
+      '',
+      'UNIX-like navigation:',
+      '  pwd                  print current directory',
+      '  ls [path]            list directory contents',
+      '  cd <path>            change directory',
+      '  cat <file>           read a file',
+      '  grep <term> <file>   search within a file',
+      '',
+      'Simulated security lab commands:',
+      '  connect <host>       connect to an authorized lab host',
+      '  scan <host>          map services in the simulated node',
+      '  probe <host>         identify defensive layers',
+      '  run <tool> [args]    run a simulated tool from your toolkit',
+      '  hash <file>          verify a file signature',
+      '  analyze <file>       interpret an evidence file',
+      '  preserve <file>      preserve a log/evidence file',
+      '  collect <file>       add a file to your case evidence',
+      '  lock <token>         contain an overprivileged lab token',
+      '  submit report        submit the final case report',
+      '',
+      'Autocomplete: press Tab to complete commands, files, hosts, and tools.'
+    ], 'dim');
+  }
+
+  function banner() {
+    clearTerminal();
+    typeLines([
+      '  ____      _                 ____  _     _      _     _ ',
+      ' / ___|   _| |__   ___ _ __  / ___|| |__ (_) ___| | __| |',
+      '| |  | | | | `_ \\ / _ \\ `__| \\___ \\| `_ \\| |/ _ \\ |/ _` |',
+      '| |__| |_| | |_) |  __/ |     ___) | | | | |  __/ | (_| |',
+      ' \\____\\__, |_.__/ \\___|_|    |____/|_| |_|_|\\___|_|\\__,_|',
+      '      |___/                                                ',
+      '',
+      'Welcome to ShieldOS Terminal Ops. ' + safeNotice,
+      'Type help or briefing to begin.'
+    ], 'ascii');
+  }
+
+  function startGame() {
+    state.started = true;
+    ui.startOverlay.classList.remove('active');
+    banner();
+    briefing();
+    startMusic();
+    input.focus();
+    syncUI();
+  }
+
+  function setup() {
+    state = freshState();
+
+    chapters.forEach(ch => {
+      state.files[ch.host] = cloneFS(ch.fs);
+      state.defenses[ch.host] = { ...(ch.defenses || { firewall: 0, proxy: 0, ports: [] }), scanned: false, probed: false, patched: false, balanced: false };
+    });
+
+    // local also has /tools
+    state.files.local = cloneFS(chapters[0].fs);
+    state.defenses.local = { firewall: 0, proxy: 0, ports: [], scanned: true, probed: true };
+    state.unlocked = ['local', 'atlas-gateway'];
+
+    banner();
+    syncUI();
+  }
+
+  function chapterForHost(host) {
+    return chapters.find(ch => ch.host === host);
+  }
+
+  function unlockNextHost() {
+    const next = chapters[state.levelIndex + 1];
+    if (next && !state.unlocked.includes(next.host)) state.unlocked.push(next.host);
+  }
+
+  function checkLevelComplete() {
+    const ch = currentChapter();
+    const done = ch.objectives.every(([key]) => state.completed[key]);
+    if (!done) return;
+    line(`Chapter complete: ${ch.title}`, 'ok');
+    sfx('level');
+    unlockNextHost();
+
+    if (state.levelIndex < chapters.length - 1) {
+      state.levelIndex += 1;
+      const next = currentChapter();
+      line(`Unlocked next host: ${next.host}`, 'ok');
+      line(`Next mission: ${next.title}. Type briefing or network.`, 'story');
+    } else {
+      line('All chapters complete. Type submit report to close the case.', 'ok');
+      state.pendingReport = true;
+    }
+    syncUI();
+  }
+
+  function briefing() {
+    const ch = currentChapter();
+    line(`MISSION ${ch.id}: ${ch.title}`, 'story');
+    line(ch.mission, 'dim');
+    line('Objectives:', 'warn');
+    ch.objectives.forEach(([, text]) => line(`  - ${text}`, 'dim'));
+    line(`Principle: ${ch.principle}`, 'ok');
+  }
+
+  function network() {
+    line('Authorized lab network:', 'story');
+    chapters.forEach((ch, idx) => {
+      const unlocked = state.unlocked.includes(ch.host);
+      const active = state.connected === ch.host ? '*' : ' ';
+      const status = state.completed[ch.objectives[ch.objectives.length - 1][0]] ? 'complete' : unlocked ? 'available' : 'locked';
+      line(`${active} ${ch.host.padEnd(16)} ${status.padEnd(10)} ${ch.title}`, unlocked ? 'ok' : 'dim');
+    });
+  }
+
+  function status() {
+    const d = currentDefenses();
+    typeLines([
+      `user: cadet`,
+      `host: ${state.connected}`,
+      `cwd: ${state.cwd}`,
+      `score: ${state.score}`,
+      `trust: ${state.trust}`,
+      `trace: ${state.trace}%`,
+      `defense: firewall=${d.firewall || 0}, proxy=${d.proxy || 0}, scanned=${!!d.scanned}, probed=${!!d.probed}`,
+      `evidence items: ${state.evidence.length}`
+    ], 'dim');
+  }
+
+  function inventory() {
+    line('Toolkit:', 'story');
+    Object.values(TOOLS).forEach(tool => {
+      const ready = tool.unlock <= currentChapter().id;
+      line(`  ${ready ? '✓' : '·'} ${tool.label.padEnd(13)} ${ready ? tool.desc : 'locked until later chapter'}`, ready ? 'ok' : 'dim');
+    });
+    line('Evidence:', 'story');
+    if (!state.evidence.length) line('  No evidence collected yet.', 'dim');
+    state.evidence.forEach(e => line(`  ✓ ${e}`, 'ok'));
+  }
+
+  function runLs(args) {
+    const path = args[0] || state.cwd;
+    const dir = dirAt(path);
+    if (!dir) return line(`ls: cannot access ${path}`, 'bad');
+    Object.keys(dir).sort().forEach(name => {
+      const full = (pathNormalize(path).replace(/\/$/, '') + '/' + name).replace('//','/');
+      const isDir = !!dirAt(full);
+      line(`${isDir ? 'dir ' : 'file'}  ${name}`, isDir ? 'ok' : 'dim');
+    });
+    if (state.connected === 'local' && pathNormalize(path) === '/home/cadet') mark('list_home', 50);
+  }
+
+  function runCd(args) {
+    const path = args[0] || '/home/cadet';
+    const dir = dirAt(path);
+    if (!dir) return line(`cd: no such directory: ${path}`, 'bad');
+    state.cwd = pathNormalize(path);
+    line(state.cwd, 'ok');
+  }
+
+  function runCat(args) {
+    const path = args.join(' ');
+    if (!path) return line('cat: missing file', 'bad');
+    const content = fileAt(path);
+    if (content === null) return line(`cat: ${path}: no such file`, 'bad');
+    line(String(content), 'dim');
+
+    const clean = pathNormalize(path);
+    if (state.connected === 'local' && clean.endsWith('/briefing.txt')) mark('read_brief', 100);
+    if (state.connected === 'local' && clean.endsWith('/case_bit.txt')) mark('read_case', 120);
+    if (state.connected === 'archive-node' && clean.endsWith('/logs/access.log')) mark('cat_logs', 100);
+    if (state.connected === 'cipher-bay' && clean.endsWith('/cipher.txt')) mark('cat_cipher', 90);
+    if (state.connected === 'root-of-trust' && clean.endsWith('/final.txt')) mark('cat_final', 100);
+  }
+
+  function runGrep(args) {
+    if (args.length < 2) return line('grep: usage grep <term> <file>', 'bad');
+    const [term, ...rest] = args;
+    const content = fileAt(rest.join(' '));
+    if (content === null) return line(`grep: ${rest.join(' ')}: no such file`, 'bad');
+    String(content).split(/\n/).forEach((l, i) => {
+      if (l.toLowerCase().includes(term.toLowerCase())) line(`${i+1}: ${l}`, 'ok');
+    });
+  }
+
+  function connect(args) {
+    const host = args[0];
+    if (!host) return line('connect: missing host', 'bad');
+    if (!state.unlocked.includes(host)) return line(`connect: ${host} is outside current authorization scope.`, 'bad');
+    if (!state.files[host]) return line(`connect: unknown lab host ${host}`, 'bad');
+
+    state.connected = host;
+    const ch = chapterForHost(host);
+    state.cwd = host === 'local' ? '/home/cadet' : '/';
+    state.rooted = false;
+    line(`Connected to ${host} using training token.`, 'ok');
+    sfx('good');
+
+    if (host === 'atlas-gateway') mark('connect_atlas', 80);
+    if (host === 'archive-node') mark('connect_archive', 80);
+    if (host === 'kernel-vault') mark('connect_kernel', 80);
+    if (host === 'proxy-ring') mark('connect_proxy', 80);
+    if (host === 'cipher-bay') mark('connect_cipher', 80);
+    if (host === 'orchid-relay') { mark('connect_relay', 80); activateTrace(); }
+    if (host === 'root-of-trust') mark('connect_root', 80);
+
+    syncUI();
+  }
+
+  function scan(args) {
+    const host = args[0] || state.connected;
+    if (host !== state.connected) return line('scan: connect to the host first in this training lab.', 'bad');
+    const d = currentDefenses();
+    d.scanned = true;
+    line(`Scan result for ${host}:`, 'story');
+    line(`  services: ${(d.ports || []).join(', ') || 'local-files only'}`, 'dim');
+    line(`  firewall layers: ${d.firewall || 0}`, d.firewall ? 'warn' : 'ok');
+    line(`  proxy buffers: ${d.proxy || 0}`, d.proxy ? 'warn' : 'ok');
+    sfx('good');
+
+    if (host === 'atlas-gateway') mark('scan_atlas', 100);
+    if (host === 'archive-node') mark('scan_archive', 100);
+    if (host === 'proxy-ring') mark('scan_proxy', 100);
+  }
+
+  function probe(args) {
+    const host = args[0] || state.connected;
+    if (host !== state.connected) return line('probe: connect to the host first.', 'bad');
+    const d = currentDefenses();
+    if (!d.scanned) return line('probe: run scan first so you know what is in scope.', 'bad');
+    d.probed = true;
+    line(`Probe result: ${host}`, 'story');
+    line(`  recommended simulated tools: ${toolRecommendation(host)}`, 'ok');
+    line(`  note: probing is limited to the lab scope and writes an audit event.`, 'dim');
+
+    if (host === 'atlas-gateway') mark('probe_atlas', 100);
+    if (host === 'proxy-ring') mark('probe_proxy', 100);
+  }
+
+  function toolRecommendation(host) {
+    if (host === 'atlas-gateway') return 'PortPatch';
+    if (host === 'proxy-ring') return 'ProxyBalance alpha beta gamma';
+    if (host === 'orchid-relay') return 'LogAudit';
+    return 'LogAudit / HashCheck / ReportKit as needed';
+  }
+
+  function canUseTool(name) {
+    const tool = TOOLS[name];
+    if (!tool) return false;
+    return tool.unlock <= currentChapter().id;
+  }
+
+  function runTool(args) {
+    const toolName = args[0];
+    const rest = args.slice(1);
+    if (!toolName) return line('run: missing tool name', 'bad');
+    const exact = Object.keys(TOOLS).find(t => t.toLowerCase() === toolName.toLowerCase());
+    if (!exact) return line(`run: unknown simulated tool ${toolName}`, 'bad');
+    if (!canUseTool(exact)) return line(`run: ${exact} is not unlocked yet.`, 'bad');
+
+    const d = currentDefenses();
+
+    if (exact === 'ScanKit') return scan([state.connected]);
+    if (exact === 'ProbeLite') return probe([state.connected]);
+
+    if (exact === 'PortPatch') {
+      if (state.connected !== 'atlas-gateway') return line('PortPatch: this puzzle is for atlas-gateway.', 'bad');
+      if (!d.probed) return line('PortPatch: probe the host first.', 'bad');
+      d.firewall = Math.max(0, d.firewall - 2);
+      d.patched = true;
+      line('PortPatch solved the simulated service-hardening puzzle. Admin access is now granted for training review.', 'ok');
+      state.rooted = true;
+      mark('run_portpatch', 140);
+      return;
+    }
+
+    if (exact === 'LogAudit') {
+      line('LogAudit summary:', 'story');
+      line('  suspicious scheduler: orchid', 'warn');
+      line('  recommended action: preserve logs, lock risky token, write incident report', 'ok');
+      mark('run_logaudit', 120);
+      return;
+    }
+
+    if (exact === 'HashCheck') {
+      return runHash(rest.length ? rest : ['kernel.sig']);
+    }
+
+    if (exact === 'ProxyBalance') {
+      if (state.connected !== 'proxy-ring') return line('ProxyBalance: use this only in the proxy-ring lab.', 'bad');
+      const wanted = ['alpha', 'beta', 'gamma'];
+      const ok = wanted.every(w => rest.includes(w));
+      if (!ok) return line('ProxyBalance: provide alpha beta gamma to balance the lab agents.', 'warn');
+      d.proxy = 0;
+      d.balanced = true;
+      line('Proxy buffer stabilized in the controlled lab puzzle. No real traffic was generated.', 'ok');
+      mark('balance_proxy', 160);
+      return;
+    }
+
+    if (exact === 'CryptoLens') {
+      const file = rest[0] || 'cipher.txt';
+      if (state.connected !== 'cipher-bay' || !fileExists(file)) return line('CryptoLens: cipher.txt is not available here.', 'bad');
+      state.files['cipher-bay']['/']['decoded_note.txt'] = 'Decoded note: orchid-root is the final review path. The weakness is governance, not a monster.';
+      line('CryptoLens decoded the toy cipher. New file created: decoded_note.txt', 'ok');
+      mark('run_crypto', 150);
+      return;
+    }
+
+    if (exact === 'ReportKit') {
+      if (state.connected !== 'root-of-trust') return line('ReportKit: connect to root-of-trust first.', 'bad');
+      const required = ['warning.memo', 'decoded_note.txt', '/logs/session.log'];
+      const missing = required.filter(r => !state.evidence.some(e => e.endsWith(r)));
+      if (missing.length) return line(`ReportKit: evidence missing: ${missing.join(', ')}`, 'warn');
+      state.pendingReport = true;
+      line('ReportKit compiled the case report: ORCHID bypassed governance through weak emergency change controls.', 'ok');
+      mark('report', 200);
+      return;
+    }
+  }
+
+  function runHash(args) {
+    const file = args[0];
+    if (!file) return line('hash: missing file', 'bad');
+    const content = fileAt(file);
+    if (content === null) return line(`hash: ${file}: no such file`, 'bad');
+    let sum = 0;
+    String(content).split('').forEach(ch => sum = (sum + ch.charCodeAt(0) * 17) % 65535);
+    const result = `SIM-${sum.toString(16).toUpperCase().padStart(4,'0')}`;
+    line(`${file}: ${result}`, result.includes('4F77') ? 'warn' : 'ok');
+    if (state.connected === 'kernel-vault' && pathNormalize(file).endsWith('/kernel.sig')) {
+      line('Integrity note: signature contains ORCHID-MISMATCH. Analyze warning.memo next.', 'warn');
+      mark('run_hash', 120);
+    }
+  }
+
+  function analyze(args) {
+    const file = args[0];
+    if (!file) return line('analyze: missing file', 'bad');
+    const content = fileAt(file);
+    if (content === null) return line(`analyze: ${file}: no such file`, 'bad');
+    line('Analysis:', 'story');
+    if (String(content).toLowerCase().includes('governance')) {
+      line('  Finding: likely process-control weakness. Recommend change review, least privilege, and audit monitoring.', 'ok');
+    } else if (String(content).toLowerCase().includes('orchid')) {
+      line('  Finding: ORCHID appears to be a configuration governance bypass, not a magic attack.', 'warn');
+    } else {
+      line('  Finding: file reviewed. No high-confidence conclusion yet.', 'dim');
+    }
+    if (state.connected === 'kernel-vault' && pathNormalize(file).endsWith('/warning.memo')) mark('analyze_warning', 130);
+  }
+
+  function preserve(args) {
+    const file = args[0];
+    if (!file) return line('preserve: missing file', 'bad');
+    if (!fileExists(file)) return line(`preserve: ${file}: no such file`, 'bad');
+    const clean = pathNormalize(file);
+    const item = `${state.connected}:${clean}`;
+    if (!state.evidence.includes(item)) state.evidence.push(item);
+    line(`Evidence preserved with audit trail: ${item}`, 'ok');
+    if (state.connected === 'archive-node' && clean.endsWith('/logs/access.log')) mark('preserve_logs', 140);
+    if (state.connected === 'orchid-relay' && clean.endsWith('/logs/session.log')) mark('preserve_relay', 140);
+    syncUI();
+  }
+
+  function collect(args) {
+    const file = args[0];
+    if (!file) return line('collect: missing file', 'bad');
+    if (!fileExists(file)) return line(`collect: ${file}: no such file`, 'bad');
+    const clean = pathNormalize(file);
+    const item = `${state.connected}:${clean}`;
+    if (!state.evidence.includes(item)) state.evidence.push(item);
+    line(`Collected training evidence: ${item}`, 'ok');
+    if (state.connected === 'kernel-vault' && clean.endsWith('/warning.memo')) mark('download_evidence', 130);
+    if (state.connected === 'cipher-bay' && clean.endsWith('/decoded_note.txt')) mark('collect_cipher', 130);
+    syncUI();
+  }
+
+  function lockToken(args) {
+    const token = args[0];
+    if (!token) return line('lock: missing token name', 'bad');
+    const content = fileAt(token);
+    if (content === null) return line(`lock: ${token}: no such token`, 'bad');
+    if (state.connected !== 'orchid-relay' || token !== 'token-orchid') return line('lock: token not in the current containment plan.', 'bad');
+    state.files['orchid-relay']['/']['token-orchid'] = 'STATUS=LOCKED\\nprivilege=disabled\\nowner=incident-response';
+    state.trace = Math.max(0, state.trace - 25);
+    line('Containment complete: token-orchid locked and logged.', 'ok');
+    mark('lock_token', 160);
+  }
+
+  function submit(args) {
+    if (args[0] !== 'report') return line('submit: usage submit report', 'bad');
+    if (!state.pendingReport && state.levelIndex < chapters.length - 1) return line('submit: report is not ready yet.', 'warn');
+    line('CASE CLOSED: Bit exposed a governance weakness. Your recommendations strengthened change control, evidence handling, and least privilege.', 'ok');
+    line('Final score submitted to portal.', 'story');
+    state.score += 500;
+    mark('submit_case', 250);
+    postScore('game_won');
+    syncUI();
+  }
+
+  function activateTrace() {
+    if (state.trace < 15) state.trace = 15;
+    line('Containment timer active: keep calm, audit first, and lock the risky token.', 'warn');
+  }
+
+  function tickTrace() {
+    if (!state.started || state.gameOver || state.connected !== 'orchid-relay') return;
+    if (state.completed.lock_token) return;
+    state.trace = Math.min(100, state.trace + 1);
+    if (state.trace >= 100) {
+      state.gameOver = true;
+      state.trust = Math.max(0, state.trust - 20);
+      line('Training lockout: containment timer expired. Review the objective and reset the case.', 'bad');
+      postScore('game_over');
+    }
+    syncUI();
+  }
+
+  function unknown(cmd) {
+    const similar = suggestions(cmd)[0];
+    line(`Unknown command: ${cmd}${similar ? `. Did you mean ${similar}?` : ''}`, 'bad');
+    state.trust = Math.max(0, state.trust - 1);
+  }
+
+  function parse(inputText) {
+    const parts = inputText.trim().match(/(?:[^\s"]+|"[^"]*")+/g) || [];
+    return parts.map(p => p.replace(/^"|"$/g, ''));
+  }
+
+  function execute(raw) {
+    const clean = raw.trim();
+    if (!clean) return;
+    state.commandCount++;
+    state.lastCommand = clean;
+    state.history.push(clean);
+    state.historyIndex = state.history.length;
+    line(`${promptText()} ${clean}`, 'cmd');
+
+    const [cmdRaw, ...args] = parse(clean);
+    const cmd = (cmdRaw || '').toLowerCase();
+
+    const routes = {
+      help, clear: clearTerminal, briefing, missions: listMissions, status, network, inventory,
+      pwd: () => line(state.cwd, 'ok'),
+      ls: () => runLs(args),
+      cd: () => runCd(args),
+      cat: () => runCat(args),
+      grep: () => runGrep(args),
+      connect: () => connect(args),
+      scan: () => scan(args),
+      probe: () => probe(args),
+      run: () => runTool(args),
+      hash: () => runHash(args),
+      analyze: () => analyze(args),
+      preserve: () => preserve(args),
+      collect: () => collect(args),
+      lock: () => lockToken(args),
+      submit: () => submit(args)
+    };
+    if (routes[cmd]) routes[cmd]();
+    else unknown(cmd);
+
+    syncUI();
+    postScore('live');
+  }
+
+  function listMissions() {
+    chapters.forEach(ch => {
+      const unlocked = state.unlocked.includes(ch.host);
+      line(`${ch.id}. ${ch.title} — ${ch.host} [${unlocked ? 'available' : 'locked'}]`, unlocked ? 'ok' : 'dim');
+    });
+  }
+
+  function promptText() {
+    const host = state.connected || 'local';
+    const leaf = state.cwd === '/' ? '/' : state.cwd.split('/').pop();
+    return `cadet@${host}:${leaf}$`;
+  }
+
+  function syncUI() {
+    ui.score.textContent = String(Math.floor(state.score));
+    ui.trust.textContent = String(Math.floor(state.trust));
+    ui.trace.textContent = `${Math.floor(state.trace)}%`;
+    ui.level.textContent = String(currentChapter().id);
+    ui.badge.textContent = state.connected;
+    ui.prompt.textContent = promptText();
+
+    const ch = currentChapter();
+    ui.mission.textContent = ch.mission;
+    ui.principle.textContent = ch.principle;
+
+    ui.objectives.innerHTML = '';
+    ch.objectives.forEach(([key, text]) => {
+      const li = document.createElement('li');
+      li.textContent = text;
+      if (state.completed[key]) li.classList.add('done');
+      ui.objectives.appendChild(li);
+    });
+
+    renderMap();
+    renderFiles();
+    renderTools();
+    ui.muteBtn.textContent = state.muted ? 'Sound Off' : 'Sound On';
+  }
+
+  function renderMap() {
+    ui.map.innerHTML = '';
+    const positions = [
+      [8, 12], [38, 11], [68, 12],
+      [19, 45], [50, 43], [79, 45],
+      [34, 74], [66, 74]
+    ];
+    chapters.forEach((ch, i) => {
+      const div = document.createElement('div');
+      div.className = 'node';
+      if (state.unlocked.includes(ch.host)) div.classList.add('unlocked'); else div.classList.add('locked');
+      if (state.connected === ch.host) div.classList.add('connected');
+      if (ch.objectives.every(([key]) => state.completed[key])) div.classList.add('rooted');
+      div.style.left = `${positions[i][0]}%`;
+      div.style.top = `${positions[i][1]}%`;
+      div.textContent = ch.host.replace('-', '\n');
+      div.title = `${ch.title} — ${ch.host}`;
+      div.addEventListener('click', () => {
+        if (state.unlocked.includes(ch.host)) execute(`connect ${ch.host}`);
+      });
+      ui.map.appendChild(div);
+    });
+  }
+
+  function renderFiles() {
+    const fs = currentFS();
+    const dirs = Object.keys(fs).sort();
+    ui.files.innerHTML = '';
+    dirs.slice(0, 7).forEach(dir => {
+      const code = document.createElement('code');
+      const names = Object.keys(fs[dir]).slice(0, 4).join(', ');
+      code.textContent = `${dir}: ${names}`;
+      ui.files.appendChild(code);
+    });
+  }
+
+  function renderTools() {
+    ui.tools.innerHTML = '';
+    Object.values(TOOLS).forEach(tool => {
+      const code = document.createElement('code');
+      const ready = tool.unlock <= currentChapter().id;
+      code.className = ready ? 'ready' : 'locked';
+      code.textContent = `${ready ? '✓' : '·'} ${tool.label}`;
+      code.title = tool.desc;
+      ui.tools.appendChild(code);
+    });
+  }
+
+  function allTokens() {
+    const commandNames = ['help','clear','briefing','missions','status','network','inventory','pwd','ls','cd','cat','grep','connect','scan','probe','run','hash','analyze','preserve','collect','lock','submit'];
+    const hosts = chapters.map(ch => ch.host);
+    const tools = Object.keys(TOOLS);
+    const files = [];
+    const fs = currentFS();
+    Object.entries(fs).forEach(([dir, obj]) => {
+      files.push(dir);
+      Object.keys(obj).forEach(f => files.push(dir === '/' ? `/${f}` : `${dir}/${f}`, f));
+    });
+    return [...commandNames, ...hosts, ...tools, ...files, 'report', 'alpha', 'beta', 'gamma', 'token-orchid'];
+  }
+
+  function suggestions(prefix) {
+    if (!prefix) return [];
+    const p = prefix.toLowerCase();
+    return allTokens().filter(t => t.toLowerCase().startsWith(p)).slice(0, 8);
+  }
+
+  function autocomplete() {
+    const value = input.value;
+    const parts = value.split(/\s+/);
+    const last = parts[parts.length - 1] || '';
+    const match = suggestions(last)[0];
+    if (!match) return;
+    parts[parts.length - 1] = match;
+    input.value = parts.join(' ') + ' ';
+  }
+
+  function hint() {
+    line(`Hint: ${currentChapter().hint}`, 'warn');
+  }
+
+  function postScore(mode = 'live') {
+    const payload = { gameSlug: GAME_SLUG, slug: GAME_SLUG, score: Math.floor(state.score), trust: Math.floor(state.trust), level: currentChapter().id, mode };
+    try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
+    try { window.GG?.setScore?.(payload.score, { gameSlug: GAME_SLUG }); } catch {}
+    if (mode !== 'live') {
+      try { window.GG?.submitScore?.(payload.score, { gameSlug: GAME_SLUG }); } catch {}
+      try { window.GG?.endRound?.(payload); } catch {}
+    }
+    try { window.parent?.postMessage?.({ type: 'GG_SCORE', ...payload, payload }, '*'); } catch {}
+    try { window.parent?.postMessage?.({ type: 'gg:score', ...payload, payload }, '*'); } catch {}
+  }
+
+  // Audio: simple synth + ambient hum, starts only after user action.
   function ensureAudio() {
     if (state.muted) return null;
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -298,608 +938,113 @@
     if (!AC) {
       AC = new Ctx();
       master = AC.createGain();
-      master.gain.value = 0.11;
+      master.gain.value = 0.13;
       master.connect(AC.destination);
     }
     if (AC.state === 'suspended') AC.resume().catch(() => {});
     return AC;
   }
+
   function tone(freq, dur = 0.08, type = 'sine', gain = 0.04, delay = 0) {
     const ac = ensureAudio();
     if (!ac) return;
-    const t0 = ac.currentTime + delay;
+    const t = ac.currentTime + delay;
     const osc = ac.createOscillator();
     const g = ac.createGain();
     osc.type = type;
-    osc.frequency.setValueAtTime(freq, t0);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(g); g.connect(master);
-    osc.start(t0); osc.stop(t0 + dur + 0.03);
-  }
-  function sfx(type) {
-    if (type === 'good') { tone(620,.05,'triangle',.05); tone(940,.08,'sine',.035,.05); }
-    if (type === 'bad') tone(170,.12,'sawtooth',.045);
-    if (type === 'power') { tone(470,.06,'triangle',.05); tone(760,.09,'sine',.04,.05); }
-    if (type === 'level') { tone(392,.06,'triangle',.05); tone(554,.08,'triangle',.04,.06); tone(784,.1,'sine',.03,.13); }
-    if (type === 'move') tone(520,.03,'sine',.025);
-  }
-  function musicTick() {
-    if (!state.started || state.paused || state.levelComplete || state.gameOver || state.muted) return;
-    const notes = [196,247,294,330,392,330,294,247];
-    const n = notes[musicStep++ % notes.length];
-    tone(n,.08,'triangle',.008);
-    if (musicStep % 2 === 0) tone(n/2,.12,'sine',.006);
-  }
-  function startMusic() { if (!musicInt && !state.muted) musicInt = setInterval(musicTick, 260); }
-  function stopMusic() { if (musicInt) clearInterval(musicInt); musicInt = null; }
-
-  function spriteFrame(kind, speed = 170) {
-    const frames = spriteDefs[kind];
-    if (!frames) return null;
-    const idx = Math.floor((performance.now() / speed) % frames.length);
-    return images[frames[idx]];
+    osc.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + dur + 0.03);
   }
 
-  function syncUI() {
-    const lv = currentLevel();
-    ui.scoreValue.textContent = Math.floor(state.score);
-    ui.levelValue.textContent = lv.id;
-    ui.livesValue.textContent = state.lives;
-    ui.comboValue.textContent = `x${state.combo}`;
-    ui.missionText.textContent = lv.mission;
-    ui.objectiveText.textContent = `${state.collected} / ${lv.target}`;
-    ui.factText.textContent = lv.fact;
-    ui.progressBar.style.width = `${Math.min(100, state.collected / lv.target * 100)}%`;
-    ui.firewallState.textContent = `Firewall: ${state.firewall}${state.firewallActive ? ' (ON)' : ''}`;
-    ui.scanState.textContent = `Scan: ${state.scan}`;
-    ui.freezeState.textContent = `Freeze: ${state.freeze}${state.freezeTimer > 0 ? ' (ON)' : ''}`;
-    ui.muteBtn.textContent = state.muted ? 'Sound Off' : 'Sound On';
-    ui.pauseBtn.textContent = state.paused ? 'Resume' : 'Pause';
+  function sfx(kind) {
+    if (kind === 'good') { tone(520,.06,'triangle',.04); tone(820,.08,'sine',.028,.05); }
+    if (kind === 'bad') tone(140,.15,'sawtooth',.04);
+    if (kind === 'level') { tone(392,.08,'triangle',.05); tone(554,.1,'triangle',.04,.07); tone(784,.12,'sine',.03,.16); }
   }
 
-  function postScore(mode = 'live') {
-    const clean = Math.max(0, Math.floor(state.score));
-    const now = performance.now();
-    if (mode === 'live' && clean === lastLiveScore && now - lastLiveAt < 150) return;
-    lastLiveScore = clean;
-    lastLiveAt = now;
-    const payload = {
-      gameSlug: GAME_SLUG,
-      slug: GAME_SLUG,
-      score: clean,
-      best: Math.max(state.best, clean),
-      level: currentLevel().id,
-      mode
-    };
-    try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
-    try { window.GG?.setScore?.(clean, { gameSlug: GAME_SLUG }); } catch {}
-    if (mode !== 'live') {
-      try { window.GG?.submitScore?.(clean, { gameSlug: GAME_SLUG }); } catch {}
-      try { window.GG?.endRound?.(payload); } catch {}
-    }
-    try { window.parent?.postMessage?.({ type:'GG_SCORE', ...payload, payload }, '*'); } catch {}
-    try { window.parent?.postMessage?.({ type:'gg:score', ...payload, payload }, '*'); } catch {}
+  function startMusic() {
+    if (state.muted || musicTimer) return;
+    let step = 0;
+    const notes = [196, 247, 294, 330, 392, 330, 294, 247];
+    musicTimer = setInterval(() => {
+      if (!state.started || state.muted || document.hidden) return;
+      const n = notes[step++ % notes.length];
+      tone(n, .08, 'triangle', .006);
+      tone(n / 2, .14, 'sine', .004, .02);
+    }, 270);
   }
 
-  function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.max(1, Math.round(rect.width * dpr));
-    canvas.height = Math.max(1, Math.round(rect.height * dpr));
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    player.x = clamp(player.x || (rect.width - player.w) / 2, 16, getW() - player.w - 16);
-    updatePlayerFloor();
+  function stopMusic() {
+    if (musicTimer) clearInterval(musicTimer);
+    musicTimer = null;
   }
 
-  function startGame() {
-    state = defaultState();
-    state.started = true;
-    state.levelIndex = 0;
-    state.best = Number(localStorage.getItem(BEST_KEY) || '0') || 0;
-    loadLevel(0, true);
-    ui.startOverlay.classList.remove('active');
-    ui.gameOverOverlay.classList.remove('active');
-    ui.levelOverlay.classList.remove('active');
-    ui.quizOverlay.classList.remove('active');
-    startMusic();
-  }
-
-  function loadLevel(index, fresh = false) {
-    state.levelIndex = clamp(index, 0, levels.length - 1);
-    state.levelComplete = false;
-    state.gameOver = false;
-    state.paused = false;
-    state.items = [];
-    state.particles = [];
-    state.floats = [];
-    state.combo = 1;
-    state.comboChain = 0;
-    state.collected = 0;
-    state.firewall = 1;
-    state.scan = 1;
-    state.freeze = 1;
-    state.firewallActive = false;
-    state.firewallTimer = 0;
-    state.freezeTimer = 0;
-    if (fresh) state.lives = 3;
-    syncUI();
-  }
-
-  function spawnItem() {
-    const lv = currentLevel();
-    const hazardChance = lv.boss ? 0.38 : 0.25 + state.levelIndex * 0.008;
-    const isHazard = Math.random() < hazardChance;
-    const kind = isHazard ? pick(lv.hazard) : pick(lv.good);
-    const size = rand(62, 88);
-    state.items.push({
-      kind,
-      good: !isHazard,
-      x: rand(40, getW() - 90),
-      y: -90,
-      w: size,
-      h: size,
-      vy: rand(lv.speed, lv.speed + 90) * (state.freezeTimer > 0 ? 0.45 : 1),
-      drift: rand(-18, 18),
-      rot: rand(-0.3, 0.3),
-      vr: rand(-0.8, 0.8),
-      pulse: rand(0, Math.PI * 2),
-      scanned: false
+  function bind() {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const val = input.value;
+      input.value = '';
+      execute(val);
     });
-  }
 
-  function addParticles(x,y,color,n=18) {
-    for (let i=0;i<n;i++) {
-      const a = Math.random()*Math.PI*2;
-      const s = rand(40,160);
-      state.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.45,.9),ttl:.9,size:rand(3,8),color});
-    }
-  }
-  function addFloat(x,y,text,color='#fff') {
-    state.floats.push({x,y,text,color,life:1,ttl:1});
-  }
-
-  function movePlayer(delta) {
-    if (!state.started || state.paused) return;
-    player.x = clamp(player.x + delta, 16, getW() - player.w - 16);
-    sfx('move');
-  }
-
-  function activateFirewall() {
-    if (state.firewall <= 0 || state.firewallActive || !state.started || state.paused || state.levelComplete || state.gameOver) return;
-    state.firewall--;
-    state.firewallActive = true;
-    state.firewallTimer = 7;
-    sfx('power');
-    addFloat(getW()/2, getH()*.3, 'Firewall Active', '#d4fff0');
-    syncUI();
-  }
-
-  function activateScan() {
-    if (state.scan <= 0 || !state.started || state.paused || state.levelComplete || state.gameOver) return;
-    state.scan--;
-    sfx('power');
-    let converted = 0;
-    state.items.forEach(item => {
-      item.scanned = true;
-      if (!item.good && converted < 2) {
-        item.vy *= 0.45;
-        converted++;
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        autocomplete();
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        state.historyIndex = Math.max(0, state.historyIndex - 1);
+        input.value = state.history[state.historyIndex] || '';
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        state.historyIndex = Math.min(state.history.length, state.historyIndex + 1);
+        input.value = state.history[state.historyIndex] || '';
       }
     });
-    addParticles(getW()/2, getH()/2, '#55eaff', 35);
-    addFloat(getW()/2, getH()*.3, 'Threats Scanned', '#d9fbff');
-    syncUI();
-  }
 
-  function activateFreeze() {
-    if (state.freeze <= 0 || state.freezeTimer > 0 || !state.started || state.paused || state.levelComplete || state.gameOver) return;
-    state.freeze--;
-    state.freezeTimer = 5;
-    sfx('power');
-    addFloat(getW()/2, getH()*.3, 'Threats Slowed', '#fff1b6');
-    syncUI();
-  }
-
-  function intersects(a,b) {
-    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-  }
-
-  function collectItem(item, idx) {
-    if (item.good) {
-      state.collected++;
-      state.comboChain++;
-      state.combo = Math.min(10, 1 + Math.floor(state.comboChain / 3));
-      const gain = 80 * state.combo;
-      state.score += gain;
-      addFloat(item.x, item.y - 12, `+${gain}`, '#d9ffef');
-      addParticles(item.x + item.w/2, item.y + item.h/2, '#5dffbd', 18);
-      sfx('good');
-      if (currentLevel().boss && state.collected % 6 === 0) {
-        state.score += 150;
-        addFloat(getW()/2, 92, 'Breach Boss weakened!', '#ffe79d');
-      }
-      if (state.collected >= currentLevel().target) openQuiz();
-    } else {
-      state.comboChain = 0;
-      state.combo = 1;
-      if (state.firewallActive) {
-        state.firewallActive = false;
-        state.firewallTimer = 0;
-        addFloat(item.x, item.y - 10, 'Firewall blocked!', '#fff0af');
-        addParticles(item.x + item.w/2, item.y + item.h/2, '#ffd36b', 18);
-        sfx('power');
-      } else {
-        state.lives--;
-        state.score = Math.max(0, state.score - 80);
-        addFloat(item.x, item.y - 10, 'Threat hit! -1 life', '#ffc0ca');
-        addParticles(item.x + item.w/2, item.y + item.h/2, '#ff6478', 22);
-        sfx('bad');
-        if (state.lives <= 0) gameOver(false);
-      }
-    }
-    state.items.splice(idx, 1);
-    syncUI();
-    postScore('live');
-  }
-
-  function openQuiz() {
-    state.levelComplete = true;
-    state.paused = true;
-    stopMusic();
-    const lv = currentLevel();
-    ui.quizTitle.textContent = `${lv.title} Debrief`;
-    ui.quizQuestion.textContent = lv.quiz.q;
-    ui.quizFeedback.textContent = '';
-    ui.quizChoices.innerHTML = '';
-    lv.quiz.options.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.textContent = opt;
-      btn.addEventListener('click', () => answerQuiz(btn, opt));
-      ui.quizChoices.appendChild(btn);
-    });
-    ui.quizOverlay.classList.add('active');
-  }
-
-  function answerQuiz(btn, opt) {
-    const lv = currentLevel();
-    const correct = opt === lv.quiz.answer;
-    [...ui.quizChoices.children].forEach(b => {
-      b.disabled = true;
-      if (b.textContent === lv.quiz.answer) b.classList.add('correct');
-      if (b === btn && !correct) b.classList.add('wrong');
-    });
-    ui.quizFeedback.textContent = lv.quiz.explain;
-    const bonus = correct ? 350 : 160;
-    state.score += bonus;
-    setTimeout(() => {
-      ui.quizOverlay.classList.remove('active');
-      completeLevel(bonus, correct);
-    }, 1300);
-  }
-
-  function completeLevel(quizBonus=0, quizCorrect=true) {
-    const bonus = 300 + state.lives * 120 + state.combo * 50 + quizBonus;
-    state.score += bonus;
-    state.best = Math.max(state.best, state.score);
-    localStorage.setItem(BEST_KEY, String(Math.floor(state.best)));
-    state.stars = state.lives === 3 && quizCorrect ? 3 : state.lives >= 2 ? 2 : 1;
-    ui.levelTitle.textContent = `${currentLevel().title} Complete`;
-    ui.levelSummary.textContent = currentLevel().boss
-      ? 'You passed the final Breach Boss defensive training mission.'
-      : 'You cleared the mission and unlocked the next defensive skill.';
-    ui.rewardText.textContent = `Bonus +${bonus} • Best ${Math.floor(state.best)}`;
-    ui.starRow.textContent = '★ '.repeat(state.stars).trim();
-    ui.levelOverlay.classList.add('active');
-    sfx('level');
-    postScore('level_complete');
-  }
-
-  function nextLevel() {
-    ui.levelOverlay.classList.remove('active');
-    if (state.levelIndex >= levels.length - 1) {
-      gameOver(true);
-      return;
-    }
-    loadLevel(state.levelIndex + 1);
-    state.paused = false;
-    startMusic();
-  }
-
-  function replayLevel() {
-    ui.levelOverlay.classList.remove('active');
-    loadLevel(state.levelIndex);
-    state.paused = false;
-    startMusic();
-  }
-
-  function gameOver(win) {
-    state.gameOver = true;
-    state.paused = true;
-    stopMusic();
-    state.best = Math.max(state.best, state.score);
-    localStorage.setItem(BEST_KEY, String(Math.floor(state.best)));
-    ui.gameOverTitle.textContent = win ? 'Academy Cleared!' : 'Training Failed';
-    ui.gameOverSummary.textContent = win
-      ? `Excellent defensive work. Final score: ${Math.floor(state.score)}`
-      : `Final score: ${Math.floor(state.score)}. Try again and strengthen your cyber defense habits.`;
-    ui.gameOverOverlay.classList.add('active');
-    postScore(win ? 'game_won' : 'game_over');
-  }
-
-  function update(dt) {
-    updatePlayerFloor();
-    if (!state.started || state.paused || state.gameOver) return;
-    const lv = currentLevel();
-    state.time += dt;
-    player.bob += dt * 7;
-
-    if (Math.random() < (lv.boss ? 0.038 : 0.028) + state.levelIndex * 0.003) spawnItem();
-
-    if (state.firewallTimer > 0) {
-      state.firewallTimer -= dt;
-      if (state.firewallTimer <= 0) {
-        state.firewallActive = false;
-        state.firewallTimer = 0;
-      }
-    }
-    if (state.freezeTimer > 0) state.freezeTimer = Math.max(0, state.freezeTimer - dt);
-
-    for (let i=state.items.length-1;i>=0;i--) {
-      const item = state.items[i];
-      const speedFactor = state.freezeTimer > 0 ? 0.46 : 1;
-      item.y += item.vy * dt * speedFactor;
-      item.x += Math.sin(item.y * 0.015 + item.pulse) * item.drift * dt;
-      item.rot += item.vr * dt;
-
-      if (item.scanned && !item.good) {
-        item.x += Math.sin(state.time * 8) * 0.8;
-      }
-
-      if (intersects(item, player)) {
-        collectItem(item, i);
-        continue;
-      }
-      if (item.y > getH() + 120) state.items.splice(i, 1);
-    }
-
-    state.particles.forEach(p => {
-      p.life -= dt; p.x += p.vx*dt; p.y += p.vy*dt; p.vx *= .985; p.vy *= .985;
-    });
-    state.particles = state.particles.filter(p => p.life > 0);
-
-    state.floats.forEach(f => { f.life -= dt; f.y -= 44*dt; });
-    state.floats = state.floats.filter(f => f.life > 0);
-    syncUI();
-  }
-
-  function drawBackground() {
-    const w = getW(), h = getH();
-    const bg = images[backgrounds[state.levelIndex]];
-    if (bg && bg.width) {
-      const ratio = Math.max(w/bg.width, h/bg.height);
-      const dw = bg.width * ratio, dh = bg.height * ratio;
-      ctx.drawImage(bg, (w-dw)/2, (h-dh)/2, dw, dh);
-    } else {
-      ctx.fillStyle = '#07111f';
-      ctx.fillRect(0,0,w,h);
-    }
-    const grd = ctx.createLinearGradient(0,0,0,h);
-    grd.addColorStop(0,'rgba(255,255,255,.02)');
-    grd.addColorStop(1,'rgba(0,0,0,.28)');
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,w,h);
-  }
-
-  function drawItems() {
-    state.items.forEach(item => {
-      const img = spriteFrame(item.kind, item.good ? 175 : 210);
-      const pulse = 1 + Math.sin(item.pulse + performance.now()*0.004) * 0.06;
-      const w = item.w * pulse, h = item.h * pulse;
-      ctx.save();
-      ctx.translate(item.x + item.w/2, item.y + item.h/2);
-      ctx.rotate(item.rot);
-      ctx.shadowColor = item.good ? '#5dffbd' : '#ff6478';
-      ctx.shadowBlur = item.good ? 18 : 20;
-      if (img && img.width) ctx.drawImage(img, -w/2, -h/2, w, h);
-      else {
-        ctx.fillStyle = item.good ? '#5dffbd' : '#ff6478';
-        ctx.beginPath(); ctx.arc(0,0,w/2,0,Math.PI*2); ctx.fill();
-      }
-      if (item.scanned && !item.good) {
-        ctx.strokeStyle = 'rgba(255,211,107,.9)';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(0,0,w*.58,0,Math.PI*2);
-        ctx.stroke();
-      }
-      ctx.restore();
-    });
-  }
-
-  function drawHero() {
-    const img = spriteFrame('hero', 160);
-    const bobY = Math.sin(player.bob) * 4;
-    ctx.save();
-    if (state.firewallActive) {
-      ctx.beginPath();
-      ctx.arc(player.x + player.w/2, player.y + player.h/2 + bobY, 72 + Math.sin(player.bob*1.5)*4, 0, Math.PI*2);
-      ctx.strokeStyle = 'rgba(93,255,189,.88)';
-      ctx.lineWidth = 5;
-      ctx.shadowColor = '#5dffbd';
-      ctx.shadowBlur = 20;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
-    if (img && img.width) ctx.drawImage(img, player.x, player.y + bobY, player.w, player.h);
-    else {
-      ctx.fillStyle = '#55eaff';
-      ctx.beginPath(); ctx.arc(player.x + player.w/2, player.y + player.h/2, 44, 0, Math.PI*2); ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  function drawEffects() {
-    state.particles.forEach(p => {
-      const a = p.life / p.ttl;
-      ctx.save();
-      ctx.globalAlpha = a;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.size*a,0,Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-    });
-    state.floats.forEach(f => {
-      ctx.save();
-      ctx.globalAlpha = f.life / f.ttl;
-      ctx.fillStyle = f.color;
-      ctx.font = '900 22px Inter, system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(f.text, f.x, f.y);
-      ctx.restore();
-    });
-  }
-
-  function drawCanvasHud() {
-    const w = getW();
-    ctx.save();
-    ctx.fillStyle = 'rgba(6,12,22,.48)';
-    ctx.strokeStyle = 'rgba(235,255,255,.12)';
-    roundRect(16,16,w-32,62,18);
-    ctx.fill(); ctx.stroke();
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#f4feff';
-    ctx.font = '900 20px Inter, system-ui, sans-serif';
-    ctx.fillText(currentLevel().title, 32, 44);
-    ctx.font = '700 14px Inter, system-ui, sans-serif';
-    ctx.fillStyle = 'rgba(224,240,248,.82)';
-    ctx.fillText(`Best ${Math.floor(Math.max(state.best, state.score))}`, 32, 64);
-    ctx.textAlign = 'right';
-    ctx.font = '900 18px Inter, system-ui, sans-serif';
-    ctx.fillStyle = '#ffd36b';
-    ctx.fillText(`Target ${state.collected}/${currentLevel().target}`, w-28, 44);
-    ctx.fillStyle = '#dfffea';
-    ctx.fillText(`Combo x${state.combo}`, w-28, 66);
-    ctx.restore();
-  }
-
-  function roundRect(x,y,w,h,r) {
-    ctx.beginPath();
-    ctx.moveTo(x+r,y);
-    ctx.arcTo(x+w,y,x+w,y+h,r);
-    ctx.arcTo(x+w,y+h,x,y+h,r);
-    ctx.arcTo(x,y+h,x,y,r);
-    ctx.arcTo(x,y,x+w,y,r);
-    ctx.closePath();
-  }
-
-  function draw() {
-    ctx.clearRect(0,0,getW(),getH());
-    drawBackground();
-    drawItems();
-    drawHero();
-    drawEffects();
-    drawCanvasHud();
-  }
-
-  function loop(now) {
-    const dt = Math.min(0.05, Math.max(0.001, (now-last)/1000));
-    last = now;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  function bindEvents() {
-    document.getElementById('playBtn').addEventListener('click', startGame);
-    document.getElementById('howBtn').addEventListener('click', () => ui.helpOverlay.classList.add('active'));
-    document.getElementById('closeHelpBtn').addEventListener('click', () => ui.helpOverlay.classList.remove('active'));
-    document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
-    document.getElementById('replayBtn').addEventListener('click', replayLevel);
-    document.getElementById('restartBtn').addEventListener('click', () => {
-      ui.gameOverOverlay.classList.remove('active');
-      startGame();
+    document.querySelectorAll('[data-cmd]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.cmd;
+        input.focus();
+      });
     });
 
-    document.getElementById('leftBtn').addEventListener('click', () => movePlayer(-78));
-    document.getElementById('rightBtn').addEventListener('click', () => movePlayer(78));
-    document.getElementById('firewallBtn').addEventListener('click', activateFirewall);
-    document.getElementById('scanBtn').addEventListener('click', activateScan);
-    document.getElementById('freezeBtn').addEventListener('click', activateFreeze);
-    document.getElementById('submitScoreBtn').addEventListener('click', () => postScore('manual_submit'));
-
+    ui.startBtn.addEventListener('click', startGame);
+    ui.overlayStartBtn.addEventListener('click', startGame);
+    ui.hintBtn.addEventListener('click', hint);
+    ui.resetBtn.addEventListener('click', () => { setup(); startGame(); });
+    ui.submitBtn.addEventListener('click', () => postScore('manual_submit'));
     ui.muteBtn.addEventListener('click', () => {
       state.muted = !state.muted;
       if (state.muted) stopMusic(); else startMusic();
       syncUI();
     });
-    ui.pauseBtn.addEventListener('click', () => {
-      state.paused = !state.paused;
-      if (state.paused) stopMusic(); else startMusic();
-      syncUI();
-    });
 
-    window.addEventListener('keydown', e => {
-      if (e.key === 'ArrowLeft') movePlayer(-58);
-      if (e.key === 'ArrowRight') movePlayer(58);
-      if (e.key.toLowerCase() === 'f') activateFirewall();
-      if (e.key.toLowerCase() === 's') activateScan();
-      if (e.key.toLowerCase() === 'z') activateFreeze();
-    });
-
-    canvas.addEventListener('pointerdown', e => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      if (x >= player.x && x <= player.x + player.w && y >= player.y && y <= player.y + player.h) {
-        dragActive = true;
-        dragOffsetX = x - player.x;
-      }
-    });
-    canvas.addEventListener('pointermove', e => {
-      if (!dragActive) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      player.x = clamp(x - dragOffsetX, 16, getW() - player.w - 16);
-    });
-    canvas.addEventListener('pointerup', () => dragActive = false);
-    canvas.addEventListener('pointercancel', () => dragActive = false);
-
-    let swipeStartX = null;
-    canvas.addEventListener('touchstart', e => {
-      if (e.touches && e.touches[0]) swipeStartX = e.touches[0].clientX;
-    }, {passive:true});
-    canvas.addEventListener('touchend', e => {
-      if (swipeStartX == null || !e.changedTouches || !e.changedTouches[0]) return;
-      const dx = e.changedTouches[0].clientX - swipeStartX;
-      if (Math.abs(dx) > 25) movePlayer(dx > 0 ? 78 : -78);
-      swipeStartX = null;
-    }, {passive:true});
-
-    window.addEventListener('resize', resizeCanvas);
     window.addEventListener('message', ev => {
       const data = ev.data || {};
       const type = data.type || data.event;
-      if (type === 'GG_PAUSE') {
-        state.paused = !!(data.payload?.paused ?? data.paused);
-        if (state.paused) stopMusic(); else startMusic();
-        syncUI();
-      }
-      if (type === 'GG_RESTART') startGame();
       if (type === 'GG_MUTE') {
         state.muted = !!(data.payload?.muted ?? data.muted);
         if (state.muted) stopMusic(); else startMusic();
         syncUI();
       }
+      if (type === 'GG_RESTART') {
+        setup();
+        startGame();
+      }
     });
+
+    setInterval(tickTrace, 1000);
   }
 
-  loadImages().then(() => {
-    bindEvents();
-    resizeCanvas();
-    syncUI();
-    requestAnimationFrame(loop);
-  });
+  setup();
+  bind();
 })();

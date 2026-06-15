@@ -1,63 +1,58 @@
 {
-  "title": "Cyber Shield Academy",
-  "slug": "cyber-shield-academy",
+  "title": "Cyber Shield Academy: Terminal Ops",
+  "slug": "cyber-shield-academy-terminal",
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "orientation": "landscape",
-  "category": "Educational Arcade",
-  "description": "A defensive cybersecurity educational arcade game with 10 levels, animated cyber sprites, high-quality backgrounds, power-ups, safe cyber habit learning, quiz debriefs, sound, and score bridge support.",
+  "category": "Educational",
+  "description": "A safe, simulated terminal-based cybersecurity game where players learn UNIX-like commands, defensive investigation, evidence handling, integrity checks, incident response and ethical hacking principles while solving Case BIT.",
   "tags": [
-    "education",
     "cybersecurity",
-    "digital safety",
-    "privacy",
-    "passwords",
-    "phishing awareness",
-    "software updates",
-    "backups",
-    "firewall",
-    "secure wifi",
-    "mobile",
-    "arcade"
+    "terminal",
+    "unix",
+    "ethical hacking",
+    "education",
+    "simulation",
+    "puzzle",
+    "incident response"
   ],
   "controls": [
     {
-      "key": "Swipe / Drag",
-      "action": "Move the shield drone left and right"
+      "key": "Keyboard",
+      "action": "Type commands in the terminal"
     },
     {
-      "key": "Buttons",
-      "action": "Move and activate defensive abilities"
+      "key": "Tab",
+      "action": "Auto-complete commands, hosts, files and tools"
     },
     {
-      "key": "Arrow keys",
-      "action": "Desktop movement"
-    },
-    {
-      "key": "F / S / Z",
-      "action": "Firewall / Scan / Freeze"
+      "key": "Arrow Up / Down",
+      "action": "Command history"
     }
   ],
   "features": {
     "mobileFirst": true,
-    "sound": true,
+    "terminalInterface": true,
+    "simulatedOnly": true,
+    "levels": 8,
+    "networkMap": true,
+    "fileSystem": true,
+    "autoComplete": true,
     "backgroundMusic": true,
-    "scoreEvents": [
+    "webAudioSoundEffects": true,
+    "scoreBridge": [
       "GG_SCORE",
       "gg:score"
     ],
-    "animatedSpriteAssets": true,
-    "defensiveCyberSafety": true,
-    "quizDebriefs": true,
-    "powerUps": [
-      "firewall",
-      "scan",
-      "freeze"
-    ],
-    "levels": 10,
-    "bossLevel": true,
-    "highQualityBackgrounds": true,
-    "highQualityThumbnail": true
+    "cyberPrinciples": [
+      "authorization and scope",
+      "least privilege",
+      "log preservation",
+      "integrity verification",
+      "incident response",
+      "change management",
+      "evidence reporting"
+    ]
   },
-  "version": "1.0.0"
+  "version": "3.0.0-terminal-rebuild"
 }

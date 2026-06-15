@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<radialGradient id="glow" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#55e7ff" stop-opacity=".95"/><stop offset="1" stop-color="#020814" stop-opacity="0"/></radialGradient>
+<linearGradient id="cyan" x1="0" x2="1"><stop stop-color="#48f1ff"/><stop offset="1" stop-color="#2ce39f"/></linearGradient>
+<linearGradient id="pink" x1="0" x2="1"><stop stop-color="#ff4aa5"/><stop offset="1" stop-color="#ff7b3d"/></linearGradient>
+<filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity=".45"/></filter>
+</defs>
+<rect width="512" height="512" fill="transparent"/><circle cx="256" cy="256" r="230" fill="#ffd86b" opacity=".20"/><g filter="url(#shadow)"><circle cx="256" cy="228" r="86" fill="#f3f7ef" stroke="#ffd86b" stroke-width="10"/><circle cx="225" cy="222" r="12" fill="#071126"/><circle cx="287" cy="222" r="12" fill="#071126"/><path d="M218 270q39 24 78 0" fill="none" stroke="#071126" stroke-width="10" stroke-linecap="round"/><path d="M172 172q84-72 168 0" fill="none" stroke="#d9e2df" stroke-width="28" stroke-linecap="round"/><rect x="160" y="318" width="192" height="74" rx="26" fill="#071126" stroke="#49f1ff" stroke-width="8"/><text x="256" y="370" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="42" fill="#49f1ff">LOOP</text></g>
+</svg>
