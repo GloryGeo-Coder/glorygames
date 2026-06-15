@@ -2,8 +2,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { io, type Socket } from "socket.io-client";
+import { useCallback, useEffect, useRef, useState } from "react";
 import PlaySidebar from "@/components/PlaySidebar";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -13,6 +12,7 @@ type Props = {
 };
 
 type ChatMessage = {
+  id?: string;
   user: string;
   text: string;
   ts: number;
@@ -26,6 +26,46 @@ function sanitizeGuestName(value?: string | null) {
     .slice(0, 40);
 
   return clean || "Guest Player";
+}
+
+function normalizeMessages(data: any): ChatMessage[] {
+  const source = Array.isArray(data?.messages)
+    ? data.messages
+    : Array.isArray(data?.rows)
+      ? data.rows
+      : [];
+
+  return source
+    .map((message: any) => ({
+      id: message?.id ? String(message.id) : undefined,
+      user:
+        String(
+          message?.user ||
+            message?.displayName ||
+            message?.playerName ||
+            message?.name ||
+            "Player"
+        ) || "Player",
+      text: String(message?.text || "").slice(0, 180),
+      ts: Number(message?.ts || message?.createdAt || Date.now()),
+    }))
+    .filter((message: ChatMessage) => message.text.trim().length > 0);
+}
+
+function mergeMessages(current: ChatMessage[], incoming: ChatMessage[]) {
+  const map = new Map<string, ChatMessage>();
+
+  for (const message of [...current, ...incoming]) {
+    const key =
+      message.id ||
+      `${message.user.toLowerCase()}-${message.text}-${Math.floor(message.ts / 1000)}`;
+
+    map.set(key, message);
+  }
+
+  return Array.from(map.values())
+    .sort((a, b) => a.ts - b.ts)
+    .slice(-80);
 }
 
 function extractScorePayload(data: any, slug: string) {
@@ -61,10 +101,8 @@ export default function PlayClient({ slug, title }: Props) {
     "connected" | "error" | "connecting"
   >("connecting");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-
   const [guestName, setGuestName] = useState("Guest Player");
 
-  const socketRef = useRef<Socket | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -75,8 +113,6 @@ export default function PlayClient({ slug, title }: Props) {
   const effectivePlayerName = sanitizeGuestName(
     user?.displayName || guestName || "Guest Player"
   );
-
-  const socketUrl = useMemo(() => "/api/realtime", []);
 
   useEffect(() => {
     try {
@@ -117,45 +153,55 @@ export default function PlayClient({ slug, title }: Props) {
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
 
-  useEffect(() => {
-    const s = io(socketUrl, {
-      transports: ["websocket"],
-      path: "/socket.io",
-    });
+  const loadChat = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({
+        gameSlug: slug,
+        limit: "50",
+      });
 
-    socketRef.current = s;
+      const res = await fetch(`/api/chat?${params.toString()}`, {
+        method: "GET",
+        cache: "no-store",
+        credentials: "include",
+      });
 
-    s.on("connect", () => {
-      setChatStatus("connected");
-      s.emit("join", { gameSlug: slug });
-    });
+      const data = await res.json().catch(() => null);
 
-    s.on("connect_error", () => setChatStatus("error"));
-    s.on("disconnect", () => setChatStatus("error"));
-
-    s.on("score:update", (payload: any) => {
-      if (payload?.gameSlug && payload.gameSlug !== slug) return;
-
-      if (typeof payload?.score === "number") {
-        setLiveScore(payload.score);
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.error || "Chat unavailable");
       }
 
-      setLeaderboardRefreshKey((key) => key + 1);
-    });
+      const incoming = normalizeMessages(data);
 
-    s.on("chat:message", (msg: ChatMessage) => {
-      if (!msg) return;
-      setMessages((previous) => [...previous, msg].slice(-80));
-    });
+      setMessages((current) => mergeMessages(current, incoming));
+      setChatStatus("connected");
+    } catch (error) {
+      console.warn("[PlayClient] chat fetch failed", error);
+      setChatStatus("error");
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function run() {
+      if (cancelled) return;
+      await loadChat();
+    }
+
+    setChatStatus("connecting");
+    run();
+
+    const interval = window.setInterval(() => {
+      run();
+    }, 3000);
 
     return () => {
-      try {
-        s.disconnect();
-      } catch {}
-
-      socketRef.current = null;
+      cancelled = true;
+      window.clearInterval(interval);
     };
-  }, [slug, socketUrl]);
+  }, [loadChat]);
 
   async function submitScoreNow(score: number) {
     if (!Number.isFinite(score) || score <= 0) return;
@@ -200,16 +246,6 @@ export default function PlayClient({ slug, title }: Props) {
 
     try {
       await Promise.allSettled(requests);
-
-      const s = socketRef.current;
-      if (s?.connected) {
-        s.emit("score:submit", {
-          gameSlug: slug,
-          score,
-          playerName,
-        });
-      }
-
       setLeaderboardRefreshKey((key) => key + 1);
       window.dispatchEvent(new Event("wga:score-submitted"));
     } catch (error) {
@@ -256,29 +292,60 @@ export default function PlayClient({ slug, title }: Props) {
     };
   }, [slug, user?.id, effectivePlayerName]);
 
-  function sendChat(text: string, playerName?: string) {
+  async function sendChat(text: string, playerName?: string) {
     const cleanText = text.trim();
     if (!cleanText) return;
 
-    const s = socketRef.current;
     const name = sanitizeGuestName(playerName || effectivePlayerName);
 
-    const localMessage: ChatMessage = {
+    const optimisticMessage: ChatMessage = {
+      id: `local-${Date.now()}`,
       user: name,
       text: cleanText,
       ts: Date.now(),
     };
 
-    setMessages((previous) => [...previous, localMessage].slice(-80));
+    setMessages((previous) => mergeMessages(previous, [optimisticMessage]));
 
-    if (!s || !s.connected) return;
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        cache: "no-store",
+        body: JSON.stringify({
+          gameSlug: slug,
+          text: cleanText,
+          playerName: name,
+        }),
+      });
 
-    s.emit("chat:send", {
-      gameSlug: slug,
-      text: cleanText,
-      playerName: name,
-      user: name,
-    });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.error || "Message could not be sent");
+      }
+
+      const saved = normalizeMessages({ messages: [data?.message] });
+
+      if (saved.length) {
+        setMessages((previous) => {
+          const withoutLocal = previous.filter(
+            (message) => message.id !== optimisticMessage.id
+          );
+
+          return mergeMessages(withoutLocal, saved);
+        });
+      }
+
+      setChatStatus("connected");
+      loadChat();
+    } catch (error) {
+      console.warn("[PlayClient] chat send failed", error);
+      setChatStatus("error");
+    }
   }
 
   return (

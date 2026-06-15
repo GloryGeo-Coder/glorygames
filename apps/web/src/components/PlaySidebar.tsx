@@ -1,4 +1,5 @@
 // apps/web/src/components/PlaySidebar.tsx
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -10,6 +11,7 @@ type LeaderboardEntry = {
 };
 
 type ChatMessage = {
+  id?: string;
   user: string;
   text: string;
   ts: number;
@@ -21,10 +23,9 @@ type Props = {
   liveScore?: number;
   refreshKey?: number;
 
-  // Chat props
   chatStatus?: "connected" | "error" | "connecting";
   messages?: ChatMessage[];
-  onSendChat?: (text: string, playerName?: string) => void;
+  onSendChat?: (text: string, playerName?: string) => void | Promise<void>;
 };
 
 export default function PlaySidebar({
@@ -32,7 +33,6 @@ export default function PlaySidebar({
   title,
   liveScore = 0,
   refreshKey = 0,
-
   chatStatus = "connecting",
   messages = [],
   onSendChat,
@@ -53,9 +53,6 @@ export default function PlaySidebar({
   const [chatInput, setChatInput] = useState("");
   const [chatWarning, setChatWarning] = useState<string | null>(null);
   const [reportedMessages, setReportedMessages] = useState<Record<string, boolean>>({});
-
-  // Guest name is only used when the visitor is not logged in.
-  // Logged-in users should always display their account displayName.
   const [guestName, setGuestName] = useState("Guest Player");
 
   const effectivePlayerName =
@@ -96,7 +93,11 @@ export default function PlaySidebar({
       .then((data) => {
         if (cancelled) return;
 
-        const rawEntries = Array.isArray(data?.entries) ? data.entries : [];
+        const rawEntries = Array.isArray(data?.entries)
+          ? data.entries
+          : Array.isArray(data?.rows)
+            ? data.rows
+            : [];
 
         const entries: LeaderboardEntry[] = rawEntries.map((entry: any) => ({
           user:
@@ -136,7 +137,7 @@ export default function PlaySidebar({
   }, [safeSlug, refreshKey]);
 
   function getMessageKey(message: ChatMessage, index: number) {
-    return `${message.ts}-${index}-${message.user}`;
+    return message.id || `${message.ts}-${index}-${message.user}-${message.text}`;
   }
 
   function isUnsafeChatText(text: string) {
@@ -150,16 +151,36 @@ export default function PlaySidebar({
     return false;
   }
 
-  function reportMessage(message: ChatMessage, index: number) {
+  async function reportMessage(message: ChatMessage, index: number) {
     const key = getMessageKey(message, index);
 
     setReportedMessages((current) => ({
       ...current,
       [key]: true,
     }));
+
+    if (!message.id || message.id.startsWith("local-")) {
+      return;
+    }
+
+    try {
+      await fetch("/api/chat/report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        cache: "no-store",
+        body: JSON.stringify({
+          messageId: message.id,
+        }),
+      });
+    } catch {
+      // Keep the message hidden locally even if the report request fails.
+    }
   }
 
-  function handleSendChat() {
+  async function handleSendChat() {
     const text = chatInput.trim();
 
     setChatWarning(null);
@@ -174,7 +195,7 @@ export default function PlaySidebar({
       return;
     }
 
-    onSendChat(text, effectivePlayerName);
+    await onSendChat(text, effectivePlayerName);
     setChatInput("");
   }
 
@@ -272,7 +293,8 @@ export default function PlaySidebar({
         </div>
 
         <div className="ggChatBody sidebarChatBody">
-          {messages.length === 0 ? (
+          {messages.filter((m, i) => !reportedMessages[getMessageKey(m, i)])
+            .length === 0 ? (
             <div className="ggChatEmpty">No messages yet…</div>
           ) : (
             messages
