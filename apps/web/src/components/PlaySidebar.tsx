@@ -51,6 +51,8 @@ export default function PlaySidebar({
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatInput, setChatInput] = useState("");
+  const [chatWarning, setChatWarning] = useState<string | null>(null);
+  const [reportedMessages, setReportedMessages] = useState<Record<string, boolean>>({});
 
   // Guest name is only used when the visitor is not logged in.
   // Logged-in users should always display their account displayName.
@@ -133,10 +135,44 @@ export default function PlaySidebar({
     };
   }, [safeSlug, refreshKey]);
 
+  function getMessageKey(message: ChatMessage, index: number) {
+    return `${message.ts}-${index}-${message.user}`;
+  }
+
+  function isUnsafeChatText(text: string) {
+    const value = text.toLowerCase();
+
+    if (value.length > 180) return true;
+    if (value.includes("http://")) return true;
+    if (value.includes("https://")) return true;
+    if (value.includes("www.")) return true;
+
+    return false;
+  }
+
+  function reportMessage(message: ChatMessage, index: number) {
+    const key = getMessageKey(message, index);
+
+    setReportedMessages((current) => ({
+      ...current,
+      [key]: true,
+    }));
+  }
+
   function handleSendChat() {
     const text = chatInput.trim();
+
+    setChatWarning(null);
+
     if (!text) return;
     if (!onSendChat) return;
+
+    if (isUnsafeChatText(text)) {
+      setChatWarning(
+        "Message blocked. Keep chat short, respectful and free of links."
+      );
+      return;
+    }
 
     onSendChat(text, effectivePlayerName);
     setChatInput("");
@@ -214,7 +250,18 @@ export default function PlaySidebar({
 
       <div className="ggChat sidebarChat">
         <div className="ggChatHeader">
-          <b>Game Chat</b>
+          <div style={{ display: "grid", gap: 2 }}>
+            <b>Game Chat</b>
+            <a
+              href="/community-guidelines"
+              target="_blank"
+              rel="noreferrer"
+              className="mutedTiny"
+            >
+              Chat rules
+            </a>
+          </div>
+
           <span className={chatStatus === "connected" ? "ggOk" : "ggBad"}>
             {chatStatus === "connected"
               ? "Connected"
@@ -228,14 +275,43 @@ export default function PlaySidebar({
           {messages.length === 0 ? (
             <div className="ggChatEmpty">No messages yet…</div>
           ) : (
-            messages.map((m, i) => (
-              <div key={`${m.ts}-${i}`} className="ggChatMsg">
-                <b className="ggChatUser">{m.user}:</b>{" "}
-                <span className="ggChatText">{m.text}</span>
-              </div>
-            ))
+            messages
+              .filter((m, i) => !reportedMessages[getMessageKey(m, i)])
+              .map((m, i) => (
+                <div key={getMessageKey(m, i)} className="ggChatMsg">
+                  <b className="ggChatUser">{m.user}:</b>{" "}
+                  <span className="ggChatText">{m.text}</span>
+                  <button
+                    type="button"
+                    className="mutedTiny"
+                    onClick={() => reportMessage(m, i)}
+                    style={{
+                      marginLeft: 8,
+                      border: 0,
+                      background: "transparent",
+                      color: "rgba(255,255,255,.55)",
+                      cursor: "pointer",
+                    }}
+                    title="Hide and report this message"
+                  >
+                    Report
+                  </button>
+                </div>
+              ))
           )}
         </div>
+
+        {chatWarning ? (
+          <div
+            className="mutedTiny"
+            style={{
+              color: "rgba(255,180,120,.95)",
+              marginBottom: 8,
+            }}
+          >
+            {chatWarning}
+          </div>
+        ) : null}
 
         <div className="ggChatInputRow">
           <input

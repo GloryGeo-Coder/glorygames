@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { GameThumb } from "@/components/GameThumb";
 import { getFallbackGames } from "@/lib/fallbackGames";
-import { getGamesFromDatabase } from "@/lib/gamesDb";
+import { getGamesFromDatabase, isPublicGameSlug } from "@/lib/gamesDb";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +93,8 @@ function filterGames(
   const query = q.toLowerCase();
 
   return games.filter((game) => {
+    if (!isPublicGameSlug(game.slug)) return false;
+
     const matchCategory = !category || game.category === category;
 
     const matchQ =
@@ -108,7 +110,9 @@ function filterGames(
 }
 
 function fallbackGameList() {
-  return normalizeGameRows(getFallbackGames());
+  return normalizeGameRows(getFallbackGames()).filter((game) =>
+    isPublicGameSlug(game.slug)
+  );
 }
 
 export async function generateMetadata({
