@@ -63,6 +63,17 @@ function normalizeGameRow(row: any): DbGameListItem {
   };
 }
 
+function normalizeLeaderboardRows(rows: any[]): DbLeaderboardEntry[] {
+  return rows.map((row: any, index: number) => ({
+    rank: index + 1,
+    userId: row.userId ? String(row.userId) : "",
+    displayName: String(row.displayName || row.playerName || "Player"),
+    score: Number(row.score || 0),
+    gameSlug: String(row.gameSlug),
+    gameTitle: String(row.gameTitle),
+  }));
+}
+
 export async function getGamesFromDatabase(): Promise<DbGameListItem[]> {
   if (!hasUsableNeonDatabaseUrl()) {
     return [];
@@ -226,34 +237,73 @@ export async function getLeaderboardForGameFromDatabase({
   const sql = getNeonSql();
 
   const rows = await sql`
+    WITH combined AS (
+      SELECT
+        u.id::text AS "userId",
+        COALESCE(u."displayName", 'Player') AS "displayName",
+        MAX(s.value)::int AS score,
+        g.slug AS "gameSlug",
+        g.title AS "gameTitle"
+      FROM "Score" s
+      INNER JOIN "Game" g ON g.id = s."gameId"
+      INNER JOIN "User" u ON u.id = s."userId"
+      WHERE
+        g.slug = ${slug}
+        AND s.mode = ${mode}
+        AND LEFT(g.slug, 1) <> '_'
+        AND LOWER(g.slug) NOT LIKE '%template%'
+        AND LOWER(g.title) NOT LIKE '%template%'
+      GROUP BY u.id, u."displayName", g.slug, g.title
+
+      UNION ALL
+
+      SELECT
+        NULL::text AS "userId",
+        COALESCE(ds."playerName", 'Player') AS "displayName",
+        MAX(ds.score)::int AS score,
+        g.slug AS "gameSlug",
+        g.title AS "gameTitle"
+      FROM "DailyScore" ds
+      INNER JOIN "Game" g ON g.id = ds."gameId"
+      WHERE
+        g.slug = ${slug}
+        AND LEFT(g.slug, 1) <> '_'
+        AND LOWER(g.slug) NOT LIKE '%template%'
+        AND LOWER(g.title) NOT LIKE '%template%'
+      GROUP BY ds."playerName", g.slug, g.title
+
+      UNION ALL
+
+      SELECT
+        COALESCE(u.id::text, dcs."userId"::text) AS "userId",
+        COALESCE(u."displayName", dcs."playerName", 'Player') AS "displayName",
+        MAX(dcs.value)::int AS score,
+        g.slug AS "gameSlug",
+        g.title AS "gameTitle"
+      FROM "DailyChallengeScore" dcs
+      INNER JOIN "DailyChallenge" dc ON dc.id = dcs."challengeId"
+      INNER JOIN "Game" g ON g.id = dc."gameId"
+      LEFT JOIN "User" u ON u.id = dcs."userId"
+      WHERE
+        g.slug = ${slug}
+        AND LEFT(g.slug, 1) <> '_'
+        AND LOWER(g.slug) NOT LIKE '%template%'
+        AND LOWER(g.title) NOT LIKE '%template%'
+      GROUP BY u.id, dcs."userId", u."displayName", dcs."playerName", g.slug, g.title
+    )
     SELECT
-      u.id AS "userId",
-      COALESCE(u."displayName", 'Player') AS "displayName",
-      MAX(s.value)::int AS score,
-      g.slug AS "gameSlug",
-      g.title AS "gameTitle"
-    FROM "Score" s
-    INNER JOIN "Game" g ON g.id = s."gameId"
-    INNER JOIN "User" u ON u.id = s."userId"
-    WHERE
-      g.slug = ${slug}
-      AND s.mode = ${mode}
-      AND LEFT(g.slug, 1) <> '_'
-      AND LOWER(g.slug) NOT LIKE '%template%'
-      AND LOWER(g.title) NOT LIKE '%template%'
-    GROUP BY u.id, u."displayName", g.slug, g.title
+      COALESCE(MAX("userId"), '') AS "userId",
+      "displayName",
+      MAX(score)::int AS score,
+      "gameSlug",
+      "gameTitle"
+    FROM combined
+    GROUP BY "displayName", "gameSlug", "gameTitle"
     ORDER BY score DESC
     LIMIT ${limit}
   `;
 
-  return rows.map((row: any, index: number) => ({
-    rank: index + 1,
-    userId: String(row.userId),
-    displayName: String(row.displayName || "Player"),
-    score: Number(row.score || 0),
-    gameSlug: String(row.gameSlug),
-    gameTitle: String(row.gameTitle),
-  }));
+  return normalizeLeaderboardRows(rows);
 }
 
 export async function getGlobalLeaderboardFromDatabase(
@@ -266,30 +316,67 @@ export async function getGlobalLeaderboardFromDatabase(
   const sql = getNeonSql();
 
   const rows = await sql`
+    WITH combined AS (
+      SELECT
+        u.id::text AS "userId",
+        COALESCE(u."displayName", 'Player') AS "displayName",
+        MAX(s.value)::int AS score,
+        g.slug AS "gameSlug",
+        g.title AS "gameTitle"
+      FROM "Score" s
+      INNER JOIN "Game" g ON g.id = s."gameId"
+      INNER JOIN "User" u ON u.id = s."userId"
+      WHERE
+        LEFT(g.slug, 1) <> '_'
+        AND LOWER(g.slug) NOT LIKE '%template%'
+        AND LOWER(g.title) NOT LIKE '%template%'
+      GROUP BY u.id, u."displayName", g.slug, g.title
+
+      UNION ALL
+
+      SELECT
+        NULL::text AS "userId",
+        COALESCE(ds."playerName", 'Player') AS "displayName",
+        MAX(ds.score)::int AS score,
+        g.slug AS "gameSlug",
+        g.title AS "gameTitle"
+      FROM "DailyScore" ds
+      INNER JOIN "Game" g ON g.id = ds."gameId"
+      WHERE
+        LEFT(g.slug, 1) <> '_'
+        AND LOWER(g.slug) NOT LIKE '%template%'
+        AND LOWER(g.title) NOT LIKE '%template%'
+      GROUP BY ds."playerName", g.slug, g.title
+
+      UNION ALL
+
+      SELECT
+        COALESCE(u.id::text, dcs."userId"::text) AS "userId",
+        COALESCE(u."displayName", dcs."playerName", 'Player') AS "displayName",
+        MAX(dcs.value)::int AS score,
+        g.slug AS "gameSlug",
+        g.title AS "gameTitle"
+      FROM "DailyChallengeScore" dcs
+      INNER JOIN "DailyChallenge" dc ON dc.id = dcs."challengeId"
+      INNER JOIN "Game" g ON g.id = dc."gameId"
+      LEFT JOIN "User" u ON u.id = dcs."userId"
+      WHERE
+        LEFT(g.slug, 1) <> '_'
+        AND LOWER(g.slug) NOT LIKE '%template%'
+        AND LOWER(g.title) NOT LIKE '%template%'
+      GROUP BY u.id, dcs."userId", u."displayName", dcs."playerName", g.slug, g.title
+    )
     SELECT
-      u.id AS "userId",
-      COALESCE(u."displayName", 'Player') AS "displayName",
-      MAX(s.value)::int AS score,
-      g.slug AS "gameSlug",
-      g.title AS "gameTitle"
-    FROM "Score" s
-    INNER JOIN "Game" g ON g.id = s."gameId"
-    INNER JOIN "User" u ON u.id = s."userId"
-    WHERE
-      LEFT(g.slug, 1) <> '_'
-      AND LOWER(g.slug) NOT LIKE '%template%'
-      AND LOWER(g.title) NOT LIKE '%template%'
-    GROUP BY u.id, u."displayName", g.slug, g.title
+      COALESCE(MAX("userId"), '') AS "userId",
+      "displayName",
+      MAX(score)::int AS score,
+      "gameSlug",
+      "gameTitle"
+    FROM combined
+    GROUP BY "displayName", "gameSlug", "gameTitle"
     ORDER BY score DESC
     LIMIT ${limit}
   `;
 
-  return rows.map((row: any, index: number) => ({
-    rank: index + 1,
-    userId: String(row.userId),
-    displayName: String(row.displayName || "Player"),
-    score: Number(row.score || 0),
-    gameSlug: String(row.gameSlug),
-    gameTitle: String(row.gameTitle),
-  }));
+  return normalizeLeaderboardRows(rows);
 }

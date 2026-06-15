@@ -1,74 +1,68 @@
 // apps/web/src/app/api/leaderboard/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getGlobalLeaderboardFromDatabase,
+  getLeaderboardForGameFromDatabase,
+  isPublicGameSlug,
+} from "@/lib/gamesDb";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const gameSlug = searchParams.get("gameSlug");
+    const gameSlug = searchParams.get("gameSlug")?.trim() || "";
+    const mode = searchParams.get("mode")?.trim() || "global";
+    const limitParam = Number(searchParams.get("limit") || 10);
+    const limit = Number.isFinite(limitParam)
+      ? Math.min(Math.max(Math.floor(limitParam), 1), 100)
+      : 10;
 
-    if (!gameSlug) {
-      return NextResponse.json(
-        { error: "Missing gameSlug" },
-        { status: 400 }
-      );
-    }
+    const entries = gameSlug
+      ? isPublicGameSlug(gameSlug)
+        ? await getLeaderboardForGameFromDatabase({ slug: gameSlug, mode, limit })
+        : []
+      : await getGlobalLeaderboardFromDatabase(limit);
 
-    // Find the game first
-    const game = await prisma.game.findUnique({
-      where: { slug: gameSlug },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-      },
-    });
-
-    if (!game) {
-      return NextResponse.json(
-        {
-          entries: [],
-          topScore: 0,
-        },
-        { status: 200 }
-      );
-    }
-
-    // IMPORTANT:
-    // Your schema uses gameId, NOT gameSlug
-    const rows = await prisma.dailyScore.findMany({
-      where: {
-        gameId: game.id,
-      },
-      orderBy: {
-        score: "desc",
-      },
-      take: 10,
-      select: {
-        playerName: true,
-        score: true,
-      },
-    });
-
-    const entries = rows.map((r) => ({
-      user: r.playerName || "Player",
-      score: r.score,
-    }));
-
-    return NextResponse.json({
-      entries,
-      topScore: rows[0]?.score ?? 0,
-    });
-  } catch (err) {
-    console.error("Leaderboard API error:", err);
+    const topScore = entries.length ? entries[0].score : null;
 
     return NextResponse.json(
       {
-        error: "Failed to load leaderboard",
+        ok: true,
+        entries,
+        rows: entries.map((entry) => ({
+          name: entry.displayName,
+          score: entry.score,
+          gameSlug: entry.gameSlug,
+          gameTitle: entry.gameTitle,
+        })),
+        topScore,
       },
-      { status: 500 }
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("[api/leaderboard] failed", error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        entries: [],
+        rows: [],
+        topScore: null,
+        error: "Leaderboard unavailable",
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
     );
   }
 }

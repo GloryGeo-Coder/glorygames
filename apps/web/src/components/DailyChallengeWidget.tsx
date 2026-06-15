@@ -6,6 +6,28 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 
 type Row = { name: string; score: number };
 
+function normalizeRows(data: any): Row[] {
+  const source = Array.isArray(data?.rows)
+    ? data.rows
+    : Array.isArray(data?.entries)
+      ? data.entries
+      : Array.isArray(data?.scores)
+        ? data.scores
+        : [];
+
+  return source
+    .map((entry: any) => ({
+      name:
+        entry?.name ||
+        entry?.displayName ||
+        entry?.playerName ||
+        entry?.user ||
+        "Player",
+      score: Number(entry?.score ?? entry?.value ?? 0),
+    }))
+    .filter((entry: Row) => Number.isFinite(entry.score));
+}
+
 export function DailyChallengeWidget({
   gameSlug,
   title,
@@ -20,9 +42,6 @@ export function DailyChallengeWidget({
   );
   const [rows, setRows] = useState<Row[]>([]);
   const [myScore, setMyScore] = useState<number | null>(null);
-
-  // Do not read localStorage during render. This avoids SSR hydration mismatch.
-  // This is only used when the visitor is not logged in.
   const [guestName, setGuestName] = useState("Guest Player");
 
   const effectivePlayerName =
@@ -63,13 +82,14 @@ export function DailyChallengeWidget({
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-        const data = (await res.json()) as {
-          rows: Row[];
-          me?: { name: string; score: number } | null;
-        };
+        const data = await res.json();
 
-        setRows(Array.isArray(data.rows) ? data.rows : []);
-        setMyScore(data.me?.score ?? null);
+        const nextRows = normalizeRows(data);
+
+        setRows(nextRows);
+        setMyScore(
+          typeof data?.me?.score === "number" ? Number(data.me.score) : null
+        );
         setStatus("ready");
       } catch (e) {
         console.warn("[DailyChallengeWidget] fetch failed", e);
@@ -81,6 +101,16 @@ export function DailyChallengeWidget({
   useEffect(() => {
     if (userLoading) return;
     refresh();
+
+    function onScoreSubmitted() {
+      refresh();
+    }
+
+    window.addEventListener("wga:score-submitted", onScoreSubmitted);
+
+    return () => {
+      window.removeEventListener("wga:score-submitted", onScoreSubmitted);
+    };
   }, [refresh, userLoading]);
 
   return (
@@ -149,7 +179,7 @@ export function DailyChallengeWidget({
 
               return (
                 <div
-                  key={`${r.name}-${i}`}
+                  key={`${r.name}-${r.score}-${i}`}
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -176,7 +206,7 @@ export function DailyChallengeWidget({
 
             {!rows?.length && status === "ready" ? (
               <div style={{ color: "rgba(255,255,255,.7)" }}>
-                No scores yet today.
+                No scores yet today. Play this game to set the first score.
               </div>
             ) : null}
           </div>

@@ -1,9 +1,11 @@
 // apps/web/src/app/play/[slug]/play-client.tsx
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import PlaySidebar from "@/components/PlaySidebar";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 type Props = {
   slug: string;
@@ -16,29 +18,83 @@ type ChatMessage = {
   ts: number;
 };
 
+function sanitizeGuestName(value?: string | null) {
+  const clean = String(value || "")
+    .replace(/[^\w\s.-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40);
+
+  return clean || "Guest Player";
+}
+
+function extractScorePayload(data: any, slug: string) {
+  if (!data || typeof data !== "object") return null;
+
+  const type = data.type || data.event || data.name;
+  const looksLikeScoreEvent =
+    type === "gg:score" ||
+    type === "GG_SCORE" ||
+    type === "score" ||
+    typeof data.score === "number" ||
+    typeof data.value === "number";
+
+  if (!looksLikeScoreEvent) return null;
+
+  if (data.gameSlug && data.gameSlug !== slug) return null;
+  if (data.slug && data.slug !== slug) return null;
+
+  const rawScore = Number(data.score ?? data.value ?? 0);
+
+  if (!Number.isFinite(rawScore)) return null;
+
+  return Math.max(0, Math.floor(rawScore));
+}
+
 export default function PlayClient({ slug, title }: Props) {
+  const { user } = useCurrentUser();
+
   const [liveScore, setLiveScore] = useState(0);
   const [leaderboardRefreshKey, setLeaderboardRefreshKey] = useState(0);
 
   const [chatStatus, setChatStatus] = useState<
     "connected" | "error" | "connecting"
   >("connecting");
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  const [guestName, setGuestName] = useState("Guest Player");
 
   const socketRef = useRef<Socket | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const socketUrl = useMemo(() => {
-    return process.env.NEXT_PUBLIC_REALTIME_URL || "http://localhost:4001";
-  }, []);
+  const lastSubmittedScoreRef = useRef(0);
+  const pendingScoreRef = useRef(0);
+  const submitTimerRef = useRef<number | null>(null);
 
-  const gameUrl = useMemo(() => {
-    return `/games/${encodeURIComponent(slug)}/index.html`;
-  }, [slug]);
+  const effectivePlayerName = sanitizeGuestName(
+    user?.displayName || guestName || "Guest Player"
+  );
+
+  const socketUrl = useMemo(() => "/api/realtime", []);
+
+  useEffect(() => {
+    try {
+      const key = "wga_guest_player_name";
+      const existing = localStorage.getItem(key);
+
+      if (existing && existing.trim()) {
+        setGuestName(sanitizeGuestName(existing));
+        return;
+      }
+
+      const newName = `Guest-${Math.floor(1000 + Math.random() * 9000)}`;
+      localStorage.setItem(key, newName);
+      setGuestName(newName);
+    } catch {
+      setGuestName("Guest Player");
+    }
+  }, []);
 
   async function toggleFullscreen() {
     const el = stageRef.current;
@@ -51,104 +107,27 @@ export default function PlayClient({ slug, title }: Props) {
         await document.exitFullscreen();
       }
     } catch {
-      // Ignore fullscreen permission/browser issues
-    }
-  }
-
-  async function submitScore(score: number, mode = "global") {
-    if (!Number.isFinite(score) || score < 0) return;
-
-    try {
-      const res = await fetch(`/api/games/${encodeURIComponent(slug)}/score`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ score: Math.floor(score), mode }),
-      });
-
-      if (res.ok) {
-        setLeaderboardRefreshKey((k) => k + 1);
-
-        socketRef.current?.emit("score:update", {
-          gameSlug: slug,
-          slug,
-          score: Math.floor(score),
-          mode,
-        });
-      }
-    } catch {
-      // Do not crash gameplay if score API is temporarily unavailable
-    }
-  }
-
-  function installGameBridge() {
-    const win = iframeRef.current?.contentWindow as any;
-    if (!win) return;
-
-    try {
-      win.GG = {
-        setSlug: () => {},
-
-        submitScore: (value: any, maybeSlug?: string) => {
-          const score =
-            typeof value === "number"
-              ? value
-              : Number(value?.score ?? value?.value ?? 0);
-
-          const gameSlug =
-            typeof value === "object" && value?.gameSlug
-              ? value.gameSlug
-              : maybeSlug || slug;
-
-          if (gameSlug !== slug) return false;
-
-          void submitScore(score, value?.mode ?? "global");
-          return true;
-        },
-
-        endRound: (value: any, opts?: any) => {
-          const score =
-            typeof value === "number"
-              ? value
-              : Number(value?.score ?? value?.value ?? 0);
-
-          const gameSlug =
-            typeof value === "object" && value?.gameSlug
-              ? value.gameSlug
-              : opts?.gameSlug || slug;
-
-          if (gameSlug !== slug) return false;
-
-          void submitScore(score, opts?.mode ?? value?.mode ?? "global");
-          return true;
-        },
-      };
-    } catch {
-      // Some browsers may block cross-frame access in certain cases
+      // Ignore fullscreen browser restrictions.
     }
   }
 
   useEffect(() => {
     const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
-
     document.addEventListener("fullscreenchange", onFs);
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
 
   useEffect(() => {
-    setChatStatus("connecting");
-
     const s = io(socketUrl, {
-      transports: ["websocket", "polling"],
+      transports: ["websocket"],
+      path: "/socket.io",
     });
 
     socketRef.current = s;
 
     s.on("connect", () => {
       setChatStatus("connected");
-
-      // Support both event naming conventions while we stabilise the platform
       s.emit("join", { gameSlug: slug });
-      s.emit("room:join", { slug });
     });
 
     s.on("connect_error", () => setChatStatus("error"));
@@ -156,112 +135,149 @@ export default function PlayClient({ slug, title }: Props) {
 
     s.on("score:update", (payload: any) => {
       if (payload?.gameSlug && payload.gameSlug !== slug) return;
-      if (payload?.slug && payload.slug !== slug) return;
 
       if (typeof payload?.score === "number") {
         setLiveScore(payload.score);
       }
 
-      setLeaderboardRefreshKey((k) => k + 1);
+      setLeaderboardRefreshKey((key) => key + 1);
     });
 
-    s.on("leaderboard:update", (payload: any) => {
-      if (payload?.gameSlug && payload.gameSlug !== slug) return;
-      if (payload?.slug && payload.slug !== slug) return;
-
-      setLeaderboardRefreshKey((k) => k + 1);
-    });
-
-    s.on("chat:message", (msg: any) => {
+    s.on("chat:message", (msg: ChatMessage) => {
       if (!msg) return;
-      if (msg.gameSlug && msg.gameSlug !== slug) return;
-      if (msg.slug && msg.slug !== slug) return;
-
-      const text = String(msg.text ?? msg.message ?? "").trim();
-      if (!text) return;
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          user: msg.user ?? msg.player ?? msg.displayName ?? "Player",
-          text,
-          ts: Number(msg.ts ?? Date.now()),
-        },
-      ]);
+      setMessages((previous) => [...previous, msg].slice(-80));
     });
 
     return () => {
       try {
         s.disconnect();
-      } catch {
-        // ignore
-      }
+      } catch {}
 
       socketRef.current = null;
     };
   }, [slug, socketUrl]);
 
+  async function submitScoreNow(score: number) {
+    if (!Number.isFinite(score) || score <= 0) return;
+    if (score <= lastSubmittedScoreRef.current) return;
+
+    lastSubmittedScoreRef.current = score;
+
+    const playerName = effectivePlayerName;
+
+    const requests: Promise<Response>[] = [
+      fetch("/api/daily-challenge/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        cache: "no-store",
+        body: JSON.stringify({
+          gameSlug: slug,
+          score,
+          playerName,
+        }),
+      }),
+    ];
+
+    if (user?.id) {
+      requests.push(
+        fetch(`/api/games/${encodeURIComponent(slug)}/score`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          cache: "no-store",
+          body: JSON.stringify({
+            score,
+            mode: "global",
+          }),
+        })
+      );
+    }
+
+    try {
+      await Promise.allSettled(requests);
+
+      const s = socketRef.current;
+      if (s?.connected) {
+        s.emit("score:submit", {
+          gameSlug: slug,
+          score,
+          playerName,
+        });
+      }
+
+      setLeaderboardRefreshKey((key) => key + 1);
+      window.dispatchEvent(new Event("wga:score-submitted"));
+    } catch (error) {
+      console.warn("[PlayClient] score submit failed", error);
+    }
+  }
+
+  function scheduleScoreSubmit(score: number) {
+    pendingScoreRef.current = Math.max(pendingScoreRef.current, score);
+
+    if (submitTimerRef.current) {
+      window.clearTimeout(submitTimerRef.current);
+    }
+
+    submitTimerRef.current = window.setTimeout(() => {
+      const nextScore = pendingScoreRef.current;
+      pendingScoreRef.current = 0;
+      submitTimerRef.current = null;
+      submitScoreNow(nextScore);
+    }, 650);
+  }
+
   useEffect(() => {
     function onMessage(ev: MessageEvent) {
-      if (ev.origin !== window.location.origin) return;
+      const score = extractScorePayload(ev.data, slug);
 
-      const data = ev.data;
-      if (!data || typeof data !== "object") return;
+      if (score == null) return;
 
-      const type = String((data as any).type ?? "");
-      const msgSlug = (data as any).gameSlug ?? (data as any).slug;
+      setLiveScore(score);
 
-      if (msgSlug && msgSlug !== slug) return;
-
-      const score = Number(
-        (data as any).score ??
-          (data as any).value ??
-          (data as any).payload?.score ??
-          (data as any).payload?.value ??
-          0
-      );
-
-      if (!Number.isFinite(score)) return;
-
-      if (
-        type === "GG_SCORE" ||
-        type === "gg:score" ||
-        type === "gg:liveScore"
-      ) {
-        setLiveScore(score);
-
-        const mode = (data as any).mode ?? (data as any).payload?.mode ?? "live";
-
-        if (mode !== "live") {
-          void submitScore(score, mode);
-        }
-
-        setLeaderboardRefreshKey((k) => k + 1);
-
-        socketRef.current?.emit("score:update", {
-          gameSlug: slug,
-          slug,
-          score: Math.floor(score),
-          mode,
-        });
+      if (score > 0) {
+        scheduleScoreSubmit(score);
       }
     }
 
     window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, [slug]);
 
-  function sendChat(text: string) {
-    const clean = text.trim();
-    if (!clean) return;
+    return () => {
+      window.removeEventListener("message", onMessage);
+
+      if (submitTimerRef.current) {
+        window.clearTimeout(submitTimerRef.current);
+      }
+    };
+  }, [slug, user?.id, effectivePlayerName]);
+
+  function sendChat(text: string, playerName?: string) {
+    const cleanText = text.trim();
+    if (!cleanText) return;
 
     const s = socketRef.current;
+    const name = sanitizeGuestName(playerName || effectivePlayerName);
+
+    const localMessage: ChatMessage = {
+      user: name,
+      text: cleanText,
+      ts: Date.now(),
+    };
+
+    setMessages((previous) => [...previous, localMessage].slice(-80));
+
     if (!s || !s.connected) return;
 
     s.emit("chat:send", {
       gameSlug: slug,
-      slug,
-      text: clean,
+      text: cleanText,
+      playerName: name,
+      user: name,
     });
   }
 
@@ -281,12 +297,10 @@ export default function PlayClient({ slug, title }: Props) {
 
         <div className="ggStageInner" id="gameMount">
           <iframe
-            ref={iframeRef}
             className="ggGameFrame"
-            src={gameUrl}
+            src={`/games/${slug}/index.html`}
             title={title}
             allow="fullscreen; autoplay; gamepad"
-            onLoad={installGameBridge}
           />
         </div>
       </div>

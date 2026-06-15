@@ -1,65 +1,151 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+// apps/web/src/app/api/daily-challenge/submit/route.ts
 
-const TZ = "Africa/Johannesburg";
+import { NextRequest, NextResponse } from "next/server";
+import { createId, getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
+import { getSessionUser } from "@/lib/auth";
+import { isPublicGameSlug } from "@/lib/gamesDb";
 
-function dayKey(d = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(d);
+export const dynamic = "force-dynamic";
+
+function todayUtc() {
+  return new Date().toISOString().slice(0, 10);
 }
 
-function cleanName(name: string) {
-  return name.trim().replace(/\s+/g, " ").slice(0, 24);
+function sanitizePlayerName(value?: string | null) {
+  const clean = String(value || "")
+    .replace(/[^\w\s.-]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 40);
+
+  return clean || "Guest Player";
 }
 
-export async function POST(req: Request) {
-  const body = await req.json().catch(() => null) as
-    | { gameSlug?: string; playerName?: string; score?: number }
-    | null;
+async function getOrCreateChallenge(sql: ReturnType<typeof getNeonSql>, gameId: string) {
+  const day = todayUtc();
+  const id = createId();
+  const seed = Math.floor(Math.random() * 1_000_000_000);
 
-  const gameSlug = body?.gameSlug?.trim();
-  const playerName = body?.playerName ? cleanName(body.playerName) : "";
-  const score = Number(body?.score);
+  const rows = await sql`
+    INSERT INTO "DailyChallenge" (id, day, seed, "gameId", "createdAt")
+    VALUES (${id}, ${day}, ${seed}, ${gameId}, NOW())
+    ON CONFLICT (day, "gameId")
+    DO UPDATE SET day = EXCLUDED.day
+    RETURNING id, day, seed
+  `;
 
-  if (!gameSlug) return NextResponse.json({ error: "Missing gameSlug" }, { status: 400 });
-  if (!playerName) return NextResponse.json({ error: "Missing playerName" }, { status: 400 });
-  if (!Number.isFinite(score)) return NextResponse.json({ error: "Invalid score" }, { status: 400 });
+  return rows[0] as { id: string; day: string; seed: number };
+}
 
-  const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
-  if (!game) return NextResponse.json({ error: `Game not found: ${gameSlug}` }, { status: 404 });
+export async function POST(req: NextRequest) {
+  try {
+    if (!hasUsableNeonDatabaseUrl()) {
+      return NextResponse.json({ ok: false, error: "Database unavailable" }, { status: 503 });
+    }
 
-  const day = dayKey();
-  const key = { day_gameId_playerName: { day, gameId: game.id, playerName } };
+    const body = await req.json().catch(() => null);
 
-  const existing = await prisma.dailyScore.findUnique({ where: key });
+    const gameSlug = String(body?.gameSlug || "").trim();
+    const score = Math.max(0, Math.floor(Number(body?.score || body?.value || 0)));
+    const submittedPlayerName = sanitizePlayerName(body?.playerName);
 
-  // Only keep the best score for that player, today, on that game
-  if (!existing) {
-    await prisma.dailyScore.create({
-      data: { day, gameId: game.id, playerName, score: Math.trunc(score) },
-    });
-    return NextResponse.json({ ok: true, improved: true, day, gameSlug, playerName, score });
+    if (!isPublicGameSlug(gameSlug)) {
+      return NextResponse.json({ ok: false, error: "Invalid game" }, { status: 400 });
+    }
+
+    if (!Number.isFinite(score) || score <= 0) {
+      return NextResponse.json({ ok: false, error: "Invalid score" }, { status: 400 });
+    }
+
+    const user = await getSessionUser();
+    const sql = getNeonSql();
+
+    const gameRows = await sql`
+      SELECT id, slug, title
+      FROM "Game"
+      WHERE
+        slug = ${gameSlug}
+        AND LEFT(slug, 1) <> '_'
+        AND LOWER(slug) NOT LIKE '%template%'
+        AND LOWER(title) NOT LIKE '%template%'
+      LIMIT 1
+    `;
+
+    const game = gameRows[0] as { id: string; slug: string; title: string } | undefined;
+
+    if (!game) {
+      return NextResponse.json({ ok: false, error: "Game not found" }, { status: 404 });
+    }
+
+    const playerName = sanitizePlayerName(user?.displayName || submittedPlayerName);
+    const challenge = await getOrCreateChallenge(sql, game.id);
+
+    await sql`
+      INSERT INTO "DailyChallengeScore" (
+        id,
+        value,
+        "playerName",
+        "createdAt",
+        "challengeId",
+        "userId"
+      )
+      VALUES (
+        ${createId()},
+        ${score},
+        ${playerName},
+        NOW(),
+        ${challenge.id},
+        ${user?.id ?? null}
+      )
+    `;
+
+    await sql`
+      INSERT INTO "DailyScore" (
+        id,
+        day,
+        "playerName",
+        score,
+        "gameId",
+        "createdAt",
+        "updatedAt"
+      )
+      VALUES (
+        ${createId()},
+        ${challenge.day},
+        ${playerName},
+        ${score},
+        ${game.id},
+        NOW(),
+        NOW()
+      )
+      ON CONFLICT (day, "gameId", "playerName")
+      DO UPDATE SET
+        score = GREATEST("DailyScore".score, EXCLUDED.score),
+        "updatedAt" = NOW()
+    `;
+
+    return NextResponse.json(
+      {
+        ok: true,
+        row: {
+          name: playerName,
+          score,
+          gameSlug: game.slug,
+          gameTitle: game.title,
+        },
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("[api/daily-challenge/submit] failed", error);
+
+    return NextResponse.json(
+      { ok: false, error: "Score could not be submitted" },
+      { status: 500 }
+    );
   }
-
-  if (Math.trunc(score) > existing.score) {
-    await prisma.dailyScore.update({
-      where: key,
-      data: { score: Math.trunc(score) },
-    });
-    return NextResponse.json({ ok: true, improved: true, day, gameSlug, playerName, score });
-  }
-
-  return NextResponse.json({
-    ok: true,
-    improved: false,
-    day,
-    gameSlug,
-    playerName,
-    score: existing.score,
-    note: "Score not higher than existing best for today.",
-  });
 }

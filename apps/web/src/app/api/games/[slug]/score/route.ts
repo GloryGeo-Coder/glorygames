@@ -1,124 +1,136 @@
 // apps/web/src/app/api/games/[slug]/score/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { createId, getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
+import { getSessionUser } from "@/lib/auth";
+import { isPublicGameSlug } from "@/lib/gamesDb";
 
-function todayKey() {
+export const dynamic = "force-dynamic";
+
+function todayUtc() {
   return new Date().toISOString().slice(0, 10);
 }
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params;
-    const body = await req.json().catch(() => ({}));
+    if (!hasUsableNeonDatabaseUrl()) {
+      return NextResponse.json({ ok: false, error: "Database unavailable" }, { status: 503 });
+    }
 
-    const score = Number(body.score);
-    const playerName =
-      typeof body.playerName === "string" && body.playerName.trim()
-        ? body.playerName.trim()
-        : "Player";
+    const { slug } = await context.params;
 
-    if (!Number.isFinite(score) || score < 0) {
+    if (!isPublicGameSlug(slug)) {
+      return NextResponse.json({ ok: false, error: "Invalid game" }, { status: 400 });
+    }
+
+    const user = await getSessionUser();
+
+    if (!user?.id) {
       return NextResponse.json(
-        { error: "Invalid score" },
-        { status: 400 }
+        { ok: false, error: "Sign in to save global scores" },
+        { status: 401 }
       );
     }
 
-    const game = await prisma.game.findUnique({
-      where: { slug },
-      select: { id: true },
-    });
+    const body = await req.json().catch(() => null);
+    const score = Math.max(0, Math.floor(Number(body?.score || body?.value || 0)));
+    const mode = String(body?.mode || "global").trim() || "global";
+
+    if (!Number.isFinite(score) || score <= 0) {
+      return NextResponse.json({ ok: false, error: "Invalid score" }, { status: 400 });
+    }
+
+    const sql = getNeonSql();
+
+    const gameRows = await sql`
+      SELECT id, slug, title
+      FROM "Game"
+      WHERE
+        slug = ${slug}
+        AND LEFT(slug, 1) <> '_'
+        AND LOWER(slug) NOT LIKE '%template%'
+        AND LOWER(title) NOT LIKE '%template%'
+      LIMIT 1
+    `;
+
+    const game = gameRows[0] as { id: string; slug: string; title: string } | undefined;
 
     if (!game) {
-      return NextResponse.json(
-        { error: "Game not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ ok: false, error: "Game not found" }, { status: 404 });
     }
 
-    const day = todayKey();
+    await sql`
+      INSERT INTO "Score" (
+        id,
+        "userId",
+        "gameId",
+        mode,
+        value,
+        "createdAt"
+      )
+      VALUES (
+        ${createId()},
+        ${user.id},
+        ${game.id},
+        ${mode},
+        ${score},
+        NOW()
+      )
+    `;
 
-    const existing = await prisma.dailyScore.findFirst({
-      where: {
-        gameId: game.id,
+    await sql`
+      INSERT INTO "DailyScore" (
+        id,
         day,
-        playerName,
-      },
-      select: {
-        id: true,
-        score: true,
-      },
-    });
+        "playerName",
+        score,
+        "gameId",
+        "createdAt",
+        "updatedAt"
+      )
+      VALUES (
+        ${createId()},
+        ${todayUtc()},
+        ${user.displayName || "Player"},
+        ${score},
+        ${game.id},
+        NOW(),
+        NOW()
+      )
+      ON CONFLICT (day, "gameId", "playerName")
+      DO UPDATE SET
+        score = GREATEST("DailyScore".score, EXCLUDED.score),
+        "updatedAt" = NOW()
+    `;
 
-    let savedScore = Math.floor(score);
-
-    if (existing) {
-      savedScore = Math.max(existing.score, Math.floor(score));
-
-      await prisma.dailyScore.update({
-        where: { id: existing.id },
-        data: { score: savedScore },
-      });
-    } else {
-      await prisma.dailyScore.create({
-        data: {
-          gameId: game.id,
-          day,
-          playerName,
-          score: savedScore,
+    return NextResponse.json(
+      {
+        ok: true,
+        score,
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
         },
-      });
-    }
-
-    return NextResponse.json({
-      ok: true,
-      score: savedScore,
-    });
-  } catch (err) {
-    console.error("Score submit error:", err);
-
-    return NextResponse.json(
-      { error: "Failed to submit score" },
-      { status: 500 }
+        game: {
+          slug: game.slug,
+          title: game.title,
+        },
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
     );
-  }
-}
-
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
-  try {
-    const { slug } = await params;
-
-    const game = await prisma.game.findUnique({
-      where: { slug },
-      select: { id: true },
-    });
-
-    if (!game) {
-      return NextResponse.json({ topScore: 0 });
-    }
-
-    const top = await prisma.dailyScore.findFirst({
-      where: { gameId: game.id },
-      orderBy: { score: "desc" },
-      select: { score: true, playerName: true },
-    });
-
-    return NextResponse.json({
-      topScore: top?.score ?? 0,
-      playerName: top?.playerName ?? null,
-    });
-  } catch (err) {
-    console.error("Score GET error:", err);
+  } catch (error) {
+    console.error("[api/games/[slug]/score] failed", error);
 
     return NextResponse.json(
-      { error: "Failed to fetch score" },
+      { ok: false, error: "Score could not be saved" },
       { status: 500 }
     );
   }
