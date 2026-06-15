@@ -8,7 +8,7 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "Terms of Use | WebGameArena",
   description:
-    "Read the WebGameArena Terms of Use for rules about playing games, accounts, leaderboards, chat, content, safety and platform use.",
+    "Read the WebGameArena Terms of Use for rules about playing games, accounts, leaderboards, chat, advertising, moderation, content and platform use.",
   alternates: {
     canonical: "/terms",
   },
@@ -28,16 +28,16 @@ export default function TermsPage() {
     <InfoPage
       eyebrow="Terms of Use"
       title="The rules for playing fairly on WebGameArena."
-      description="These Terms of Use explain how players may use WebGameArena, including games, accounts, leaderboards, chat features and platform content."
-      updated="18 May 2026"
+      description="These Terms of Use explain how players may use WebGameArena, including games, accounts, leaderboards, chat features, advertising, moderation and platform content."
+      updated="15 June 2026"
       sections={[
         {
           title: "1. Acceptance of these terms",
-          body: "By using WebGameArena, browsing the website, creating an account, playing games or submitting scores, you agree to these Terms of Use. If you do not agree, you should stop using the platform.",
+          body: "By using WebGameArena, browsing the website, creating an account, playing games, using chat or submitting scores, you agree to these Terms of Use. If you do not agree, you should stop using the platform.",
         },
         {
           title: "2. About WebGameArena",
-          body: "WebGameArena is a browser gaming platform that provides free, mobile-first games for instant play. The platform may include game categories, leaderboards, daily challenges, chat features, player accounts and game detail pages.",
+          body: "WebGameArena is a browser gaming platform that provides free, mobile-first games for instant play. The platform may include game categories, game detail pages, leaderboards, daily challenges, chat features, player accounts and future advertising or sponsorship features.",
         },
         {
           title: "3. Player accounts",
@@ -45,69 +45,108 @@ export default function TermsPage() {
             "Players may be able to create accounts to save scores, use leaderboards or access platform features.",
             "You are responsible for keeping your login details safe.",
             "You should not use another person’s account without permission.",
-            "Display names must not be offensive, misleading, harmful or impersonate another person or organisation.",
+            "You should not share passwords or account credentials in chat, email or public messages.",
+            "WebGameArena may restrict, suspend or remove accounts that are used for spam, abuse, cheating, impersonation or other misuse.",
           ],
         },
         {
-          title: "4. Fair play and leaderboards",
+          title: "4. Display names and public scores",
           body: [
-            "Players must not cheat, manipulate scores, exploit bugs or use automated tools to gain unfair leaderboard advantages.",
-            "Scores may be removed if they appear fraudulent, abusive, impossible or harmful to platform integrity.",
-            "WebGameArena may reset, moderate or adjust leaderboards where needed to protect fair play.",
+            "Display names may appear publicly on leaderboards or gameplay features.",
+            "Do not use display names that include private information, abusive wording, hate speech, impersonation, spam, misleading links or offensive content.",
+            "Scores may be shown publicly with a display name, game name and ranking.",
+            "WebGameArena may remove suspicious, inappropriate, automated, fake or manipulated scores.",
           ],
         },
         {
-          title: "5. Chat and community behaviour",
+          title: "5. Chat and community features",
           body: [
-            "Players must treat others respectfully when using chat or community features.",
-            "Do not post harassment, hate speech, threats, spam, scams, private personal information or inappropriate content.",
-            "Do not encourage unsafe behaviour or share harmful links.",
-            "Messages may be moderated, removed or restricted if they break community standards.",
+            "Chat features are provided for short, friendly game-related messages.",
+            "Players must follow the Community Guidelines when using chat or other interactive features.",
+            "Do not share private information, harmful links, spam, scams, abusive content or unsafe content in chat.",
+            "WebGameArena may filter, hide, report, moderate or remove chat messages.",
+            "Ads should not be placed directly beside private communication or chat-focused areas where chat is the main focus.",
           ],
         },
         {
-          title: "6. Younger players",
-          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, especially when creating accounts, using chat or sharing public scores.",
-        },
-        {
-          title: "7. Game availability",
-          body: "Games may be added, updated, paused, removed or replaced over time. WebGameArena does not guarantee that every game, score, leaderboard or feature will always be available without interruption.",
-        },
-        {
-          title: "8. Intellectual property",
-          body: "The WebGameArena name, platform design, original text, code, game pages, layouts and platform branding belong to their respective owners. Players may not copy, resell or misuse platform content without permission.",
-        },
-        {
-          title: "9. User-submitted content",
-          body: "If players submit messages, game feedback, usernames, scores or future game submissions, they are responsible for ensuring that their content is lawful, respectful and does not infringe the rights of others.",
-        },
-        {
-          title: "10. Game submissions",
-          body: "Future game submissions may be reviewed before publishing. WebGameArena may reject, remove or request changes to submitted games if they are unsafe, unsuitable, broken, misleading or inconsistent with platform standards.",
-        },
-        {
-          title: "11. Advertising and sponsorships",
-          body: "Advertising, sponsorships or promoted placements may be introduced in future. Such content should be clearly presented and should not intentionally mislead players or interfere unfairly with gameplay.",
-        },
-        {
-          title: "12. Platform misuse",
+          title: "6. Fair play",
           body: [
-            "Do not attempt to hack, overload, reverse-engineer, disrupt or damage the platform.",
-            "Do not use bots, scraping tools or automated abuse against accounts, games, scores or chat systems.",
-            "Do not upload or share malware, harmful scripts or deceptive files.",
+            "Do not cheat, exploit bugs, manipulate scores, use bots or overload platform systems.",
+            "Do not interfere with games, leaderboards, APIs, authentication, chat systems or platform security.",
+            "Do not attempt to access restricted admin tools, private data or another player’s account.",
+            "WebGameArena may reset scores or restrict features if unfair activity is detected.",
           ],
         },
         {
-          title: "13. Limitation of responsibility",
-          body: "WebGameArena is provided on an as-is basis. While reasonable effort is made to keep the platform useful and safe, errors, downtime, data loss, score issues or gameplay bugs may occur.",
+          title: "7. Acceptable use",
+          body: [
+            "Use WebGameArena only for lawful, safe and respectful purposes.",
+            "Do not upload, submit or share content that is harmful, hateful, explicit, illegal, misleading, spammy, exploitative or unsafe.",
+            "Do not use the platform to distribute malware, phishing links, suspicious downloads or deceptive offers.",
+            "Do not encourage users to click ads or interact with ads in misleading ways.",
+          ],
         },
         {
-          title: "14. Changes to these terms",
-          body: "These Terms of Use may be updated as WebGameArena grows and new features are added. The updated date will show when changes were last made.",
+          title: "8. Games and availability",
+          body: [
+            "WebGameArena aims to keep games playable and accessible, but games may change, be removed, be unavailable or contain bugs.",
+            "Some games may perform differently depending on browser, device, connection speed or screen size.",
+            "Game instructions, controls, scoring systems and features may be updated over time.",
+          ],
         },
         {
-          title: "15. Contact",
-          body: "For questions about these terms, account issues, game problems or platform feedback, please use the Contact page.",
+          title: "9. Advertising and sponsored content",
+          body: [
+            "WebGameArena may display advertising, sponsorships or promoted content.",
+            "Ads and sponsored content should be clearly labelled and separated from gameplay, controls, navigation and chat actions.",
+            "Players should not be encouraged, rewarded or pressured to click advertisements.",
+            "Advertising cookies and personalised advertising choices are explained in the Privacy Policy and Cookie Policy.",
+          ],
+        },
+        {
+          title: "10. Intellectual property",
+          body: [
+            "WebGameArena pages, branding, layout, code, game descriptions and platform content may be protected by copyright, trademark or other rights.",
+            "Game creators should submit only content they own or have permission to use.",
+            "Do not copy, resell, redistribute or misuse WebGameArena content without permission, except where allowed by law.",
+          ],
+        },
+        {
+          title: "11. Game submissions",
+          body: [
+            "Submitted games may be reviewed for quality, safety, originality, mobile performance, controls and suitability.",
+            "WebGameArena may decline, edit, hide or remove submitted games that appear broken, unfinished, unsafe, misleading, inappropriate or not suitable for the platform.",
+            "Creators are responsible for ensuring they have rights to all submitted assets, code, audio, images and text.",
+          ],
+        },
+        {
+          title: "12. Moderation and enforcement",
+          body: [
+            "WebGameArena may moderate chat, scores, display names, accounts, submitted content and other platform activity.",
+            "Enforcement may include warnings, hidden content, removed scores, feature restrictions or account restrictions.",
+            "Moderation tools may include automatic filters, report buttons, manual review or other safety controls.",
+          ],
+        },
+        {
+          title: "13. Privacy and cookies",
+          body: "Use of WebGameArena is also governed by the Privacy Policy and Cookie Policy. These explain how account information, scores, cookies, analytics, advertising cookies and privacy choices may work.",
+        },
+        {
+          title: "14. No guarantee of uninterrupted service",
+          body: "WebGameArena may experience downtime, bugs, game errors, score delays, maintenance, data interruptions or service changes. The platform is provided as available.",
+        },
+        {
+          title: "15. Changes to these terms",
+          body: "These Terms may be updated as WebGameArena adds new games, accounts, leaderboards, advertising, community features or safety tools. The updated date will show when changes were last made.",
+        },
+        {
+          title: "16. Contact",
+          body: [
+            "For support, email support@webgamearena.com.",
+            "For privacy questions, email privacy@webgamearena.com.",
+            "For game submissions or content concerns, email games@webgamearena.com.",
+            "For advertising enquiries, email ads@webgamearena.com.",
+          ],
         },
       ]}
     />

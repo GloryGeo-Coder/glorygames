@@ -8,14 +8,14 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "Community Guidelines | WebGameArena",
   description:
-    "Read the WebGameArena Community Guidelines for fair play, respectful chat, leaderboard behaviour and platform safety.",
+    "Read the WebGameArena Community Guidelines for respectful chat, fair play, safe display names, leaderboard behaviour, reporting and moderation.",
   alternates: {
     canonical: "/community-guidelines",
   },
   openGraph: {
     title: "Community Guidelines | WebGameArena",
     description:
-      "Learn the rules for respectful play, chat, leaderboards and community behaviour on WebGameArena.",
+      "Learn the rules for respectful play, chat, leaderboards, reporting and community behaviour on WebGameArena.",
     url: "https://webgamearena.com/community-guidelines",
     siteName: "WebGameArena",
     type: "website",
@@ -29,78 +29,96 @@ export default function CommunityGuidelinesPage() {
       eyebrow="Community Guidelines"
       title="Play fair. Be respectful. Keep WebGameArena fun."
       description="These guidelines explain the behaviour expected from players when using WebGameArena, including chat, leaderboards, display names, game submissions and future community features."
-      updated="18 May 2026"
+      updated="15 June 2026"
       sections={[
         {
           title: "1. Respect other players",
           body: [
             "Treat other players with respect, even when competing.",
             "Do not harass, threaten, insult, bully or target other players.",
+            "Do not use hateful, discriminatory, degrading or abusive language.",
             "Avoid language or behaviour that makes the platform unsafe or unwelcoming.",
           ],
         },
         {
           title: "2. Keep chat safe",
           body: [
-            "Do not share private information such as phone numbers, addresses, passwords or personal contact details.",
+            "Do not share private information such as phone numbers, addresses, passwords, school names, personal contact details or account credentials.",
             "Do not spam chat or repeatedly post disruptive messages.",
-            "Do not post harmful links, scams, misleading offers or suspicious downloads.",
-            "Do not use chat to pressure, manipulate or intimidate other players.",
+            "Do not post harmful links, scams, misleading offers, suspicious downloads or requests for private contact.",
+            "Do not use chat to pressure, manipulate, intimidate or target other players.",
+            "Keep messages short, friendly and relevant to the game.",
           ],
         },
         {
-          title: "3. No hate or discrimination",
-          body: "Content or behaviour that attacks, degrades or excludes people based on identity, background, nationality, disability, gender, religion or similar characteristics is not allowed.",
-        },
-        {
-          title: "4. Fair play matters",
+          title: "3. User-generated content and moderation",
           body: [
-            "Do not cheat, exploit bugs, manipulate scores or use bots.",
-            "Do not try to bypass game rules or leaderboard systems.",
-            "Do not submit fake, impossible or automated scores.",
-            "If you discover a bug, report it instead of abusing it.",
+            "Chat messages, display names, score names, game comments or future community submissions may be moderated.",
+            "WebGameArena may hide, remove or restrict content that appears unsafe, harmful, spammy, offensive or unrelated to the platform.",
+            "Reported content may be reviewed and may lead to warnings, temporary restrictions or account action.",
+            "Ads should not be placed directly beside chat areas or user-generated content until moderation controls are strong enough to reduce policy and safety risks.",
           ],
         },
         {
-          title: "5. Display names and profiles",
+          title: "4. Reporting chat messages",
           body: [
-            "Choose display names that are appropriate for a broad audience.",
-            "Do not impersonate another player, brand, organisation or public figure.",
-            "Do not use names that include offensive, harmful or misleading content.",
+            "Players should use the report option when a chat message breaks these rules.",
+            "Reported messages may be hidden from the player’s view immediately and may be reviewed later.",
+            "Reports should be used honestly and not to target players unfairly.",
+            "For serious or repeated problems, contact support@webgamearena.com with the game name, approximate time and details of the issue.",
           ],
         },
         {
-          title: "6. Appropriate content",
+          title: "5. Fair play and leaderboards",
           body: [
-            "Keep messages, usernames and submitted content suitable for a general gaming audience.",
-            "Do not share sexually explicit, violent, hateful, exploitative or illegal content.",
-            "Do not encourage unsafe behaviour or harmful challenges.",
+            "Do not cheat, exploit bugs, manipulate scores or use automated tools to gain an unfair advantage.",
+            "Do not submit fake scores or attempt to overload leaderboard systems.",
+            "Suspicious scores may be removed or excluded from leaderboards.",
+            "Players should compete fairly and focus on improving their own gameplay.",
           ],
         },
         {
-          title: "7. Game submissions",
+          title: "6. Display names and profiles",
           body: [
-            "Submitted games should be safe, playable and mobile-friendly.",
-            "Game content should not mislead players or contain hidden harmful behaviour.",
-            "Creators should respect copyright, trademarks and the rights of others.",
-            "WebGameArena may reject or remove games that do not meet platform standards.",
+            "Display names should be appropriate for a broad gaming audience.",
+            "Do not use display names that include private information, abusive wording, impersonation, hate speech, threats, spam, misleading links or offensive content.",
+            "WebGameArena may rename, hide or restrict display names that break these guidelines.",
           ],
         },
         {
-          title: "8. Moderation",
+          title: "7. Content that is not allowed",
           body: [
-            "WebGameArena may remove content, scores, messages or accounts that break these guidelines.",
-            "Leaderboards may be reviewed or reset if unfair activity is detected.",
-            "Repeated or serious violations may lead to restrictions or removal from platform features.",
+            "Harassment, hate speech, threats, bullying or targeted abuse.",
+            "Sexual, explicit, graphic, illegal, exploitative or unsafe content.",
+            "Instructions, links or encouragement for harmful activity.",
+            "Spam, scams, phishing, malware links or suspicious downloads.",
+            "Impersonation of WebGameArena, staff, moderators, creators or other players.",
+            "Content that encourages ad clicking, misleading clicks or platform misuse.",
           ],
         },
         {
-          title: "9. Reporting problems",
-          body: "If you notice cheating, broken games, unsafe chat, offensive display names or suspicious activity, use the Contact page to report the issue with as much detail as possible.",
+          title: "8. Game submissions and creator content",
+          body: [
+            "Submitted games should be mobile-friendly, playable, safe and suitable for a broad audience.",
+            "Games should include clear controls, instructions and original or properly licensed assets.",
+            "Games that appear unfinished, misleading, broken, unsafe or inappropriate may be rejected or removed.",
+          ],
         },
         {
-          title: "10. Our goal",
-          body: "WebGameArena should feel fun, safe and welcoming. These guidelines help protect players, creators and the platform as the game library and community features grow.",
+          title: "9. Enforcement",
+          body: [
+            "WebGameArena may remove content, hide messages, reset scores, limit features or restrict accounts when guidelines are broken.",
+            "Some enforcement may happen automatically through filters, while other cases may require manual review.",
+            "Repeated or serious violations may lead to longer restrictions.",
+          ],
+        },
+        {
+          title: "10. Contact",
+          body: [
+            "For player support or safety concerns, email support@webgamearena.com.",
+            "For privacy concerns, email privacy@webgamearena.com.",
+            "For game submissions, email games@webgamearena.com.",
+          ],
         },
       ]}
     />
