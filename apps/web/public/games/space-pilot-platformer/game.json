@@ -1,0 +1,13 @@
+{
+  "title": "Space Pilot Platformer",
+  "slug": "space-pilot-platformer",
+  "category": "Adventure",
+  "description": "A sci-fi platform adventure where Pilot Nova jumps across asteroid platforms, fights drones, collects star cores and activates portals across the Starfall nebula.",
+  "thumbnail": "thumb.png",
+  "orientation": "landscape",
+  "controls": [
+    "keyboard",
+    "touch"
+  ],
+  "version": "1.0.0"
+}

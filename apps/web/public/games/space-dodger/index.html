@@ -2,67 +2,95 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#070b16" />
-  <title>Space Dodger • WebGameArena</title>
-  <meta name="description" content="Space Dodger — drag your ship through a 3D-feel starfield, dodge asteroids, collect crystals, and dash to survive." />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Space Dodger 3D: Starfall Odyssey</title>
+  <meta name="description" content="A 3D space adventure with asteroid fields, enemy ships, bosses, power-ups and story missions." />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <header class="hud">
-    <div class="brandCol">
-      <div class="brand" id="ggTitle">Space Dodger</div>
-      <div class="sub" id="ggSub">Drag to move • Tap to dash • Dodge asteroids • Collect crystals</div>
-      <div class="badge">Enhanced Mobile Arcade</div>
-    </div>
-    <div class="hudRight">
-      <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-      <div class="stat"><div class="label">Shields</div><div class="value" id="lives">3</div></div>
-    </div>
-  </header>
+  <main id="gameShell" aria-label="Space Dodger 3D game">
+    <canvas id="renderCanvas" tabindex="0" aria-label="3D space game canvas"></canvas>
 
-  <main class="stage">
-    <canvas id="c" aria-label="Space Dodger game canvas"></canvas>
-
-    <div class="meters">
-      <div class="meterCard">
-        <div class="meterTop"><span>Dash</span><b id="dashLabel">100%</b></div>
-        <div class="meter"><div id="dashFill"></div></div>
+    <section id="topHud" class="hud-panel">
+      <div class="brand">
+        <span class="brand-kicker">SPACE DODGER</span>
+        <strong>Starfall Odyssey</strong>
       </div>
-      <div class="meterCard">
-        <div class="meterTop"><span>Combo</span><b id="comboLabel">x1</b></div>
-        <div class="meter combo"><div id="comboFill"></div></div>
-      </div>
-    </div>
+      <div class="stat"><span>Score</span><b id="scoreText">0</b></div>
+      <div class="stat"><span>Level</span><b id="levelText">1/12</b></div>
+      <div class="stat"><span>Hull</span><b id="hullText">100%</b></div>
+      <div class="stat"><span>Shield</span><b id="shieldText">0%</b></div>
+    </section>
 
-    <div class="gestureHint"><div class="hintPill">👆 Drag to steer • Tap for dash • Survive as long as possible</div></div>
+    <section id="missionPanel" class="mission-panel">
+      <p id="missionTitle">Mission loading...</p>
+      <small id="missionText">Prepare for launch.</small>
+      <div class="mission-meter"><span id="missionMeter"></span></div>
+    </section>
 
-    <div class="panel" id="panel">
-      <div class="panelInner">
-        <div class="panelTitle" id="panelTitle">Space Dodger</div>
-        <div class="panelText" id="panelText">Guide your ship through a neon deep-space lane.
-Dodge asteroids, collect crystals, grab shield and time pickups, and use dash to escape danger.</div>
-        <div class="panelButtons">
-          <button class="btn primary" id="btnStart">Start</button>
-          <button class="btn" id="btnOverlay">How to play</button>
+    <section id="bossPanel" class="boss-panel hidden">
+      <span id="bossName">Boss</span>
+      <div class="boss-bar"><span id="bossBar"></span></div>
+    </section>
+
+    <section id="mentorPanel" class="mentor-panel">
+      <div class="mentor-avatar">AI</div>
+      <p id="mentorText">Commander Nova online. Tap LAUNCH to begin the Starfall Odyssey.</p>
+    </section>
+
+    <section id="startOverlay" class="overlay">
+      <div class="launch-card">
+        <img src="./thumb.png" alt="Space Dodger Starfall Odyssey thumbnail" />
+        <div class="launch-copy">
+          <p class="eyebrow">3D Space Adventure</p>
+          <h1>Space Dodger 3D: Starfall Odyssey</h1>
+          <p>
+            Fly through asteroid storms, defeat AI drone squadrons, collect cores,
+            unlock power-ups and destroy the Starfall Mothership.
+          </p>
+          <div class="launch-actions">
+            <button id="startBtn" class="primary">Launch Mission</button>
+            <button id="howBtn" class="secondary">Controls</button>
+          </div>
+          <p id="controlsHelp" class="controls-help">
+            Desktop: WASD / Arrow keys to fly, Space or mouse to shoot, Shift to boost.
+            Mobile: use the on-screen thrusters and fire buttons.
+          </p>
         </div>
-        <div class="panelHint">
-          <span class="pill">3 shields</span>
-          <span class="pill">Dash ability</span>
-          <span class="pill">Power-ups</span>
-          <span class="pill">GG Score Events</span>
+      </div>
+    </section>
+
+    <section id="gameOverOverlay" class="overlay hidden">
+      <div class="end-card">
+        <p class="eyebrow" id="endKicker">Mission Report</p>
+        <h2 id="endTitle">Mission Complete</h2>
+        <p id="endText">Your score has been recorded.</p>
+        <div class="launch-actions">
+          <button id="retryBtn" class="primary">Retry Mission</button>
+          <button id="restartBtn" class="secondary">Restart Odyssey</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <nav class="actions">
-      <button class="chip" id="btnPause">Pause</button>
-      <button class="chip" id="btnSubmit">Submit</button>
-      <button class="chip" id="btnRestart">Restart</button>
-      <button class="chip" id="btnMute">Sound</button>
-    </nav>
+    <section id="mobileControls" aria-label="Mobile controls">
+      <div class="pad">
+        <button data-dir="up" aria-label="Move up">▲</button>
+        <div class="pad-row">
+          <button data-dir="left" aria-label="Move left">◀</button>
+          <button data-dir="down" aria-label="Move down">▼</button>
+          <button data-dir="right" aria-label="Move right">▶</button>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="boostBtn" aria-label="Boost">BOOST</button>
+        <button id="fireBtn" aria-label="Fire">FIRE</button>
+      </div>
+    </section>
+
+    <div id="toast" class="toast hidden"></div>
   </main>
+
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
   <script src="./game.js"></script>
 </body>
 </html>

@@ -258,7 +258,7 @@ export default async function HomePage() {
                   WebGameArena is a mobile-first gaming hub where you can jump
                   straight into arcade, action, adventure, puzzle, racing and
                   learning games — built for quick sessions, high scores and
-                  friendly competition.
+                  friendly competition. NEW GAMES ADDED EACH WEEK!!!
                 </p>
 
                 <div

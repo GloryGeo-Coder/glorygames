@@ -1,19 +1,30 @@
 {
-  "title": "Space Dodger",
-  "description": "Enhanced mobile-first space survival. Drag your ship through a 3D-feel starfield, dodge asteroids, collect crystals, grab shield and slow-time pickups, and dash to survive.",
-  "tags": ["arcade", "mobile", "touch", "endless", "space", "2d", "enhanced"],
-  "controls": [
-    { "key": "Touch drag", "action": "Move ship" },
-    { "key": "Tap", "action": "Dash burst" },
-    { "key": "Arrow keys", "action": "Move on desktop" },
-    { "key": "Space", "action": "Dash on desktop" }
-  ],
-  "features": {
-    "mobileFirst": true,
-    "sound": true,
-    "enhancedAnimations": true,
-    "scoreEvents": ["GG_SCORE", "gg:score"],
-    "powerups": ["Shield", "Slow Time"]
+  "slug": "space-dodger-starfall-odyssey",
+  "title": "Space Dodger 3D: Starfall Odyssey",
+  "category": "Adventure",
+  "description": "A Babylon.js-powered 3D space adventure with asteroids, enemy spaceships, bosses, power-ups, animated effects, story missions and procedural audio.",
+  "version": "3.0.0-babylon",
+  "engine": "Babylon.js",
+  "thumbnail": "thumb.png",
+  "entry": "index.html",
+  "controls": {
+    "desktop": "WASD or Arrow Keys to fly, Space or mouse/tap to shoot, Shift to boost.",
+    "mobile": "Use on-screen thrusters, FIRE and BOOST buttons."
   },
-  "version": "2.0.0"
+  "features": [
+    "Babylon.js 3D scene",
+    "12 story levels",
+    "Asteroids and plasma gates",
+    "AI enemy ships and enemy shooting",
+    "Boss battles",
+    "Power-ups and collectables",
+    "Animated particles and engine trails",
+    "Procedural background music and SFX",
+    "Responsive mobile controls",
+    "WebGameArena score bridge"
+  ],
+  "scoreBridge": [
+    "GG_SCORE",
+    "gg:score"
+  ]
 }

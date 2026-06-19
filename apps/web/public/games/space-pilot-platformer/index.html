@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Space Pilot Platformer</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <canvas id="gameCanvas" aria-label="Space Pilot Platformer"></canvas>
+
+    <section id="startOverlay" class="overlay">
+      <div class="panel hero-panel">
+        <p class="kicker">New Game</p>
+        <h1>Space Pilot Platformer</h1>
+        <p>
+          Crash-landed beyond the Starfall route, Pilot Nova must cross asteroid platforms,
+          repair broken portals, defeat drone raiders and escape the outer nebula.
+        </p>
+        <div class="button-row">
+          <button id="startBtn">Start Mission</button>
+          <button id="howBtn" class="secondary">Controls</button>
+        </div>
+        <div id="controlsHelp" class="help">
+          <b>Keyboard:</b> A/D or arrows to move, Space/W to jump, J to shoot, K or Shift to shield dash.
+          <br><b>Mobile:</b> use the on-screen buttons.
+        </div>
+      </div>
+    </section>
+
+    <section id="gameOverOverlay" class="overlay hidden">
+      <div class="panel">
+        <p id="endKicker" class="kicker">Mission Report</p>
+        <h2 id="endTitle">Mission Complete</h2>
+        <p id="endText">Score sent to WebGameArena.</p>
+        <div class="button-row">
+          <button id="retryBtn">Retry Level</button>
+          <button id="restartBtn" class="secondary">Restart Game</button>
+        </div>
+      </div>
+    </section>
+
+    <header class="hud">
+      <div><span>Score</span><b id="scoreText">0</b></div>
+      <div><span>Level</span><b id="levelText">1/8</b></div>
+      <div><span>Health</span><b id="healthText">100%</b></div>
+      <div><span>Shield</span><b id="shieldText">0%</b></div>
+    </header>
+
+    <aside class="mission-card">
+      <h2 id="missionTitle">Crash Landing</h2>
+      <p id="missionText">Collect star cores and reach the portal.</p>
+      <div class="meter"><i id="missionMeter"></i></div>
+      <small id="mentorText">Professor Nova: Jump carefully and keep moving.</small>
+    </aside>
+
+    <div id="toast" class="toast hidden">Power up!</div>
+
+    <nav class="mobile-controls" aria-label="Game controls">
+      <button data-dir="left">◀</button>
+      <button data-dir="right">▶</button>
+      <button id="jumpBtn">⤒</button>
+      <button id="shootBtn">●</button>
+      <button id="dashBtn">⚡</button>
+    </nav>
+  </main>
+
+  <script src="./game.js"></script>
+</body>
+</html>
