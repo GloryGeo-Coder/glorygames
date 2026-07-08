@@ -1,0 +1,78 @@
+# Blender MTL File: 'Models.blend'
+# Material Count: 6
+
+newmtl C_B_1
+Ns 499.999983
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump Maps\\C_B_1_Normal_OpenGL.png
+map_Kd Maps\\C_B_1_Base_color.jpg
+map_Ns Maps\\C_B_1_Roughness.jpg
+refl Maps\\C_B_1_Metallic.jpg
+
+newmtl Cables
+Ns 499.999983
+Ka 1.000000 1.000000 1.000000
+Kd 0.004242 0.004242 0.004242
+Ks 0.800000 0.800000 0.800000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Ns -s 4.000000 4.000000 4.000000 Maps\\Dirt1.jpg
+
+newmtl Pylon_01
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump Maps\\Pylon01_Pylon_01_Normal.png
+map_Kd Maps\\Pylon01_Pylon_01_BaseColor.jpg
+map_Ns Maps\\Pylon01_Pylon_01_Roughness.jpg
+refl Maps\\Pylon01_Pylon_01_Metallic.jpg
+
+newmtl R1
+Ns 499.999983
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl Signs_1
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump Maps\\Sings_Signs_1_Normal.png
+map_Kd Maps\\Sings_Signs_1_BaseColor.jpg
+map_Ns Maps\\Sings_Signs_1_Roughness.jpg
+refl Maps\\Sings_Signs_1_Metallic.jpg
+
+newmtl Soil
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump Maps\\Soil_Normal.jpg
+map_Kd Maps\\Soil_Albedo.jpg
+map_Ns Maps\\Soil_Roughness.jpg

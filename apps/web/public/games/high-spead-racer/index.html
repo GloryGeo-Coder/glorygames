@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>High Spead Racer</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://code.playcanvas.com/playcanvas-stable.min.js"></script>
+</head>
+<body class="is-menu">
+  <div id="gameWrap">
+    <canvas id="application-canvas"></canvas>
+
+    <div id="hud" aria-label="Race HUD">
+      <div class="hud-top">
+        <div class="hud-card score-card">
+          <span class="icon">🏆</span>
+          <span class="label">Score</span>
+          <span id="scoreValue" class="value">0</span>
+          <span class="coin-mini">🪙 <b id="coinHudValue">0</b></span>
+        </div>
+
+        <div class="hud-card position-card">
+          <span class="icon">🏁</span>
+          <span class="label">Position</span>
+          <span id="positionValue" class="value">1/8</span>
+          <span id="rivalValue" class="rival-mini">0 ahead</span>
+          <span id="overtakeValue" class="overtake-mini">0 overtakes</span>
+        </div>
+
+        <div class="speed-gauge">
+          <span id="speedValue" class="speed-value">0</span>
+          <span class="speed-label">KM/H</span>
+          <div class="gauge-arc"></div>
+        </div>
+
+        <div class="hud-card distance-card">
+          <span id="premiumLevel" class="level-chip">LEVEL 1/6</span>
+          <span id="lapValue" class="lap-chip">LAP 1/3</span>
+          <span class="label">Lap Distance</span>
+          <span id="distanceValue" class="value">0/1200 m</span>
+          <span id="checkpointValue" class="checkpoint-mini">CP 1/4</span>
+          <div class="progress-track"><div id="premiumProgressFill" class="progress-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="mini-map" aria-hidden="true">
+        <span class="map-line"></span>
+        <span class="map-dot active"></span>
+        <span class="map-dot"></span>
+        <span class="map-dot"></span>
+        <span class="map-dot"></span>
+        <span class="map-dot"></span>
+        <span class="map-dot"></span>
+        <span class="map-player">▲</span>
+      </div>
+
+      <div class="nitro-wrap">
+        <div class="nitro-ring">
+          <div class="nitro-icon">⛽</div>
+          <div class="nitro-text">NITRO</div>
+        </div>
+        <div class="nitro-bar">
+          <div id="nitroFill" class="nitro-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="startOverlay" class="overlay start-overlay">
+      <div class="start-bg"></div>
+      <div class="menu-panel">
+        <div class="kicker">Neon Highway Racing</div>
+        <h1><span>HIGH SPEAD</span><strong>RACER</strong></h1>
+        <p>Dodge traffic, collect nitro, clear six high-speed routes, and chase the top score.</p>
+
+        <button id="startBtn" class="play-btn">
+          <span class="play-icon">▶</span>
+          <span>PLAY</span>
+        </button>
+
+        <div class="menu-actions">
+          <button id="garageBtn" type="button"><span>🏎️</span> Garage</button>
+          <button type="button"><span>🔊</span> Audio</button>
+          <button type="button"><span>?</span> Help</button>
+        </div>
+
+        <div class="controls-list">
+          <span>Desktop: A/D or ←/→ to change lanes • Space/Shift for Nitro • P to pause</span>
+          <span>Mobile: tap buttons or swipe left/right</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameOverOverlay" class="overlay hidden">
+      <div class="end-panel">
+        <div class="kicker">Race Report</div>
+        <h2 id="gameOverTitle">Crash!</h2>
+        <p id="finalStats">Final Score: 0</p>
+        <button id="restartBtn" class="play-btn small">
+          <span class="play-icon">↻</span>
+          <span>RACE AGAIN</span>
+        </button>
+      </div>
+    </div>
+
+
+    <div id="garagePanel" class="garage-panel hidden">
+      <div class="garage-inner">
+        <button id="garageCloseBtn" class="garage-close" type="button">×</button>
+        <div class="kicker">Garage & Upgrades</div>
+        <h2>Choose Your Racer</h2>
+
+        <div class="garage-summary">
+          <div>
+            <span class="garage-label">Coins</span>
+            <strong id="coinValue">0</strong>
+          </div>
+          <div>
+            <span class="garage-label">Best Score</span>
+            <strong id="bestScoreValue">0</strong>
+          </div>
+        </div>
+
+        <div class="selected-car-box">
+          <span class="garage-label">Selected Car</span>
+          <strong id="selectedCarName">Red Viper</strong>
+          <small id="selectedCarStats">Speed +0 • Handling +0 • Nitro +0</small>
+        </div>
+
+        <div id="garageCarList" class="garage-car-list"></div>
+
+        <h3>Global Upgrades</h3>
+        <div class="upgrade-grid">
+          <button id="speedUpgradeBtn" class="upgrade-btn" type="button">
+            <span>Top Speed</span>
+            <b id="speedLevel">0/5</b>
+            <small id="speedCost">350 coins</small>
+          </button>
+          <button id="handlingUpgradeBtn" class="upgrade-btn" type="button">
+            <span>Handling</span>
+            <b id="handlingLevel">0/5</b>
+            <small id="handlingCost">350 coins</small>
+          </button>
+          <button id="nitroUpgradeBtn" class="upgrade-btn" type="button">
+            <span>Nitro System</span>
+            <b id="nitroLevel">0/5</b>
+            <small id="nitroCost">350 coins</small>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mobileControls">
+      <button id="leftBtn" class="control-btn">◀</button>
+      <button id="nitroBtn" class="control-btn nitro">NITRO</button>
+      <button id="rightBtn" class="control-btn">▶</button>
+    </div>
+  </div>
+
+  <script src="./game.js"></script>
+</body>
+</html>

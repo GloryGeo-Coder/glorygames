@@ -1,0 +1,58 @@
+{
+  "name": "High Spead Racer",
+  "slug": "high-spead-racer",
+  "version": "1.9.2",
+  "description": "High Spead Racer updated to use the user-uploaded road model converted from OBJ/FBX source into assets/models/uploaded_road_track.glb as the main road.",
+  "engine": "PlayCanvas",
+  "thumbnail": "thumb.png",
+  "controls": {
+    "mobile": [
+      "Tap left/right to change lanes",
+      "Hold Nitro to boost",
+      "Swipe left/right on the screen"
+    ],
+    "desktop": [
+      "Left/Right or A/D to change lanes",
+      "Space or Shift for Nitro",
+      "P or Esc to pause",
+      "M to mute"
+    ]
+  },
+  "scoreEvents": [
+    "GG_SCORE",
+    "gg:score"
+  ],
+  "features": [
+    "AI rivals",
+    "GLB car models",
+    "GLB road model loading",
+    "PNG effects",
+    "animated driver sprites",
+    "checkpoint gates",
+    "coins",
+    "continuous_road_track.glb",
+    "converted OBJ road model",
+    "corners and bends",
+    "curved road path alignment",
+    "double-sided road materials",
+    "fallback road safety",
+    "finish line per level",
+    "fixed-centre road",
+    "garage",
+    "global upgrades",
+    "imported continuous road GLB",
+    "lap system",
+    "local save profile",
+    "modular GLB road segments",
+    "overtaking system",
+    "position HUD",
+    "racing positions",
+    "real audio files",
+    "road crests",
+    "six levels",
+    "unlockable cars",
+    "uploaded_road_track.glb",
+    "user uploaded road model",
+    "visible continuous road fix"
+  ]
+}

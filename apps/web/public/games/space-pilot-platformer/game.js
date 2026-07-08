@@ -38,100 +38,150 @@
     ],
     enemy: "assets/sprites/enemy_ship_sheet.png",
     boss: "assets/sprites/boss_mothership_sheet.png",
+    bosses: [
+      "assets/sprites/boss_01_asteroid_warden_sheet.png",
+      "assets/sprites/boss_02_belt_crusher_sheet.png",
+      "assets/sprites/boss_03_rogue_captain_sheet.png",
+      "assets/sprites/boss_04_crystal_sentinel_sheet.png",
+      "assets/sprites/boss_05_orbital_enforcer_sheet.png",
+      "assets/sprites/boss_06_frost_mothership_sheet.png",
+      "assets/sprites/boss_07_gate_commander_sheet.png",
+      "assets/sprites/boss_08_nova_x_commander_sheet.png"
+    ],
     asteroid: "assets/sprites/asteroid_sheet.png",
     core: "assets/sprites/star_crystal.png",
     shield: "assets/sprites/shield_pickup.png",
-    time: "assets/sprites/time_pickup.png"
+    time: "assets/sprites/time_pickup.png",
+    player: "assets/sprites/pilot_nova_sheet.png"
   };
 
   const LEVELS = [
     {
       name: "Crash Landing",
       zone: "Lunar Debris Field",
-      mission: "Collect 8 star cores and reach the rescue portal.",
-      tip: "Pilot Nova: Use short jumps. The asteroid platforms are uneven but safe if you land near the centre.",
+      mission: "Collect 12 star cores, survive the longer asteroid route, defeat the Asteroid Warden, and reach the rescue portal.",
+      tip: "Pilot Nova: Pace your jumps. The first boss waits near the portal, so collect shields before the final stretch.",
       bg: 0,
-      width: 3300,
-      cores: 8,
-      enemies: 4,
+      width: 5200,
+      cores: 12,
+      enemies: 8,
+      boss: true,
+      bossName: "Asteroid Warden",
+      bossHp: 18,
+      bossSprite: 0,
+      bossColor: "#ff8a2a",
       hazard: "meteor"
     },
     {
       name: "Asteroid Platforms",
       zone: "Broken Belt",
-      mission: "Cross moving platforms and collect 10 star cores.",
-      tip: "Moving platforms carry you. Wait for the right rhythm before jumping.",
+      mission: "Cross extended moving platforms, collect 14 star cores, and defeat the Belt Crusher.",
+      tip: "Moving platforms carry you. Wait for the right rhythm, then dash across the wider gaps.",
       bg: 1,
-      width: 3800,
-      cores: 10,
-      enemies: 6,
+      width: 6100,
+      cores: 14,
+      enemies: 11,
+      boss: true,
+      bossName: "Belt Crusher",
+      bossHp: 22,
+      bossSprite: 1,
+      bossColor: "#ff6b1a",
       hazard: "laser"
     },
     {
       name: "Pirate Outpost",
       zone: "Outer Relay",
-      mission: "Disable pirate drones and unlock the portal.",
-      tip: "Shoot drones before jumping into their patrol path.",
+      mission: "Fight through pirate patrols, collect 16 star cores, and destroy the Rogue Captain drone.",
+      tip: "Shoot drones before jumping into their patrol path. Boss lasers are easier to dodge from mid-range.",
       bg: 2,
-      width: 4200,
-      cores: 11,
-      enemies: 9,
+      width: 7000,
+      cores: 16,
+      enemies: 14,
+      boss: true,
+      bossName: "Rogue Captain",
+      bossHp: 26,
+      bossSprite: 2,
+      bossColor: "#ff2fd6",
       hazard: "mine"
     },
     {
       name: "Crystal Nebula Ruins",
       zone: "Violet Cloud",
-      mission: "Activate the crystal bridge and survive plasma traps.",
-      tip: "Shield dash gives a short burst and reduces incoming damage.",
+      mission: "Activate the crystal path, collect 18 cores, survive plasma traps, and defeat the Crystal Sentinel.",
+      tip: "Shield dash gives a short burst and reduces incoming damage. Save it for the boss arena.",
       bg: 4,
-      width: 4600,
-      cores: 13,
-      enemies: 10,
+      width: 7900,
+      cores: 18,
+      enemies: 16,
+      boss: true,
+      bossName: "Crystal Sentinel",
+      bossHp: 30,
+      bossSprite: 3,
+      bossColor: "#a855ff",
       hazard: "plasma"
     },
     {
       name: "Space Station Wreckage",
       zone: "Orbit Ring",
-      mission: "Recover station cores from the destroyed ring.",
-      tip: "Watch for floating drone fire. Jump, shoot, then keep moving.",
+      mission: "Recover 20 station cores, clear drone fire, and defeat the Orbital Enforcer.",
+      tip: "Watch for floating drone fire. Jump, shoot, then keep moving through the station debris.",
       bg: 3,
-      width: 5100,
-      cores: 14,
-      enemies: 12,
+      width: 8600,
+      cores: 20,
+      enemies: 18,
+      boss: true,
+      bossName: "Orbital Enforcer",
+      bossHp: 34,
+      bossSprite: 4,
+      bossColor: "#45c7ff",
       hazard: "laser"
     },
     {
       name: "Comet Foundry",
       zone: "Ice Tail",
-      mission: "Cross icy platforms and collect 15 cryo-cores.",
-      tip: "Ice platforms are slippery. Release movement earlier than normal.",
+      mission: "Cross the long icy foundry, collect 21 cryo-cores, and defeat the Frost Mothership.",
+      tip: "Ice platforms are slippery. Release movement earlier than normal and use double jump to correct mistakes.",
       bg: 4,
-      width: 5400,
-      cores: 15,
-      enemies: 13,
+      width: 9200,
+      cores: 21,
+      enemies: 20,
+      boss: true,
+      bossName: "Frost Mothership",
+      bossHp: 38,
+      bossSprite: 5,
+      bossColor: "#7ee7ff",
       hazard: "meteor"
     },
     {
       name: "NOVA-X Fortress",
       zone: "Enemy Capital",
-      mission: "Find the command key and reach the boss gate.",
+      mission: "Break through fortress platforms, collect 23 cores, and defeat the Gate Commander.",
       tip: "The fortress has the hardest jumps. Use double jump only after your first jump reaches peak height.",
       bg: 5,
-      width: 5900,
-      cores: 16,
-      enemies: 15,
+      width: 9700,
+      cores: 23,
+      enemies: 22,
+      boss: true,
+      bossName: "Gate Commander",
+      bossHp: 42,
+      bossSprite: 6,
+      bossColor: "#ff3030",
       hazard: "mine"
     },
     {
       name: "Final Gate",
       zone: "Starfall Core",
-      mission: "Defeat the NOVA-X Commander and escape through the portal.",
+      mission: "Collect 24 final cores, defeat the NOVA-X Commander, and escape through the portal.",
       tip: "Final mission. Keep distance, shoot the boss core, and collect shield pickups when they appear.",
       bg: 0,
-      width: 6400,
-      cores: 12,
-      enemies: 16,
+      width: 10400,
+      cores: 24,
+      enemies: 24,
       boss: true,
+      bossName: "NOVA-X Commander",
+      bossHp: 50,
+      bossSprite: 7,
+      bossColor: "#ff2fd6",
       hazard: "plasma"
     }
   ];
@@ -175,18 +225,33 @@
   };
 
   const images = {};
+  const CACHE_BUSTER = "sp-bosses-v1-3-2";
+  const GAME_ROOT = "/games/space-pilot-platformer/";
   const audio = {
     ctx: null,
     muted: false,
+    sfxGain: null,
+    musicGain: null,
+    music: null,
+    currentMusicLevel: -1,
     ensure() {
-      if (this.ctx || this.muted) return;
+      if (this.muted) return;
       try {
-        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+          this.sfxGain = this.ctx.createGain();
+          this.musicGain = this.ctx.createGain();
+          this.sfxGain.gain.value = 0.75;
+          this.musicGain.gain.value = 0.16;
+          this.sfxGain.connect(this.ctx.destination);
+          this.musicGain.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === "suspended") this.ctx.resume?.();
       } catch {
         this.muted = true;
       }
     },
-    beep(freq = 440, dur = 0.08, type = "sine", gain = 0.035) {
+    tone(freq = 440, dur = 0.08, type = "sine", gain = 0.035, dest = null) {
       if (!this.ctx || this.muted) return;
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
@@ -195,32 +260,167 @@
       osc.frequency.setValueAtTime(freq, now);
       amp.gain.setValueAtTime(gain, now);
       amp.gain.exponentialRampToValueAtTime(0.001, now + dur);
-      osc.connect(amp).connect(this.ctx.destination);
+      osc.connect(amp).connect(dest || this.sfxGain || this.ctx.destination);
       osc.start(now);
-      osc.stop(now + dur);
+      osc.stop(now + dur + 0.02);
+    },
+    beep(freq = 440, dur = 0.08, type = "sine", gain = 0.035) {
+      this.tone(freq, dur, type, gain, this.sfxGain);
+    },
+    startMusic(levelIndex = 0) {
+      if (this.muted) return;
+      this.ensure();
+      if (!this.ctx || this.muted) return;
+      if (this.currentMusicLevel === levelIndex && this.music) return;
+      this.stopMusic();
+
+      const scale = [130.81, 146.83, 164.81, 196.00, 220.00, 246.94, 261.63, 293.66];
+      const root = scale[levelIndex % scale.length];
+      const now = this.ctx.currentTime;
+      const padFilter = this.ctx.createBiquadFilter();
+      padFilter.type = "lowpass";
+      padFilter.frequency.setValueAtTime(900 + levelIndex * 85, now);
+      padFilter.Q.value = 0.75;
+
+      const padGain = this.ctx.createGain();
+      padGain.gain.setValueAtTime(0.0001, now);
+      padGain.gain.exponentialRampToValueAtTime(0.52, now + 1.2);
+      padFilter.connect(padGain).connect(this.musicGain || this.ctx.destination);
+
+      const delay = this.ctx.createDelay(1.2);
+      const feedback = this.ctx.createGain();
+      delay.delayTime.value = 0.34;
+      feedback.gain.value = 0.26;
+      delay.connect(feedback).connect(delay);
+      delay.connect(this.musicGain || this.ctx.destination);
+
+      const nodes = [padFilter, padGain, delay, feedback];
+      const chord = [root, root * 1.5, root * 2, root * 2.5];
+      chord.forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        osc.type = i % 2 ? "triangle" : "sawtooth";
+        osc.frequency.setValueAtTime(freq, now);
+        osc.detune.value = (i - 1.5) * 4;
+        g.gain.value = 0.055 / (i + 1);
+        osc.connect(g).connect(padFilter);
+        osc.start(now);
+        nodes.push(osc, g);
+      });
+
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.type = "sine";
+      lfo.frequency.value = 0.055 + levelIndex * 0.005;
+      lfoGain.gain.value = 260;
+      lfo.connect(lfoGain).connect(padFilter.frequency);
+      lfo.start(now);
+      nodes.push(lfo, lfoGain);
+
+      let step = 0;
+      const pattern = [0, 2, 4, 7, 5, 3, 6, 4, 1, 4, 6, 9];
+      const timer = setInterval(() => {
+        if (!this.ctx || this.muted || !this.music) return;
+        const note = root * Math.pow(2, (pattern[step % pattern.length] + (levelIndex % 3)) / 12);
+        const bass = root / 2;
+        this.tone(note, 0.18, "triangle", 0.014, delay);
+        if (step % 4 === 0) this.tone(bass, 0.28, "sine", 0.018, this.musicGain);
+        if (step % 8 === 6) this.tone(root * 3, 0.08, "sine", 0.009, delay);
+        step += 1;
+      }, 360);
+
+      this.music = { nodes, timer, padGain };
+      this.currentMusicLevel = levelIndex;
+    },
+    stopMusic() {
+      if (!this.music) return;
+      const m = this.music;
+      if (m.timer) clearInterval(m.timer);
+      try {
+        if (this.ctx && m.padGain) {
+          const now = this.ctx.currentTime;
+          m.padGain.gain.cancelScheduledValues(now);
+          m.padGain.gain.setValueAtTime(Math.max(0.0001, m.padGain.gain.value || 0.0001), now);
+          m.padGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+        }
+        setTimeout(() => {
+          for (const n of m.nodes || []) {
+            try { n.stop?.(); } catch {}
+            try { n.disconnect?.(); } catch {}
+          }
+        }, 420);
+      } catch {}
+      this.music = null;
+      this.currentMusicLevel = -1;
     },
     jump() { this.beep(520, 0.08, "triangle", 0.025); },
     collect() { this.beep(880, 0.07, "sine", 0.03); },
     shoot() { this.beep(720, 0.05, "square", 0.018); },
     hurt() { this.beep(100, 0.14, "sawtooth", 0.04); },
     boom() { this.beep(82, 0.2, "sawtooth", 0.05); },
+    boss() { this.beep(55, 0.35, "sawtooth", 0.055); },
     power() { this.beep(980, 0.1, "triangle", 0.04); }
   };
 
-  function loadImage(key, src) {
+  function loadImage(key, src, options = {}) {
     const img = new Image();
     img.decoding = "async";
-    img.src = src;
+    img.spriteCols = options.cols || 0;
+    img.spriteRows = options.rows || 0;
+    img.assetKey = key;
+    img.assetSrc = src;
+
+    const absoluteOrSpecial = /^(https?:|data:|blob:|\/)/i.test(src);
+    const candidates = absoluteOrSpecial
+      ? [src]
+      : Array.from(new Set([
+          src,
+          `./${src}`,
+          `${GAME_ROOT}${src}`
+        ]));
+
+    let attempt = 0;
+    const withVersion = (url) => {
+      if (/^(data:|blob:)/i.test(url)) return url;
+      const joiner = url.includes("?") ? "&" : "?";
+      return `${url}${joiner}v=${CACHE_BUSTER}`;
+    };
+    const tryCandidate = () => {
+      img.failed = false;
+      img.src = withVersion(candidates[attempt]);
+    };
+
+    img.onload = () => {
+      img.failed = false;
+      img.loadedSrc = img.src;
+    };
+    img.onerror = () => {
+      attempt += 1;
+      if (attempt < candidates.length) {
+        tryCandidate();
+        return;
+      }
+      img.failed = true;
+      console.warn(`[Space Pilot Platformer] Missing asset for ${key}:`, src, candidates);
+    };
+
     images[key] = img;
+    tryCandidate();
+    return img;
   }
 
   ASSETS.backgrounds.forEach((src, i) => loadImage(`bg${i}`, src));
   loadImage("enemy", ASSETS.enemy);
-  loadImage("boss", ASSETS.boss);
+  loadImage("boss", ASSETS.boss, { cols: 2, rows: 2 });
+  ASSETS.bosses.forEach((src, i) => loadImage(`boss${i}`, src, { cols: 2, rows: 2 }));
   loadImage("asteroid", ASSETS.asteroid);
   loadImage("core", ASSETS.core);
   loadImage("shield", ASSETS.shield);
   loadImage("time", ASSETS.time);
+  loadImage("player", ASSETS.player);
+
+  const PILOT_SPRITE = { cols: 6, rows: 4, idle: 0, run: 1, jump: 2, shoot: 3 };
+  const BOSS_SPRITE = { cols: 2, rows: 2, idle: 0, shield: 1, attack: 2, damaged: 3 };
 
   function ready(img) {
     return !!(img && img.complete && img.naturalWidth > 0);
@@ -277,44 +477,50 @@
     const planets = [];
     const stars = [];
 
-    // Ground and asteroid base chunks.
+    // Ground and asteroid base chunks: longer routes with wider gaps on later levels.
     let x = 0;
     while (x < spec.width) {
-      const gap = x > 400 && rand(x + index * 19) > 0.72 ? 120 + rand(x) * 120 : 0;
+      const difficulty = 1 + index * 0.11;
+      const gapChance = 0.68 - index * 0.018;
+      const gap = x > 420 && rand(x + index * 19) > gapChance ? 130 + rand(x) * (135 + index * 16) : 0;
       if (gap) x += gap;
-      const y = 650 + Math.sin(x * 0.005 + index) * 42;
-      const w = 260 + rand(x + 3) * 250;
+      const y = 650 + Math.sin(x * 0.005 + index) * 42 + Math.sin(x * 0.011 + index) * 16;
+      const w = 230 + rand(x + 3) * (245 / difficulty);
       platforms.push({ x, y, w, h: 46, type: "ground", color: "#53607c" });
       x += w;
     }
 
     // Floating platforms.
-    const count = 17 + index * 3;
+    const count = 25 + index * 5;
     for (let i = 0; i < count; i += 1) {
-      const px = 340 + i * (spec.width - 780) / count + rand(i + index * 8) * 90;
-      const py = 360 + rand(i * 13 + index) * 200;
-      const moving = i % 5 === 2 || (index > 2 && i % 7 === 0);
+      const px = 340 + i * (spec.width - 840) / count + rand(i + index * 8) * 120;
+      const py = 330 + rand(i * 13 + index) * 250;
+      const moving = i % 5 === 2 || (index > 1 && i % 6 === 0) || (index > 4 && i % 8 === 1);
       platforms.push({
         x: px,
         y: py,
         ox: px,
         oy: py,
-        w: 150 + rand(i + 20) * 90,
+        w: 135 + rand(i + 20) * 95,
         h: 26,
         type: moving ? "moving" : (index === 5 && i % 4 === 0 ? "ice" : "float"),
         phase: rand(i + 40) * 6.28,
-        range: moving ? 90 + rand(i + 50) * 80 : 0,
-        speed: moving ? 0.7 + rand(i + 70) * 0.7 : 0
+        range: moving ? 100 + rand(i + 50) * (85 + index * 10) : 0,
+        speed: moving ? 0.75 + rand(i + 70) * (0.75 + index * 0.04) : 0
       });
     }
 
-    // Stairs near final portal.
+    // Boss arena and stairs near final portal.
+    const arenaX = spec.width - 980;
+    platforms.push({ x: arenaX, y: 620, w: 560, h: 34, type: index >= 5 ? "ice" : "float" });
+    platforms.push({ x: arenaX + 80, y: 455, w: 170, h: 24, type: "moving", ox: arenaX + 80, oy: 455, phase: index * 0.7, range: 95, speed: 0.95 + index * 0.04 });
+    platforms.push({ x: arenaX + 360, y: 430, w: 190, h: 24, type: "moving", ox: arenaX + 360, oy: 430, phase: index * 1.1, range: 100, speed: 0.9 + index * 0.04 });
     for (let i = 0; i < 5; i += 1) {
       platforms.push({ x: spec.width - 800 + i * 150, y: 570 - i * 52, w: 150, h: 24, type: "float" });
     }
 
-    // Star cores.
-    for (let i = 0; i < spec.cores + 5; i += 1) {
+    // Star cores. Extra cores are placed so players have route choices.
+    for (let i = 0; i < spec.cores + 8; i += 1) {
       const p = platforms[2 + Math.floor(rand(i + index * 77) * (platforms.length - 4))];
       cores.push({
         x: p.x + 35 + rand(i + 17) * Math.max(20, p.w - 70),
@@ -328,27 +534,30 @@
     // Enemies.
     for (let i = 0; i < spec.enemies; i += 1) {
       const p = platforms[2 + Math.floor(rand(i + index * 133) * (platforms.length - 5))];
+      const enemyHp = 2 + Math.floor(index / 3) + (i % 5 === 0 ? 1 : 0);
+      const speed = 58 + index * 7 + rand(i + 9) * 20;
       enemies.push({
         x: p.x + 40 + rand(i + 5) * Math.max(30, p.w - 80),
         y: p.y - 42,
-        vx: rand(i + 9) > 0.5 ? 55 : -55,
+        vx: rand(i + 9) > 0.5 ? speed : -speed,
         w: 48,
         h: 34,
-        hp: index > 5 ? 3 : 2,
-        maxHp: index > 5 ? 3 : 2,
+        hp: enemyHp,
+        maxHp: enemyHp,
         homeX: p.x + p.w / 2,
-        range: 120 + rand(i + 13) * 120,
-        shoot: 1 + rand(i + 18) * 2,
-        type: i % 4 === 0 && index > 2 ? "turret" : "drone",
+        range: 135 + rand(i + 13) * (130 + index * 8),
+        shoot: 0.8 + rand(i + 18) * Math.max(0.65, 1.8 - index * 0.08),
+        type: i % 4 === 0 && index > 1 ? "turret" : "drone",
         alive: true,
         frame: Math.floor(rand(i + 32) * 4)
       });
     }
 
     // Hazards.
-    for (let i = 0; i < 9 + index * 2; i += 1) {
+    const hazardCount = 14 + index * 4;
+    for (let i = 0; i < hazardCount; i += 1) {
       hazards.push({
-        x: 480 + i * (spec.width - 900) / (9 + index * 2) + rand(i + 222) * 80,
+        x: 480 + i * (spec.width - 900) / hazardCount + rand(i + 222) * 110,
         y: 610 - rand(i + 19) * 150,
         w: 46,
         h: 46,
@@ -358,7 +567,7 @@
     }
 
     // Pickups.
-    for (let i = 0; i < 6; i += 1) {
+    for (let i = 0; i < 7 + Math.floor(index / 2); i += 1) {
       const p = platforms[2 + Math.floor(rand(i + index * 55) * (platforms.length - 5))];
       pickups.push({
         x: p.x + p.w * 0.5,
@@ -371,20 +580,28 @@
     }
 
     if (spec.boss) {
+      const hp = spec.bossHp || (22 + index * 4);
       enemies.push({
-        x: spec.width - 540,
-        y: 365,
+        x: spec.width - 560,
+        y: 360,
         vx: 0,
-        w: 180,
-        h: 110,
-        hp: 34,
-        maxHp: 34,
-        homeX: spec.width - 540,
-        range: 220,
-        shoot: 0.8,
+        w: 220,
+        h: 140,
+        hp,
+        maxHp: hp,
+        homeX: spec.width - 560,
+        homeY: 350,
+        range: 210 + index * 18,
+        shoot: 0.55 + Math.max(0, 0.2 - index * 0.02),
         type: "boss",
+        name: spec.bossName || "Void Guardian",
+        bossSprite: typeof spec.bossSprite === "number" ? spec.bossSprite : index,
+        bossColor: spec.bossColor || "#ff2fd6",
         alive: true,
-        frame: 0
+        frame: 0,
+        attackAnim: 0,
+        hitFlash: 0,
+        phase: index * 0.9
       });
     }
 
@@ -449,6 +666,7 @@
       state.score = 0;
       state.lives = 3;
     }
+    audio.startMusic(state.level);
     state.status = "playing";
     state.health = 100;
     state.shield = 0;
@@ -471,7 +689,7 @@
 
   function nextLevel() {
     postScore(false);
-    state.score += 800 + state.level * 180 + state.lives * 120;
+    state.score += 1200 + state.level * 260 + state.lives * 150;
     if (state.level >= LEVELS.length - 1) {
       endGame(true);
       return;
@@ -482,6 +700,7 @@
 
   function endGame(win) {
     state.status = "ended";
+    audio.stopMusic();
     postScore(true);
     ui.gameOverOverlay.classList.remove("hidden");
     $("endKicker").textContent = win ? "Odyssey Report" : "Mission Failed";
@@ -500,8 +719,11 @@
     ui.healthText.textContent = `${Math.max(0, Math.round(state.health))}%`;
     ui.shieldText.textContent = `${Math.max(0, Math.round(state.shield))}%`;
     ui.missionTitle.textContent = `${w.spec.name} — ${w.spec.zone}`;
+    const defeatedDrones = w.enemies.filter((e) => e.type !== "boss" && !e.alive).length;
+    const boss = w.enemies.find((e) => e.type === "boss");
+    const bossText = boss ? (boss.alive ? `${boss.name || "Boss"} HP ${Math.max(0, Math.ceil(boss.hp))}/${boss.maxHp}` : `${boss.name || "Boss"} defeated`) : "portal route";
     ui.missionText.textContent =
-      `${state.cores}/${w.spec.cores} cores • ${state.enemiesDefeated}/${w.spec.enemies} drones • reach the portal`;
+      `${state.cores}/${w.spec.cores} cores • ${defeatedDrones}/${w.spec.enemies} drones • ${bossText}`;
     ui.missionMeter.style.width = `${Math.round(progress * 100)}%`;
     ui.mentorText.textContent = w.spec.tip;
   }
@@ -595,6 +817,7 @@
   function update(dt) {
     if (state.status !== "playing" || !state.world) return;
     const w = state.world;
+    const index = state.level;
     state.time += dt;
     PLAYER.shootCd = Math.max(0, PLAYER.shootCd - dt);
     PLAYER.dashCd = Math.max(0, PLAYER.dashCd - dt);
@@ -691,8 +914,12 @@
     for (const e of w.enemies) {
       if (!e.alive) continue;
       if (e.type === "boss") {
-        e.x = e.homeX + Math.sin(state.time * 0.9) * e.range;
-        e.y = 320 + Math.sin(state.time * 1.2) * 54;
+        const enraged = e.hp < e.maxHp * 0.5;
+        const speedBoost = enraged ? 1.35 : 1;
+        e.x = e.homeX + Math.sin(state.time * (0.75 + index * 0.03) * speedBoost + e.phase) * e.range;
+        e.y = e.homeY + Math.sin(state.time * (1.05 + index * 0.04) * speedBoost + e.phase) * (54 + index * 2);
+        e.attackAnim = Math.max(0, (e.attackAnim || 0) - dt);
+        e.hitFlash = Math.max(0, (e.hitFlash || 0) - dt);
       } else if (e.type !== "turret") {
         e.x += e.vx * dt;
         if (Math.abs(e.x - e.homeX) > e.range) e.vx *= -1;
@@ -704,29 +931,65 @@
         const dx = PLAYER.x - e.x;
         const dy = PLAYER.y - e.y;
         const len = Math.hypot(dx, dy) || 1;
-        w.enemyShots.push({
-          x: e.x,
-          y: e.y,
-          vx: dx / len * (e.type === "boss" ? 420 : 310),
-          vy: dy / len * (e.type === "boss" ? 420 : 310),
-          r: e.type === "boss" ? 8 : 6,
-          life: 3,
-          color: e.type === "boss" ? "#ff2fd6" : "#ff784a"
-        });
-        e.shoot = e.type === "boss" ? 0.62 : 1.1 + Math.random() * 1.2;
+        if (e.type === "boss") {
+          const enraged = e.hp < e.maxHp * 0.5;
+          const shots = enraged ? 5 : 3;
+          const spread = enraged ? 0.44 : 0.28;
+          const baseAngle = Math.atan2(dy, dx);
+          for (let i = 0; i < shots; i += 1) {
+            const offset = (i - (shots - 1) / 2) * spread;
+            const angle = baseAngle + offset;
+            w.enemyShots.push({
+              x: e.x + Math.cos(angle) * 34,
+              y: e.y + Math.sin(angle) * 20,
+              vx: Math.cos(angle) * (430 + index * 18),
+              vy: Math.sin(angle) * (430 + index * 18),
+              r: enraged ? 9 : 8,
+              life: 3.2,
+              color: enraged ? "#ff315a" : "#ff2fd6"
+            });
+          }
+          e.attackAnim = enraged ? 0.42 : 0.32;
+          if (Math.random() < 0.32 + index * 0.035) {
+            w.hazards.push({
+              x: clamp(PLAYER.x + (Math.random() - 0.5) * 260, 420, w.width - 260),
+              y: clamp(PLAYER.y - 70, 230, 610),
+              w: 42,
+              h: 42,
+              type: w.spec.hazard,
+              phase: Math.random() * 6.28,
+              temporary: 4.5
+            });
+          }
+          e.shoot = enraged ? Math.max(0.36, 0.58 - index * 0.025) : Math.max(0.48, 0.72 - index * 0.02);
+        } else {
+          w.enemyShots.push({
+            x: e.x,
+            y: e.y,
+            vx: dx / len * 320,
+            vy: dy / len * 320,
+            r: 6,
+            life: 3,
+            color: "#ff784a"
+          });
+          e.shoot = Math.max(0.75, 1.1 - index * 0.05) + Math.random() * 1.05;
+        }
       }
       if (rectsOverlap(playerRect(), { x: e.x - e.w / 2, y: e.y - e.h / 2, w: e.w, h: e.h })) {
-        damage(e.type === "boss" ? 24 : 16);
+        damage(e.type === "boss" ? 26 + index * 2 : 16);
       }
     }
 
     // Hazards.
     for (const h of w.hazards) {
+      if (h.temporary) h.temporary -= dt;
       const pulse = Math.sin(state.time * 3 + h.phase);
       if (rectsOverlap(playerRect(), { x: h.x - h.w / 2, y: h.y - h.h / 2, w: h.w, h: h.h })) {
         damage(pulse > -0.45 ? 16 : 8);
       }
     }
+
+    w.hazards = w.hazards.filter((h) => !h.temporary || h.temporary > 0);
 
     // Projectiles.
     for (const s of w.projectiles) {
@@ -739,13 +1002,19 @@
         if (rectsOverlap({ x: s.x - s.r, y: s.y - s.r, w: s.r * 2, h: s.r * 2 }, er)) {
           s.dead = true;
           e.hp -= s.power;
-          addParticle(s.x, s.y, e.type === "boss" ? "#ff2fd6" : "#ff784a", 8);
+          if (e.type === "boss") e.hitFlash = 0.22;
+          addParticle(s.x, s.y, e.type === "boss" ? (e.bossColor || "#ff2fd6") : "#ff784a", 8);
           if (e.hp <= 0) {
             e.alive = false;
             state.enemiesDefeated += 1;
-            state.score += e.type === "boss" ? 3000 : 220;
-            addParticle(e.x, e.y, e.type === "boss" ? "#ff2fd6" : "#ff784a", e.type === "boss" ? 38 : 18);
-            audio.boom();
+            state.score += e.type === "boss" ? 3000 + index * 550 : 240;
+            addParticle(e.x, e.y, e.type === "boss" ? (e.bossColor || "#ff2fd6") : "#ff784a", e.type === "boss" ? 38 : 18);
+            if (e.type === "boss") {
+              toast(`${e.name || "Boss"} defeated — portal unlocking`);
+              audio.boss();
+            } else {
+              audio.boom();
+            }
           }
         }
       }
@@ -805,7 +1074,14 @@
         nextLevel();
         return;
       }
-      toast(`Need ${Math.max(0, w.spec.cores - state.cores)} more core(s)`);
+      const boss = w.enemies.find((e) => e.type === "boss" && e.alive);
+      if (state.cores < w.spec.cores) {
+        toast(`Need ${Math.max(0, w.spec.cores - state.cores)} more core(s)`);
+      } else if (boss) {
+        toast(`Defeat ${boss.name || "the boss"} to open the portal`);
+      } else {
+        toast("Portal is charging");
+      }
       PLAYER.vx = -120;
     }
 
@@ -839,14 +1115,16 @@
     ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
   }
 
-  function drawSpriteSheet(img, frame, x, y, w, h, rot = 0, flip = 1) {
+  function drawSpriteSheet(img, frame, x, y, w, h, rot = 0, flip = 1, cols = null, rows = null) {
     if (!ready(img)) return false;
-    const grid = img.naturalWidth > 700 || img.naturalHeight > 700 ? 2 : 1;
-    const f = Math.floor(frame || 0) % (grid * grid);
-    const sx = (f % grid) * img.naturalWidth / grid;
-    const sy = Math.floor(f / grid) * img.naturalHeight / grid;
-    const sw = img.naturalWidth / grid;
-    const sh = img.naturalHeight / grid;
+    const spriteCols = Math.max(1, cols || img.spriteCols || (img.naturalWidth > 700 || img.naturalHeight > 700 ? 2 : 1));
+    const spriteRows = Math.max(1, rows || img.spriteRows || spriteCols);
+    const total = spriteCols * spriteRows;
+    const f = Math.floor(frame || 0) % total;
+    const sw = img.naturalWidth / spriteCols;
+    const sh = img.naturalHeight / spriteRows;
+    const sx = (f % spriteCols) * sw;
+    const sy = Math.floor(f / spriteCols) * sh;
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(rot);
@@ -854,6 +1132,58 @@
     ctx.drawImage(img, sx, sy, sw, sh, -w / 2, -h / 2, w, h);
     ctx.restore();
     return true;
+  }
+
+  function drawSpriteFrame(img, frame, cols, rows, x, y, w, h, rot = 0, flip = 1) {
+    if (!ready(img)) return false;
+    const total = cols * rows;
+    const f = Math.floor(frame || 0) % total;
+    const sw = img.naturalWidth / cols;
+    const sh = img.naturalHeight / rows;
+    const sx = (f % cols) * sw;
+    const sy = Math.floor(f / cols) * sh;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.scale(flip, 1);
+    ctx.drawImage(img, sx, sy, sw, sh, -w / 2, -h / 2, w, h);
+    ctx.restore();
+    return true;
+  }
+
+  function getBossImage(e) {
+    const rawIndex = typeof e.bossSprite === "number" ? e.bossSprite : state.level;
+    const bossIndex = clamp(Math.floor(rawIndex), 0, ASSETS.bosses.length - 1);
+    const preferredKeys = Array.from(new Set([`boss${bossIndex}`, `boss${state.level}`]));
+
+    for (const key of preferredKeys) {
+      if (ready(images[key])) return images[key];
+    }
+    return null;
+  }
+
+  function drawBossAssetMissing(e, color) {
+    // This only appears if the level-specific PNG is missing or still loading.
+    // The old mothership fallback is intentionally not used here, so incorrect boss art cannot appear.
+    ctx.save();
+    ctx.globalAlpha = 0.5 + Math.sin(state.time * 8) * 0.12;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = "rgba(7,16,37,.78)";
+    ctx.lineWidth = 3;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18;
+    roundRect(-100, -52, 200, 104, 22);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.72)";
+    ctx.font = "700 10px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("BOSS SPRITE LOADING", 0, 68);
+    ctx.restore();
   }
 
   function drawBackground() {
@@ -964,25 +1294,96 @@
 
   function drawPilot() {
     const s = worldToScreen(PLAYER.x, PLAYER.y);
-    const walk = Math.sin(state.time * 16) * (PLAYER.onGround && Math.abs(PLAYER.vx) > 30 ? 1 : 0);
+    const moving = PLAYER.onGround && Math.abs(PLAYER.vx) > 35;
     const blink = PLAYER.invuln > 0 && Math.floor(state.time * 18) % 2 === 0;
     if (blink) return;
 
-    ctx.save();
-    ctx.translate(s.x, s.y);
-    ctx.scale(PLAYER.dir, 1);
-
-    // Jetpack flame only while jumping/dashing; no large triangle trail.
-    if (!PLAYER.onGround || PLAYER.dashCd > 0.98) {
-      const flame = 12 + Math.sin(state.time * 42) * 4;
-      ctx.fillStyle = "rgba(255,212,74,.85)";
-      ctx.shadowColor = "#ffd44a";
-      ctx.shadowBlur = 18;
-      ctx.beginPath();
-      ctx.ellipse(-18, 8, 7, flame, 0, 0, Math.PI * 2);
-      ctx.fill();
+    let animRow = PILOT_SPRITE.idle;
+    let animSpeed = 5;
+    if (PLAYER.shootCd > 0.04 || state.touch.shoot || state.keys.KeyJ) {
+      animRow = PILOT_SPRITE.shoot;
+      animSpeed = 12;
+    } else if (!PLAYER.onGround) {
+      animRow = PILOT_SPRITE.jump;
+      animSpeed = 8;
+    } else if (moving) {
+      animRow = PILOT_SPRITE.run;
+      animSpeed = 14;
     }
 
+    const frame = animRow * PILOT_SPRITE.cols + Math.floor(state.time * animSpeed) % PILOT_SPRITE.cols;
+    const bob = animRow === PILOT_SPRITE.idle ? Math.sin(state.time * 4) * 2 : 0;
+    const drawW = moving ? 86 : 82;
+    const drawH = 96;
+
+    // Thumbnail-inspired jet flame and neon landing dust.
+    if (!PLAYER.onGround || PLAYER.dashCd > 0.98) {
+      ctx.save();
+      const fx = s.x - PLAYER.dir * 30;
+      const fy = s.y + 12 + bob;
+      const flame = 24 + Math.sin(state.time * 40) * 5;
+      ctx.translate(fx, fy);
+      ctx.scale(PLAYER.dir, 1);
+      ctx.shadowColor = "#36dfff";
+      ctx.shadowBlur = 22;
+      ctx.fillStyle = "rgba(54,223,255,.55)";
+      ctx.beginPath();
+      ctx.moveTo(0, -8);
+      ctx.lineTo(-flame, 1);
+      ctx.lineTo(0, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowColor = "#ffd44a";
+      ctx.fillStyle = "rgba(255,212,74,.85)";
+      ctx.beginPath();
+      ctx.moveTo(0, -4);
+      ctx.lineTo(-flame * 0.62, 2);
+      ctx.lineTo(0, 7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    ctx.save();
+    ctx.shadowColor = "#36dfff";
+    ctx.shadowBlur = 12;
+    const usedSprite = drawSpriteFrame(
+      images.player,
+      frame,
+      PILOT_SPRITE.cols,
+      PILOT_SPRITE.rows,
+      s.x,
+      s.y + bob,
+      drawW,
+      drawH,
+      0,
+      PLAYER.dir
+    );
+    ctx.restore();
+
+    if (!usedSprite) {
+      drawProceduralPilot(s, moving, bob);
+    }
+
+    if (state.shield > 0) {
+      ctx.save();
+      ctx.globalAlpha = 0.36 + Math.sin(state.time * 8) * 0.08;
+      ctx.strokeStyle = "#64ffb8";
+      ctx.shadowColor = "#64ffb8";
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(s.x, s.y, 36, 48, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawProceduralPilot(s, moving, bob) {
+    const walk = Math.sin(state.time * 16) * (moving ? 1 : 0);
+    ctx.save();
+    ctx.translate(s.x, s.y + bob);
+    ctx.scale(PLAYER.dir, 1);
     ctx.shadowColor = "#36dfff";
     ctx.shadowBlur = 14;
 
@@ -1029,17 +1430,6 @@
     ctx.moveTo(12, -2);
     ctx.lineTo(26, -6 + walk * 2);
     ctx.stroke();
-
-    // Shield ring
-    if (state.shield > 0) {
-      ctx.globalAlpha = 0.38;
-      ctx.strokeStyle = "#64ffb8";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 31, 43, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
     ctx.restore();
   }
 
@@ -1050,27 +1440,43 @@
 
     ctx.save();
     ctx.translate(s.x, s.y);
-    ctx.shadowColor = e.type === "boss" ? "#ff2fd6" : "#ff784a";
+    const bossGlow = e.bossColor || "#ff2fd6";
+    ctx.shadowColor = e.type === "boss" ? bossGlow : "#ff784a";
     ctx.shadowBlur = e.type === "boss" ? 26 : 16;
 
     if (e.type === "boss") {
-      if (!drawSpriteSheet(images.boss, e.frame, 0, 0, 220, 140, 0, e.x > PLAYER.x ? -1 : 1)) {
-        ctx.fillStyle = "#11182c";
-        ctx.strokeStyle = "#ff2fd6";
-        ctx.lineWidth = 4;
-        roundRect(-92, -42, 184, 84, 18);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = "#ff2fd6";
-        ctx.beginPath();
-        ctx.arc(0, 0, 18, 0, Math.PI * 2);
-        ctx.fill();
+      const bossImg = getBossImage(e);
+      const enraged = e.hp < e.maxHp * 0.42;
+      const bossFrame = (e.hitFlash || enraged)
+        ? BOSS_SPRITE.damaged
+        : (e.attackAnim > 0 ? BOSS_SPRITE.attack : (Math.sin(state.time * 2.6 + e.phase) > 0.72 ? BOSS_SPRITE.shield : BOSS_SPRITE.idle));
+      const pulse = 1 + Math.sin(state.time * 5 + e.phase) * 0.025;
+
+      if (bossImg) {
+        drawSpriteSheet(
+          bossImg,
+          bossFrame,
+          0,
+          0,
+          286 * pulse,
+          190 * pulse,
+          0,
+          1,
+          BOSS_SPRITE.cols,
+          BOSS_SPRITE.rows
+        );
+      } else {
+        drawBossAssetMissing(e, bossGlow);
       }
+      ctx.fillStyle = "rgba(255,255,255,.88)";
+      ctx.font = "700 12px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText(e.name || "Boss", 0, -96);
       ctx.fillStyle = "rgba(255,255,255,.18)";
-      roundRect(-82, -70, 164, 10, 999);
+      roundRect(-98, -84, 196, 10, 999);
       ctx.fill();
-      ctx.fillStyle = "#ff2fd6";
-      roundRect(-82, -70, 164 * (e.hp / e.maxHp), 10, 999);
+      ctx.fillStyle = bossGlow;
+      roundRect(-98, -84, 196 * (e.hp / e.maxHp), 10, 999);
       ctx.fill();
     } else {
       if (!drawSpriteSheet(images.enemy, e.frame, 0, 0, 72, 54, 0, e.vx < 0 ? -1 : 1)) {
@@ -1126,7 +1532,7 @@
     const pulse = 0.75 + Math.sin(state.time * 4 + h.phase) * 0.25;
     ctx.save();
     ctx.translate(s.x, s.y);
-    ctx.globalAlpha = 0.78 + pulse * 0.22;
+    ctx.globalAlpha = (0.78 + pulse * 0.22) * (h.temporary ? clamp(h.temporary / 1.2, 0.25, 1) : 1);
     if (h.type === "laser" || h.type === "plasma") {
       ctx.strokeStyle = h.type === "laser" ? "#ff315a" : "#ff2fd6";
       ctx.shadowColor = ctx.strokeStyle;
