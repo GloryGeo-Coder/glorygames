@@ -37,6 +37,7 @@ export async function POST(req: Request) {
             slug: g.slug,
             title: g.title,
             description: g.description,
+            category: g.category,
             tags: g.tags
           }
         });
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
 
     const needsUpdate =
       existing.title !== g.title ||
+      existing.category !== g.category ||
       (existing.description ?? null) !== (g.description ?? null) ||
       JSON.stringify(existing.tags ?? []) !== JSON.stringify(g.tags ?? []);
 
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
     if (!dryRun) {
       await prisma.game.update({
         where: { slug: g.slug },
-        data: { title: g.title, description: g.description, tags: g.tags }
+        data: { title: g.title, description: g.description, category: g.category, tags: g.tags }
       });
     }
 
