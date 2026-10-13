@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import fssync from "node:fs";
 import path from "node:path";
+import { GAME_CATEGORIES, GAME_CATALOG, catalogCategory, catalogDescription } from "@/lib/gameCatalog";
+import type { GameCategoryValue } from "@/lib/gameCatalog";
 
 export type FsGame = {
   slug: string;
@@ -9,54 +11,6 @@ export type FsGame = {
   category: GameCategoryValue;
   tags: string[];
   hasIndex: boolean;
-};
-
-export type GameCategoryValue =
-  | "ARCADE"
-  | "ACTION"
-  | "ADVENTURE"
-  | "EDUCATIONAL"
-  | "PUZZLE"
-  | "RACING"
-  | "WORD_TRIVIA"
-  | "STRATEGY"
-  | "SPORTS"
-  | "SIMULATION"
-  | "DEFENSE"
-  | "PLATFORMER"
-  | "CASUAL"
-  | "MULTIPLAYER"
-  | "KIDS_FAMILY";
-
-const VALID_CATEGORIES: GameCategoryValue[] = [
-  "ARCADE",
-  "ACTION",
-  "ADVENTURE",
-  "EDUCATIONAL",
-  "PUZZLE",
-  "RACING",
-  "WORD_TRIVIA",
-  "STRATEGY",
-  "SPORTS",
-  "SIMULATION",
-  "DEFENSE",
-  "PLATFORMER",
-  "CASUAL",
-  "MULTIPLAYER",
-  "KIDS_FAMILY",
-];
-
-const CATEGORY_BY_SLUG: Record<string, GameCategoryValue> = {
-  "fruit-slice": "ARCADE",
-  "brick-blaster": "ARCADE",
-  "bubble-pop-arena": "PUZZLE",
-  "neon-hover-runner": "RACING",
-  "neon-orb-defender": "DEFENSE",
-  "space-dodger": "ACTION",
-  "swipe-racer": "RACING",
-  "stack-tower": "PUZZLE",
-  "word-dash": "EDUCATIONAL",
-  "kasi-quest": "ADVENTURE",
 };
 
 function tryDirs() {
@@ -112,7 +66,7 @@ function normalizeCategory(input: unknown): GameCategoryValue | null {
     return "KIDS_FAMILY";
   }
 
-  return VALID_CATEGORIES.includes(cleaned as GameCategoryValue)
+  return GAME_CATEGORIES.includes(cleaned as GameCategoryValue)
     ? (cleaned as GameCategoryValue)
     : null;
 }
@@ -133,7 +87,8 @@ function normalizeTags(input: unknown): string[] {
 }
 
 function inferCategory(slug: string, title: string, tags: string[]): GameCategoryValue {
-  if (CATEGORY_BY_SLUG[slug]) return CATEGORY_BY_SLUG[slug];
+  const known = catalogCategory(slug, "ARCADE");
+  if (slug in GAME_CATALOG) return known;
 
   const haystack = `${slug} ${title} ${tags.join(" ")}`.toLowerCase();
 
@@ -225,7 +180,7 @@ export async function scanGamesFolder(): Promise<FsGame[]> {
     if (!e.isDirectory()) continue;
 
     const slug = e.name.trim();
-    if (!slug || slug.startsWith(".") || slug === "sdk") continue;
+    if (!slug || slug.startsWith(".") || slug.startsWith("_") || slug.includes("template") || slug === "sdk") continue;
 
     const folder = path.join(gamesDir, slug);
 
@@ -241,15 +196,15 @@ export async function scanGamesFolder(): Promise<FsGame[]> {
         ? meta.title.trim()
         : titleFromSlug(slug);
 
-    const description =
+    const description = catalogDescription(slug,
       typeof meta?.description === "string" && meta.description.trim()
         ? meta.description.trim().slice(0, 500)
-        : null;
+        : null);
 
     const tags = normalizeTags(meta?.tags);
 
     const category =
-      normalizeCategory(meta?.category) ?? inferCategory(slug, title, tags);
+      catalogCategory(slug, normalizeCategory(meta?.category) ?? inferCategory(slug, title, tags));
 
     out.push({ slug, title, description, category, tags, hasIndex });
   }
