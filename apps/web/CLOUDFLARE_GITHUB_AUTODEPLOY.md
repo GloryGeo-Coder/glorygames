@@ -24,10 +24,18 @@ The production site uses a Next.js app adapted for Cloudflare Workers by `@openn
 
 ## Database category persistence
 
-The application normalizes all 22 known game slugs at read time, correcting legacy rows without a database migration.
-The protected `POST /api/admin/sync-games?dry=1` endpoint should report category changes once this code is deployed.
-After reviewing its output, run `POST /api/admin/sync-games` with the existing `x-admin-key` credential to persist title, description, tags and category. **Do not** use `deleteMissing=1` for this correction.
-Do not send the admin key to chat or commit it to the repository.
+The application normalizes all 22 known game slugs at read time, so corrected category labels appear immediately after deployment even if production Neon database rows remain as `ARCADE`.
+
+The existing protected admin endpoint now supports a **Cloudflare-safe** category-only mode which accesses the database directly, not `public/games` through the Workers filesystem:
+
+- Dry run: `POST /api/admin/sync-games?categoriesOnly=1&dry=1`
+- Apply: `POST /api/admin/sync-games?categoriesOnly=1`
+
+Both require the existing `x-admin-key` request header. Review the dry-run list first. The update is restricted to categories of the 22 documented game slugs, does not delete any games, and leaves unknown games untouched.
+
+The older full sync mode `POST /api/admin/sync-games` still scans the filesystem; **do not use it on Cloudflare Workers without verifying its filesystem access first**.
+
+Do not share admin keys in chat or commit credentials to GitHub.
 
 ## Notes
 
