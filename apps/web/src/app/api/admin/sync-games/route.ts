@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { scanGamesFolder } from "@/lib/gamesFs";
+import { GAME_CATALOG } from "@/lib/gameCatalog";
 
 function isAuthorized(req: Request) {
   const key = process.env.ADMIN_KEY;
@@ -19,6 +20,47 @@ export async function POST(req: Request) {
   const url = new URL(req.url);
   const dryRun = url.searchParams.get("dry") === "1";
   const deleteMissing = url.searchParams.get("deleteMissing") === "1";
+
+  // Cloudflare-safe category sync: no filesystem access, no deletion and no
+  // dependency on a particular Workers deployment asset layout.
+  if (url.searchParams.get("categoriesOnly") === "1") {
+    const knownSlugs = Object.keys(GAME_CATALOG);
+    const existingGames = await prisma.game.findMany({
+      where: { slug: { in: knownSlugs } },
+      select: { slug: true, category: true },
+    });
+
+    const changes = existingGames
+      .map((game) => ({
+        slug: game.slug,
+        from: game.category,
+        to: GAME_CATALOG[game.slug].category,
+      }))
+      .filter((change) => change.from !== change.to);
+
+    if (!dryRun) {
+      for (const change of changes) {
+        await prisma.game.update({
+          where: { slug: change.slug },
+          data: { category: change.to },
+        });
+      }
+    }
+
+    return NextResponse.json({
+      ok: true,
+      mode: "categoriesOnly",
+      dryRun,
+      totals: {
+        mapped: knownSlugs.length,
+        found: existingGames.length,
+        missing: knownSlugs.length - existingGames.length,
+        updated: changes.length,
+      },
+      changes,
+    });
+  }
+
 
   const fsGames = await scanGamesFolder();
   const fsSlugs = new Set(fsGames.map((g) => g.slug));
