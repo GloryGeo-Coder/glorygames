@@ -19,7 +19,7 @@ const footerGroups = [
       { label: "Daily Challenge", href: "/games" },
       { label: "Popular Games", href: "/games" },
       { label: "Mobile Browser Games", href: "/games" },
-      { label: "Kids & Family", href: "/games?category=kids-family" },
+      { label: "Word & Trivia", href: "/games?category=word-trivia" },
     ],
   },
   {
