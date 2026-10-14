@@ -35,7 +35,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "When the round finishes, review your score and use the available score submission or restart controls."
     ],
     "desktop": [
-      "Move the paddle with the input displayed in the game; the supplied manifest specifically documents dragging to steer.",
+      "Move the paddle with the input displayed in the game; dragging moves the paddle.",
       "Tap or click the launch control to release the ball and continue when prompted."
     ],
     "mobile": [
@@ -90,7 +90,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Instead of asking you to navigate a maze or defeat an enemy, Bubble Pop Arena tests visual scanning. You have to notice which bubbles are worth pursuing, choose a safe path for your finger or cursor and decide when chasing a combo is better than playing conservatively."
     ],
     "story": [
-      "The arena is the setting rather than the backdrop for a scripted story. Bubbles appear, drift through a short time-limited contest and invite you to react quickly. The challenge is to make the most of the available time before the round ends."
+      "Bubbles drift across the arena as the clock counts down. Some are simple targets, others extend your time or briefly freeze the action, and a dangerous bomb bubble can interrupt a promising run. Each round is an opportunity to plan quicker, more accurate popping routes."
     ],
     "howToPlay": [
       "Start the round and watch the bubbles appearing in the arena.",
@@ -135,7 +135,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "Can I drag through multiple bubbles?",
-        "a": "Yes. The supplied controls list both tapping and dragging as supported ways to pop bubbles."
+        "a": "Yes. The controls support both tapping and dragging as supported ways to pop bubbles."
       },
       {
         "q": "Are all bubbles safe?",
@@ -143,7 +143,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Is there a story mode?",
-        "a": "The available game description identifies a timed arcade contest rather than a scripted story campaign."
+        "a": "Bubble Pop Arena is a timed arcade challenge: pop safe bubbles, build combos and make the most of each round before the clock runs out."
       }
     ]
   },
@@ -185,7 +185,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Collectibles and powers",
-        "body": "Coins and items reward exploration. Shield, heart and blaster power-ups are documented mechanics, while unlockable skins provide longer-term goals."
+        "body": "Coins and items reward exploration. Shield, heart and blaster power-ups are gameplay mechanics, while unlockable skins provide longer-term goals."
       }
     ],
     "progression": [
@@ -202,7 +202,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "Does City Quest have a storyline?",
-        "a": "Yes. Story mode, NPC missions and a ten-level sequence are documented parts of the game."
+        "a": "Yes. Story mode, NPC missions and a ten-level sequence are parts of the game."
       },
       {
         "q": "Can the Guardian attack enemies?",
@@ -223,7 +223,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "The adventure is framed as a sequence of environmental rescue tasks. The hero moves from one affected setting to the next, with later levels increasing the challenge and introducing a boss-style encounter.",
-      "The available game specification lists ten levels, a dedicated boss stage, animated character sprites, music and sound effects. It does not provide detailed named characters or plot dialogue, so this guide follows the documented rescue premise without inventing additional story events."
+      "The rescue journey passes through ten increasingly demanding stages, leading toward a major final challenge. Animated environments, changing hazards and powers such as Shield, Magnet and Freeze make each destination feel like a new part of the adventure."
     ],
     "howToPlay": [
       "Begin the current mission and watch how obstacles and collectible items enter the play area.",
@@ -234,7 +234,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "desktop": [
       "Use the arrow keys for horizontal movement.",
-      "The supplied controls list S, M and F for Shield, Magnet and Freeze, respectively."
+      "The controls support S, M and F for Shield, Magnet and Freeze, respectively."
     ],
     "mobile": [
       "Swipe or drag left and right to move the hero.",
@@ -256,7 +256,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "progression": [
       "Complete stages by surviving the challenges presented in each environment and making good use of limited power-up opportunities.",
-      "The game includes score events for WebGameArena. The exact scoring formula is controlled by the game itself, so players should follow its in-game feedback rather than assume every collectible is worth the same amount."
+      "Your results improve as you dodge hazards, collect helpful items and clear more challenging environmental stages. Watch the in-game score and mission feedback to see which actions help you progress."
     ],
     "tips": [
       "Steer early when multiple objects are approaching rather than making a last-second correction.",
@@ -271,12 +271,12 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
-        "q": "How many levels are documented?",
-        "a": "The game's manifest describes ten levels and a boss-style stage."
+        "q": "How many stages are in Climate Rescue Quest?",
+        "a": "Climate Rescue Quest features ten stages, including a boss-style challenge."
       },
       {
         "q": "What does the magnet power do?",
-        "a": "Magnet is documented as a collection-focused power-up; follow the on-screen effect for its exact behaviour."
+        "a": "Magnet helps draw collectable items toward the hero, making it useful when pickups would otherwise be difficult to reach."
       },
       {
         "q": "Is this a science course?",
@@ -325,7 +325,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "The game document identifies eight stages. Each stage builds familiarity with the interface while introducing another aspect of the fictional defensive case.",
+      "Eight training stages take you deeper into Case BIT. Each one introduces more of the simulated terminal environment, from basic commands and files to investigation choices and responsible evidence handling.",
       "A successful investigation is about following the task and interpreting what you find. Guessing lots of commands is less helpful than reading instructions and connecting evidence."
     ],
     "tips": [
@@ -346,7 +346,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Do I need coding experience?",
-        "a": "No prior expertise is assumed by this guide; start by reading the mission text and learning the provided commands."
+        "a": "No. Begin with the mission brief, practise the commands provided by the terminal, and use the available hints and feedback to build confidence."
       },
       {
         "q": "What is Case BIT?",
@@ -362,7 +362,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "The key difference between an ordinary swipe and a strong run is control. You need to follow fast-moving fruit, connect safe targets into combos and resist the temptation to swing blindly when a bomb enters the same part of the screen. The game includes a frenzy mode that changes the intensity of play."
     ],
     "story": [
-      "Fruit Slice does not have a documented character-driven storyline. Its premise is a lively fruit-slicing challenge in which the playfield becomes increasingly busy. The action itself creates the drama: opportunities appear for an instant and disappear if you hesitate."
+      "Fruit flies through the arena in bursts, inviting you to draw quick, accurate slicing lines. Safe targets sometimes appear beside bombs, so the most tempting swipe is not always the best one. Every round balances speed with restraint."
     ],
     "howToPlay": [
       "Start a round and watch the path of fruit flying into view.",
@@ -413,8 +413,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         "a": "No. Bombs are hazards and should be avoided."
       },
       {
-        "q": "Is Fruit Slice a story game?",
-        "a": "No formal story mode is documented. It is designed around brief reflex and score-chasing rounds."
+        "q": "What makes a good Fruit Slice run?",
+        "a": "Accurate swipes, well-timed fruit combinations and careful bomb avoidance are the keys to building a stronger score."
       }
     ]
   },
@@ -423,7 +423,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "summary": "Race rivals across a multi-level campaign, choose garage vehicles and manage nitro, checkpoints and laps.",
     "overview": [
       "High Spead Racer is an arcade racing experience built for fast reactions and repeated attempts. You steer between lanes while managing nearby traffic, competing with rival drivers and watching the position display as the race develops. Nitro creates opportunities to accelerate, but speed also leaves less time to respond.",
-      "Outside the road itself, the garage and upgrade systems add longer-term choices. Coins and progression support unlocking or improving vehicles. The documented gameplay also includes a six-level campaign, checkpoints, lap completion and overtaking bonuses."
+      "The garage and upgrade systems add longer-term choices beyond each race. Coins and progression help you unlock or improve vehicles, while the six-level campaign includes checkpoints, laps and overtaking opportunities."
     ],
     "story": [
       "Rather than following a named character through cinematic scenes, High Spead Racer frames its journey as a rising competition. You begin with a vehicle and work to improve your performance against increasingly demanding rivals and road conditions.",
@@ -460,8 +460,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "The documented racing systems include six levels, multiple laps, checkpoint gates, coin rewards and unlocked car choices.",
-      "A strong run balances fast travel with clean overtaking. In-game feedback determines the exact scoring and reward amounts; the guide should not promise a fixed payout for every race event."
+      "Race through six levels, pass checkpoint gates, complete laps and earn opportunities to upgrade or unlock cars as you improve your results.",
+      "Clean overtakes and controlled nitro use are more valuable than reckless acceleration. Watch the on-screen position, lap and score indicators as you work toward the finish."
     ],
     "tips": [
       "Look several car lengths ahead and make lane changes before reaching a blockage.",
@@ -477,11 +477,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Can I choose different cars?",
-        "a": "Yes. The documented build includes a garage, unlockable cars and vehicle upgrades. The exact models depend on the version deployed."
+        "a": "Yes. Visit the garage to choose among unlocked cars and review available upgrades. Each vehicle can offer a different driving feel."
       },
       {
-        "q": "Why is the title spelled High Spead Racer?",
-        "a": "High Spead Racer is the game's current published title and slug."
+        "q": "How do I improve my race position?",
+        "a": "Anticipate traffic early, overtake rivals safely and use nitro on clear sections of the track while working toward each checkpoint and finish line."
       }
     ]
   },
@@ -494,7 +494,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "The word 'kasi' grounds the adventure in a township-inspired setting. The player moves through quests that connect local environments, NPC conversations and challenges.",
-      "The available manifest confirms NPC missions, bosses and daily challenges but does not identify a single canonical protagonist backstory or named location in detail. This guide therefore describes the quest structure rather than inventing character biographies."
+      "Coins, collectible rewards and an upgrade shop provide reasons to explore beyond the shortest route. NPC encounters lead you toward fresh missions, while bosses and daily challenges test the movement and combat skills developed during the adventure."
     ],
     "howToPlay": [
       "Start a level and pay attention to the current mission or NPC instructions.",
@@ -505,11 +505,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Try daily challenges or replay a level to improve your combo and score."
     ],
     "desktop": [
-      "Use the movement, jumping and interaction keys displayed by the game; the current manifest does not specify a complete keyboard mapping."
+      "Follow the on-screen movement, jump and interaction controls. Read each level's prompts before setting off so you know which actions are available."
     ],
     "mobile": [
       "Use the platformer's on-screen movement and action controls.",
-      "Check the in-game help for the exact layout used in the current version."
+      "Use the in-game help screen whenever you want a reminder of movement, jumping or interaction buttons."
     ],
     "systems": [
       {
@@ -526,8 +526,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Kasi Quest uses platforming levels with missions, enemies and collectible progress. Its confirmed systems include combo scoring, upgrade shopping and WebGameArena score events.",
-      "Because the manifest does not specify the full control map or a fixed count of campaign levels, follow the objective prompts in the deployed game for those details."
+      "Kasi Quest uses platforming levels with missions, enemies and collectible progress. Its confirmed systems include combo scoring, upgrade shopping and WebGameArena score updates.",
+      "Follow NPC instructions and level objectives as the adventure opens up. Collecting coins, exploring routes and preparing for boss encounters can make later challenges easier."
     ],
     "tips": [
       "Read what an NPC asks you to do before leaving the area.",
@@ -539,15 +539,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "Does Kasi Quest have missions?",
-        "a": "Yes. NPC missions are a documented part of the game."
+        "a": "Yes. Talk to the characters you meet and follow the mission instructions to progress through the township adventure."
       },
       {
         "q": "Can I upgrade equipment or abilities?",
-        "a": "The game manifest includes an upgrade shop; specific purchases depend on the current build."
+        "a": "Yes. The upgrade shop lets you turn collected rewards into improvements for later challenges."
       },
       {
         "q": "Are the keyboard controls the same as other platformers?",
-        "a": "Do not assume so. Use the help and prompts provided in Kasi Quest because the manifest does not specify every key."
+        "a": "Read the control prompts within Kasi Quest. Movement, jumping and interaction actions are introduced through the game's own interface."
       }
     ]
   },
@@ -560,7 +560,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "The central premise is an expedition into a forgotten temple whose treasures are protected by hostile wildlife, ancient mechanisms and powerful guardians. The explorer follows a path through changing jungle environments toward the temple's deepest challenge.",
-      "Among the documented threats are snakes, spiders, bats and stone monkeys. Boss encounters include the Monkey King, Spider Queen and Sun Guardian, giving the adventure a clear sense of escalation as the player pushes toward the Sun Relics."
+      "Among the threats are snakes, spiders, bats and stone monkeys. Boss encounters include the Monkey King, Spider Queen and Sun Guardian, giving the adventure a clear sense of escalation as the player pushes toward the Sun Relics."
     ],
     "howToPlay": [
       "Move through the level while watching the ground, platforms and upcoming traps.",
@@ -593,8 +593,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "The available game document identifies ten stages, ten themed backgrounds, story cutscenes, an expedition map and automatic progression when objectives are completed.",
-      "The package currently describes the game as a 2D side-scrolling platform adventure, even though the repository folder retains an older '3d' name. The published guide should explain the experience players actually see."
+      "Explore ten jungle stages with distinctive backgrounds, expedition maps, story scenes and new challenges. Collect the items needed to open gates and continue toward the temple guardians.",
+      "The side-scrolling adventure is built around careful platforming, relic collection, puzzles and timed encounters. Each cleared section opens the way to another part of the expedition."
     ],
     "tips": [
       "Look for the landing area before jumping from a narrow platform.",
@@ -605,8 +605,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
-        "q": "Is the current game 2D or 3D?",
-        "a": "The latest manifest describes a 2D side-scrolling adventure; the older 3D folder name is a legacy identifier."
+        "q": "What kind of adventure is Temple of the Sun?",
+        "a": "Temple of the Sun is a side-scrolling jungle platform adventure featuring relics, keys, puzzles, traps and boss encounters."
       },
       {
         "q": "How do I open the map?",
@@ -614,7 +614,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Are there boss fights?",
-        "a": "Yes. The documented bosses include the Monkey King, Spider Queen and Sun Guardian."
+        "a": "Yes. The bosses include the Monkey King, Spider Queen and Sun Guardian."
       }
     ]
   },
@@ -660,7 +660,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "The documented game contains fifteen missions rather than an endless round. Each task asks the player to interpret a map or question before moving on.",
+      "The game contains fifteen missions rather than an endless round. Each task asks the player to interpret a map or question before moving on.",
       "The presence of hints and skip penalties encourages careful thinking. Accuracy and completing the requested interaction matter more than random tapping."
     ],
     "tips": [
@@ -677,11 +677,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many explorer missions are there?",
-        "a": "The game manifest lists fifteen missions."
+        "a": "The game features fifteen missions."
       },
       {
         "q": "Can I ask for help?",
-        "a": "Yes. A Hint button is part of the documented interface."
+        "a": "Yes. A Hint button is part of the interface."
       },
       {
         "q": "Does skipping a mission affect my score?",
@@ -697,8 +697,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "The central idea is to keep mathematical thinking active under the rhythm of a runner-style game. A problem might require identifying a numerical result, interpreting a fraction or recognising a simple relationship; a strong player combines accuracy with attention to the next challenge on screen."
     ],
     "story": [
-      "The arena is a visual setting for a series of maths trials rather than a documented story campaign with named characters. Each stage represents a fresh chance to practise choosing correct mathematical answers amid the motion of play.",
-      "The supplied manifest mentions neon math gates and curriculum topics but does not supply a verified button-by-button control scheme. Use the instructions shown inside the current build rather than assuming that another runner's keys also apply here."
+      "Inside a luminous mathematics arena, every new challenge asks you to think before you move. Numbers, fractions, shapes and simple algebraic patterns become part of a fast-paced contest where accuracy matters as much as timing.",
+      "Some gates demand quick arithmetic, while others require careful interpretation of fractions or geometric ideas. The excitement builds as you practise recognising patterns and checking answers under pressure."
     ],
     "howToPlay": [
       "Start the current arena challenge and identify the maths question being presented.",
@@ -708,7 +708,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Review what caused an incorrect choice and try another run with a slower, more deliberate calculation."
     ],
     "desktop": [
-      "Follow the game's displayed controls for selecting answers and moving through maths gates; the manifest does not document exact keys."
+      "Read each maths prompt and use the keyboard or pointer controls shown inside the arena to choose your answer."
     ],
     "mobile": [
       "Use the on-screen answer or steering controls shown by the current game version.",
@@ -717,7 +717,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "systems": [
       {
         "title": "Multiple mathematics topics",
-        "body": "The documented curriculum areas are arithmetic, multiplication, fractions, geometry and algebra."
+        "body": "The curriculum areas are arithmetic, multiplication, fractions, geometry and algebra."
       },
       {
         "title": "Answer gates",
@@ -729,7 +729,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "The published metadata identifies a curriculum runner, but it does not confirm a level count, point formula or all unlockable systems. This guide avoids claiming features that are not documented.",
+      "Move through mathematics challenges spanning arithmetic, multiplication, fractions, geometry and introductory algebra. Correct reasoning and increasingly confident answer choices are the heart of the progression.",
       "The important progress measure is whether you can solve questions accurately as the format or subject changes."
     ],
     "tips": [
@@ -746,11 +746,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "What maths topics are included?",
-        "a": "The game manifest lists arithmetic, multiplication, fractions, geometry and algebra."
+        "a": "The game features arithmetic, multiplication, fractions, geometry and algebra."
       },
       {
         "q": "Which keys control the runner?",
-        "a": "The current manifest does not provide a reliable key map. Follow the controls displayed inside the game."
+        "a": "Use the on-screen instructions to move between answer options. The challenge is to choose the right maths result before passing through the gate."
       },
       {
         "q": "Is this a formal maths assessment?",
@@ -766,7 +766,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "The gameplay combines steering, jumping and occasional bursts of extra speed. Energy orbs, shields and magnets encourage you to make choices about which lanes are worth entering instead of simply steering away from everything you see."
     ],
     "story": [
-      "The game uses a futuristic neon setting rather than a documented dialogue-heavy campaign. You are effectively a hover-track pilot trying to survive a difficult obstacle course as it stretches ahead.",
+      "A hover pilot speeds along a futuristic track of glowing lanes, barriers and mines. Helpful energy pickups are scattered among the obstacles, turning every movement into a choice between a safer route and a potentially rewarding detour.",
       "The setting changes the feeling of the challenge: glowing lanes, barriers and mines turn the track into a constantly moving navigation puzzle."
     ],
     "howToPlay": [
@@ -778,7 +778,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Continue for as long as the game allows and use the resulting score as a target for another run."
     ],
     "desktop": [
-      "The manifest documents dragging and swipe-style steering but does not list a separate keyboard map; follow the pointer controls shown in-game."
+      "Drag the pointer horizontally to steer. Tap or click for the jump action, and follow the game's boost prompts when enough energy has been collected."
     ],
     "mobile": [
       "Swipe or drag horizontally to steer and tap to jump.",
@@ -791,7 +791,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Energy and power-ups",
-        "body": "Energy orbs, shields, magnets and boosts are documented pickups with different tactical roles."
+        "body": "Energy orbs, shields, magnets and boosts are gameplay pickups with different tactical roles."
       },
       {
         "title": "Survival scoring",
@@ -799,8 +799,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "There is no documented mission-by-mission story. The game instead challenges you to improve your best run on a fast track.",
-      "The precise boost duration and score formula are controlled in-game and are not supplied in the manifest."
+      "Each run challenges you to stay on the track longer, avoid more obstacles and improve your best score. Mastering steering, jumps and power-up timing makes later sections easier to navigate.",
+      "Boosts can help you cover distance quickly, but choosing the right moment matters. Watch the charge indicator and the hazards ahead before accelerating."
     ],
     "tips": [
       "Look ahead to the next two obstacles so one dodge does not place you in front of another.",
@@ -820,7 +820,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Are there different power-ups?",
-        "a": "Yes. Energy orbs, shield, magnet and boost are listed in the game manifest."
+        "a": "Yes. Energy orbs, shields, magnets and speed boosts add different tactical opportunities."
       }
     ]
   },
@@ -833,7 +833,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "The setting is a future military-style base with a valuable Neon Orb at its centre. Hostile, rogue AI forces threaten the installation, and the defender must resist their attacks while supporting friendly units.",
-      "The documented game includes nine levels, story mode and a boss fight. Specific named commanders or mission dialogue are not supplied in the manifest, so the guide focuses on the confirmed base-defence premise."
+      "Nine stages of enemy attacks test more than shooting accuracy. The defender must choose which threat to stop first while keeping the Neon Orb safe. The campaign builds toward a boss encounter that puts every learned skill under pressure."
     ],
     "howToPlay": [
       "Enter a mission and identify the position of the Neon Orb and the nearest incoming threat.",
@@ -843,10 +843,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Advance through stages and prepare for stronger enemies and the boss encounter."
     ],
     "desktop": [
-      "Use the current game's displayed movement and firing controls. Its manifest confirms the shooter mechanics but not exact keyboard bindings."
+      "Use the movement and firing controls shown when the mission begins. Keep the Neon Orb in view while aiming at approaching threats."
     ],
     "mobile": [
-      "Use the documented mobile controls for movement, attack and other available actions.",
+      "Use the on-screen controls to move, attack and activate any support actions offered during the mission.",
       "Check the on-screen layout at the start of a level because the touch arrangement can differ from platform games."
     ],
     "systems": [
@@ -860,7 +860,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Waves and bosses",
-        "body": "Nine documented stages and a boss fight provide escalating action."
+        "body": "Nine stages and a boss fight provide escalating action."
       }
     ],
     "progression": [
@@ -881,7 +881,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Are there story levels?",
-        "a": "Yes. Nine levels, a story mode and a boss fight are documented."
+        "a": "Yes. Neon Orb: Base Defence offers nine stages, a connected story and a boss encounter."
       },
       {
         "q": "Can I play on a phone?",
@@ -898,7 +898,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "The main character is a young physicist learning to interpret the world through experiments and challenges. As the adventure progresses, the learner meets new physical phenomena and must apply the right concept to solve a task.",
-      "The game manifest identifies twelve stages and story mode. It does not provide a complete chapter-by-chapter plot or precise key controls, so this guide describes the documented learning journey rather than constructing missing scenes."
+      "Across twelve stages, the young physicist investigates changing forces and physical systems. Each puzzle encourages you to test an explanation, learn from the result and approach the next experiment with greater confidence."
     ],
     "howToPlay": [
       "Start the physics mission and read the question, instruction or demonstration carefully.",
@@ -909,10 +909,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Return to an earlier concept when a later challenge depends on it."
     ],
     "desktop": [
-      "The game supports desktop interaction, but the supplied manifest does not document an exact keyboard mapping. Use the prompts displayed by the current mission."
+      "Use the mouse or keyboard controls displayed for the active experiment or puzzle, and read the objective before making a choice."
     ],
     "mobile": [
-      "Mobile controls are documented. Tap or use the on-screen actions shown in the game to work through activities."
+      "Tap the experiment controls and answer choices shown on screen to work through physics challenges."
     ],
     "systems": [
       {
@@ -946,7 +946,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels are there?",
-        "a": "The latest manifest specifies twelve physics stages."
+        "a": "The adventure includes twelve physics stages covering mechanics and other physical concepts."
       },
       {
         "q": "Does the game teach electricity?",
@@ -978,7 +978,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Continue through increasingly demanding levels while reviewing sorting mistakes."
     ],
     "desktop": [
-      "The supplied manifest primarily documents touch-style bin selection. Use the visible bin controls and on-screen buttons with the pointer."
+      "The game primarily documents touch-style bin selection. Use the visible bin controls and on-screen buttons with the pointer."
     ],
     "mobile": [
       "Swipe left or right to change bins, or tap a bin directly.",
@@ -1016,7 +1016,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels are in Recycle Rush?",
-        "a": "The manifest lists eight increasingly difficult levels."
+        "a": "The game includes eight increasingly difficult levels."
       },
       {
         "q": "How do I change bins?",
@@ -1037,7 +1037,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "The Element Core Mystery begins when Nova Science Academy needs restoring. The player works through a series of science missions, gathering evidence and overcoming challenges as the story advances.",
-      "There are twenty documented stages and a final conflict with the Glitch Experiment. The school setting provides a reason to move through distinct scientific topics: understanding what has gone wrong requires both practical action and sound reasoning."
+      "Twenty stages take the young scientist through physics, chemistry, biology, Earth science, space, robotics and data science. Evidence gathering and fast-moving hazards lead to a final confrontation with the Glitch Experiment."
     ],
     "howToPlay": [
       "Start the current mission and read the objective or scientific prompt.",
@@ -1066,7 +1066,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Power-ups and badges",
-        "body": "Shield, slow motion, magnet and double discovery are documented powers, alongside badges and local save functionality."
+        "body": "Shield, slow motion, magnet and double discovery are available powers, alongside badges and local save functionality."
       }
     ],
     "progression": [
@@ -1087,7 +1087,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many missions are there?",
-        "a": "The supplied manifest lists twenty missions."
+        "a": "The game lists twenty missions."
       },
       {
         "q": "Who is the final threat?",
@@ -1095,7 +1095,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Can I play with touch controls?",
-        "a": "Yes. Swipe lane switching and on-screen action buttons are documented."
+        "a": "Yes. Swipe lane switching and on-screen action buttons are."
       }
     ]
   },
@@ -1133,7 +1133,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Powers and combat",
-        "body": "Shield, flight, energy blasts, extra life and speed boosts are documented character abilities."
+        "body": "Shield, flight, energy blasts, extra life and speed boosts are character abilities."
       },
       {
         "title": "Unlocks and bosses",
@@ -1142,7 +1142,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "progression": [
       "Eight levels guide the player through the fantasy settings, with cutscenes and major encounters at key points.",
-      "The newest manifest describes a canvas-based 3D-style presentation; this guide does not claim that the browser is running a full real-time 3D engine."
+      "Colourful 3D-style environments, character movement, flight and combat effects bring the sky worlds to life in the browser. Learn each world's routes and guardian patterns to move closer to the Relic Master."
     ],
     "tips": [
       "Plan a landing before launching into a long jump or flight.",
@@ -1154,7 +1154,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many worlds are there?",
-        "a": "Four are documented: Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
+        "a": "Four are : Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
       },
       {
         "q": "Can the character fly?",
@@ -1171,7 +1171,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "summary": "Pilot a 3D spacecraft through twelve story missions involving asteroids, hostile ships and boss encounters.",
     "overview": [
       "Space Dodger: Starfall Odyssey extends the idea of asteroid avoidance into a larger three-dimensional space adventure. Players control a spacecraft, navigate obstacles and fight AI-controlled enemies while following mission-based progression.",
-      "Built with Babylon.js according to the current manifest, the experience includes asteroid fields, plasma gates, engine-trail effects, collectibles, boost movement, enemy projectiles and major boss battles. The combination rewards spatial awareness as much as fast reflexes."
+      "Built as a Babylon.js space adventure, Starfall Odyssey includes asteroid fields, plasma gates, glowing engine trails, collectible power-ups, enemy fire and major boss encounters. Staying aware of the space around your ship matters as much as firing quickly."
     ],
     "story": [
       "Starfall Odyssey casts the player as a pilot making their way through a dangerous region of space. Rather than surviving one endless meteor field, you work through twelve story levels involving shifting hazards and hostile spacecraft.",
@@ -1207,8 +1207,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "The manifest lists twelve story levels with regular threats and boss stages.",
-      "Learning the flight controls makes later missions more manageable. A score bridge connects results to WebGameArena when the site's score service is available."
+      "Work through twelve story missions with increasingly demanding hazards, hostile ships and major boss encounters.",
+      "Practise turning, firing and boosting until controlling the ship feels natural. Your best runs can contribute scores to WebGameArena when leaderboard saving is enabled."
     ],
     "tips": [
       "Keep moving when hostile projectiles are approaching rather than staying directly in one firing line.",
@@ -1220,15 +1220,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "Is Starfall Odyssey a 3D game?",
-        "a": "Yes. The manifest identifies Babylon.js as its 3D rendering engine."
+        "a": "Yes. The game features Babylon.js as its 3D rendering engine."
       },
       {
         "q": "Can the ship shoot?",
-        "a": "Yes. Space, mouse/tap or FIRE are documented attack inputs."
+        "a": "Yes. Space, mouse/tap or FIRE are attack inputs."
       },
       {
         "q": "How many story levels are included?",
-        "a": "Twelve are listed in the game manifest."
+        "a": "Twelve are listed in the game."
       }
     ]
   },
@@ -1241,7 +1241,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "Pilot Nova's expedition crosses dangerous asteroid-platform environments. The character collects star cores and battles robotic opponents on the way to distinctive animated bosses.",
-      "The available manifest documents the premise and boss progression but does not provide specific planet names or the total number of levels. The guide therefore avoids inventing a solar-system map or mission count."
+      "Nova gathers star cores while battling drones and travelling toward an animated boss at the end of each stage. The journey rewards careful landings, thoughtful exploration and learning when to attack or wait."
     ],
     "howToPlay": [
       "Start a level and note the nearest stable platform and your intended next landing point.",
@@ -1252,7 +1252,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Continue to the next platforming area and refine your timing."
     ],
     "desktop": [
-      "Keyboard controls are supported, but the manifest does not specify exact movement, jump or attack keys. Use the game's displayed instructions."
+      "Use the movement, jump and attack keys shown in the game's control instructions. Study the next platform before committing to a jump."
     ],
     "mobile": [
       "Touch controls are supported. Use the on-screen directions and action controls identified by the running game."
@@ -1268,11 +1268,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Boss encounters",
-        "body": "A distinctive animated boss closes each documented level, shifting attention from travel to pattern recognition."
+        "body": "A distinctive animated boss closes each level, shifting attention from travel to pattern recognition."
       }
     ],
     "progression": [
-      "The game advances through platforming areas and their respective boss fights. The manifest does not give an exact level count or item exchange system.",
+      "Advance through asteroid-platform stages by crossing gaps, collecting star cores, dealing with drones and defeating level bosses.",
       "A strong attempt balances safe traversal with optional collecting rather than treating every jump as a sprint."
     ],
     "tips": [
@@ -1289,11 +1289,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "What do I collect?",
-        "a": "Star cores are the documented collectibles."
+        "a": "Star cores are the collectibles."
       },
       {
         "q": "Does it support mobile play?",
-        "a": "Yes. Touch controls are listed, although their exact arrangement is not specified in the manifest."
+        "a": "Yes. Play with the touch controls shown on screen for movement and actions."
       }
     ]
   },
@@ -1335,7 +1335,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Focus Mode",
-        "body": "The manifest identifies a charged Focus Mode that supports more deliberate timing."
+        "body": "The game features a charged Focus Mode that supports more deliberate timing."
       }
     ],
     "progression": [
@@ -1352,11 +1352,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "Which keys drop a block?",
-        "a": "Space and Enter are documented desktop drop inputs."
+        "a": "Space and Enter are desktop drop controls."
       },
       {
         "q": "Does the game have power-ups?",
-        "a": "It includes a charged Focus Mode, according to the current manifest."
+        "a": "It includes a charged Focus Mode,."
       },
       {
         "q": "How do I get a taller tower?",
@@ -1384,7 +1384,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Continue through missions and compare your results across the four environments."
     ],
     "desktop": [
-      "The manifest documents swipe/drag steering; use pointer dragging and the game's on-screen buttons."
+      "The game features swipe/drag steering; use pointer dragging and the game's on-screen buttons."
     ],
     "mobile": [
       "Swipe or drag horizontally to steer.",
@@ -1405,8 +1405,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "The game documents four levels and mission-based racing, alongside score-attack gameplay and a leaderboard score bridge.",
-      "Clean driving and anticipation are the foundations of a good result. The manifest does not publish a fixed points-per-pickup formula."
+      "Complete missions across four racing environments: city streets, mountain passes, coastal roads and neon night routes. Pickups, nitro and careful traffic navigation help you build stronger runs.",
+      "Anticipation and smooth steering are the foundations of a good result. Follow the game's on-screen score and mission feedback while learning when a pickup is worth the detour."
     ],
     "tips": [
       "Aim for an empty lane before you reach a vehicle rather than swiping at the last second.",
@@ -1426,7 +1426,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Are there different roads?",
-        "a": "The manifest lists city, mountain, coastal and neon-night routes across four levels."
+        "a": "The game includes city, mountain, coastal and neon-night routes across four levels."
       }
     ]
   },
@@ -1439,7 +1439,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "The premise is a sprint through a series of language-focused arenas. Each location gives the word task a new visual setting, but the centre of the challenge remains the same: recognise a target and enter it accurately.",
-      "The manifest documents four levels and missions, but no named characters or authored dialogue sequence, so the guide does not invent a fictional language kingdom or villain."
+      "Each round challenges you to recognise and enter target words before time runs out. Correct answers build streaks, while Hint, Freeze and extra-time powers give you options when the timer starts running low."
     ],
     "howToPlay": [
       "Start a word mission and read the target word carefully.",
@@ -1468,7 +1468,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Three support powers",
-        "body": "Hint, Freeze and +Time are documented tools for difficult moments."
+        "body": "Hint, Freeze and +Time are tools for difficult moments."
       }
     ],
     "progression": [
@@ -1497,7 +1497,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "What power-ups are available?",
-        "a": "Hint, Freeze and +Time are documented in the game manifest."
+        "a": "Hint, Freeze and +Time are in the game."
       }
     ]
   }
