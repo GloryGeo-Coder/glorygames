@@ -130,8 +130,8 @@ for (let startAt = 0; startAt < sitePages.length; startAt += 4) {
 for (const path of ["/games/fruit-slice", "/games?q=fruit", "/games?category=educational"]) {
   try {
     const { response, text: html } = await get(path);
-    if (!response.ok) return error(path, `HTTP ${response.status}`);
-    if (!metaRobots(html).includes("noindex")) error(path, "Duplicate or filtered URL is not marked noindex");
+    if (!response.ok) error(path, `HTTP ${response.status}`);
+    else if (!metaRobots(html).includes("noindex")) error(path, "Duplicate or filtered URL is not marked noindex");
     else pass(path, "Duplicate or filtered URL marked noindex");
   } catch (e) { error(path, String(e)); }
 }
