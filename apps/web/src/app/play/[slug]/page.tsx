@@ -217,16 +217,37 @@ export default async function PlayPage({
     },
   };
 
+  const categoryHref = categoryDestination(game.category);
+  const hasCategoryHub = categoryHref.startsWith("/categories/");
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Games", item: `${SITE_URL}/games` },
+      ...(hasCategoryHub ? [{ "@type": "ListItem", position: 3, name: category, item: `${SITE_URL}${categoryHref}` }] : []),
+      { "@type": "ListItem", position: hasCategoryHub ? 4 : 3, name: title, item: `${SITE_URL}/play/${game.slug}` },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([jsonLd, breadcrumbs]).replace(/</g, "\\u003c"),
+        }}
       />
 
       <PlayClient slug={game.slug} title={title} />
 
-      <main className="container">
+      <div className="container">
+        <nav aria-label="Breadcrumb" style={{ marginTop: 16, marginBottom: 10 }}>
+          <Link href="/">Home</Link>{" / "}
+          <Link href="/games">Games</Link>{" / "}
+          {hasCategoryHub ? <><Link href={categoryHref}>{category}</Link>{" / "}</> : null}
+          <span aria-current="page">{title}</span>
+        </nav>
         <GameEditorial slug={game.slug} title={title} />
 
         {relatedGames.length ? (
@@ -273,7 +294,7 @@ export default async function PlayPage({
             </div>
           </section>
         ) : null}
-      </main>
+      </div>
     </>
   );
 }

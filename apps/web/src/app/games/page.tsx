@@ -5,7 +5,7 @@ import Link from "next/link";
 import { GameThumb } from "@/components/GameThumb";
 import { getFallbackGames } from "@/lib/fallbackGames";
 import { getGamesFromDatabase, isPublicGameSlug } from "@/lib/gamesDb";
-import { GAME_CATALOG, catalogGame } from "@/lib/gameCatalog";
+import { catalogGame } from "@/lib/gameCatalog";
 
 export const dynamic = "force-dynamic";
 
@@ -144,7 +144,6 @@ export async function generateMetadata({
   const q = typeof sp?.q === "string" ? sp.q.trim() : "";
   const category = normalizeCategory(sp?.category);
   const label = category ? categoryLabel(category) : "";
-  const categoryHasGames = category ? Object.values(GAME_CATALOG).some((game) => game.category === category) : true;
 
   const title = category
     ? `${label} Games | Free Browser Games on WebGameArena`
@@ -158,12 +157,9 @@ export async function generateMetadata({
       ? `Search results for ${q} on WebGameArena. Find free browser games across arcade, action, adventure, puzzle, racing, educational and casual categories.`
       : "Browse free mobile-first browser games on WebGameArena. Play arcade, action, adventure, educational, puzzle, racing, word, casual and strategy games instantly.";
 
-  const canonical =
-    category || q
-      ? `/games${category ? `?category=${categoryUrlValue(category)}` : ""}${
-          q ? `${category ? "&" : "?"}q=${encodeURIComponent(q)}` : ""
-        }`
-      : "/games";
+  // Filter/search pages are navigation tools, not separate editorial landing pages.
+  // The curated /categories/* pages are the indexable category destinations.
+  const canonical = "/games";
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -202,7 +198,7 @@ export async function generateMetadata({
       description,
     },
     robots: {
-      index: !q && categoryHasGames,
+      index: !q && !category,
       follow: true,
     },
   };

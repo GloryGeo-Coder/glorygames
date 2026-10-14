@@ -7,10 +7,13 @@ import DailyChallengeBridge from "@/components/DailyChallengeBridge";
 import { GoogleAnalytics } from "@next/third-parties/google";
 
 const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "";
+// Optional Search Console HTML-tag verification, configured in Cloudflare Builds.
+const searchConsoleToken = (process.env.GOOGLE_SITE_VERIFICATION || "").trim();
 
 export const metadata: Metadata = {
   title: "WebGameArena",
   description: "Play, compete, and build communities in browser-based games.",
+  ...(searchConsoleToken ? { verification: { google: searchConsoleToken } } : {}),
   ...(adsenseClientId
     ? {
         other: {
