@@ -1,0 +1,1508 @@
+// Game-specific, player-focused editorial content based on the shipped game manifests.
+// Keep guides aligned with actual deployed gameplay. Do not invent undocumented controls.
+
+export type GameEditorial = {
+  category: string;
+  summary: string;
+  overview: string[];
+  story: string[];
+  howToPlay: string[];
+  desktop: string[];
+  mobile: string[];
+  systems: { title: string; body: string }[];
+  progression: string[];
+  tips: string[];
+  faqs: { q: string; a: string }[];
+  learning?: string[];
+};
+
+export const GAME_EDITORIALS: Record<string, GameEditorial> = {
+  "brick-blaster": {
+    "category": "Arcade",
+    "summary": "Control a paddle, keep the ball alive and break through brick formations in a classic score-chasing arcade challenge.",
+    "overview": [
+      "Brick Blaster turns the familiar paddle-and-ball formula into a fast browser challenge built around positioning, timing and deliberate rebounds. You move a paddle along the bottom of the playfield while a ball ricochets into bricks above. Every successful return keeps the round alive and creates another opportunity to clear the remaining formation.",
+      "The fun comes from the changing angles. A return near the middle of the paddle can behave differently from one caught near an edge, so good play involves looking ahead to where the ball will travel after its next impact. The game also includes collectible power-ups and a score-submission option."
+    ],
+    "story": [
+      "There is no long scripted campaign or named hero to follow. The situation is simple: a wall of bricks stands between you and a cleared board, and your paddle is the only way to keep the ball in play. The challenge becomes more demanding as you try to convert each bounce into useful progress instead of merely reacting at the last moment."
+    ],
+    "howToPlay": [
+      "Start a round and tap to launch the ball into the brick formation.",
+      "Drag across the game area to slide the paddle horizontally under the returning ball.",
+      "Keep the ball from passing the paddle while aiming rebounds toward unbroken bricks.",
+      "Watch for power-ups during play and use the opportunities they provide to maintain momentum.",
+      "When the round finishes, review your score and use the available score submission or restart controls."
+    ],
+    "desktop": [
+      "Move the paddle with the input displayed in the game; the supplied manifest specifically documents dragging to steer.",
+      "Tap or click the launch control to release the ball and continue when prompted."
+    ],
+    "mobile": [
+      "Drag a finger to move the paddle from side to side.",
+      "Tap to launch or continue; use the on-screen pause, restart and score-submission buttons."
+    ],
+    "systems": [
+      {
+        "title": "Paddle and rebound control",
+        "body": "The paddle is both your defence and your aiming tool. Follow the ball's downward path early so you can arrive at the interception point rather than chasing it."
+      },
+      {
+        "title": "Brick clearing",
+        "body": "Progress is visible in the bricks removed from the board. Look for openings that let the ball travel behind clusters instead of repeatedly striking the same protected region."
+      },
+      {
+        "title": "Power-ups and score runs",
+        "body": "Power-ups can change the rhythm of a round. Their exact effect is communicated by the game when collected; keep the ball safe while adapting to the change."
+      }
+    ],
+    "progression": [
+      "Brick Blaster is organised around repeatable arcade rounds, not a story campaign. Your practical objective is to clear as much of the formation as possible while keeping control of the ball.",
+      "A longer, more accurate run generally offers more scoring opportunities. Where score submission is available, the result can be sent to the WebGameArena leaderboard."
+    ],
+    "tips": [
+      "Watch the ball's trajectory, not just its current location; move before it reaches the paddle.",
+      "Aim rebounds toward isolated bricks or gaps rather than returning the ball at random.",
+      "Keep the paddle near the expected landing zone after a difficult ricochet.",
+      "Do not abandon a safe catch to chase a power-up that would leave the ball uncovered.",
+      "Use a few practice rounds to understand the pace before trying to maximise points."
+    ],
+    "faqs": [
+      {
+        "q": "How do I move the paddle?",
+        "a": "Drag across the playfield on touch devices. On desktop, follow the game's pointer or drag input and use the controls presented in the round."
+      },
+      {
+        "q": "What happens when I miss the ball?",
+        "a": "A missed return costs progress according to the game's current round rules. The safest approach is to position the paddle early."
+      },
+      {
+        "q": "Can I submit a high score?",
+        "a": "The game includes on-screen score-submission functionality; whether a result appears publicly depends on the site's score service."
+      }
+    ]
+  },
+  "bubble-pop-arena": {
+    "category": "Casual",
+    "summary": "Pop bubbles against the clock, build combinations and react to special bubbles without touching dangerous ones.",
+    "overview": [
+      "Bubble Pop Arena is a timed tapping and dragging game in which the whole screen becomes an active playfield. Normal bubbles are opportunities to score, but not every bubble should be treated the same way. Special bubbles can extend the clock or temporarily change the pace, while bomb bubbles are hazards that reward restraint.",
+      "Instead of asking you to navigate a maze or defeat an enemy, Bubble Pop Arena tests visual scanning. You have to notice which bubbles are worth pursuing, choose a safe path for your finger or cursor and decide when chasing a combo is better than playing conservatively."
+    ],
+    "story": [
+      "The arena is the setting rather than the backdrop for a scripted story. Bubbles appear, drift through a short time-limited contest and invite you to react quickly. The challenge is to make the most of the available time before the round ends."
+    ],
+    "howToPlay": [
+      "Start the round and watch the bubbles appearing in the arena.",
+      "Tap ordinary bubbles to pop them, or drag across a group to pop several in sequence.",
+      "Look for opportunities to chain successful pops into combos.",
+      "Recognise special time and freeze bubbles, and consider how they can help your remaining run.",
+      "Avoid bomb bubbles while maintaining your streak, then check the final score and replay to improve."
+    ],
+    "desktop": [
+      "Click bubbles with the mouse, or hold and drag the pointer across safe clusters.",
+      "Use the displayed buttons to pause, restart or submit a score."
+    ],
+    "mobile": [
+      "Tap individual bubbles or drag a finger through groups of safe bubbles.",
+      "Use the game's on-screen controls for pause, restarting and score submission."
+    ],
+    "systems": [
+      {
+        "title": "Timed rounds",
+        "body": "The clock makes every movement matter. Long pauses and unnecessary cursor travel cost opportunities even when no bubble is missed."
+      },
+      {
+        "title": "Combos",
+        "body": "Rapid, clean popping can create combinations. Planning a short path across nearby safe targets is often more effective than hopping across the full screen."
+      },
+      {
+        "title": "Special and hazardous bubbles",
+        "body": "Time bubbles, freeze effects and bomb hazards add decisions beyond simple tapping. The best target is not always the nearest one."
+      }
+    ],
+    "progression": [
+      "This is a replay-focused score-attack game rather than a level-based narrative. Each run begins with the same core task and ends when its timed challenge is complete.",
+      "Track the balance between speed and accuracy. Special bubbles can give you more room to build a strong result, but careless movement through a hazard can undermine a promising run."
+    ],
+    "tips": [
+      "Scan an area before starting a drag so the swipe does not cross a bomb.",
+      "Target tight clusters for efficient combos instead of scattering taps around the screen.",
+      "Prioritise extra-time opportunities when the clock is running low.",
+      "Use a freeze opportunity to control the pace and choose the next safe targets.",
+      "Replay with attention to your missed opportunities, not just the final number."
+    ],
+    "faqs": [
+      {
+        "q": "Can I drag through multiple bubbles?",
+        "a": "Yes. The supplied controls list both tapping and dragging as supported ways to pop bubbles."
+      },
+      {
+        "q": "Are all bubbles safe?",
+        "a": "No. Bomb bubbles are hazards, while time and freeze bubbles are special opportunities."
+      },
+      {
+        "q": "Is there a story mode?",
+        "a": "The available game description identifies a timed arcade contest rather than a scripted story campaign."
+      }
+    ]
+  },
+  "city-quest-rise-of-the-guardian": {
+    "category": "Adventure",
+    "summary": "Explore township-inspired districts as a Guardian, complete NPC missions and overcome platforming, enemy and boss challenges.",
+    "overview": [
+      "City Quest: Rise of the Guardian is a story-mode platform adventure set across interconnected urban spaces inspired by township life. You travel through rooftops, streets, markets, taxi ranks and more dangerous hidden areas while completing missions and moving toward the next part of the city.",
+      "Movement and combat share the spotlight. Some sections require careful jumps or moving-platform timing; others ask you to deal with walking enemies, flying drones and obstacles. Coins, collectible items, equipment power-ups and character skins make exploring worthwhile beyond simply reaching the exit."
+    ],
+    "story": [
+      "The Guardian's journey is the thread connecting the city's locations. NPCs provide missions and story guidance as you move from familiar neighbourhood spaces toward more demanding areas such as a rail yard, skyline bridge, underground vault and final trial.",
+      "The setting matters because each area changes the kind of challenge you face. A rooftop sequence emphasises jumps and elevation, whereas a mission around traffic, marketplaces or hostile drones demands different reactions. The game contains ten levels and includes boss stages."
+    ],
+    "howToPlay": [
+      "Start story mode and read the guidance or mission information provided in the current area.",
+      "Move through the environment, jump between platforms and avoid hazards.",
+      "Speak to mission NPCs and interact with exits or objectives when prompted.",
+      "Use Guardian energy shots against enemies or drones when a clear opportunity appears.",
+      "Collect coins and helpful items, including defensive or recovery power-ups.",
+      "Open the map when you need to understand your location or the next destination, then progress toward the level objective."
+    ],
+    "desktop": [
+      "Move with the left/right arrow keys or A and D; jump with Space, Up or W.",
+      "Shoot with J or Ctrl, interact or complete an exit with E or Enter, and open the map with M."
+    ],
+    "mobile": [
+      "Use the displayed directional, Jump, Shoot, Action and Map buttons.",
+      "Allow a moment to learn the touch-button arrangement before attempting a difficult platform sequence."
+    ],
+    "systems": [
+      {
+        "title": "NPC missions and guidance",
+        "body": "Characters in the world explain what needs doing next. Mission text is part of the adventure rather than background decoration."
+      },
+      {
+        "title": "Traversal and combat",
+        "body": "Jumping, moving platforms and energy attacks create alternating traversal and enemy encounters."
+      },
+      {
+        "title": "Collectibles and powers",
+        "body": "Coins and items reward exploration. Shield, heart and blaster power-ups are documented mechanics, while unlockable skins provide longer-term goals."
+      }
+    ],
+    "progression": [
+      "The game has ten stages connected by a level map. Progress introduces new environments and challenges, building toward boss encounters and the final trial.",
+      "Scoring integrates with WebGameArena, but a high score is not the only objective: completing missions and getting through each area's hazards are central to the experience."
+    ],
+    "tips": [
+      "Read the floating mission guidance before racing past an NPC.",
+      "Observe a moving platform's cycle for one moment before committing to a jump.",
+      "Separate the problems of jumping and shooting; find safe footing before engaging a hard-to-reach drone.",
+      "Look around for coins and defensive power-ups rather than following the shortest route every time.",
+      "Use the map when an objective seems unclear; the level structure provides context."
+    ],
+    "faqs": [
+      {
+        "q": "Does City Quest have a storyline?",
+        "a": "Yes. Story mode, NPC missions and a ten-level sequence are documented parts of the game."
+      },
+      {
+        "q": "Can the Guardian attack enemies?",
+        "a": "Yes. Guardian energy shooting is used against enemies and flying drones."
+      },
+      {
+        "q": "Is there a map?",
+        "a": "Yes. Press M on desktop or use the Map button on mobile."
+      }
+    ]
+  },
+  "climate-rescue-quest": {
+    "category": "Educational",
+    "summary": "Move through environmental rescue missions involving energy, water, forests and oceans while using protective power-ups.",
+    "overview": [
+      "Climate Rescue Quest combines an environmental theme with an accessible arcade challenge. The game moves across distinct scenes inspired by city environments, clean energy, waterways, forests and oceans. Players guide a hero through active stages while responding to obstacles and collecting helpful items.",
+      "The environmental setting is more than a colour palette. Each backdrop suggests a different part of the climate challenge: energy decisions, water protection, healthy ecosystems and the importance of reducing waste. It is an introduction to those ideas through play, not a substitute for a complete climate-science lesson."
+    ],
+    "story": [
+      "The adventure is framed as a sequence of environmental rescue tasks. The hero moves from one affected setting to the next, with later levels increasing the challenge and introducing a boss-style encounter.",
+      "The available game specification lists ten levels, a dedicated boss stage, animated character sprites, music and sound effects. It does not provide detailed named characters or plot dialogue, so this guide follows the documented rescue premise without inventing additional story events."
+    ],
+    "howToPlay": [
+      "Begin the current mission and watch how obstacles and collectible items enter the play area.",
+      "Move the hero left or right to line up with beneficial items and avoid hazards.",
+      "Use power-ups only when they will help: shielding for protection, magnet for collecting and freeze for control.",
+      "Follow the game's level transitions as each new environment introduces another stage of the rescue theme.",
+      "Keep an eye on remaining health or opportunities as the game becomes more demanding."
+    ],
+    "desktop": [
+      "Use the arrow keys for horizontal movement.",
+      "The supplied controls list S, M and F for Shield, Magnet and Freeze, respectively."
+    ],
+    "mobile": [
+      "Swipe or drag left and right to move the hero.",
+      "Use the on-screen movement and power-up buttons when available."
+    ],
+    "systems": [
+      {
+        "title": "Environmental level themes",
+        "body": "City, energy, water, forest, ocean and related scenes visually connect each level to a sustainability topic."
+      },
+      {
+        "title": "Three utility powers",
+        "body": "Shield helps with protection, Magnet supports collection and Freeze changes the moment-to-moment pace."
+      },
+      {
+        "title": "Increasing challenge",
+        "body": "A ten-stage progression leads toward a boss encounter rather than repeating one identical screen."
+      }
+    ],
+    "progression": [
+      "Complete stages by surviving the challenges presented in each environment and making good use of limited power-up opportunities.",
+      "The game includes score events for WebGameArena. The exact scoring formula is controlled by the game itself, so players should follow its in-game feedback rather than assume every collectible is worth the same amount."
+    ],
+    "tips": [
+      "Steer early when multiple objects are approaching rather than making a last-second correction.",
+      "Save a protective power for sections with little space to dodge.",
+      "Treat environmental themes as prompts to learn more about recycling, clean energy and ecosystem protection.",
+      "Learn which visual objects help and which hinder you before chasing speed.",
+      "Use shorter practice attempts to become familiar with the power-up buttons."
+    ],
+    "learning": [
+      "The game can spark discussion about environmental pressures affecting cities, water, forests and oceans.",
+      "Parents and teachers can use the level settings to ask what real-world actions reduce pollution or support healthier environments."
+    ],
+    "faqs": [
+      {
+        "q": "How many levels are documented?",
+        "a": "The game's manifest describes ten levels and a boss-style stage."
+      },
+      {
+        "q": "What does the magnet power do?",
+        "a": "Magnet is documented as a collection-focused power-up; follow the on-screen effect for its exact behaviour."
+      },
+      {
+        "q": "Is this a science course?",
+        "a": "No. It is an educationally themed arcade game that can motivate further discussion about climate and environmental care."
+      }
+    ]
+  },
+  "cyber-shield-academy": {
+    "category": "Educational",
+    "summary": "Solve a fictional defensive cybersecurity case using a simulated terminal, evidence handling and responsible investigation.",
+    "overview": [
+      "Cyber Shield Academy: Terminal Ops is a learning-focused cybersecurity adventure built around a simulated command-line interface. Instead of clicking an attack button, players examine information, type commands and work through a fictional case using principles such as authorisation, careful evidence handling and system integrity.",
+      "The environment is intentionally simulated. Its terminals, files, hosts and investigation tools are part of the game and do not grant access to external systems. That makes the experience a way to practise structured reasoning and safe defensive habits without handling a real network."
+    ],
+    "story": [
+      "The player's assignment is called Case BIT. As a trainee investigator, you work through a series of eight cases or stages that involve interpreting technical clues and deciding how to proceed.",
+      "The narrative connects terminal skills to responsible incident response: understand the scope of a task, preserve relevant information, verify rather than guess and report findings. The game introduces a network map, file-system exploration and an end-of-case reporting context."
+    ],
+    "howToPlay": [
+      "Read the objective and scope of the current training stage before entering commands.",
+      "Use the simulated terminal to examine the files, hosts and tools available in that mission.",
+      "Explore carefully; use tab completion and command history to avoid repeating long entries.",
+      "Compare clues, check integrity where requested and preserve evidence as part of the fictional case.",
+      "Complete the task according to the mission's defensive objective rather than making unrelated changes."
+    ],
+    "desktop": [
+      "Type commands using the keyboard inside the simulated terminal.",
+      "Use Tab to complete available commands, filenames, hosts and tools; use Up and Down to revisit command history."
+    ],
+    "mobile": [
+      "Use the game's terminal interface and the device keyboard; available touch-friendly controls depend on the current mission UI.",
+      "Because command input is central to the experience, a larger screen and physical keyboard may be more comfortable."
+    ],
+    "systems": [
+      {
+        "title": "Simulated terminal",
+        "body": "Commands and files operate inside a self-contained game environment. Their purpose is learning, not accessing real systems."
+      },
+      {
+        "title": "Evidence and integrity",
+        "body": "Tasks introduce evidence preservation, integrity verification and careful reporting as parts of an investigation."
+      },
+      {
+        "title": "Ethics and defensive scope",
+        "body": "The curriculum explicitly includes authorisation, least privilege, log preservation, incident response and change management."
+      }
+    ],
+    "progression": [
+      "The game document identifies eight stages. Each stage builds familiarity with the interface while introducing another aspect of the fictional defensive case.",
+      "A successful investigation is about following the task and interpreting what you find. Guessing lots of commands is less helpful than reading instructions and connecting evidence."
+    ],
+    "tips": [
+      "Read a task's allowed scope before exploring any part of the simulation.",
+      "Use Tab completion when unsure of a filename rather than relying on memory.",
+      "Check available evidence before forming an explanation of what happened.",
+      "Avoid changing simulated evidence unless the mission explicitly asks you to.",
+      "Summarise what you observed in your own words after each stage; explanation builds understanding."
+    ],
+    "learning": [
+      "The game introduces the language of Unix-like terminals, digital evidence and incident response.",
+      "It reinforces ethical and defensive concepts: permission, least privilege, integrity and responsible reporting."
+    ],
+    "faqs": [
+      {
+        "q": "Does the game connect to real servers?",
+        "a": "No. It is described as a safe, simulated terminal-based cybersecurity game."
+      },
+      {
+        "q": "Do I need coding experience?",
+        "a": "No prior expertise is assumed by this guide; start by reading the mission text and learning the provided commands."
+      },
+      {
+        "q": "What is Case BIT?",
+        "a": "Case BIT is the fictional investigation that gives the training missions a shared narrative."
+      }
+    ]
+  },
+  "fruit-slice": {
+    "category": "Arcade",
+    "summary": "Slice flying fruit with quick swipes, avoid bombs and grow combinations during fast arcade sessions.",
+    "overview": [
+      "Fruit Slice is a reflex-based browser arcade game in which pieces of fruit move through the play area waiting to be sliced. Your finger or mouse becomes the blade: a clean swipe cuts the target and adds to the pace of the round.",
+      "The key difference between an ordinary swipe and a strong run is control. You need to follow fast-moving fruit, connect safe targets into combos and resist the temptation to swing blindly when a bomb enters the same part of the screen. The game includes a frenzy mode that changes the intensity of play."
+    ],
+    "story": [
+      "Fruit Slice does not have a documented character-driven storyline. Its premise is a lively fruit-slicing challenge in which the playfield becomes increasingly busy. The action itself creates the drama: opportunities appear for an instant and disappear if you hesitate."
+    ],
+    "howToPlay": [
+      "Start a round and watch the path of fruit flying into view.",
+      "Swipe through one fruit or several aligned pieces to slice them.",
+      "Build successful sequences to pursue combos and higher scoring opportunities.",
+      "Avoid bomb objects even when they appear close to fruit you want to cut.",
+      "React to the game's frenzy mode and use the pause or restart controls when needed."
+    ],
+    "desktop": [
+      "Click and drag the mouse through fruit to perform a slicing motion."
+    ],
+    "mobile": [
+      "Swipe a finger across the play area to cut fruit.",
+      "Try a controlled short swipe when hazards are near a group of targets."
+    ],
+    "systems": [
+      {
+        "title": "Swipe-based slicing",
+        "body": "A swipe crosses the path of moving fruit. Choosing the start and end of the swipe matters more than frantically moving across the entire screen."
+      },
+      {
+        "title": "Combos",
+        "body": "Grouping successful cuts creates combo opportunities; scanning the fruit arrangement helps you chain actions."
+      },
+      {
+        "title": "Bomb avoidance and frenzy",
+        "body": "Bombs introduce risk, while frenzy mode creates moments of increased action that reward calm control."
+      }
+    ],
+    "progression": [
+      "This is an arcade replay loop with sound, animations and a score-focused round structure, not a campaign with named stages.",
+      "Your progress is measured through the outcome of each attempt. Learn to improve safe target selection and combo building instead of only increasing swipe speed."
+    ],
+    "tips": [
+      "Look for two or more fruit following similar paths and slice when they align.",
+      "Use short deliberate gestures when a bomb is close to otherwise safe fruit.",
+      "Wait for a clear opportunity instead of slicing every object immediately.",
+      "During frenzy, focus on groups rather than trying to reach every separate fruit.",
+      "Pause and restart between attempts when the pace begins to affect precision."
+    ],
+    "faqs": [
+      {
+        "q": "How do I slice fruit on a laptop?",
+        "a": "Click and drag the pointer across fruit. A quick motion works like a swipe."
+      },
+      {
+        "q": "Should I slice every object?",
+        "a": "No. Bombs are hazards and should be avoided."
+      },
+      {
+        "q": "Is Fruit Slice a story game?",
+        "a": "No formal story mode is documented. It is designed around brief reflex and score-chasing rounds."
+      }
+    ]
+  },
+  "high-spead-racer": {
+    "category": "Racing",
+    "summary": "Race rivals across a multi-level campaign, choose garage vehicles and manage nitro, checkpoints and laps.",
+    "overview": [
+      "High Spead Racer is an arcade racing experience built for fast reactions and repeated attempts. You steer between lanes while managing nearby traffic, competing with rival drivers and watching the position display as the race develops. Nitro creates opportunities to accelerate, but speed also leaves less time to respond.",
+      "Outside the road itself, the garage and upgrade systems add longer-term choices. Coins and progression support unlocking or improving vehicles. The documented gameplay also includes a six-level campaign, checkpoints, lap completion and overtaking bonuses."
+    ],
+    "story": [
+      "Rather than following a named character through cinematic scenes, High Spead Racer frames its journey as a rising competition. You begin with a vehicle and work to improve your performance against increasingly demanding rivals and road conditions.",
+      "The journey moves across multiple environments and levels. A successful driver must combine timing, lane awareness and upgrade decisions to turn early finishes into more consistent results."
+    ],
+    "howToPlay": [
+      "Choose an available car in the garage and review its driving attributes before entering a race.",
+      "Watch the road ahead and use left/right movement to change lanes when traffic or rivals threaten your route.",
+      "Build speed carefully and hold Nitro when a clear stretch makes a boost worthwhile.",
+      "Pass rivals to improve race position, but avoid close collisions that can end a run.",
+      "Aim for checkpoints and finish lines while tracking the current lap and remaining competition.",
+      "Use earned coins and available upgrades between attempts to plan your next race."
+    ],
+    "desktop": [
+      "Use Left/Right arrows or A/D to change lanes.",
+      "Hold Space or Shift for Nitro, P or Esc to pause, and M to mute."
+    ],
+    "mobile": [
+      "Tap the left/right lane controls or swipe horizontally to change lanes.",
+      "Hold the on-screen Nitro control to boost."
+    ],
+    "systems": [
+      {
+        "title": "Rivals and racing position",
+        "body": "Competing cars change lanes and can overtake. The position indicator provides a reason to race strategically rather than simply travel as far as possible."
+      },
+      {
+        "title": "Garage and upgrades",
+        "body": "Available cars can differ in attributes such as speed, handling and nitro. Coins and upgrades support longer-term progression."
+      },
+      {
+        "title": "Laps, checkpoints and boosts",
+        "body": "Crossing checkpoints and completing laps are part of the campaign. Nitro is a short-term advantage best used when the path ahead is open."
+      }
+    ],
+    "progression": [
+      "The documented racing systems include six levels, multiple laps, checkpoint gates, coin rewards and unlocked car choices.",
+      "A strong run balances fast travel with clean overtaking. In-game feedback determines the exact scoring and reward amounts; the guide should not promise a fixed payout for every race event."
+    ],
+    "tips": [
+      "Look several car lengths ahead and make lane changes before reaching a blockage.",
+      "Keep some Nitro for an open section instead of activating it while boxed in by traffic.",
+      "Avoid switching lanes repeatedly when another racer is close beside you.",
+      "Use the garage to match a car's strengths to the kind of race you find difficult.",
+      "Focus on finishing cleanly before trying to squeeze out every overtaking bonus."
+    ],
+    "faqs": [
+      {
+        "q": "How do I use Nitro?",
+        "a": "Hold Space or Shift on desktop, or press and hold the Nitro button on mobile."
+      },
+      {
+        "q": "Can I choose different cars?",
+        "a": "Yes. The documented build includes a garage, unlockable cars and vehicle upgrades. The exact models depend on the version deployed."
+      },
+      {
+        "q": "Why is the title spelled High Spead Racer?",
+        "a": "High Spead Racer is the game's current published title and slug."
+      }
+    ]
+  },
+  "kasi-quest": {
+    "category": "Adventure",
+    "summary": "Explore a township-inspired platform adventure with NPC missions, collectibles, upgrades and boss encounters.",
+    "overview": [
+      "Kasi Quest is an adventure platformer inspired by the atmosphere of township streets and neighbourhood life. It combines movement through side-scrolling spaces with objectives from non-player characters, collectible rewards and escalating encounters.",
+      "Instead of treating each jump as an isolated obstacle, players are encouraged to think about the wider mission. Coins and collectibles support progression, a shop provides upgrade decisions, and boss encounters test how well you've mastered movement and timing."
+    ],
+    "story": [
+      "The word 'kasi' grounds the adventure in a township-inspired setting. The player moves through quests that connect local environments, NPC conversations and challenges.",
+      "The available manifest confirms NPC missions, bosses and daily challenges but does not identify a single canonical protagonist backstory or named location in detail. This guide therefore describes the quest structure rather than inventing character biographies."
+    ],
+    "howToPlay": [
+      "Start a level and pay attention to the current mission or NPC instructions.",
+      "Move through the platform area, time jumps and avoid enemy or environmental hazards.",
+      "Collect coins and other rewards while following the mission route.",
+      "Use the upgrade shop when available to strengthen your options for later stages.",
+      "Approach boss fights patiently and learn their movement or attack patterns.",
+      "Try daily challenges or replay a level to improve your combo and score."
+    ],
+    "desktop": [
+      "Use the movement, jumping and interaction keys displayed by the game; the current manifest does not specify a complete keyboard mapping."
+    ],
+    "mobile": [
+      "Use the platformer's on-screen movement and action controls.",
+      "Check the in-game help for the exact layout used in the current version."
+    ],
+    "systems": [
+      {
+        "title": "Quests and NPCs",
+        "body": "Objectives from in-game characters give the adventure direction beyond simply reaching the far edge of a level."
+      },
+      {
+        "title": "Collectibles and upgrades",
+        "body": "Coins and an upgrade shop create reasons to explore instead of rushing through every route."
+      },
+      {
+        "title": "Boss and daily challenges",
+        "body": "Boss encounters test learned skills, while daily challenges provide a reason to return for new score attempts."
+      }
+    ],
+    "progression": [
+      "Kasi Quest uses platforming levels with missions, enemies and collectible progress. Its confirmed systems include combo scoring, upgrade shopping and WebGameArena score events.",
+      "Because the manifest does not specify the full control map or a fixed count of campaign levels, follow the objective prompts in the deployed game for those details."
+    ],
+    "tips": [
+      "Read what an NPC asks you to do before leaving the area.",
+      "Learn how far your character can jump before tackling narrow platforms.",
+      "Collect coins on safe routes so the shop becomes useful without risking a promising run.",
+      "Observe boss attack patterns before moving in.",
+      "For daily challenges, focus on completing the objective consistently before chasing complex combos."
+    ],
+    "faqs": [
+      {
+        "q": "Does Kasi Quest have missions?",
+        "a": "Yes. NPC missions are a documented part of the game."
+      },
+      {
+        "q": "Can I upgrade equipment or abilities?",
+        "a": "The game manifest includes an upgrade shop; specific purchases depend on the current build."
+      },
+      {
+        "q": "Are the keyboard controls the same as other platformers?",
+        "a": "Do not assume so. Use the help and prompts provided in Kasi Quest because the manifest does not specify every key."
+      }
+    ]
+  },
+  "lost-jungle-3d-temple-of-the-sun": {
+    "category": "Adventure",
+    "summary": "Cross a dangerous jungle, gather Sun Relics and keys, solve temple puzzles and face legendary guardians.",
+    "overview": [
+      "Lost Jungle: Temple of the Sun is a side-scrolling jungle expedition presented with richly themed backgrounds and platform challenges. Players travel through ten stages, searching for Sun Relics, coins and keys while navigating gaps, water and lava hazards, traps and enemies.",
+      "The exploration is more involved than a straight race to an exit. Locked gates and pressure-plate puzzles make collected items and observation important, while special powers such as dash, shield, torch and healing fruit offer different ways to approach difficult sections."
+    ],
+    "story": [
+      "The central premise is an expedition into a forgotten temple whose treasures are protected by hostile wildlife, ancient mechanisms and powerful guardians. The explorer follows a path through changing jungle environments toward the temple's deepest challenge.",
+      "Among the documented threats are snakes, spiders, bats and stone monkeys. Boss encounters include the Monkey King, Spider Queen and Sun Guardian, giving the adventure a clear sense of escalation as the player pushes toward the Sun Relics."
+    ],
+    "howToPlay": [
+      "Move through the level while watching the ground, platforms and upcoming traps.",
+      "Jump over gaps or onto safe ledges; use a dash attack when appropriate.",
+      "Collect coins and Sun Relics, and look for keys needed by locked gates.",
+      "Observe pressure-plate puzzles instead of walking blindly into suspicious temple areas.",
+      "Use shield, torch or healing items when the stage makes them valuable.",
+      "Check the expedition map if you lose track of the route, then prepare for the next boss."
+    ],
+    "desktop": [
+      "Use A/Left Arrow to move left and D/Right Arrow to move right.",
+      "Press Space to jump, Shift or J for a dash attack, and M to open the expedition map."
+    ],
+    "mobile": [
+      "Use Back and Forward controls to move, with dedicated Jump and Dash buttons.",
+      "Refer to the on-screen Map button when available."
+    ],
+    "systems": [
+      {
+        "title": "Temple collectibles and gates",
+        "body": "Sun Relics, keys and coins help define progress. Keys connect exploration to puzzle-gate access."
+      },
+      {
+        "title": "Traps and movement",
+        "body": "Spikes, lava, water pits, darts, boulders and gaps reward careful timing and route awareness."
+      },
+      {
+        "title": "Enemies and guardian bosses",
+        "body": "Ordinary enemies build combat pressure, while major guardians create set-piece challenges."
+      }
+    ],
+    "progression": [
+      "The available game document identifies ten stages, ten themed backgrounds, story cutscenes, an expedition map and automatic progression when objectives are completed.",
+      "The package currently describes the game as a 2D side-scrolling platform adventure, even though the repository folder retains an older '3d' name. The published guide should explain the experience players actually see."
+    ],
+    "tips": [
+      "Look for the landing area before jumping from a narrow platform.",
+      "Collect a key before repeatedly testing a locked gate.",
+      "Avoid using dash without checking what lies just beyond the enemy.",
+      "Watch environmental clues around pressure plates and traps.",
+      "Save recovery or protection items for sections you have not mastered."
+    ],
+    "faqs": [
+      {
+        "q": "Is the current game 2D or 3D?",
+        "a": "The latest manifest describes a 2D side-scrolling adventure; the older 3D folder name is a legacy identifier."
+      },
+      {
+        "q": "How do I open the map?",
+        "a": "Press M on desktop or use the in-game map control if shown."
+      },
+      {
+        "q": "Are there boss fights?",
+        "a": "Yes. The documented bosses include the Monkey King, Spider Queen and Sun Guardian."
+      }
+    ]
+  },
+  "map-master-africa": {
+    "category": "Educational",
+    "summary": "Explore African geography through map-pin searches, location questions, route tracing and coordinate missions.",
+    "overview": [
+      "Map Master Africa: Explorer Missions turns map reading into an interactive journey across the continent. Rather than presenting a long static geography quiz, it gives players a sequence of fifteen missions that use map pins, geographic choices, routes and coordinates.",
+      "The game encourages close observation of place and space. Players encounter questions about African countries, capitals, rivers, mountains and other geographic features, then practise translating clues into positions on a map. Animated route lines and passport badges make each completed task feel like part of a continuing expedition."
+    ],
+    "story": [
+      "You take on the role of an explorer completing a geographic mission book. Each task adds another destination or mapping skill to the journey, building an explorer's passport as you progress.",
+      "There is no need to invent a fictional crisis or villain: the challenge comes from travelling intellectually across Africa, learning where places are and understanding how they relate to one another."
+    ],
+    "howToPlay": [
+      "Open the first mission and read the location or mapping objective.",
+      "Tap or click the appropriate map pin or coordinate point when a mission asks for a location.",
+      "For multiple-choice tasks, inspect the question and select the best response.",
+      "For a route task, trace the requested journey using the game's route interaction.",
+      "Use a Hint if you need guidance, or Skip knowing that skipping carries a score penalty.",
+      "Complete further tasks to progress through the fifteen explorer missions and collect passport badges."
+    ],
+    "desktop": [
+      "Click map pins and geographic points with the mouse.",
+      "Use the displayed choice, Hint and Skip controls; route tasks rely on the on-screen map interaction."
+    ],
+    "mobile": [
+      "Tap pins, locations and answer buttons on the map.",
+      "Follow the route-tracing gestures displayed for the current mission."
+    ],
+    "systems": [
+      {
+        "title": "Four mission types",
+        "body": "Tap, choice, route and coordinate tasks require different skills, so successful play is not just memorising facts."
+      },
+      {
+        "title": "Map interpretation",
+        "body": "Pins, location prompts and route lines draw attention to spatial relationships between places."
+      },
+      {
+        "title": "Passport and progression",
+        "body": "Mission progress and passport badges provide feedback across the fifteen-part explorer journey."
+      }
+    ],
+    "progression": [
+      "The documented game contains fifteen missions rather than an endless round. Each task asks the player to interpret a map or question before moving on.",
+      "The presence of hints and skip penalties encourages careful thinking. Accuracy and completing the requested interaction matter more than random tapping."
+    ],
+    "tips": [
+      "Read the entire location clue before choosing a map pin.",
+      "Use surrounding countries and major geographic features to orient yourself.",
+      "For a coordinate task, pay attention to direction and position rather than guessing from familiar names.",
+      "Trace a route deliberately; planning the order of places first can prevent mistakes.",
+      "Use hints to learn, then try the next similar task without assistance."
+    ],
+    "learning": [
+      "Build recognition of African countries, capitals and notable physical geography.",
+      "Practise foundational geographic information concepts: locations, coordinates, routes and spatial relationships."
+    ],
+    "faqs": [
+      {
+        "q": "How many explorer missions are there?",
+        "a": "The game manifest lists fifteen missions."
+      },
+      {
+        "q": "Can I ask for help?",
+        "a": "Yes. A Hint button is part of the documented interface."
+      },
+      {
+        "q": "Does skipping a mission affect my score?",
+        "a": "Yes. Skip is described as carrying a scoring penalty."
+      }
+    ]
+  },
+  "math-sprint-arena": {
+    "category": "Educational",
+    "summary": "Solve arithmetic, fraction, multiplication, geometry and algebra challenges in a neon-themed maths runner.",
+    "overview": [
+      "Math Sprint Arena combines mathematical questions with a fast-moving, neon-styled challenge. The game's curriculum themes include arithmetic, multiplication, fractions, geometry and introductory algebra, making it more varied than a single-operation flash-card quiz.",
+      "The central idea is to keep mathematical thinking active under the rhythm of a runner-style game. A problem might require identifying a numerical result, interpreting a fraction or recognising a simple relationship; a strong player combines accuracy with attention to the next challenge on screen."
+    ],
+    "story": [
+      "The arena is a visual setting for a series of maths trials rather than a documented story campaign with named characters. Each stage represents a fresh chance to practise choosing correct mathematical answers amid the motion of play.",
+      "The supplied manifest mentions neon math gates and curriculum topics but does not supply a verified button-by-button control scheme. Use the instructions shown inside the current build rather than assuming that another runner's keys also apply here."
+    ],
+    "howToPlay": [
+      "Start the current arena challenge and identify the maths question being presented.",
+      "Work out the answer before committing to an option or passing through a response gate.",
+      "Use the movement or selection controls displayed inside the game to make your choice.",
+      "Pay attention when the subject changes from whole-number arithmetic to fractions, shapes or algebra.",
+      "Review what caused an incorrect choice and try another run with a slower, more deliberate calculation."
+    ],
+    "desktop": [
+      "Follow the game's displayed controls for selecting answers and moving through maths gates; the manifest does not document exact keys."
+    ],
+    "mobile": [
+      "Use the on-screen answer or steering controls shown by the current game version.",
+      "Give yourself time to read the whole question before making a gesture."
+    ],
+    "systems": [
+      {
+        "title": "Multiple mathematics topics",
+        "body": "The documented curriculum areas are arithmetic, multiplication, fractions, geometry and algebra."
+      },
+      {
+        "title": "Answer gates",
+        "body": "Mathematical decisions are built into a runner-like environment, so reading and timing interact."
+      },
+      {
+        "title": "Repeatable practice",
+        "body": "Trying a new attempt after a mistake helps reveal which topics need review."
+      }
+    ],
+    "progression": [
+      "The published metadata identifies a curriculum runner, but it does not confirm a level count, point formula or all unlockable systems. This guide avoids claiming features that are not documented.",
+      "The important progress measure is whether you can solve questions accurately as the format or subject changes."
+    ],
+    "tips": [
+      "Compute the answer before focusing on the on-screen response positions.",
+      "For fractions, first check whether the denominators are equal and whether simplification is needed.",
+      "For geometry questions, identify the relevant shape or measurement before calculating.",
+      "Use estimation as a quick check for clearly impossible answers.",
+      "After a missed question, work through the method rather than memorising only the displayed answer."
+    ],
+    "learning": [
+      "Practise core school mathematics across different topics.",
+      "Develop quick checking, estimation and error-correction habits."
+    ],
+    "faqs": [
+      {
+        "q": "What maths topics are included?",
+        "a": "The game manifest lists arithmetic, multiplication, fractions, geometry and algebra."
+      },
+      {
+        "q": "Which keys control the runner?",
+        "a": "The current manifest does not provide a reliable key map. Follow the controls displayed inside the game."
+      },
+      {
+        "q": "Is this a formal maths assessment?",
+        "a": "No. It is a game-based practice activity, not a diagnostic assessment of mathematical ability."
+      }
+    ]
+  },
+  "neon-hover-runner": {
+    "category": "Racing",
+    "summary": "Steer through a glowing futuristic track, jump obstacles and collect energy, shields, magnets and boosts.",
+    "overview": [
+      "Neon Hover Runner is a reflex runner set on a luminous cyber track. Rather than racing another driver for a finishing position, you focus on keeping a hover vehicle moving through hazards while collecting resources that help extend the run.",
+      "The gameplay combines steering, jumping and occasional bursts of extra speed. Energy orbs, shields and magnets encourage you to make choices about which lanes are worth entering instead of simply steering away from everything you see."
+    ],
+    "story": [
+      "The game uses a futuristic neon setting rather than a documented dialogue-heavy campaign. You are effectively a hover-track pilot trying to survive a difficult obstacle course as it stretches ahead.",
+      "The setting changes the feeling of the challenge: glowing lanes, barriers and mines turn the track into a constantly moving navigation puzzle."
+    ],
+    "howToPlay": [
+      "Begin a run and observe the next obstacles and pickup locations.",
+      "Swipe or drag to steer your hover vehicle from side to side.",
+      "Tap to jump an obstacle when moving around it is not the safest option.",
+      "Collect energy orbs and other useful pickups when the path is clear.",
+      "Use a charged boost when it will help, while staying alert to what follows the acceleration.",
+      "Continue for as long as the game allows and use the resulting score as a target for another run."
+    ],
+    "desktop": [
+      "The manifest documents dragging and swipe-style steering but does not list a separate keyboard map; follow the pointer controls shown in-game."
+    ],
+    "mobile": [
+      "Swipe or drag horizontally to steer and tap to jump.",
+      "Swipe up to activate a boost when the charge is available."
+    ],
+    "systems": [
+      {
+        "title": "Movement and jump timing",
+        "body": "A runner may present an obstacle that can be avoided by steering or by jumping. Spotting it early gives you options."
+      },
+      {
+        "title": "Energy and power-ups",
+        "body": "Energy orbs, shields, magnets and boosts are documented pickups with different tactical roles."
+      },
+      {
+        "title": "Survival scoring",
+        "body": "The game is described as score-attack gameplay: the quality and length of a run drive the challenge."
+      }
+    ],
+    "progression": [
+      "There is no documented mission-by-mission story. The game instead challenges you to improve your best run on a fast track.",
+      "The precise boost duration and score formula are controlled in-game and are not supplied in the manifest."
+    ],
+    "tips": [
+      "Look ahead to the next two obstacles so one dodge does not place you in front of another.",
+      "Save jump input for obstacles that genuinely need an elevated move.",
+      "Collect a useful power-up only when the route to it remains safe.",
+      "Boost on a comparatively open track rather than just before a dense hazard section.",
+      "Practise smooth steering; frantic cross-track swipes make later corrections harder."
+    ],
+    "faqs": [
+      {
+        "q": "How do I jump?",
+        "a": "Tap during play, according to the controls provided with the game."
+      },
+      {
+        "q": "How do I trigger boost?",
+        "a": "Swipe upward when a boost is charged."
+      },
+      {
+        "q": "Are there different power-ups?",
+        "a": "Yes. Energy orbs, shield, magnet and boost are listed in the game manifest."
+      }
+    ]
+  },
+  "neon-orb-defender": {
+    "category": "Defense",
+    "summary": "Protect a futuristic base's Neon Orb, fight rogue machines and support friendly AI units across nine stages.",
+    "overview": [
+      "Neon Orb: Base Defence is an arcade action game built around protecting a vulnerable futuristic base. Rogue robots and drones create waves of danger, while the player works to keep the central Neon Orb safe and help friendly AI units.",
+      "Unlike a pure survival shooter, the game has an explicit protective objective. Positioning and responding to threats matter because enemies do not have to defeat the player personally to create pressure; they can threaten the orb or disrupt the defence mission."
+    ],
+    "story": [
+      "The setting is a future military-style base with a valuable Neon Orb at its centre. Hostile, rogue AI forces threaten the installation, and the defender must resist their attacks while supporting friendly units.",
+      "The documented game includes nine levels, story mode and a boss fight. Specific named commanders or mission dialogue are not supplied in the manifest, so the guide focuses on the confirmed base-defence premise."
+    ],
+    "howToPlay": [
+      "Enter a mission and identify the position of the Neon Orb and the nearest incoming threat.",
+      "Use the movement and attack controls provided by the on-screen interface to face approaching robots or drones.",
+      "Watch for friendly AI units that can be rescued or protected as part of the situation.",
+      "Collect power-ups when you can reach them safely without abandoning the base.",
+      "Advance through stages and prepare for stronger enemies and the boss encounter."
+    ],
+    "desktop": [
+      "Use the current game's displayed movement and firing controls. Its manifest confirms the shooter mechanics but not exact keyboard bindings."
+    ],
+    "mobile": [
+      "Use the documented mobile controls for movement, attack and other available actions.",
+      "Check the on-screen layout at the start of a level because the touch arrangement can differ from platform games."
+    ],
+    "systems": [
+      {
+        "title": "Orb defence",
+        "body": "Protecting the central objective changes the priorities of combat: stop threats headed for the orb instead of chasing every target."
+      },
+      {
+        "title": "Friendly AI rescue",
+        "body": "Supporting friendly units creates a second responsibility alongside eliminating hostile machines."
+      },
+      {
+        "title": "Waves and bosses",
+        "body": "Nine documented stages and a boss fight provide escalating action."
+      }
+    ],
+    "progression": [
+      "The nine-level story progression challenges you to keep the base defended as stronger enemies appear.",
+      "Sound effects, background music and WebGameArena scoring are supported, but exact score awards or enemy weaknesses should be learned in play."
+    ],
+    "tips": [
+      "Watch the orb's immediate surroundings before pursuing enemies at the edge of the screen.",
+      "Prioritise threats that are already approaching the main objective.",
+      "Learn how each kind of drone or robot moves before committing to a risky position.",
+      "Pick up assistance when it does not expose the base to an avoidable attack.",
+      "Prepare for a boss by keeping track of the safest movement space."
+    ],
+    "faqs": [
+      {
+        "q": "What is the main objective?",
+        "a": "Protect the Neon Orb while dealing with rogue AI robots and drones."
+      },
+      {
+        "q": "Are there story levels?",
+        "a": "Yes. Nine levels, a story mode and a boss fight are documented."
+      },
+      {
+        "q": "Can I play on a phone?",
+        "a": "The game includes mobile controls, though their exact layout should be checked in the running game."
+      }
+    ]
+  },
+  "physics-force-lab": {
+    "category": "Educational",
+    "summary": "Learn physics through a young scientist's twelve-stage adventure covering forces, energy, circuits, waves and space.",
+    "overview": [
+      "Physics Force Lab: Rise of the Young Physicist combines a story-led adventure with introductory physics challenges. Instead of presenting formulas as an isolated worksheet, it puts ideas about movement, forces and physical systems into missions and puzzles where the player has to think about cause and effect.",
+      "The curriculum span is unusually broad for a browser game: it includes force, motion, gravity, friction, energy, simple machines, electric circuits, magnetism, waves, pressure and space physics. Collectibles, animated characters and stage progression keep the presentation playful while the questions encourage explanation."
+    ],
+    "story": [
+      "The main character is a young physicist learning to interpret the world through experiments and challenges. As the adventure progresses, the learner meets new physical phenomena and must apply the right concept to solve a task.",
+      "The game manifest identifies twelve stages and story mode. It does not provide a complete chapter-by-chapter plot or precise key controls, so this guide describes the documented learning journey rather than constructing missing scenes."
+    ],
+    "howToPlay": [
+      "Start the physics mission and read the question, instruction or demonstration carefully.",
+      "Observe how objects move or interact before choosing an explanation.",
+      "Apply the concept highlighted in that stage, such as gravity, friction or an electrical circuit.",
+      "Complete the puzzle or mission objective and collect available rewards.",
+      "Use feedback from the activity to correct a mistaken assumption before attempting the next stage.",
+      "Return to an earlier concept when a later challenge depends on it."
+    ],
+    "desktop": [
+      "The game supports desktop interaction, but the supplied manifest does not document an exact keyboard mapping. Use the prompts displayed by the current mission."
+    ],
+    "mobile": [
+      "Mobile controls are documented. Tap or use the on-screen actions shown in the game to work through activities."
+    ],
+    "systems": [
+      {
+        "title": "Twelve-stage physics journey",
+        "body": "Each stage develops part of a broad physics curriculum through mission-based gameplay."
+      },
+      {
+        "title": "Conceptual problem solving",
+        "body": "Players interpret forces and systems, connect observations to explanations and respond through puzzles."
+      },
+      {
+        "title": "Adventure presentation",
+        "body": "Story scenes, sprites, music and collectibles add an exploratory setting to the educational content."
+      }
+    ],
+    "progression": [
+      "The learning sequence includes both mechanics topics and later physical systems, so the most useful progress is an improved ability to explain why something happens.",
+      "Scores can be submitted through WebGameArena, but the experience is also valuable when a player pauses and thinks through a problem."
+    ],
+    "tips": [
+      "Describe the physical situation in words before selecting an answer.",
+      "Separate the force acting on an object from the direction the object is already moving.",
+      "In a circuit task, trace a complete path rather than focusing on one component.",
+      "For friction or gravity questions, ask what would change if a surface or mass changed.",
+      "Use unfamiliar terms as topics to revisit after a session instead of guessing repeatedly."
+    ],
+    "learning": [
+      "Introduces forces, motion, gravity, energy, simple machines, electricity, magnetism, waves and pressure.",
+      "Encourages observation, reasoning and explanation rather than rote answer selection."
+    ],
+    "faqs": [
+      {
+        "q": "How many levels are there?",
+        "a": "The latest manifest specifies twelve physics stages."
+      },
+      {
+        "q": "Does the game teach electricity?",
+        "a": "Yes. Circuits and magnetism are listed among its physics topics."
+      },
+      {
+        "q": "Do I need to know every formula in advance?",
+        "a": "The game is framed as a learning adventure. Read the task and use its observations as the starting point."
+      }
+    ]
+  },
+  "recycle-rush": {
+    "category": "Educational",
+    "summary": "Sort recyclable materials, manage contamination and work through eight community waste-management challenges.",
+    "overview": [
+      "Recycle Rush is an environmental sorting game that asks players to match arriving waste items with an appropriate recycling option. The task sounds simple, but it becomes challenging when decisions need to be made quickly and when a contaminated or mixed-waste item threatens a clean stream.",
+      "The game uses illustrated materials and eight themed scenes to connect recycling decisions to everyday places such as schools, community clean-ups, parks, buy-back centres and material recovery facilities. It introduces the idea that correct sorting at the point of disposal affects what can be recovered later."
+    ],
+    "story": [
+      "The mission moves through community recycling situations rather than following a single named hero. Early scenes emphasise familiar clean-up activities; later scenes move toward collection, processing, diversion from landfill and a broader circular-economy challenge.",
+      "The progression creates a small environmental narrative: materials travel through a system, and the player's sorting choices influence how well that system works."
+    ],
+    "howToPlay": [
+      "Start the current level and inspect the active recycling bin or bins.",
+      "Watch an incoming item and identify the kind of material it represents.",
+      "Swipe left or right to change the active bin, or tap a visible bin directly.",
+      "Match the item to the suitable waste stream before it is processed.",
+      "Tap an orange contamination hazard when the game presents one.",
+      "Continue through increasingly demanding levels while reviewing sorting mistakes."
+    ],
+    "desktop": [
+      "The supplied manifest primarily documents touch-style bin selection. Use the visible bin controls and on-screen buttons with the pointer."
+    ],
+    "mobile": [
+      "Swipe left or right to change bins, or tap a bin directly.",
+      "Tap an orange contamination hazard when it appears; use Pause, Restart and Sound as needed."
+    ],
+    "systems": [
+      {
+        "title": "Material recognition",
+        "body": "The core task is identifying incoming objects and choosing the correct destination instead of sending everything to one bin."
+      },
+      {
+        "title": "Contamination prevention",
+        "body": "Orange hazard objects represent mixed-waste contamination, drawing attention to the quality of separated recycling streams."
+      },
+      {
+        "title": "Eight learning environments",
+        "body": "Stages move through a school, community, park, buy-back centre, MRF, landfill-diversion scenario, e-waste drop-off and circular challenge."
+      }
+    ],
+    "progression": [
+      "Eight difficulty-progressive levels expand the challenge as the player becomes more familiar with sorting.",
+      "The game can introduce recycling principles, but real-world collection rules vary by municipality and recycler. For actual disposal decisions, follow local recycling guidance."
+    ],
+    "tips": [
+      "Learn the material categories before prioritising speed.",
+      "Double-check an unfamiliar item instead of moving bins repeatedly at random.",
+      "Notice how contaminated items differ visually from suitable recycling objects.",
+      "Keep your finger close to the bin area so you can react to a late-arriving item.",
+      "Use a wrong sort as a prompt to learn why that material belongs elsewhere."
+    ],
+    "learning": [
+      "Introduces separation at source, contamination prevention, material recovery and landfill diversion.",
+      "Encourages discussion of recycling systems and the role of households, collectors and recycling facilities."
+    ],
+    "faqs": [
+      {
+        "q": "How many levels are in Recycle Rush?",
+        "a": "The manifest lists eight increasingly difficult levels."
+      },
+      {
+        "q": "How do I change bins?",
+        "a": "Swipe left or right, or tap a visible bin directly."
+      },
+      {
+        "q": "Does the game replace local recycling instructions?",
+        "a": "No. Accepted materials differ across real-world schemes; treat the game as educational practice."
+      }
+    ]
+  },
+  "science-lab-dash": {
+    "category": "Educational",
+    "summary": "Restore Nova Science Academy in a twenty-mission science adventure spanning experiments, puzzles and discovery.",
+    "overview": [
+      "Science Lab Dash: Element Core Mystery is a story-driven educational action game. It combines a lane-based challenge with science questions, collectible evidence, power-ups and encounters with hazards or enemies. The result is a broad science journey rather than a single-topic quiz.",
+      "The game covers laboratory safety, the scientific method, physics, chemistry, biology, Earth science, space, robotics and data science. Animated gameplay creates pressure, but careful reading still matters: players must complete missions, answer questions and use the tools available to the young scientist."
+    ],
+    "story": [
+      "The Element Core Mystery begins when Nova Science Academy needs restoring. The player works through a series of science missions, gathering evidence and overcoming challenges as the story advances.",
+      "There are twenty documented stages and a final conflict with the Glitch Experiment. The school setting provides a reason to move through distinct scientific topics: understanding what has gone wrong requires both practical action and sound reasoning."
+    ],
+    "howToPlay": [
+      "Start the current mission and read the objective or scientific prompt.",
+      "Move between the available lanes to avoid hazards or align with items.",
+      "Use a lab burst when you need to deal with a drone, slime, hazard or boss.",
+      "Collect useful evidence and power-ups while staying aware of the current science task.",
+      "Answer science questions and use their explanations to understand mistakes.",
+      "Continue through the academy's missions toward the Glitch Experiment encounter."
+    ],
+    "desktop": [
+      "Arrow Up or W moves to an upper lane; Arrow Down or S moves to a lower lane.",
+      "Keys 1, 2 and 3 select a lane directly; Space fires a lab burst and Shift activates a shield when available."
+    ],
+    "mobile": [
+      "Swipe up or down to change lanes.",
+      "Use the on-screen lightning/lab-burst and Shield controls."
+    ],
+    "systems": [
+      {
+        "title": "Science questions and explanations",
+        "body": "Missions include learning prompts with explanations, connecting academic content to the action."
+      },
+      {
+        "title": "Lane control and combat",
+        "body": "Movement and lab bursts help the character navigate hazards, drones and boss encounters."
+      },
+      {
+        "title": "Power-ups and badges",
+        "body": "Shield, slow motion, magnet and double discovery are documented powers, alongside badges and local save functionality."
+      }
+    ],
+    "progression": [
+      "The game has twenty missions with curriculum progression, story moments and boss encounters. The main campaign works toward restoring the academy.",
+      "Score submissions are available, but completing the learning objectives and interpreting feedback are as important as a high score."
+    ],
+    "tips": [
+      "Read the science task before acting; rushing past its explanation can make the next stage harder.",
+      "Switch lanes early when you see a cluster of approaching hazards.",
+      "Use a shield where it prevents a likely mistake, rather than whenever it becomes available.",
+      "Treat questions as opportunities to reason from evidence.",
+      "Pay attention to mission feedback and return to topics that remain confusing."
+    ],
+    "learning": [
+      "Introduces interdisciplinary science and the process of gathering evidence before reaching a conclusion.",
+      "Connects scientific reasoning with decisions under time pressure."
+    ],
+    "faqs": [
+      {
+        "q": "How many missions are there?",
+        "a": "The supplied manifest lists twenty missions."
+      },
+      {
+        "q": "Who is the final threat?",
+        "a": "The story includes a final challenge called the Glitch Experiment."
+      },
+      {
+        "q": "Can I play with touch controls?",
+        "a": "Yes. Swipe lane switching and on-screen action buttons are documented."
+      }
+    ]
+  },
+  "sky-temple-3d-rise-of-the-relic-master": {
+    "category": "Adventure",
+    "summary": "Explore floating fantasy worlds, collect relics and confront guardians using movement, flight and energy abilities.",
+    "overview": [
+      "Sky Temple: Rise of the Relic Master is a fantasy adventure set among floating islands, temples, bridges and caverns. You traverse platforms and explore worlds while gathering relics, dealing with hostile characters and unlocking ways to improve your hero.",
+      "The presentation uses a custom browser-friendly 3D-style projection and a third-person view rather than requiring a downloadable game client. The experience includes character skins, a shop, movement powers, energy attacks and staged boss fights."
+    ],
+    "story": [
+      "The journey leads through Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary. Each environment introduces new platforming and combat situations on the way to the Relic Master.",
+      "Named guardians help distinguish the stages: Garden Sentinel, Crystal Warden, Thunder Golem and Relic Master. Relics and world exploration connect the fights into a larger fantasy quest."
+    ],
+    "howToPlay": [
+      "Enter the starting world and read the objective before leaving the safe area.",
+      "Move between islands, paths and platforms, watching for gaps and enemies.",
+      "Jump to reach platforms and use the flight ability when it becomes available.",
+      "Fire energy blasts to defend yourself against hostile enemies or turrets.",
+      "Collect relics and useful powers, and visit the shop or map when needed.",
+      "Advance through the available eight levels and prepare for world-specific guardians."
+    ],
+    "desktop": [
+      "W or Up moves forward, S or Down moves back, and A/D or Left/Right move sideways.",
+      "Space or F jumps or flies when flight is active; J or Ctrl fires, M opens the map and P opens the shop."
+    ],
+    "mobile": [
+      "Use the displayed movement, Jump, Fly and Shoot controls.",
+      "Check the in-game map and shop interface when those actions are available."
+    ],
+    "systems": [
+      {
+        "title": "Four fantasy worlds",
+        "body": "Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary provide distinct settings for the adventure."
+      },
+      {
+        "title": "Powers and combat",
+        "body": "Shield, flight, energy blasts, extra life and speed boosts are documented character abilities."
+      },
+      {
+        "title": "Unlocks and bosses",
+        "body": "The game includes character skins, a shop and boss stages that punctuate the exploration."
+      }
+    ],
+    "progression": [
+      "Eight levels guide the player through the fantasy settings, with cutscenes and major encounters at key points.",
+      "The newest manifest describes a canvas-based 3D-style presentation; this guide does not claim that the browser is running a full real-time 3D engine."
+    ],
+    "tips": [
+      "Plan a landing before launching into a long jump or flight.",
+      "Use the map when a floating-world route becomes difficult to follow.",
+      "Learn whether an enemy is a patrol, hunter, drone or turret before approaching it.",
+      "Reserve defensive powers for sections with multiple attacks.",
+      "Explore for relics rather than immediately running to the next visible encounter."
+    ],
+    "faqs": [
+      {
+        "q": "How many worlds are there?",
+        "a": "Four are documented: Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
+      },
+      {
+        "q": "Can the character fly?",
+        "a": "Yes. Flight is an unlockable or available power used through the designated jump/fly control."
+      },
+      {
+        "q": "Is this a downloadable 3D game?",
+        "a": "No. It runs in the browser and uses custom 3D-style projection."
+      }
+    ]
+  },
+  "space-dodger": {
+    "category": "Adventure",
+    "summary": "Pilot a 3D spacecraft through twelve story missions involving asteroids, hostile ships and boss encounters.",
+    "overview": [
+      "Space Dodger: Starfall Odyssey extends the idea of asteroid avoidance into a larger three-dimensional space adventure. Players control a spacecraft, navigate obstacles and fight AI-controlled enemies while following mission-based progression.",
+      "Built with Babylon.js according to the current manifest, the experience includes asteroid fields, plasma gates, engine-trail effects, collectibles, boost movement, enemy projectiles and major boss battles. The combination rewards spatial awareness as much as fast reflexes."
+    ],
+    "story": [
+      "Starfall Odyssey casts the player as a pilot making their way through a dangerous region of space. Rather than surviving one endless meteor field, you work through twelve story levels involving shifting hazards and hostile spacecraft.",
+      "Each mission makes the surrounding space feel like territory to be crossed and defended. Boss encounters raise the stakes and require a different rhythm from ordinary asteroid avoidance."
+    ],
+    "howToPlay": [
+      "Launch the spacecraft and familiarise yourself with how steering changes its position.",
+      "Fly around asteroids and plasma gates while tracking the next safe route.",
+      "Fire at hostile ships when you have a clear opportunity.",
+      "Use boost to cross a dangerous stretch or reposition, but plan the path beyond the acceleration.",
+      "Look for helpful power-ups and collectibles.",
+      "Complete mission objectives and progress through the twelve-story-level sequence."
+    ],
+    "desktop": [
+      "Use WASD or arrow keys to fly.",
+      "Use Space or the mouse to shoot, and Shift to boost."
+    ],
+    "mobile": [
+      "Use the on-screen thrusters for flight and the FIRE and BOOST buttons for attacks and acceleration."
+    ],
+    "systems": [
+      {
+        "title": "Three-dimensional flight",
+        "body": "The Babylon.js scene gives space to dodge obstacles in more than one direction."
+      },
+      {
+        "title": "Enemy spacecraft and bosses",
+        "body": "AI opponents fire back; survival requires movement and attacking at the right time."
+      },
+      {
+        "title": "Powers and effects",
+        "body": "Collectibles and power-ups appear alongside animated particles, engine trails and audio feedback."
+      }
+    ],
+    "progression": [
+      "The manifest lists twelve story levels with regular threats and boss stages.",
+      "Learning the flight controls makes later missions more manageable. A score bridge connects results to WebGameArena when the site's score service is available."
+    ],
+    "tips": [
+      "Keep moving when hostile projectiles are approaching rather than staying directly in one firing line.",
+      "Look for a clear exit route before using boost.",
+      "Give asteroids space; tight passes may be more dangerous than they look in 3D.",
+      "Use short firing opportunities instead of losing track of obstacles while aiming.",
+      "Spend an early attempt learning movement sensitivity before focusing on mission speed."
+    ],
+    "faqs": [
+      {
+        "q": "Is Starfall Odyssey a 3D game?",
+        "a": "Yes. The manifest identifies Babylon.js as its 3D rendering engine."
+      },
+      {
+        "q": "Can the ship shoot?",
+        "a": "Yes. Space, mouse/tap or FIRE are documented attack inputs."
+      },
+      {
+        "q": "How many story levels are included?",
+        "a": "Twelve are listed in the game manifest."
+      }
+    ]
+  },
+  "space-pilot-platformer": {
+    "category": "Adventure",
+    "summary": "Guide Pilot Nova across asteroid platforms, defeat drones and gather star cores before boss confrontations.",
+    "overview": [
+      "Space Pilot Platformer is a science-fiction platform adventure starring Pilot Nova. Instead of piloting a ship through open space, the player moves through a sequence of platforms suspended among asteroids while avoiding hazards and fighting drone enemies.",
+      "Platform timing and collection are closely linked. Star cores reward exploration, while hostile drones and level-ending bosses keep the route from becoming a simple jumping exercise."
+    ],
+    "story": [
+      "Pilot Nova's expedition crosses dangerous asteroid-platform environments. The character collects star cores and battles robotic opponents on the way to distinctive animated bosses.",
+      "The available manifest documents the premise and boss progression but does not provide specific planet names or the total number of levels. The guide therefore avoids inventing a solar-system map or mission count."
+    ],
+    "howToPlay": [
+      "Start a level and note the nearest stable platform and your intended next landing point.",
+      "Move toward the edge carefully and jump across gaps or up to new ledges.",
+      "Avoid enemy fire and deal with drones when a safe attack opportunity is available.",
+      "Collect star cores when they are within reach without creating unnecessary risk.",
+      "Reach the end-of-level boss and learn its movement before attempting a fast victory.",
+      "Continue to the next platforming area and refine your timing."
+    ],
+    "desktop": [
+      "Keyboard controls are supported, but the manifest does not specify exact movement, jump or attack keys. Use the game's displayed instructions."
+    ],
+    "mobile": [
+      "Touch controls are supported. Use the on-screen directions and action controls identified by the running game."
+    ],
+    "systems": [
+      {
+        "title": "Asteroid platforms",
+        "body": "Gaps, heights and landings define the movement challenge."
+      },
+      {
+        "title": "Drones and star cores",
+        "body": "Enemies encourage careful positioning, and collectibles give the player a reason to explore beyond the shortest path."
+      },
+      {
+        "title": "Boss encounters",
+        "body": "A distinctive animated boss closes each documented level, shifting attention from travel to pattern recognition."
+      }
+    ],
+    "progression": [
+      "The game advances through platforming areas and their respective boss fights. The manifest does not give an exact level count or item exchange system.",
+      "A strong attempt balances safe traversal with optional collecting rather than treating every jump as a sprint."
+    ],
+    "tips": [
+      "Check the distance and height of the next landing before leaving a platform.",
+      "Use a safe ledge to observe a drone rather than entering its path immediately.",
+      "Do not chase a star core when it would remove your only stable landing.",
+      "Study a boss pattern for a moment before approaching.",
+      "Practice difficult jumps deliberately instead of repeating the same mistimed input."
+    ],
+    "faqs": [
+      {
+        "q": "Who is the playable character?",
+        "a": "The game description identifies the pilot as Pilot Nova."
+      },
+      {
+        "q": "What do I collect?",
+        "a": "Star cores are the documented collectibles."
+      },
+      {
+        "q": "Does it support mobile play?",
+        "a": "Yes. Touch controls are listed, although their exact arrangement is not specified in the manifest."
+      }
+    ]
+  },
+  "stack-tower": {
+    "category": "Puzzle",
+    "summary": "Time falling blocks to build a high tower, chain perfect placements and charge Focus Mode.",
+    "overview": [
+      "Stack Tower is a timing challenge built around a single satisfying action: dropping a moving block onto the structure below it. Each new block tests your sense of rhythm, alignment and the small corrections needed to keep a tower stable as it grows.",
+      "The polished presentation features glowing pseudo-3D blocks, sound and background music, while the game systems give accurate players extra goals. Perfect placements can build combinations, and Focus Mode becomes a tactical tool when timing is difficult."
+    ],
+    "story": [
+      "There is no named hero or cinematic story. Your construction project is the challenge itself: build a tower as high as your precision allows.",
+      "The tower becomes a visible record of every earlier decision. A slight misalignment may not end the session at once, but it can make the next placement harder."
+    ],
+    "howToPlay": [
+      "Start a round and observe the movement of the next block.",
+      "Wait for the moving block to line up with the top of the tower.",
+      "Tap, click or press the drop key to place it.",
+      "Aim for accurate placement and repeated perfect drops to build combos.",
+      "Notice when Focus Mode becomes available and use it to help with difficult timing.",
+      "Continue building until the round ends, then compare your height and score with earlier attempts."
+    ],
+    "desktop": [
+      "Press Space or Enter to drop a block; clicking the drop control also works.",
+      "Use the on-screen Pause, Drop, Submit, Restart and Sound options."
+    ],
+    "mobile": [
+      "Tap the screen or Drop control to place the current block.",
+      "Keep your view on the tower's top edge rather than the moving block alone."
+    ],
+    "systems": [
+      {
+        "title": "Alignment-based gameplay",
+        "body": "The relationship between the moving block and the existing tower determines a strong placement."
+      },
+      {
+        "title": "Perfect-drop combos",
+        "body": "Repeated accurate placements reward consistency rather than frantic tapping."
+      },
+      {
+        "title": "Focus Mode",
+        "body": "The manifest identifies a charged Focus Mode that supports more deliberate timing."
+      }
+    ],
+    "progression": [
+      "Stack Tower is an endless-style replayable timing challenge, not a campaign with characters and level dialogue.",
+      "Progress is measured in height, accuracy and the result of successive drops. The challenge naturally changes as small alignment mistakes accumulate."
+    ],
+    "tips": [
+      "Watch for the instant when the moving block crosses the centre of the supporting block.",
+      "Choose a visual reference on the stack and time your input against it.",
+      "Prioritise a safe placement over a risky perfect attempt when the tower becomes narrow.",
+      "Use Focus Mode when it can prevent a mistake, rather than automatically when available.",
+      "Try to establish a steady rhythm; inconsistent tapping makes alignment harder."
+    ],
+    "faqs": [
+      {
+        "q": "Which keys drop a block?",
+        "a": "Space and Enter are documented desktop drop inputs."
+      },
+      {
+        "q": "Does the game have power-ups?",
+        "a": "It includes a charged Focus Mode, according to the current manifest."
+      },
+      {
+        "q": "How do I get a taller tower?",
+        "a": "Prioritise consistent alignment of each block with the top of the stack."
+      }
+    ]
+  },
+  "swipe-racer": {
+    "category": "Racing",
+    "summary": "Swipe through traffic, collect pickups and use nitro across city, mountain, coast and neon-night missions.",
+    "overview": [
+      "Swipe Racer is an arcade driving game designed around steering gestures and quick decisions. You navigate a 3D-style car through traffic and collect helpful items while looking ahead to the next safe space in the road.",
+      "It combines the replayability of an endless traffic dodger with a four-part mission structure. The racing environments include a daytime city, a mountain pass, a coastal sunset route and a neon night scene, each bringing a different visual atmosphere."
+    ],
+    "story": [
+      "The game follows a driver's progression through a sequence of increasingly demanding routes rather than a named protagonist's scripted journey.",
+      "The campaign's four environments provide a sense of travel from city streets toward scenic and nighttime roads. Successful driving is about responding to traffic patterns while making considered use of nitro."
+    ],
+    "howToPlay": [
+      "Start the current route or mission and familiarise yourself with steering sensitivity.",
+      "Swipe or drag left and right to move your car across the roadway.",
+      "Watch the position and movement of traffic ahead before changing direction.",
+      "Collect useful pickups when a safe route leads through them.",
+      "Use nitro when available to gain speed, but avoid activating it directly into a dense group of cars.",
+      "Continue through missions and compare your results across the four environments."
+    ],
+    "desktop": [
+      "The manifest documents swipe/drag steering; use pointer dragging and the game's on-screen buttons."
+    ],
+    "mobile": [
+      "Swipe or drag horizontally to steer.",
+      "Tap or press the Boost button to use nitro when charged; use the Pause, Submit, Restart and Sound controls as needed."
+    ],
+    "systems": [
+      {
+        "title": "Four themed routes",
+        "body": "City, mountain, coast and neon-night backdrops distinguish the mission environments."
+      },
+      {
+        "title": "Traffic and pickups",
+        "body": "Avoiding other vehicles keeps the run alive while selected pickups offer extra opportunities."
+      },
+      {
+        "title": "Nitro boost",
+        "body": "Boost rewards planning: gaining speed is useful only if the route remains clear."
+      }
+    ],
+    "progression": [
+      "The game documents four levels and mission-based racing, alongside score-attack gameplay and a leaderboard score bridge.",
+      "Clean driving and anticipation are the foundations of a good result. The manifest does not publish a fixed points-per-pickup formula."
+    ],
+    "tips": [
+      "Aim for an empty lane before you reach a vehicle rather than swiping at the last second.",
+      "Watch two or three cars ahead to avoid escaping one obstacle into another.",
+      "Use nitro on clear sections and plan how you will slow your decisions afterward.",
+      "Steer smoothly instead of making long frantic movements.",
+      "Replay a route to learn its visual cues before focusing on maximum speed."
+    ],
+    "faqs": [
+      {
+        "q": "How do I steer?",
+        "a": "Swipe or drag left and right, including on a touch screen."
+      },
+      {
+        "q": "Can I use nitro?",
+        "a": "Yes. The game includes a boost control for nitro."
+      },
+      {
+        "q": "Are there different roads?",
+        "a": "The manifest lists city, mountain, coastal and neon-night routes across four levels."
+      }
+    ]
+  },
+  "word-dash": {
+    "category": "Educational",
+    "summary": "Race through themed word missions, type target spellings, build streaks and use Hint, Freeze or extra-time powers.",
+    "overview": [
+      "Word Dash turns spelling and vocabulary practice into a fast sequence of word challenges. Players match target words using physical or on-screen letters while managing a timer, improving accuracy and building streaks.",
+      "Rather than repeating one plain keyboard exercise, the game moves through themed environments such as a library, city of words, mountain focus setting and neon letters area. Mission progression and helpful power-ups make it feel like an arcade challenge as well as a learning exercise."
+    ],
+    "story": [
+      "The premise is a sprint through a series of language-focused arenas. Each location gives the word task a new visual setting, but the centre of the challenge remains the same: recognise a target and enter it accurately.",
+      "The manifest documents four levels and missions, but no named characters or authored dialogue sequence, so the guide does not invent a fictional language kingdom or villain."
+    ],
+    "howToPlay": [
+      "Start a word mission and read the target word carefully.",
+      "Type the letters in the correct order or tap them on the mobile keyboard.",
+      "Use Enter to submit a word when playing with a physical keyboard.",
+      "Correct mistakes with Backspace before submitting.",
+      "Build streaks through consecutive correct entries while watching the timer.",
+      "Use Hint, Freeze or extra time when a mission becomes difficult, then continue toward the next themed level."
+    ],
+    "desktop": [
+      "Type with the keyboard, press Enter to submit and Backspace to delete an incorrect letter.",
+      "Use the displayed power-up buttons when Hint, Freeze or extra time is available."
+    ],
+    "mobile": [
+      "Tap letters on the in-game keyboard.",
+      "Use the on-screen Hint, Freeze and +Time controls, along with Pause or Restart."
+    ],
+    "systems": [
+      {
+        "title": "Spelling and vocabulary",
+        "body": "Recognising and reproducing target words accurately is the central task."
+      },
+      {
+        "title": "Streaks and time pressure",
+        "body": "Successful sequences encourage speed, but rushing at the expense of spelling accuracy can interrupt momentum."
+      },
+      {
+        "title": "Three support powers",
+        "body": "Hint, Freeze and +Time are documented tools for difficult moments."
+      }
+    ],
+    "progression": [
+      "Word Dash includes four mission-based levels with different visual themes.",
+      "Scores and streaks provide immediate feedback, while repeated play helps users identify words or typing patterns they need to practise."
+    ],
+    "tips": [
+      "Read the whole word before entering the first letter.",
+      "Aim for accuracy first; a fast incorrect entry often wastes more time than a careful correct one.",
+      "Use Backspace as soon as you notice an error.",
+      "Save Freeze or extra-time help for a demanding portion of the run.",
+      "Treat Hint as a learning aid: try to remember the word on the next encounter."
+    ],
+    "learning": [
+      "Practise spelling accuracy, word recognition, vocabulary and keyboard familiarity.",
+      "Develop proofreading habits under mild time pressure."
+    ],
+    "faqs": [
+      {
+        "q": "How do I submit a word on desktop?",
+        "a": "Enter submits the current word and Backspace removes the last input."
+      },
+      {
+        "q": "Can I play without a physical keyboard?",
+        "a": "Yes. The game provides on-screen letter keys for mobile play."
+      },
+      {
+        "q": "What power-ups are available?",
+        "a": "Hint, Freeze and +Time are documented in the game manifest."
+      }
+    ]
+  }
+};
+
+export function getGameEditorial(slug: string): GameEditorial | undefined {
+  return GAME_EDITORIALS[slug];
+}

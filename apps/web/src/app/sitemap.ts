@@ -2,6 +2,7 @@
 
 import type { MetadataRoute } from "next";
 import { getSitemapGamesFromDatabase } from "@/lib/gamesDb";
+import { GAME_EDITORIALS } from "@/content/gameEditorials";
 
 const SITE_URL = "https://webgamearena.com";
 
@@ -79,27 +80,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  try {
-    const games = await getSitemapGamesFromDatabase();
-
-    const gameRoutes: MetadataRoute.Sitemap = games.flatMap((game) => [
-      {
-        url: `${SITE_URL}/play/${game.slug}`,
-        lastModified: game.updatedAt,
+  const contentRoutes = (slugs: string[]): MetadataRoute.Sitemap =>
+    [...new Set(slugs)]
+      .filter((slug) => Boolean(GAME_EDITORIALS[slug]))
+      .map((slug) => ({
+        url: `${SITE_URL}/play/${slug}`,
         changeFrequency: "weekly" as const,
         priority: 0.8,
-      },
-      {
-        url: `${SITE_URL}/games/${game.slug}`,
-        lastModified: game.updatedAt,
-        changeFrequency: "weekly" as const,
-        priority: 0.75,
-      },
-    ]);
+      }));
 
-    return [...staticRoutes, ...gameRoutes];
+  try {
+    const games = await getSitemapGamesFromDatabase();
+    const slugs = games.map((game) => game.slug);
+    return [...staticRoutes, ...contentRoutes(slugs.length ? slugs : Object.keys(GAME_EDITORIALS))];
   } catch (error) {
-    console.warn("[sitemap] Falling back to static sitemap routes", error);
-    return staticRoutes;
+    console.warn("[sitemap] Falling back to documented game routes", error);
+    return [...staticRoutes, ...contentRoutes(Object.keys(GAME_EDITORIALS))];
   }
 }

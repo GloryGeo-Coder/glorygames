@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PlayClient from "./play-client";
+import GameEditorial from "@/components/GameEditorial";
+import { getGameEditorial } from "@/content/gameEditorials";
 import { GameThumb } from "@/components/GameThumb";
 import { getFallbackGameBySlug, getRelatedFallbackGames } from "@/lib/fallbackGames";
 import {
@@ -112,41 +114,6 @@ async function getRelatedGames(game: PlayGame): Promise<PlayGame[]> {
     .filter(Boolean) as PlayGame[];
 }
 
-function getGameGuide(game: PlayGame) {
-  const category = categoryLabel(game.category);
-  const title = game.title;
-  const tags = game.tags.length ? game.tags.join(", ") : "browser game";
-
-  return {
-    overview:
-      game.description ||
-      `${title} is a free ${category.toLowerCase()} browser game on WebGameArena. It is designed for quick play sessions on mobile and desktop, with simple controls and replayable scoring.`,
-    objective:
-      category === "Racing"
-        ? `Reach the best possible score in ${title} by reacting quickly, avoiding mistakes and keeping your run going as long as possible.`
-        : category === "Puzzle"
-          ? `Solve each challenge in ${title} by making smart moves, watching the pattern and improving your score with each attempt.`
-          : category === "Educational"
-            ? `Use ${title} to practise useful skills while playing. The aim is to learn, improve and score as high as possible.`
-            : `Survive, collect points and improve your high score in ${title}. Each run gives you a chance to beat your previous best.`,
-    desktopControls:
-      "Use the keyboard, mouse or on-screen buttons depending on the game. Most games support arrow keys, WASD, spacebar, mouse clicks or simple taps.",
-    mobileControls:
-      "Use touch controls on your phone or tablet. Tap, swipe or press the on-screen buttons shown inside the game area.",
-    scoring:
-      "Scores are based on successful actions such as collecting items, completing objectives, surviving longer, clearing levels or avoiding mistakes. Your best scores can appear on the leaderboard when score saving is enabled.",
-    tips: [
-      "Start slowly and learn the timing before chasing a high score.",
-      "Use fullscreen mode for better focus, especially on mobile.",
-      "Avoid risky moves when you already have a strong score.",
-      `Replay ${title} to learn patterns and improve your reaction time.`,
-    ],
-    ageNote:
-      `${title} is intended as a family-friendly browser game. Younger players may need help reading instructions or understanding scoring.`,
-    tags,
-  };
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -168,9 +135,8 @@ export async function generateMetadata({
   const title = game?.title ?? titleFromSlug(slug);
   const category = categoryLabel(game?.category);
 
-  const description =
-    game?.description ||
-    `Play ${title} for free on WebGameArena. A mobile-first ${category.toLowerCase()} browser game with instant play, simple controls and no downloads.`;
+  const editorial = getGameEditorial(slug);
+  const description = editorial?.summary ?? game?.description ?? `Play ${title} on WebGameArena.`;
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -203,7 +169,7 @@ export async function generateMetadata({
       description,
     },
     robots: {
-      index: true,
+      index: Boolean(editorial),
       follow: true,
     },
   };
@@ -223,18 +189,18 @@ export default async function PlayPage({
 
   const title = game.title;
   const category = categoryLabel(game.category);
-  const guide = getGameGuide(game);
+  const editorial = getGameEditorial(game.slug);
   const relatedGames = await getRelatedGames(game);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "VideoGame",
     name: title,
-    description: guide.overview,
+    description: editorial?.summary ?? game.description ?? title,
     url: `${SITE_URL}/play/${game.slug}`,
     applicationCategory: "Game",
     genre: category,
-    keywords: guide.tags,
+    keywords: game.tags.join(", "),
     gamePlatform: ["Web browser", "Mobile browser", "Desktop browser"],
     operatingSystem: "Any",
     publisher: {
@@ -254,65 +220,7 @@ export default async function PlayPage({
       <PlayClient slug={game.slug} title={title} />
 
       <main className="container">
-        <section className="section">
-          <div className="sectionTitle">
-            <div>
-              <div className="badge" style={{ width: "fit-content" }}>
-                🎮 {category} Game Guide
-              </div>
-
-              <h2>About {title}</h2>
-
-              <p>{guide.overview}</p>
-            </div>
-
-            <Link className="pill" href={`/games/${game.slug}`}>
-              View game details →
-            </Link>
-          </div>
-
-          <div className="gameDetailInfoGrid">
-            <div className="heroCard gameDetailPanel">
-              <div className="badge">🎯 Objective</div>
-              <h3>What to do</h3>
-              <p className="muted">{guide.objective}</p>
-            </div>
-
-            <div className="heroCard gameDetailPanel">
-              <div className="badge">🕹️ Controls</div>
-              <h3>Desktop and mobile</h3>
-              <p className="muted">
-                <b>Desktop:</b> {guide.desktopControls}
-              </p>
-              <p className="muted">
-                <b>Mobile:</b> {guide.mobileControls}
-              </p>
-            </div>
-
-            <div className="heroCard gameDetailPanel">
-              <div className="badge">🏆 Scoring</div>
-              <h3>How scores work</h3>
-              <p className="muted">{guide.scoring}</p>
-            </div>
-
-            <div className="heroCard gameDetailPanel">
-              <div className="badge">👨‍👩‍👧 Family note</div>
-              <h3>Age suitability</h3>
-              <p className="muted">{guide.ageNote}</p>
-            </div>
-          </div>
-
-          <div className="heroCard gameDetailPanel" style={{ marginTop: 16 }}>
-            <div className="badge">💡 Tips</div>
-            <h3>Tips for playing {title}</h3>
-
-            <ul style={{ color: "rgba(255,255,255,.72)", lineHeight: 1.75 }}>
-              {guide.tips.map((tip) => (
-                <li key={tip}>{tip}</li>
-              ))}
-            </ul>
-          </div>
-        </section>
+        <GameEditorial slug={game.slug} title={title} />
 
         {relatedGames.length ? (
           <section className="section relatedGamesSection">
