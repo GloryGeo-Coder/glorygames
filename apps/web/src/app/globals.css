@@ -3028,3 +3028,182 @@ button, input{ font:inherit; }
 .wgaMobileAuth .wgaLogoutButton {
   width: 100%;
 }
+
+/* ===== Responsive game player: shared foundation for all 22 game iframes ===== */
+/* Override older stage rules without changing the individual game engines. */
+.ggPlayLayout {
+  width: min(100%, 1400px);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  min-width: 0;
+}
+
+.ggPlayLayout > *,
+.ggStage,
+.ggStageInner {
+  min-width: 0;
+}
+
+.ggStage {
+  min-height: 0;
+}
+
+.ggStageTitle {
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ggStageTitle b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ggStageInner {
+  min-height: 420px;
+  height: min(72dvh, 790px);
+  flex: 0 0 auto;
+  isolation: isolate;
+}
+
+.ggGameFrame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  border: 0;
+  background: #05080f;
+}
+
+.ggOrientationHint {
+  margin: 0;
+  padding: 9px 13px;
+  border-block: 1px solid rgba(255,255,255,.09);
+  background: rgba(56,189,248,.08);
+  color: rgba(255,255,255,.85);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ggOrientationHint span {
+  display: inline-block;
+  font-size: 18px;
+  margin-right: 5px;
+}
+
+@media (max-width: 980px) {
+  .ggPlayLayout {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .ggStage {
+    min-height: 0;
+  }
+
+  .ggStageInner {
+    height: min(75dvh, 720px);
+    min-height: 410px;
+  }
+
+  .ggStageTopBar {
+    padding: 9px 11px;
+  }
+
+  .ggStageTopBar .ggBtn {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ggPlayLayout {
+    padding: 6px;
+    gap: 9px;
+  }
+
+  .ggStageTopBar {
+    gap: 8px;
+    padding: 7px 9px;
+  }
+
+  .ggStageTitle {
+    display: block;
+    font-size: 12px;
+  }
+
+  .ggStageTitle b {
+    display: block;
+    line-height: 1.3;
+  }
+
+  .ggStageTitle .ggMuted {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .ggStageInner {
+    height: 75dvh;
+    min-height: 430px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 650px) {
+  .ggStageInner {
+    height: max(200px, calc(100dvh - 95px));
+    min-height: 200px;
+  }
+}
+
+.ggStage.ggStageExpanded {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  min-height: 0;
+  z-index: 9999;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  background: #05080f;
+}
+
+.ggStage.ggStageExpanded .ggStageTopBar {
+  flex: 0 0 auto;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    8px max(12px, env(safe-area-inset-left));
+}
+
+.ggStage.ggStageExpanded .ggStageInner {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.ggStage:fullscreen {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #05080f;
+}
+
+.ggStage:fullscreen .ggStageInner {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+@supports not (height: 100dvh) {
+  .ggStage.ggStageExpanded { height: 100vh; }
+}
