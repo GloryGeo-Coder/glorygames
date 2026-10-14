@@ -24,6 +24,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.9,
     },
+    ...["educational", "adventure", "racing", "arcade"].map((category) => ({
+      url: `${SITE_URL}/categories/${category}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.85,
+    })),
     {
       url: `${SITE_URL}/leaderboard`,
       lastModified: now,
