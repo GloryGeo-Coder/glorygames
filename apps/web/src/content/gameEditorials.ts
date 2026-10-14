@@ -1154,7 +1154,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many worlds are there?",
-        "a": "Four are : Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
+        "a": "The adventure spans four worlds: Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
       },
       {
         "q": "Can the character fly?",
