@@ -11,6 +11,19 @@ type Props = {
   title: string;
 };
 
+// These games benefit from a wider viewing angle. The notice is advisory,
+// not a blocker: players can continue in portrait orientation.
+const LANDSCAPE_RECOMMENDED = new Set([
+  "city-quest-rise-of-the-guardian",
+  "high-spead-racer",
+  "kasi-quest",
+  "lost-jungle-3d-temple-of-the-sun",
+  "neon-orb-defender",
+  "sky-temple-3d-rise-of-the-relic-master",
+  "space-dodger",
+  "space-pilot-platformer",
+]);
+
 type ChatMessage = {
   id?: string;
   user: string;
@@ -105,6 +118,9 @@ export default function PlayClient({ slug, title }: Props) {
 
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
+  const landscapeRecommended = LANDSCAPE_RECOMMENDED.has(slug);
 
   const lastSubmittedScoreRef = useRef(0);
   const pendingScoreRef = useRef(0);
@@ -136,15 +152,27 @@ export default function PlayClient({ slug, title }: Props) {
     const el = stageRef.current;
     if (!el) return;
 
+    if (isExpanded) {
+      setIsExpanded(false);
+      return;
+    }
+
     try {
-      if (!document.fullscreenElement) {
-        await el.requestFullscreen();
-      } else {
+      if (document.fullscreenElement) {
         await document.exitFullscreen();
+        return;
+      }
+      if (typeof el.requestFullscreen === "function") {
+        await el.requestFullscreen();
+        return;
       }
     } catch {
-      // Ignore fullscreen browser restrictions.
+      // The Fullscreen API is unavailable or blocked on some mobile browsers.
     }
+
+    // iOS Safari and browsers that deny element fullscreen still get a
+    // full-viewport, fixed-position playing surface.
+    setIsExpanded(true);
   }
 
   useEffect(() => {
@@ -152,6 +180,33 @@ export default function PlayClient({ slug, title }: Props) {
     document.addEventListener("fullscreenchange", onFs);
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
+
+  useEffect(() => {
+    const updateOrientation = () =>
+      setIsPortrait(window.innerHeight > window.innerWidth);
+    updateOrientation();
+    window.addEventListener("resize", updateOrientation);
+    window.addEventListener("orientationchange", updateOrientation);
+    return () => {
+      window.removeEventListener("resize", updateOrientation);
+      window.removeEventListener("orientationchange", updateOrientation);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onEscape = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape") setIsExpanded(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", onEscape);
+    };
+  }, [isExpanded]);
 
   const loadChat = useCallback(async () => {
     try {
@@ -350,17 +405,28 @@ export default function PlayClient({ slug, title }: Props) {
 
   return (
     <div className="ggPlayLayout">
-      <div className="ggStage" ref={stageRef}>
+      <div className={isExpanded ? "ggStage ggStageExpanded" : "ggStage"} ref={stageRef}>
         <div className="ggStageTopBar">
           <div className="ggStageTitle">
             <b>{title}</b>
             <span className="ggMuted">• Live: {liveScore}</span>
           </div>
 
-          <button className="ggBtn ggBtnGhost" onClick={toggleFullscreen}>
-            {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          <button
+            className="ggBtn ggBtnGhost"
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen || isExpanded ? "Exit game fullscreen" : "Expand the game"}
+          >
+            {isFullscreen || isExpanded ? "Exit Fullscreen" : "Fullscreen"}
           </button>
         </div>
+
+        {landscapeRecommended && isPortrait && !isExpanded && !isFullscreen ? (
+          <p className="ggOrientationHint" role="status">
+            <span aria-hidden="true">↻</span> For a wider game view, rotate your phone sideways. Portrait play remains available.
+          </p>
+        ) : null}
 
         <div className="ggStageInner" id="gameMount">
           <iframe
@@ -368,6 +434,8 @@ export default function PlayClient({ slug, title }: Props) {
             src={`/games/${slug}/index.html`}
             title={title}
             allow="fullscreen; autoplay; gamepad"
+            allowFullScreen
+            loading="eager"
           />
         </div>
       </div>
