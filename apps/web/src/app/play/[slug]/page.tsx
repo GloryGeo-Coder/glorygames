@@ -218,14 +218,15 @@ export default async function PlayPage({
   };
 
   const categoryHref = categoryDestination(game.category);
+  const hasCategoryHub = categoryHref.startsWith("/categories/");
   const breadcrumbs = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Games", item: `${SITE_URL}/games` },
-      { "@type": "ListItem", position: 3, name: category, item: `${SITE_URL}${categoryHref}` },
-      { "@type": "ListItem", position: 4, name: title, item: `${SITE_URL}/play/${game.slug}` },
+      ...(hasCategoryHub ? [{ "@type": "ListItem", position: 3, name: category, item: `${SITE_URL}${categoryHref}` }] : []),
+      { "@type": "ListItem", position: hasCategoryHub ? 4 : 3, name: title, item: `${SITE_URL}/play/${game.slug}` },
     ],
   };
 
@@ -244,7 +245,7 @@ export default async function PlayPage({
         <nav aria-label="Breadcrumb" style={{ marginTop: 16, marginBottom: 10 }}>
           <Link href="/">Home</Link>{" / "}
           <Link href="/games">Games</Link>{" / "}
-          <Link href={categoryHref}>{category}</Link>{" / "}
+          {hasCategoryHub ? <><Link href={categoryHref}>{category}</Link>{" / "}</> : null}
           <span aria-current="page">{title}</span>
         </nav>
         <GameEditorial slug={game.slug} title={title} />
