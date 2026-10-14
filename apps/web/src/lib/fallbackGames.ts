@@ -1,4 +1,4 @@
-// apps/web/src/lib/fallbackGames.ts
+import { GAME_CATALOG, catalogGame } from "@/lib/gameCatalog";
 
 export type FallbackGame = {
   id: string;
@@ -11,103 +11,44 @@ export type FallbackGame = {
   updatedAt?: Date;
 };
 
-export const fallbackGames: FallbackGame[] = [
-  {
-    id: "fallback-kasi-quest",
-    slug: "kasi-quest",
-    title: "Kasi Quest",
-    description:
-      "A mobile-first platform adventure with levels, coins, enemies, and township-inspired quests.",
-    category: "ADVENTURE",
-    tags: ["platformer", "levels", "story", "mobile"],
-  },
-  {
-    id: "fallback-fruit-slice",
-    slug: "fruit-slice",
-    title: "Fruit Slice",
-    description:
-      "Swipe to slice fruit, avoid bombs, and build high-score combos in this fast arcade game.",
-    category: "ARCADE",
-    tags: ["swipe", "reflex", "casual", "mobile"],
-  },
-  {
-    id: "fallback-brick-blaster",
-    slug: "brick-blaster",
-    title: "Brick Blaster",
-    description:
-      "Classic brick-breaking action with quick rounds, score chasing, and mobile-friendly controls.",
-    category: "ARCADE",
-    tags: ["classic", "blocks", "score", "casual"],
-  },
-  {
-    id: "fallback-bubble-pop-arena",
-    slug: "bubble-pop-arena",
-    title: "Bubble Pop Arena",
-    description:
-      "Pop, match, and clear bubbles in a colourful casual puzzle arena.",
-    category: "PUZZLE",
-    tags: ["bubbles", "matching", "casual", "mobile"],
-  },
-  {
-    id: "fallback-neon-hover-runner",
-    slug: "neon-hover-runner",
-    title: "Neon Hover Runner",
-    description:
-      "Dash through glowing lanes, dodge obstacles, and chase speed in a neon runner.",
-    category: "RACING",
-    tags: ["runner", "neon", "speed", "reflex"],
-  },
-  {
-    id: "fallback-neon-orb-defender",
-    slug: "neon-orb-defender",
-    title: "Neon Orb Defender",
-    description:
-      "Defend your orb against waves of enemies in a fast-paced survival challenge.",
-    category: "DEFENSE",
-    tags: ["defense", "action", "survival", "waves"],
-  },
-  {
-    id: "fallback-space-dodger",
-    slug: "space-dodger",
-    title: "Space Dodger",
-    description:
-      "Dodge asteroids and survive as long as possible in a fast space reflex game.",
-    category: "ACTION",
-    tags: ["space", "dodging", "reflex", "survival"],
-  },
-  {
-    id: "fallback-swipe-racer",
-    slug: "swipe-racer",
-    title: "Swipe Racer",
-    description:
-      "Swipe through lanes, avoid traffic, and push your reaction time to the limit.",
-    category: "RACING",
-    tags: ["driving", "swipe", "speed", "mobile"],
-  },
-  {
-    id: "fallback-stack-tower",
-    slug: "stack-tower",
-    title: "Stack Tower",
-    description:
-      "Stack blocks carefully and build the tallest tower you can.",
-    category: "PUZZLE",
-    tags: ["stacking", "timing", "physics", "casual"],
-  },
-  {
-    id: "fallback-word-dash",
-    slug: "word-dash",
-    title: "Word Dash",
-    description:
-      "A fast word game that challenges spelling, vocabulary, and quick thinking.",
-    category: "EDUCATIONAL",
-    tags: ["word", "typing", "vocabulary", "learning"],
-  },
+// Maintained alongside the reviewed 22-game catalog.
+// If Neon is temporarily unavailable, all published games stay discoverable.
+const TITLES: Record<string, string> = {
+  "brick-blaster": "Brick Blaster",
+  "bubble-pop-arena": "Bubble Pop Arena",
+  "city-quest-rise-of-the-guardian": "City Quest: Rise of the Guardian",
+  "climate-rescue-quest": "Climate Rescue Quest",
+  "cyber-shield-academy": "Cyber Shield Academy: Terminal Ops",
+  "fruit-slice": "Fruit Slice",
+  "high-spead-racer": "High Spead Racer",
+  "kasi-quest": "Kasi Quest",
+  "lost-jungle-3d-temple-of-the-sun": "Lost Jungle: Temple of the Sun",
+  "map-master-africa": "Map Master Africa: Explorer Missions",
+  "math-sprint-arena": "Math Sprint Arena",
+  "neon-hover-runner": "Neon Hover Runner",
+  "neon-orb-defender": "Neon Orb: Base Defence",
+  "physics-force-lab": "Physics Force Lab: Rise of the Young Physicist",
+  "recycle-rush": "Recycle Rush",
+  "science-lab-dash": "Science Lab Dash: Element Core Mystery",
+  "sky-temple-3d-rise-of-the-relic-master": "Sky Temple 3D: Rise of the Relic Master",
+  "space-dodger": "Space Dodger 3D: Starfall Odyssey",
+  "space-pilot-platformer": "Space Pilot Platformer",
+  "stack-tower": "Stack Tower",
+  "swipe-racer": "Swipe Racer",
+  "word-dash": "Word Dash"
+};
 
-];
+export const fallbackGames: FallbackGame[] = Object.entries(GAME_CATALOG).map(([slug, entry]) => ({
+  id: `fallback-${slug}`,
+  slug,
+  title: TITLES[slug] ?? slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()),
+  description: entry.description,
+  category: entry.category,
+  tags: [entry.category.toLowerCase().replace(/_/g, "-")],
+}));
 
 export function getFallbackGames() {
   const now = new Date();
-
   return fallbackGames.map((game) => ({
     ...game,
     createdAt: game.createdAt ?? now.toISOString(),
@@ -120,10 +61,7 @@ export function getFallbackGameBySlug(slug: string) {
 }
 
 export function getRelatedFallbackGames(slug: string, category?: string | null) {
-  const games = getFallbackGames();
-
-  return games
-    .filter((game) => game.slug !== slug)
-    .filter((game) => !category || game.category === category)
-    .slice(0, 4);
+  const games = getFallbackGames().filter((game) => game.slug !== slug).map(catalogGame);
+  const matching = category ? games.filter((game) => game.category === category) : games;
+  return [...matching, ...games.filter((g) => !matching.includes(g))].slice(0, 4);
 }

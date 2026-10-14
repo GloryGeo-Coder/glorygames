@@ -1,6 +1,7 @@
 // apps/web/src/lib/gamesDb.ts
 
 import { getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
+import { catalogGame } from "@/lib/gameCatalog";
 
 export type DbGameListItem = {
   id: string;
@@ -53,14 +54,14 @@ function normalizeTags(tags: unknown): string[] {
 }
 
 function normalizeGameRow(row: any): DbGameListItem {
-  return {
+  return catalogGame({
     id: String(row.id),
     slug: String(row.slug),
     title: String(row.title),
     description: row.description ?? null,
     category: row.category ?? "ARCADE",
     tags: normalizeTags(row.tags),
-  };
+  });
 }
 
 function normalizeLeaderboardRows(rows: any[]): DbLeaderboardEntry[] {
@@ -97,7 +98,9 @@ export async function getGamesFromDatabase(): Promise<DbGameListItem[]> {
     ORDER BY category ASC, title ASC
   `;
 
-  return rows.map(normalizeGameRow).filter((game) => isPublicGameSlug(game.slug));
+  return rows.map(normalizeGameRow)
+    .filter((game) => isPublicGameSlug(game.slug))
+    .sort((a, b) => (a.category ?? "").localeCompare(b.category ?? "") || a.title.localeCompare(b.title));
 }
 
 export async function getGameFromDatabase(
@@ -140,58 +143,24 @@ export async function getRelatedGamesFromDatabase({
   category?: string | null;
   limit?: number;
 }): Promise<DbGameListItem[]> {
-  if (!hasUsableNeonDatabaseUrl()) {
-    return [];
-  }
-
+  if (!hasUsableNeonDatabaseUrl()) return [];
   const sql = getNeonSql();
 
-  if (category) {
-    const rows = await sql`
-      SELECT
-        id,
-        slug,
-        title,
-        description,
-        category::text AS category,
-        tags
-      FROM "Game"
-      WHERE
-        slug <> ${slug}
-        AND category::text = ${category}
-        AND LEFT(slug, 1) <> '_'
-        AND LOWER(slug) NOT LIKE '%template%'
-        AND LOWER(title) NOT LIKE '%template%'
-      ORDER BY title ASC
-      LIMIT ${limit}
-    `;
-
-    const related = rows.map(normalizeGameRow).filter((game) => isPublicGameSlug(game.slug));
-
-    if (related.length) {
-      return related;
-    }
-  }
-
-  const fallbackRows = await sql`
-    SELECT
-      id,
-      slug,
-      title,
-      description,
-      category::text AS category,
-      tags
+  // Classify in application code first: legacy database rows may all be ARCADE.
+  // Do not filter by the stale SQL enum until the authorised sync has run.
+  const rows = await sql`
+    SELECT id, slug, title, description, category::text AS category, tags
     FROM "Game"
-    WHERE
-      slug <> ${slug}
+    WHERE slug <> ${slug}
       AND LEFT(slug, 1) <> '_'
       AND LOWER(slug) NOT LIKE '%template%'
       AND LOWER(title) NOT LIKE '%template%'
     ORDER BY title ASC
-    LIMIT ${limit}
+    LIMIT 120
   `;
-
-  return fallbackRows.map(normalizeGameRow).filter((game) => isPublicGameSlug(game.slug));
+  const games = rows.map(normalizeGameRow).filter((g) => isPublicGameSlug(g.slug));
+  const sameCategory = category ? games.filter((g) => g.category === category) : games;
+  return [...sameCategory, ...games.filter((g) => !sameCategory.includes(g))].slice(0, limit);
 }
 
 export async function getSitemapGamesFromDatabase(): Promise<DbSitemapGame[]> {

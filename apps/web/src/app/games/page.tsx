@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GameThumb } from "@/components/GameThumb";
 import { getFallbackGames } from "@/lib/fallbackGames";
 import { getGamesFromDatabase, isPublicGameSlug } from "@/lib/gamesDb";
+import { GAME_CATALOG, catalogGame } from "@/lib/gameCatalog";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,24 @@ const categories = [
   { value: "KIDS_FAMILY", label: "Kids & Family" },
 ] as const;
 
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  "ARCADE": "Quick arcade games reward timing, control and repetition. Try fast rounds of Fruit Slice or Brick Blaster, practise your precision and compare results with your previous attempts.",
+  "ACTION": "Action games combine movement and quick decisions. Starfall Odyssey sends your ship through asteroid fields, enemy encounters and mission-based space combat.",
+  "ADVENTURE": "Story-led journeys invite you to explore environments, meet characters and tackle obstacles. Choose from township missions, jungle ruins, city guardians and floating temples.",
+  "EDUCATIONAL": "Learning games turn geography, mathematics, science, recycling and cybersecurity concepts into interactive challenges. Find experiences focused on observation, problem solving and practical knowledge.",
+  "PUZZLE": "Puzzle games reward planning, timing and accurate decisions. Stack Tower turns precise block placement into a challenge to build as high as you can.",
+  "RACING": "Racing and runner games require anticipation, smooth movement and good boost timing. Navigate traffic in Swipe Racer or High Spead Racer, or steer a futuristic hover craft around hazards.",
+  "WORD_TRIVIA": "Word and trivia games focus on language, recognition and recall. Type target spellings, build streaks and work through timed missions in Word Dash.",
+  "STRATEGY": "Strategy games put planning and considered choices first. Explore the library as new strategy titles are added.",
+  "SPORTS": "Sports games focus on timing, tactical decisions and skill development. Browse this category when new titles become available.",
+  "SIMULATION": "Simulation games model activities and scenarios through interactive choices. Browse this category when new titles become available.",
+  "DEFENSE": "Defence games place protection and prioritisation at the centre of play. In Neon Orb: Base Defence, respond to hostile machines while protecting the orb and friendly units.",
+  "PLATFORMER": "Platform games test jumps, navigation and timing. Follow Pilot Nova through asteroid platforms, drones, collectible star cores and boss encounters.",
+  "CASUAL": "Casual games make it easy to begin a quick session. Bubble Pop Arena challenges you to pop useful bubbles, build combos and avoid hazards before time runs out.",
+  "MULTIPLAYER": "Multiplayer games are designed for shared competition or cooperation. More titles will appear here as supported multiplayer experiences become available.",
+  "KIDS_FAMILY": "Family-friendly titles offer approachable play and age-appropriate experiences. Use individual game pages for details about controls and suitability."
+};
+
 function normalizeCategory(input?: string) {
   if (!input) return "";
 
@@ -75,7 +94,7 @@ function normalizeGameRows(
     tags?: string[];
   }>
 ): GameListItem[] {
-  return rows.map((row) => ({
+  return rows.map((row) => catalogGame({
     id: row.id,
     slug: row.slug,
     title: row.title,
@@ -125,6 +144,7 @@ export async function generateMetadata({
   const q = typeof sp?.q === "string" ? sp.q.trim() : "";
   const category = normalizeCategory(sp?.category);
   const label = category ? categoryLabel(category) : "";
+  const categoryHasGames = category ? Object.values(GAME_CATALOG).some((game) => game.category === category) : true;
 
   const title = category
     ? `${label} Games | Free Browser Games on WebGameArena`
@@ -182,7 +202,7 @@ export async function generateMetadata({
       description,
     },
     robots: {
-      index: true,
+      index: !q && categoryHasGames,
       follow: true,
     },
   };
@@ -213,6 +233,7 @@ export default async function GamesPage({
 
   const totalGames = allGames.length;
   const games = filterGames(allGames, q, category);
+  const availableCategories = categories.filter((option) => allGames.some((game) => game.category === option.value));
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -279,9 +300,7 @@ export default async function GamesPage({
               </h2>
 
               <p>
-                Discover free mobile-first browser games across arcade, action,
-                adventure, educational, puzzle, racing, word and casual
-                categories.
+                {category ? CATEGORY_DESCRIPTIONS[category] : "Discover original browser games across racing, arcade, adventures, physics, geography, environmental learning, puzzles, word games and more. Choose a category that matches the kind of challenge you enjoy."}
               </p>
             </div>
 
@@ -358,7 +377,7 @@ export default async function GamesPage({
                 All
               </Link>
 
-              {categories.map((c) => {
+              {availableCategories.map((c) => {
                 const active = category === c.value;
 
                 return (
