@@ -117,8 +117,21 @@
   app.setCanvasResolution(pc.RESOLUTION_AUTO);
   app.scene.gammaCorrection = pc.GAMMA_SRGB;
   app.scene.toneMapping = pc.TONEMAP_ACES;
-  const resize = () => app.resizeCanvas(canvas.clientWidth || window.innerWidth, canvas.clientHeight || window.innerHeight);
+  // The game runs inside a responsive iframe; its dimensions can change
+  // without a traditional window resize (fullscreen, layout and orientation).
+  const gameWrap = document.getElementById("gameWrap");
+  const resize = () => {
+    const width = gameWrap?.clientWidth || window.innerWidth;
+    const height = gameWrap?.clientHeight || window.innerHeight;
+    if (width > 0 && height > 0) app.resizeCanvas(width, height);
+  };
   window.addEventListener("resize", resize);
+  window.addEventListener("orientationchange", resize);
+  window.visualViewport?.addEventListener("resize", resize);
+  if (gameWrap && typeof ResizeObserver !== "undefined") {
+    const observer = new ResizeObserver(resize);
+    observer.observe(gameWrap);
+  }
   resize();
 
   const LEVELS = [
