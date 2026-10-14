@@ -64,7 +64,7 @@ function metaRobots(html) {
   return tag ? (attribute(tag, "content") ?? "").toLowerCase() : "";
 }
 function title(html) {
-  return html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]?.trim() ?? "";
+  return html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? "";
 }
 function expectedCanonical(path) { return url(path); }
 
@@ -90,7 +90,7 @@ try {
   if (!response.ok) error("/robots.txt", `HTTP ${response.status}`);
   else {
     if (!text.includes(`Sitemap: ${url("/sitemap.xml")}`)) warn("/robots.txt", "Expected sitemap declaration not found");
-    if (/Disallow:\\s*\\/(?:play|categories)(?:\\/|\\s|$)/im.test(text)) error("/robots.txt", "Public content appears blocked");
+    if (/Disallow:\s*\/(?:play|categories)(?:\/|\s|$)/im.test(text)) error("/robots.txt", "Public content appears blocked");
     else pass("/robots.txt", "Crawl directives received");
   }
 } catch (e) { error("/robots.txt", String(e)); }
@@ -99,9 +99,9 @@ try {
   const { response, text } = await get("/sitemap.xml");
   if (!response.ok) error("/sitemap.xml", `HTTP ${response.status}`);
   else {
-    const locs = new Set([...text.matchAll(/<loc>([\\s\\S]*?)<\\/loc>/g)].map((m) => m[1].replace(/&amp;/g, "&").trim()));
+    const locs = new Set([...text.matchAll(/<loc>([\s\S]*?)<\/loc>/g)].map((m) => m[1].replace(/&amp;/g, "&").trim()));
     const missing = sitePages.filter((p) => !locs.has(url(p)));
-    const unwanted = [...locs].filter((loc) => /\\/games\\/[^/?]+(?:[?#]|$)/.test(loc));
+    const unwanted = [...locs].filter((loc) => /\/games\/[^/?]+(?:[?#]|$)/.test(loc));
     if (missing.length) error("/sitemap.xml", `Missing ${missing.length} expected canonical pages: ${missing.slice(0, 7).join(", ")}`);
     else pass("/sitemap.xml", `Includes all ${sitePages.length} expected pages`);
     if (unwanted.length) warn("/sitemap.xml", `Noncanonical game-detail URLs detected: ${unwanted.slice(0, 3).join(", ")}`);
@@ -119,9 +119,9 @@ for (let startAt = 0; startAt < sitePages.length; startAt += 4) {
       const expected = expectedCanonical(path);
       const canonicalUrl = got ? new URL(got, response.url).toString() : "";
       if (canonicalUrl !== expected) error(path, `Canonical mismatch: ${got || "missing"} (expected ${expected})`);
-      else if (/(^|[,\\s])noindex([,\\s]|$)/.test(metaRobots(html))) error(path, "Canonical page is marked noindex");
+      else if (/(^|[,\s])noindex([,\s]|$)/.test(metaRobots(html))) error(path, "Canonical page is marked noindex");
       else if (!title(html)) error(path, "Page title is missing");
-      else if (/^\\/play\\//.test(path) && !/Complete game guide/i.test(html)) warn(path, "The server HTML does not contain the complete game guide heading");
+      else if (/^\/play\//.test(path) && !/Complete game guide/i.test(html)) warn(path, "The server HTML does not contain the complete game guide heading");
       else pass(path, "HTTP 200, indexable, title and canonical verified");
     } catch (e) { error(path, String(e)); }
   }));
@@ -138,7 +138,7 @@ for (const path of ["/games/fruit-slice", "/games?q=fruit", "/games?category=edu
 
 try {
   const { response, text } = await get("/ads.txt");
-  const hasValidSeller = /^google\\.com,\\s*pub-\\d{16},\\s*DIRECT,\\s*f08c47fec0942fa0\\s*$/m.test(text);
+  const hasValidSeller = /^google\.com,\s*pub-\d{16},\s*DIRECT,\s*f08c47fec0942fa0\s*$/m.test(text);
   if (response.ok && hasValidSeller) pass("/ads.txt", "Valid AdSense seller record");
   else if (requireAds) error("/ads.txt", response.ok ? "Missing valid publisher record" : `HTTP ${response.status}; configure the publisher ID`);
   else warn("/ads.txt", response.ok ? "No valid AdSense seller record yet" : `HTTP ${response.status}; configure AdSense publisher ID before review`);
