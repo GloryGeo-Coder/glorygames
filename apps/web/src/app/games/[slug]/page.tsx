@@ -321,7 +321,7 @@ export default async function GameDetailsPage({
                 )}
 
                 <div className="gameDetailHint">
-                  More modes and weekly leaderboards coming soon.
+                  Return for another run, improve your score and compare results when the leaderboard is available.
                 </div>
               </div>
 

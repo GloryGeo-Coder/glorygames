@@ -29,14 +29,24 @@ export default function GameEditorial({ slug, title }: Props) {
     return null;
   }
 
-  const storyHeading =
-    guide.story.some((paragraph) =>
-      /no (long |named |formal |documented |scripted )*story|no named hero|rather than.*story|not a .*story campaign|no .*scripted campaign/i.test(
-        paragraph
-      )
-    )
-      ? "Premise and setting"
-      : "Storyline and setting";
+  const narrativeGames = new Set([
+    "city-quest-rise-of-the-guardian",
+    "climate-rescue-quest",
+    "cyber-shield-academy",
+    "kasi-quest",
+    "lost-jungle-3d-temple-of-the-sun",
+    "map-master-africa",
+    "neon-orb-defender",
+    "physics-force-lab",
+    "recycle-rush",
+    "science-lab-dash",
+    "sky-temple-3d-rise-of-the-relic-master",
+    "space-dodger",
+    "space-pilot-platformer",
+  ]);
+  const storyHeading = narrativeGames.has(slug)
+    ? "Story and setting"
+    : "Premise and setting";
 
   return (
     <section
