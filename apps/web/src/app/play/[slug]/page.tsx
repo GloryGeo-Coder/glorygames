@@ -61,6 +61,13 @@ function categoryUrl(category?: string | null) {
   return category.toLowerCase().replace(/_/g, "-");
 }
 
+function categoryDestination(category?: string | null) {
+  const slug = categoryUrl(category);
+  return ["educational", "adventure", "racing", "arcade"].includes(slug)
+    ? `/categories/${slug}`
+    : `/games?category=${slug}`;
+}
+
 function normalizeGame(game: any): PlayGame | null {
   if (!game || !isPublicGameSlug(game.slug)) {
     return null;
@@ -232,7 +239,7 @@ export default async function PlayPage({
 
               <Link
                 className="pill"
-                href={`/games?category=${categoryUrl(game.category)}`}
+                href={categoryDestination(game.category)}
               >
                 View {category} games →
               </Link>
