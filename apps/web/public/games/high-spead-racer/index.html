@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>High Spead Racer</title>
+  <title>High Speed Racer</title>
   <link rel="stylesheet" href="./style.css" />
-  <script src="https://code.playcanvas.com/playcanvas-stable.min.js"></script>
+  <script src="./vendor/playcanvas-2.23.1.min.js"></script>
+  <link rel="stylesheet" href="./racer-3d.css?v=1" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body class="is-menu">
@@ -71,18 +72,20 @@
       <div class="start-bg"></div>
       <div class="menu-panel">
         <div class="kicker">Neon Highway Racing</div>
-        <h1><span>HIGH SPEAD</span><strong>RACER</strong></h1>
+        <h1><span>HIGH SPEED</span><strong>RACER</strong></h1>
         <p>Dodge traffic, collect nitro, clear six high-speed routes, and chase the top score.</p>
 
-        <button id="startBtn" class="play-btn">
+        <button id="startBtn" class="play-btn" disabled>
           <span class="play-icon">▶</span>
           <span>PLAY</span>
         </button>
 
+        <div class="route-badges"><span>6 routes</span><span>4 garage cars</span><span>3 laps per route</span></div>
+        <p id="loadingStatus" role="status">Preparing your car and track…</p>
         <div class="menu-actions">
           <button id="garageBtn" type="button"><span>🏎️</span> Garage</button>
-          <button type="button"><span>🔊</span> Audio</button>
-          <button type="button"><span>?</span> Help</button>
+          <button id="menuAudioBtn" type="button" aria-pressed="true"><span>🔊</span> Audio on</button>
+          <button id="helpBtn" type="button"><span>?</span> Help</button>
         </div>
 
         <div class="controls-list">
@@ -158,7 +161,18 @@
     </div>
   </div>
 
-  <script src="./game.js"></script>
+  <div id="helpPanel" class="help-panel hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <section><h2 id="helpTitle">Own the night</h2>
+      <p>Change lanes to avoid traffic. Collect cyan pickups to refill Nitro and earn points. Beat rivals through three laps on each of six routes.</p>
+      <p><b>Desktop:</b> A/D or arrow keys to steer. Hold Space or Shift for Nitro. P or Escape pauses; M toggles audio.</p>
+      <p><b>Mobile:</b> use the steering buttons or swipe. Hold NITRO to boost. Landscape gives a wider view.</p>
+      <p>Race rewards buy cars and upgrades in your garage. Progress is saved on this device.</p>
+      <button id="helpCloseBtn" type="button">Back to garage</button>
+    </section>
+  </div>
+  <script src="./vendor/posteffect-bloom-2.23.1.js"></script>
+  <script src="./racer-3d.js"></script>
+  <script src="./game.js?v=2.0"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

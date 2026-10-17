@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "original_assets": true,
+  "assets": [
+    {
+      "file": "apex_red.glb",
+      "bytes": 169520,
+      "triangles": 2236,
+      "draw_primitives": 14
+    },
+    {
+      "file": "muscle_gold.glb",
+      "bytes": 169516,
+      "triangles": 2236,
+      "draw_primitives": 14
+    },
+    {
+      "file": "gt_silver.glb",
+      "bytes": 169516,
+      "triangles": 2236,
+      "draw_primitives": 14
+    },
+    {
+      "file": "coupe_blue.glb",
+      "bytes": 169516,
+      "triangles": 2236,
+      "draw_primitives": 14
+    },
+    {
+      "file": "neon_highway_128.glb",
+      "bytes": 66360,
+      "triangles": 876,
+      "draw_primitives": 5
+    },
+    {
+      "file": "skyline_cyan.glb",
+      "bytes": 78756,
+      "triangles": 1056,
+      "draw_primitives": 4
+    },
+    {
+      "file": "skyline_magenta.glb",
+      "bytes": 113320,
+      "triangles": 1536,
+      "draw_primitives": 4
+    }
+  ]
+}
