@@ -1,5 +1,5 @@
-/* Kasi Quest — Enhanced Mobile-first Canvas Platformer
-   WebGameArena / GloryGames iframe-ready
+/* Kasi Quest — Mobile & Gameplay Foundation v3.1
+   WebGameArena standalone game
    Features:
    - Manual movement, shooting, moving enemies
    - NPC missions + locked objective gates
@@ -53,8 +53,16 @@
   const btnRight = $("btnRight");
   const btnJump = $("btnJump");
   const btnAction = $("btnAction");
+  const shell = $("wrap");
+  const hud = $("hud");
+  const touch = $("touch");
+  const btnHudPause = $("btnHudPause");
+  const pauseMessage = $("pauseMessage");
+  const missionHud = $("missionHud");
+  const missionProgress = $("missionProgress");
+  const presentation = window.KasiPresentation;
 
-  if (!canvas || !ctx || !panel || !btnStart || !btnPause || !btnMute || !elLevelGrid) {
+  if (!canvas || !ctx || !panel || !btnStart || !btnPause || !btnMute || !elLevelGrid || !presentation) {
     console.error(`[${GAME_SLUG}] Missing required DOM elements.`);
     return;
   }
@@ -103,21 +111,35 @@
   // Canvas sizing
   // ----------------------------
   let viewW = 1, viewH = 1, dpr = 1;
+  let display = presentation.viewport(1, 1);
+  let cameraState = null;
+  let cameraInsets = { top: 90, bottom: 88 };
   function fitCanvas() {
-    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const availableHeight = window.visualViewport?.height || window.innerHeight;
+    if (availableHeight) document.documentElement.style.setProperty("--game-height", `${Math.floor(availableHeight)}px`);
     const r = canvas.getBoundingClientRect();
-    viewW = Math.max(1, Math.floor(r.width));
-    viewH = Math.max(1, Math.floor(r.height));
-    canvas.width = Math.floor(viewW * dpr);
-    canvas.height = Math.floor(viewH * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    display = presentation.viewport(r.width, r.height, window.devicePixelRatio || 1);
+    dpr = display.dpr;
+    viewW = display.worldWidth;
+    viewH = display.worldHeight;
+    canvas.width = display.pixelWidth;
+    canvas.height = display.pixelHeight;
+    cameraState = null;
+    measureCameraInsets();
+  }
+  function measureCameraInsets() {
+    const hudBottom = hud?.getBoundingClientRect().bottom || 54;
+    if (missionHud) missionHud.style.top = `${Math.ceil(hudBottom + 8)}px`;
+    const missionBottom = !missionHud?.hidden ? missionHud.getBoundingClientRect().bottom : hudBottom;
+    const leftPad = btnLeft?.getBoundingClientRect();
+    cameraInsets = { top: Math.max(60, missionBottom + 12),
+      bottom: touch && !touch.hidden && leftPad?.height ? Math.max(20, display.height - leftPad.top + 12) : 20 };
   }
   window.addEventListener("resize", fitCanvas, { passive: true });
+  window.visualViewport?.addEventListener("resize", fitCanvas, { passive: true });
+  document.addEventListener("fullscreenchange", fitCanvas);
+  window.addEventListener("orientationchange", () => { pauseForInterruption(); requestAnimationFrame(fitCanvas); });
   fitCanvas();
-
-  document.addEventListener("touchmove", (e) => {
-    if (panel.style.display === "none") e.preventDefault();
-  }, { passive: false });
 
   // ----------------------------
   // Audio + generated music
@@ -251,6 +273,8 @@
   let mode = "campaign";
   let running = false;
   let paused = false;
+  let loading = false;
+  let interrupted = false;
   let score = 0;
   let coinsCollected = 0;
   let collectiblesCollected = 0;
@@ -282,24 +306,16 @@ let floatingTexts = [];
 // Global object scaling
 // ----------------------------
 const SCALE = {
-  player: 1.32,
   enemy: 1.28,
   boss: 1.45,
-  taxi: 1.45,
   coin: 1.40,
   collectible: 1.30,
   powerup: 1.30,
   projectile: 1.18,
 };
 
-const PLAYER_W = Math.round(28 * SCALE.player);
-const PLAYER_H = Math.round(40 * SCALE.player);
-
-// const player = {
-//   x: 80, y: 80, w: PLAYER_W, h: PLAYER_H,
-
   const player = {
-    x: 80, y: 80, w: 33, h: 50,
+    x: 80, y: 80, w: presentation.sizes.playerWidth, h: presentation.sizes.playerHeight,
     vx: 0, vy: 0, face: 1,
     onGround: false,
     jumpHeld: false,
@@ -308,6 +324,8 @@ const PLAYER_H = Math.round(40 * SCALE.player);
     shield: 0,
     invuln: 0,
     lives: 3,
+    coyoteT: 0,
+    jumpBufferT: 0,
   };
 
   const GRAVITY = 2300;
@@ -320,14 +338,50 @@ const PLAYER_H = Math.round(40 * SCALE.player);
 
   const input = { left: false, right: false, jump: false, action: false };
   const prevInput = { jump: false, action: false };
+  const pressedEdges = { jump: false, action: false };
+  const keyboard = new Set();
+  const padPointers = new Map();
+  const padButtons = new Map([["left", btnLeft], ["right", btnRight], ["jump", btnJump], ["action", btnAction]]);
+  const keyActions = { arrowleft: "left", a: "left", arrowright: "right", d: "right", arrowup: "jump", w: "jump", " ": "jump", e: "action", enter: "action", shift: "action" };
+  function syncInput() {
+    for (const name of Object.keys(input)) {
+      const pressed = [...keyboard].some((key) => keyActions[key] === name) || [...padPointers.values()].includes(name);
+      if (pressed && !input[name] && name in pressedEdges) pressedEdges[name] = true;
+      input[name] = pressed;
+      padButtons.get(name)?.classList.toggle("active", pressed);
+    }
+  }
+  function resetInput() {
+    keyboard.clear();
+    for (const [pointerId, name] of padPointers) {
+      const el = padButtons.get(name);
+      try { if (el?.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId); } catch (_) {}
+    }
+    padPointers.clear();
+    syncInput();
+    prevInput.jump = false;
+    prevInput.action = false;
+    pressedEdges.jump = false;
+    pressedEdges.action = false;
+    player.jumpHeld = false;
+    player.jumpBufferT = 0;
+  }
 
   function setKey(e, down) {
     const k = e.key.toLowerCase();
-    if (["arrowleft", "a"].includes(k)) input.left = down;
-    if (["arrowright", "d"].includes(k)) input.right = down;
-    if (["arrowup", "w", " "].includes(k)) input.jump = down;
-    if (["e", "enter", "shift"].includes(k)) input.action = down;
-    if (["arrowleft", "arrowright", "arrowup", "a", "d", "w", " ", "e", "enter", "shift"].includes(k)) e.preventDefault();
+    if (down && (e.altKey || e.ctrlKey || e.metaKey)) return;
+    if ((k === "escape" || k === "p") && down && !e.repeat && running && !loading) {
+      e.preventDefault();
+      setPaused(!paused);
+      return;
+    }
+    if (!keyActions[k]) return;
+    // Leave Enter/Space and arrows available to the menu's focused controls.
+    if (!running || paused || !panel.hidden) return;
+    e.preventDefault();
+    if (down) keyboard.add(k);
+    else keyboard.delete(k);
+    syncInput();
   }
   window.addEventListener("keydown", (e) => setKey(e, true));
   window.addEventListener("keyup", (e) => setKey(e, false));
@@ -337,17 +391,37 @@ const PLAYER_H = Math.round(40 * SCALE.player);
     el.style.userSelect = "none";
     el.style.webkitUserSelect = "none";
     el.style.touchAction = "none";
-    const down = (e) => { e.preventDefault(); input[name] = true; ensureAudio(); el.classList.add("active"); };
-    const up = (e) => { e.preventDefault(); input[name] = false; el.classList.remove("active"); };
+    const down = (e) => {
+      if (!running || paused || (e.pointerType === "mouse" && e.button !== 0)) return;
+      e.preventDefault();
+      padPointers.set(e.pointerId, name);
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      syncInput();
+      ensureAudio();
+    };
+    const up = (e) => {
+      if (padPointers.get(e.pointerId) !== name) return;
+      e.preventDefault();
+      padPointers.delete(e.pointerId);
+      syncInput();
+    };
     el.addEventListener("pointerdown", down);
     el.addEventListener("pointerup", up);
     el.addEventListener("pointercancel", up);
-    el.addEventListener("pointerleave", up);
+    el.addEventListener("lostpointercapture", up);
   }
   bindPad(btnLeft, "left");
   bindPad(btnRight, "right");
   bindPad(btnJump, "jump");
   bindPad(btnAction, "action");
+  document.addEventListener("visibilitychange", () => { if (document.hidden) pauseForInterruption(); });
+  window.addEventListener("blur", pauseForInterruption);
+  window.addEventListener("pagehide", pauseForInterruption);
+  function pauseForInterruption() {
+    resetInput();
+    if (running || loading) interrupted = true;
+    if (running && !paused) setPaused(true, "Game paused. Resume when you are ready.");
+  }
 
   // ----------------------------
   // Level normalization
@@ -536,10 +610,8 @@ const y = baseY - (h - baseH);
 const rawY = Number(raw.y || 0) * tileSize;
 const baseW = Number(raw.w || raw.width || 1) * tileSize;
 const baseH = Number(raw.h || raw.height || 1) * tileSize;
-const obstacleScale = type === "taxi" ? SCALE.taxi : 1;
-
-const w = baseW * obstacleScale;
-const h = baseH * obstacleScale;
+const size = type === "taxi" ? presentation.taxiSize(baseW) : { w: baseW, h: baseH };
+const { w, h } = size;
 const x = rawX - (w - baseW) / 2;
 const y = rawY - (h - baseH);
       const base = {
@@ -804,6 +876,8 @@ const y = rawY - (h - baseH);
     player.onGround = false;
     player.jumpHeld = false;
     player.jumpHoldT = 0;
+    player.coyoteT = 0;
+    player.jumpBufferT = 0;
     player.airJumpsLeft = upgrades.doubleJump > 0 ? upgrades.doubleJump : 0;
     player.shield = upgrades.shield;
     player.invuln = 1.2;
@@ -826,6 +900,8 @@ const y = rawY - (h - baseH);
     }
   }
   function resetLevelState({ resetScore = false } = {}) {
+    resetInput();
+    cameraState = null;
     resetPlayer();
     coinsCollected = 0;
     collectiblesCollected = 0;
@@ -838,6 +914,7 @@ const y = rawY - (h - baseH);
     noDamage = true;
     projectiles = [];
     enemyProjectiles = [];
+    lastShotAt = -99;
     floatingTexts = [];
     buildEnemiesFromLevel();
     buildBossesFromLevel();
@@ -876,7 +953,7 @@ const y = rawY - (h - baseH);
       postScore(mode === "daily" ? "daily_game_over" : "game_over");
       running = false;
       paused = true;
-      panel.style.display = "flex";
+      syncPlayUI();
       btnStart.textContent = "Try Again";
       addText("Quest failed", player.x, player.y);
       return;
@@ -887,6 +964,10 @@ const y = rawY - (h - baseH);
     player.vx = 0;
     player.vy = 0;
     player.invuln = 1.4;
+    player.coyoteT = 0;
+    player.jumpBufferT = 0;
+    player.jumpHeld = false;
+    cameraState = null;
     snapPlayerToGroundAtSpawn();
   }
 
@@ -899,6 +980,10 @@ const y = rawY - (h - baseH);
     if (elLives) elLives.textContent = String(player.lives);
     if (elCombo) elCombo.textContent = comboCount > 1 ? `x${comboCount}` : "x1";
     if (elTime) elTime.textContent = levelTime.toFixed(1);
+    if (missionProgress) {
+      const text = objectiveText();
+      if (missionProgress.textContent !== text) missionProgress.textContent = text;
+    }
     if (elDailyBest) elDailyBest.textContent = String(dailyBestStore[dateKey()] || 0);
     updateStarSummary();
     renderShop();
@@ -1004,9 +1089,14 @@ projectiles.push({
     }
     player.vx = clamp(player.vx, -MAX_SPEED, MAX_SPEED);
 
-    const jumpPressed = input.jump && !prevInput.jump;
-    if (jumpPressed && (player.onGround || player.airJumpsLeft > 0)) {
-      if (!player.onGround) player.airJumpsLeft -= 1;
+    const jumpPressed = pressedEdges.jump || (input.jump && !prevInput.jump);
+    pressedEdges.jump = false;
+    player.coyoteT = player.onGround ? 0.1 : Math.max(0, player.coyoteT - dt);
+    player.jumpBufferT = jumpPressed ? 0.12 : Math.max(0, player.jumpBufferT - dt);
+    if (player.jumpBufferT > 0 && (player.onGround || player.coyoteT > 0 || player.airJumpsLeft > 0)) {
+      if (!player.onGround && player.coyoteT <= 0) player.airJumpsLeft -= 1;
+      player.coyoteT = 0;
+      player.jumpBufferT = 0;
       player.vy = -JUMP_V0;
       player.onGround = false;
       player.jumpHeld = true;
@@ -1019,7 +1109,8 @@ projectiles.push({
         player.jumpHoldT += dt;
       } else player.jumpHeld = false;
     }
-    if (input.action && !prevInput.action) shoot();
+    if (pressedEdges.action || (input.action && !prevInput.action)) shoot();
+    pressedEdges.action = false;
 
     player.vy += GRAVITY * dt;
     player.vy = clamp(player.vy, -1700, 2200);
@@ -1377,6 +1468,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   async function completeLevel() {
     if (paused) return;
     paused = true;
+    resetInput();
     const starCount = calcStars();
     const levelKey = mode === "daily" ? dailyDateKey : String(currentLevel);
     if (mode === "campaign") {
@@ -1394,7 +1486,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
 
     if (mode === "daily") {
       running = false;
-      panel.style.display = "flex";
+      syncPlayUI();
       btnStart.textContent = "Start";
       updateLevelButtons();
       return;
@@ -1402,19 +1494,22 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
 
     if (currentLevel < LEVEL_COUNT) {
       currentLevel += 1;
+      setLoading(true);
       try {
         await loadLevel(currentLevel);
         resetLevelState({ resetScore: false });
-        paused = false;
+        setPaused(!!document.hidden || interrupted);
         updateLevelButtons();
       } catch (e) {
         console.warn(e);
-        panel.style.display = "flex";
-        paused = true;
+        running = false;
+        setPaused(true, "The next level could not load. Select it again to retry.");
+      } finally {
+        setLoading(false);
       }
     } else {
       running = false;
-      panel.style.display = "flex";
+      syncPlayUI();
       btnStart.textContent = "Play Again";
       addText("Quest complete!", player.x, player.y);
       updateLevelButtons();
@@ -1425,15 +1520,16 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   // Render
   // ----------------------------
   function worldToScreen(x, y, camX, camY) { return { x: x - camX, y: y - camY }; }
-  function computeCamera() {
+  function computeCamera(dt = 1 / 60) {
     if (!level) return { camX: 0, camY: 0 };
-    const worldW = level.width * tileSize;
-    const worldH = level.height * tileSize;
-    let camX = player.x + player.w * 0.5 - viewW * 0.43;
-    let camY = player.y + player.h * 0.5 - viewH * 0.58;
-    camX = clamp(camX, 0, Math.max(0, worldW - viewW));
-    camY = clamp(camY, 0, Math.max(0, worldH - viewH));
-    return { camX, camY };
+    const target = presentation.camera(player, level.width * tileSize, level.height * tileSize, display, cameraInsets);
+    if (!cameraState) cameraState = target;
+    else {
+      const factor = 1 - Math.exp(-12 * dt);
+      cameraState.camX = lerp(cameraState.camX, target.camX, factor);
+      cameraState.camY = lerp(cameraState.camY, target.camY, factor);
+    }
+    return cameraState;
   }
   function drawBackground(camX) {
     ctx.clearRect(0, 0, viewW, viewH);
@@ -1505,34 +1601,14 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     for (const ob of obstacles) {
       if (!ob.active) continue;
       const p = worldToScreen(ob.x, ob.y, camX, camY);
- if (ob.type === "taxi") {
-  if (imgTaxi) {
-    ctx.save();
-
-    if (ob.dir < 0) {
-      ctx.translate(p.x + ob.w, p.y);
-      ctx.scale(-1, 1);
-      ctx.drawImage(imgTaxi, 0, 0, ob.w, ob.h);
-    } else {
-      ctx.drawImage(imgTaxi, p.x, p.y, ob.w, ob.h);
-    }
-
-    ctx.restore();
-  } else {
-    ctx.fillStyle = "rgba(250,204,21,.9)";
-    ctx.strokeStyle = "rgba(0,0,0,.55)";
-    ctx.beginPath();
-    ctx.roundRect(p.x, p.y, ob.w, ob.h, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = "rgba(0,0,0,.75)";
-    ctx.font = "900 11px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("TAXI", p.x + ob.w / 2, p.y + ob.h * 0.62);
-  }
-}
-else if (ob.type === "crate" && ob.state !== "landed") {
+      if (ob.type === "taxi") {
+        if (!presentation.drawSprite(ctx, imgTaxi, "taxi", { ...p, w: ob.w, h: ob.h }, ob.dir)) {
+          ctx.fillStyle = "rgba(250,204,21,.9)";
+          ctx.beginPath(); ctx.roundRect(p.x, p.y, ob.w, ob.h, 8); ctx.fill();
+          ctx.fillStyle = "#101827"; ctx.font = "900 11px system-ui"; ctx.textAlign = "center";
+          ctx.fillText("TAXI", p.x + ob.w / 2, p.y + ob.h * 0.62);
+        }
+      } else if (ob.type === "crate" && ob.state !== "landed") {
         ctx.fillStyle = "rgba(161,98,7,.92)";
         ctx.strokeStyle = "rgba(255,255,255,.25)";
         ctx.fillRect(p.x, p.y, ob.w, ob.h); ctx.strokeRect(p.x, p.y, ob.w, ob.h);
@@ -1558,9 +1634,9 @@ else if (ob.type === "crate" && ob.state !== "landed") {
     }
   }
   function drawItems(camX, camY) {
-  const coinDraw = 28 * SCALE.coin;
-  const collectibleDraw = 24 * SCALE.collectible;
-  const powerRadius = 12 * SCALE.powerup;
+  const coinDraw = presentation.sizes.coin;
+  const collectibleDraw = presentation.sizes.collectible;
+  const powerRadius = presentation.sizes.powerupRadius;
 
   for (const c of level.coins) {
     const x = c.x * tileSize + tileSize / 2;
@@ -1569,7 +1645,7 @@ else if (ob.type === "crate" && ob.state !== "landed") {
     if (p.x < -60 || p.x > viewW + 60 || p.y < -60 || p.y > viewH + 60) continue;
 
     if (imgCoin) {
-      ctx.drawImage(imgCoin, p.x - coinDraw / 2, p.y - coinDraw / 2, coinDraw, coinDraw);
+      presentation.drawSprite(ctx, imgCoin, "coin", { x: p.x - coinDraw / 2, y: p.y - coinDraw / 2, w: coinDraw, h: coinDraw }, 1, "contain");
     } else {
       ctx.fillStyle = "rgba(250,204,21,0.95)";
       ctx.beginPath();
@@ -1641,10 +1717,7 @@ else if (ob.type === "crate" && ob.state !== "landed") {
       const p = worldToScreen(en.x, en.y, camX, camY);
       if (p.x + en.w < -70 || p.x > viewW + 70 || p.y + en.h < -70 || p.y > viewH + 70) continue;
       if (imgEnemy) {
-        ctx.save();
-        if (en.dir < 0) { ctx.translate(p.x + en.w, p.y); ctx.scale(-1, 1); ctx.drawImage(imgEnemy, 0, 0, en.w, en.h); }
-        else ctx.drawImage(imgEnemy, p.x, p.y, en.w, en.h);
-        ctx.restore();
+        presentation.drawSprite(ctx, imgEnemy, "enemy", { ...p, w: en.w, h: en.h }, en.dir);
       } else {
         ctx.fillStyle = en.type === "shooter" ? "rgba(167,139,250,.24)" : "rgba(251,113,133,.22)";
         ctx.strokeStyle = en.type === "chaser" ? "rgba(251,113,133,.95)" : "rgba(251,113,133,.78)";
@@ -1660,47 +1733,14 @@ else if (ob.type === "crate" && ob.state !== "landed") {
     for (const b of bosses) {
       if (!b.alive) continue;
       const p = worldToScreen(b.x, b.y, camX, camY);
-      if (imgBoss) {
-  ctx.save();
-
-  if (b.dir < 0) {
-    ctx.translate(p.x + b.w, p.y);
-    ctx.scale(-1, 1);
-    ctx.drawImage(imgBoss, 0, 0, b.w, b.h);
-  } else {
-    ctx.drawImage(imgBoss, p.x, p.y, b.w, b.h);
-  }
-
-  ctx.restore();
-} else {
-  // Fallback block if boss.png is missing
-if (imgBoss) {
-  ctx.save();
-
-  if (b.dir < 0) {
-    ctx.translate(p.x + b.w, p.y);
-    ctx.scale(-1, 1);
-    ctx.drawImage(imgBoss, 0, 0, b.w, b.h);
-  } else {
-    ctx.drawImage(imgBoss, p.x, p.y, b.w, b.h);
-  }
-
-  ctx.restore();
-} else {
-  ctx.fillStyle = b.phase >= 2 ? "rgba(251,113,133,.36)" : "rgba(250,204,21,.26)";
-  ctx.strokeStyle = b.phase >= 2 ? "rgba(251,113,133,.95)" : "rgba(250,204,21,.9)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.roundRect(p.x, p.y, b.w, b.h, 10);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(255,255,255,.96)";
-  ctx.font = "900 11px system-ui";
-  ctx.textAlign = "center";
-  ctx.fillText("BOSS", p.x + b.w / 2, p.y + b.h * 0.48);
-}
-}
+      if (!presentation.drawSprite(ctx, imgBoss, "boss", { ...p, w: b.w, h: b.h }, b.dir)) {
+        ctx.fillStyle = b.phase >= 2 ? "rgba(251,113,133,.36)" : "rgba(250,204,21,.26)";
+        ctx.strokeStyle = b.phase >= 2 ? "rgba(251,113,133,.95)" : "rgba(250,204,21,.9)";
+        ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.roundRect(p.x, p.y, b.w, b.h, 10); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#fff"; ctx.font = "900 11px system-ui"; ctx.textAlign = "center";
+        ctx.fillText("BOSS", p.x + b.w / 2, p.y + b.h * 0.48);
+      }
       const barW = Math.max(42, b.w);
       ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(p.x, p.y - 12, barW, 6);
       ctx.fillStyle = "rgba(34,197,94,.9)"; ctx.fillRect(p.x, p.y - 12, barW * clamp(b.hp / b.maxHp, 0, 1), 6);
@@ -1721,10 +1761,8 @@ if (imgBoss) {
     if (player.invuln > 0 && Math.floor(totalRunTime * 18) % 2 === 0) return;
     const img = Math.abs(player.vx) > 45 && imgPlayerRun ? imgPlayerRun : imgPlayerIdle;
     if (img) {
-      ctx.save();
-      if (player.face < 0) { ctx.translate(p.x + player.w, p.y); ctx.scale(-1, 1); ctx.drawImage(img, 0, 0, player.w, player.h); }
-      else ctx.drawImage(img, p.x, p.y, player.w, player.h);
-      ctx.restore();
+      const name = img === imgPlayerRun ? "playerRun" : "playerIdle";
+      presentation.drawSprite(ctx, img, name, { ...p, w: player.w, h: player.h }, player.face);
     } else {
       ctx.fillStyle = "rgba(234,240,255,.18)"; ctx.strokeStyle = "rgba(56,189,248,.86)"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.roundRect(p.x, p.y, player.w, player.h, 7); ctx.fill(); ctx.stroke();
@@ -1740,22 +1778,38 @@ if (imgBoss) {
   function drawOverlayText(camX, camY) {
     ctx.save();
     ctx.textAlign = "left"; ctx.textBaseline = "top";
-    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.font = "800 13px system-ui";
-    ctx.fillText(objectiveText(), 14, Math.max(62, viewH > 520 ? 72 : 56));
     if (comboCount > 1) {
-      ctx.fillStyle = "rgba(250,204,21,.96)"; ctx.font = "1000 18px system-ui"; ctx.fillText(`Combo x${comboCount}`, 14, Math.max(84, viewH > 520 ? 96 : 78));
+      ctx.fillStyle = "rgba(250,204,21,.96)";
+      ctx.font = `1000 ${18 / display.scale}px system-ui`;
+      ctx.fillText(`Combo x${comboCount}`, 14 / display.scale, (cameraInsets.top + 8) / display.scale);
     }
-    ctx.font = "900 14px system-ui"; ctx.textAlign = "center";
+    ctx.font = `900 ${14 / display.scale}px system-ui`; ctx.textAlign = "center";
     for (const f of floatingTexts) {
       const p = worldToScreen(f.x, f.y, camX, camY);
       ctx.globalAlpha = clamp(1 - f.t / f.life, 0, 1);
       ctx.fillStyle = "rgba(255,255,255,.95)";
-      ctx.fillText(f.text, p.x, p.y);
+      const maxWidth = Math.min(viewW - 32 / display.scale, 320 / display.scale);
+      const lines = [];
+      let line = "";
+      for (const word of String(f.text).split(" ")) {
+        const next = line ? `${line} ${word}` : word;
+        if (line && ctx.measureText(next).width > maxWidth) { lines.push(line); line = word; }
+        else line = next;
+      }
+      if (line) lines.push(line);
+      const x = clamp(p.x, maxWidth / 2 + 8 / display.scale, viewW - maxWidth / 2 - 8 / display.scale);
+      const y = clamp(p.y, cameraInsets.top / display.scale, (display.height - cameraInsets.bottom - 64) / display.scale);
+      lines.slice(0, 4).forEach((text, i) => {
+        ctx.strokeStyle = "rgba(3,8,18,.9)"; ctx.lineWidth = 4 / display.scale;
+        ctx.strokeText(text, x, y + i * 17 / display.scale);
+        ctx.fillText(text, x, y + i * 17 / display.scale);
+      });
     }
     ctx.restore();
   }
-  function render() {
-    const { camX, camY } = computeCamera();
+  function render(dt = 1 / 60) {
+    ctx.setTransform(dpr * display.scale, 0, 0, dpr * display.scale, 0, 0);
+    const { camX, camY } = computeCamera(dt);
     drawBackground(camX);
     if (level) {
       drawWorld(camX, camY);
@@ -1821,6 +1875,10 @@ if (imgBoss) {
       b.type = "button";
       b.innerHTML = `<span>${i}</span><span class="stars">${stars[String(i)] ? "★".repeat(stars[String(i)]) : "—"}</span>`;
       b.addEventListener("click", async () => {
+        if (loading) return;
+        setLoading(true);
+        running = false;
+        setPaused(false);
         currentLevel = i;
         mode = "campaign";
         updateLevelButtons();
@@ -1828,23 +1886,52 @@ if (imgBoss) {
           await loadLevel(i);
           resetLevelState({ resetScore: true });
           render();
-        } catch (e) { console.warn(e); }
+        } catch (e) { console.warn(e); setPaused(true, "This level could not load. Please try again."); }
+        finally { setLoading(false); }
       });
       elLevelGrid.appendChild(b);
     }
   }
-  function setPaused(v) {
-    paused = v;
+  function syncPlayUI() {
+    const playing = running && !paused;
+    panel.hidden = playing;
+    // Retain this property for the shared game-tab fullscreen integration.
+    panel.style.display = playing ? "none" : "flex";
+    if (touch) touch.hidden = !playing;
+    if (missionHud) missionHud.hidden = !playing;
+    if (btnHudPause) btnHudPause.hidden = !playing;
+    btnPause.hidden = !running;
+    shell?.classList.toggle("isPlaying", playing);
+    if (!playing) resetInput();
+    measureCameraInsets();
+  }
+  function setLoading(value) {
+    loading = value;
+    const buttons = [btnStart, btnDaily, btnPause, btnHudPause, ...elLevelGrid.children];
+    for (const button of buttons) if (button) button.disabled = value;
+    panel.setAttribute("aria-busy", String(value));
+  }
+  function setPaused(v, message = "") {
+    paused = !!v;
+    if (!paused) interrupted = false;
+    resetInput();
     btnPause.textContent = paused ? "Resume" : "Pause";
+    if (pauseMessage) { pauseMessage.textContent = message; pauseMessage.hidden = !message; }
+    syncPlayUI();
+    if (running && !paused) canvas.focus({ preventScroll: true });
+    else if (running && paused) btnPause.focus({ preventScroll: true });
   }
   async function startOrRestart() {
+    if (loading) return;
+    setLoading(true);
+    resetInput();
+    interrupted = false;
     try {
       if (mode !== "daily") await loadLevel(Number.isFinite(Number(currentLevel)) ? Number(currentLevel) : 1);
       else await loadDailyLevel();
       resetLevelState({ resetScore: true });
       running = true;
-      setPaused(false);
-      panel.style.display = "none";
+      setPaused(!!document.hidden || interrupted);
       btnStart.textContent = "Restart";
       ensureAudio();
       if (musicEnabled) startMusic();
@@ -1852,32 +1939,36 @@ if (imgBoss) {
       postScore(mode === "daily" ? "daily_start" : "start");
     } catch (e) {
       console.warn(e);
-      panel.style.display = "flex";
-      alert(`Could not load level. ${e.message || e}`);
-    }
+      running = false;
+      setPaused(true, "The level could not load. Check your connection and try again.");
+    } finally { setLoading(false); }
   }
   async function startDaily() {
+    if (loading) return;
+    setLoading(true);
+    resetInput();
+    interrupted = false;
     try {
       await loadDailyLevel();
       resetLevelState({ resetScore: true });
       running = true;
       mode = "daily";
-      setPaused(false);
-      panel.style.display = "none";
+      setPaused(!!document.hidden || interrupted);
       btnStart.textContent = "Restart";
       ensureAudio();
       if (musicEnabled) startMusic();
       postScore("daily_start");
-    } catch (e) { console.warn(e); }
+    } catch (e) { console.warn(e); running = false; setPaused(true, "The daily challenge could not load. Please try again."); }
+    finally { setLoading(false); }
   }
 
   btnStart.addEventListener("click", () => { void startOrRestart(); });
   if (btnDaily) btnDaily.addEventListener("click", () => { void startDaily(); });
   btnPause.addEventListener("click", () => {
-    if (!running) return;
+    if (!running || loading) return;
     setPaused(!paused);
-    panel.style.display = paused ? "flex" : "none";
   });
+  btnHudPause?.addEventListener("click", () => { if (running && !loading) setPaused(true); });
   btnMute.addEventListener("click", () => {
     muted = !muted;
     btnMute.textContent = muted ? "Unmute" : "Mute";
@@ -1896,16 +1987,19 @@ if (imgBoss) {
     const dt = clamp((t - tPrev) / 1000, 0, 0.033);
     tPrev = t;
     if (running && !paused) updateGameplay(dt);
-    render();
+    render(dt);
     requestAnimationFrame(loop);
   }
 
   async function boot() {
+    setLoading(true);
     best = Number(safeGet(BEST_KEY, "0")) || 0;
     wallet = Number(safeGet(WALLET_KEY, "0")) || 0;
     await loadAssetsOptional();
     try { await loadLevel(1); resetLevelState({ resetScore: true }); } catch (e) { console.warn(e); }
     buildLevelGrid();
+    setLoading(false);
+    syncPlayUI();
     renderShop();
     setHUD();
     loop();
