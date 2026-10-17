@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#070b18" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -14,7 +14,7 @@
       name="description"
       content="Kasi Quest — a mobile-first WebGameArena platformer with missions, bosses, upgrades, and daily challenges."
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=3.1" />
     <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
   </head>
 
@@ -29,13 +29,19 @@
           <div class="chip optional"><span class="k">Wallet</span><strong class="v" id="wallet">0</strong></div>
         </div>
         <div class="hudGroup hudGroupRight">
-          <div class="chip optional"><span class="k">Lives</span><strong class="v" id="lives">3</strong></div>
+          <div class="chip livesChip"><span class="k">Lives</span><strong class="v" id="lives">3</strong></div>
           <div class="chip optional"><span class="k">Combo</span><strong class="v" id="combo">x1</strong></div>
           <div class="chip"><span class="k">Score</span><strong class="v" id="score">0</strong></div>
           <div class="chip optional"><span class="k">Best</span><strong class="v" id="best">0</strong></div>
           <div class="chip"><span class="k">Time</span><strong class="v" id="time">0.0</strong></div>
         </div>
+        <button id="btnHudPause" class="hudPause" type="button" aria-label="Pause game" hidden>Pause</button>
       </header>
+
+      <div id="missionHud" class="missionHud" hidden>
+        <span class="missionTitle">Mission</span>
+        <span id="missionProgress"></span>
+      </div>
 
       <div id="touch" class="touchLayer" aria-label="Touch controls">
         <div class="padL">
@@ -54,18 +60,19 @@
             <div class="panelCopy">
               <h1 class="title">Kasi Quest</h1>
               <p class="sub">
-                Mobile-first kasi platformer. Complete NPC missions, collect kasi items,
-                defeat moving bots and mini-bosses, unlock gates, and send scores back to WebGameArena.
+                Explore the rooftops and streets. Help your neighbours, collect kasi items,
+                defeat bots and bosses, and unlock the gates ahead.
                 <br />
                 Touch: <b>◀ ▶</b> move, <b>⤒</b> jump, <b>●</b> shoot.
-                Keyboard: <b>A/D</b>, <b>Space</b>, <b>E/Enter/Shift</b>.
+                Keyboard: <b>A/D</b>, <b>Space</b>, <b>E/Enter/Shift</b>. <b>Esc/P</b> pauses.
               </p>
+              <p id="pauseMessage" class="pauseMessage" role="status" hidden></p>
             </div>
 
             <div class="btnRow">
               <button class="primary" id="btnStart" type="button">Start</button>
               <button id="btnDaily" type="button" title="Play today's generated challenge">Daily</button>
-              <button id="btnPause" type="button" title="Pause or resume">Pause</button>
+              <button id="btnPause" type="button" title="Resume your current run" hidden>Resume</button>
               <button id="btnMute" type="button" title="Mute or unmute">Mute</button>
               <button id="btnMusic" type="button" title="Background music">Music</button>
             </div>
@@ -102,7 +109,8 @@
       </section>
     </div>
 
-    <script src="./game.js" defer></script>
+    <script src="./kasi-presentation.js?v=3.1" defer></script>
+    <script src="./game.js?v=3.1" defer></script>
     <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
   </body>
 </html>

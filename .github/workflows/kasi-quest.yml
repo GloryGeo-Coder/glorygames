@@ -1,0 +1,29 @@
+name: Kasi Quest
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/kasi-quest/**'
+      - 'apps/web/scripts/kasi-quest*'
+      - 'apps/web/scripts/helpers/kasi-runtime.cjs'
+      - '.github/workflows/kasi-quest.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/kasi-quest/**'
+      - 'apps/web/scripts/kasi-quest*'
+      - 'apps/web/scripts/helpers/kasi-runtime.cjs'
+      - '.github/workflows/kasi-quest.yml'
+permissions:
+  contents: read
+jobs:
+  kasi-quest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/kasi-quest/game.js
+      - run: node --check apps/web/public/games/kasi-quest/kasi-presentation.js
+      - run: node --test apps/web/scripts/kasi-quest-*.test.cjs
