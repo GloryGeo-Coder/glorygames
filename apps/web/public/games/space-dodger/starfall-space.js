@@ -12,25 +12,99 @@
       return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
       mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}
     float fbm(vec3 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise3(p);p=p*2.03+vec3(7.1,3.4,1.8);a*=.5;}return v;}`;
+  // Sample the backdrop directly; scene lights, fog and emissive extraction never recolour it.
   const fragment = `precision highp float;
-    varying vec3 vDirection;
-    uniform vec3 nebulaHue;
-    uniform float sector;
-    ${noise}
+    uniform sampler2D skyTexture;
+    uniform vec2 viewportSize;
+    uniform vec2 imageSize;
     void main(){
-      vec3 d=normalize(vDirection),p=d*3.6+vec3(sector*.31,1.7,-.4);
-      float broad=fbm(p),wisps=fbm(p*2.8+vec3(broad*3.));
-      float cloud=smoothstep(.34,.78,broad)*smoothstep(.27,.74,wisps);
-      float filament=pow(max(0.,1.-abs(wisps-.52)*5.),4.)*cloud;
-      vec3 blue=vec3(.035,.13,.27),violet=vec3(.18,.045,.23);
-      vec3 gas=mix(blue,violet,smoothstep(.3,.65,fbm(p+6.)));
-      gas=mix(gas,nebulaHue*.21,.26);
-      vec3 color=vec3(.003,.006,.016)+gas*cloud*2.8+mix(vec3(.09,.16,.22),nebulaHue*.25,.3)*filament*.65;
-      vec3 starCell=d*420.;vec3 cell=floor(starCell),q=fract(starCell)-.5;
-      float star=exp(-dot(q,q)*190.)*step(.991,hash(cell));
-      color+=mix(vec3(.56,.7,1.),vec3(1.,.83,.65),hash(cell+2.))*star*.8;
-      gl_FragColor=vec4(color,1.);
+      vec2 viewport=max(viewportSize,vec2(1.));
+      float screenAspect=viewport.x/viewport.y;
+      float artAspect=imageSize.x/max(1.,imageSize.y);
+      vec2 crop=vec2(min(1.,screenAspect/artAspect),min(1.,artAspect/screenAspect));
+      vec2 uv=(gl_FragCoord.xy/viewport-.5)*crop+.5;
+      gl_FragColor=vec4(texture2D(skyTexture,uv).rgb,1.);
     }`;
+  const SKIES=Object.freeze([
+  {
+    "name": "Launch Corridor",
+    "file": "assets/backgrounds/sectors/01-launch-corridor.jpg"
+  },
+  {
+    "name": "Meteor Scar",
+    "file": "assets/backgrounds/sectors/02-meteor-scar.jpg"
+  },
+  {
+    "name": "Nebula Gate",
+    "file": "assets/backgrounds/sectors/03-nebula-gate.jpg"
+  },
+  {
+    "name": "Drone Forge",
+    "file": "assets/backgrounds/sectors/04-drone-forge.jpg"
+  },
+  {
+    "name": "Comet Rapids",
+    "file": "assets/backgrounds/sectors/05-comet-rapids.jpg"
+  },
+  {
+    "name": "Pirate Signal",
+    "file": "assets/backgrounds/sectors/06-pirate-signal.jpg"
+  },
+  {
+    "name": "Crystal Rift",
+    "file": "assets/backgrounds/sectors/07-crystal-rift.jpg"
+  },
+  {
+    "name": "Mothership Shadow",
+    "file": "assets/backgrounds/sectors/08-mothership-shadow.jpg"
+  },
+  {
+    "name": "Solar Furnace",
+    "file": "assets/backgrounds/sectors/09-solar-furnace.jpg"
+  },
+  {
+    "name": "Black Star Run",
+    "file": "assets/backgrounds/sectors/10-black-star-run.jpg"
+  },
+  {
+    "name": "Starfall Siege",
+    "file": "assets/backgrounds/sectors/11-starfall-siege.jpg"
+  },
+  {
+    "name": "Odyssey Finale",
+    "file": "assets/backgrounds/sectors/12-odyssey-finale.jpg"
+  },
+  {
+    "name": "Echoes of Asterion",
+    "file": "assets/backgrounds/sectors/13-echoes-of-asterion.jpg"
+  },
+  {
+    "name": "Ion Tempest",
+    "file": "assets/backgrounds/sectors/14-ion-tempest.jpg"
+  },
+  {
+    "name": "Relay Breaker",
+    "file": "assets/backgrounds/sectors/15-relay-breaker.jpg"
+  },
+  {
+    "name": "Ark of the Dawn",
+    "file": "assets/backgrounds/sectors/16-ark-of-the-dawn.jpg"
+  },
+  {
+    "name": "Singularity Crossing",
+    "file": "assets/backgrounds/sectors/17-singularity-crossing.jpg"
+  },
+  {
+    "name": "Heart of Starfall",
+    "file": "assets/backgrounds/sectors/18-heart-of-starfall.jpg"
+  }
+].map(Object.freeze));
+  function sector(index){return SKIES[Math.max(0,Math.min(SKIES.length-1,Math.floor(Number(index)||0)))];}
+  function coverRect(iw,ih,w,h){
+    const scale=Math.min(iw/Math.max(1,w),ih/Math.max(1,h));
+    const width=Math.min(iw,w*scale),height=Math.min(ih,h*scale);
+    return {x:Math.max(0,(iw-width)/2),y:Math.max(0,(ih-height)/2),width,height};
+  }
   const planetFragment = `precision highp float;
     varying vec3 vDirection;
     uniform vec3 surfaceHue;
@@ -53,16 +127,39 @@
     B.Effect.ShadersStore.starfallPlanetFragmentShader=planetFragment;
     const sky=B.MeshBuilder.CreateSphere('Infinite Starfall sky',{diameter:600,segments:16},scene);
     sky.infiniteDistance=true;sky.isPickable=false;sky.alwaysSelectAsActiveMesh=true;sky.applyFog=false;
-    // The four-octave sky is baked once by the asset tool, rather than recalculated per frame on phones.
-    const material=new B.StandardMaterial('Continuous nebula',scene);
-    material.disableLighting=true;material.diffuseColor=B.Color3.Black();material.specularColor=B.Color3.Black();
-    material.emissiveColor=B.Color3.White();material.backFaceCulling=false;material.disableDepthWrite=true;sky.material=material;
-    let texture=null,sector=-1;
+    const material=new B.ShaderMaterial('Starfall artwork',scene,'starfallSky',{
+      attributes:['position'],uniforms:['worldViewProjection','viewportSize','imageSize'],samplers:['skyTexture']
+    });
+    material.backFaceCulling=false;material.disableDepthWrite=true;sky.material=material;
+    // A sky-sized glow source can bleach the whole image. Background pixels never enter bloom.
+    for(const layer of scene.effectLayers||[])layer.addExcludedMesh?.(sky);
+    const fallback=new B.RawTexture(new Uint8Array([5,9,23,255]),1,1,B.Engine.TEXTUREFORMAT_RGBA,scene,false,false,B.Texture.NEAREST_SAMPLINGMODE);
+    material.setTexture('skyTexture',fallback);material.setVector2('imageSize',new B.Vector2(16,9));
+    let texture=fallback,pending=null,currentSector=-1,generation=0,disposed=false;
+    function viewport(){
+      material.setVector2('viewportSize',new B.Vector2(scene.getEngine().getRenderWidth(),scene.getEngine().getRenderHeight()));
+    }
+    material.onBindObservable.add(viewport);viewport();
     function theme(index){
-      const next=index%6;if(next===sector)return;sector=next;
-      const old=texture;texture=new B.Texture('assets/backgrounds/starfall-nebula-'+next+'-v41.jpg',scene,false,false);
-      texture.wrapU=B.Texture.CLAMP_ADDRESSMODE;texture.wrapV=B.Texture.CLAMP_ADDRESSMODE;
-      texture.anisotropicFilteringLevel=2;material.emissiveTexture=texture;old?.dispose();
+      const i=Math.max(0,Math.min(SKIES.length-1,Math.floor(Number(index)||0)));
+      if(i===currentSector)return;currentSector=i;const token=++generation;
+      pending?.dispose();pending=null;
+      const candidate=new B.Texture(sector(i).file,scene,false,true,B.Texture.TRILINEAR_SAMPLINGMODE,undefined,()=>{
+        if(token!==generation||disposed)return;
+        pending=null;candidate.dispose();currentSector=-1;
+      });
+      candidate.wrapU=B.Texture.CLAMP_ADDRESSMODE;candidate.wrapV=B.Texture.CLAMP_ADDRESSMODE;
+      candidate.anisotropicFilteringLevel=2;pending=candidate;
+      const accept=()=>{
+        if(disposed||token!==generation)return;
+        const old=texture;texture=candidate;pending=null;
+        material.setTexture('skyTexture',candidate);
+        // Base dimensions preserve the artwork's aspect even if WebGL 1 resizes a GPU texture.
+        const size=candidate.getBaseSize();material.setVector2('imageSize',new B.Vector2(size.width,size.height));
+        if(old!==fallback&&old!==candidate)old.dispose();
+      };
+      candidate.onLoadObservable.addOnce(accept);
+      if(candidate.isReady())accept();
     }
     function planet(mesh,hue,icy=false){
       const mat=new B.ShaderMaterial(mesh.name+' surface',scene,'starfallPlanet',{
@@ -74,16 +171,16 @@
       };
     }
     theme(0,'#36dfff');
-    scene.onDisposeObservable.add(()=>texture?.dispose());
-    return {sky,material,theme,planet};
+    scene.onDisposeObservable.add(()=>{disposed=true;++generation;pending?.dispose();if(texture!==fallback)texture.dispose();fallback.dispose();});
+    return {sky,material,theme,planet,viewport,get texture(){return texture;},get pending(){return pending;}};
   }
 
   // The compatibility sky is cached at viewport size, never tiled, blended with other posters or scrolled.
   function canvasSky(){
     let canvas=null,key='',imageKey=-1,image=null;
     function draw(ctx,w,h,index,hue){
-      const sector=index%6;
-      if(imageKey!==sector){image=new Image();image.decoding='async';image.src='assets/backgrounds/starfall-nebula-'+sector+'-v41.jpg';imageKey=sector;}
+      const asset=sector(index);
+      if(imageKey!==asset.file){image=new Image();image.decoding='async';image.src=asset.file;imageKey=asset.file;}
       const next=[w,h,index,hue].join(':');
       if(next!==key){
         canvas=document.createElement('canvas');const scale=Math.min(1,1536/Math.max(w,h));
@@ -109,9 +206,8 @@
       ctx.drawImage(canvas,0,0,w,h);
       if(image.complete&&image.naturalWidth){
         // A stable centred crop of one panorama. Always cover the viewport, including ultrawide/portrait.
-        const crop=Math.min(image.naturalWidth/w,image.naturalHeight/h);
-        const sw=w*crop,sh=h*crop;
-        ctx.drawImage(image,(image.naturalWidth-sw)/2,(image.naturalHeight-sh)/2,sw,sh,0,0,w,h);
+        const crop=coverRect(image.naturalWidth,image.naturalHeight,w,h);
+        ctx.drawImage(image,crop.x,crop.y,crop.width,crop.height,0,0,w,h);
       }
     }
     return {draw};
@@ -123,5 +219,5 @@
     const scale=Math.min(w,h)*.9/star.z;
     return {x:w*.5+star.x*scale,y:h*.34+star.y*scale,r:Math.min(2.3,.25+scale*.05)};
   }
-  window.StarfallSpace=Object.freeze({create,canvasSky,advanceStars,projectStar,vertex,fragment,planetFragment});
+  window.StarfallSpace=Object.freeze({create,canvasSky,advanceStars,projectStar,sector,SKIES,coverRect,vertex,fragment,planetFragment});
 })();

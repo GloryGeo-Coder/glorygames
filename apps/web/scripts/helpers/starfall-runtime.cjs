@@ -15,7 +15,7 @@ class Element{
 }
 class Canvas extends Element{constructor(webgl){super('canvas');this.webgl=webgl;this.width=1280;this.height=720;}
  getContext(kind){if(kind!=='2d')return this.webgl?{}:null;if(this.context)return this.context;const calls=[];this.context=new Proxy({canvas:this,calls,drawImage:(...args)=>calls.push(['drawImage',...args]),fillRect:(...args)=>calls.push(['fillRect',...args]),createRadialGradient:()=>({addColorStop(){}}),createLinearGradient:()=>({addColorStop(){}}),measureText:s=>({width:s.length*7})},{get:(o,k)=>o[k]??(()=>{})});return this.context;}}
-function boot({webgl=true,failAssets=false,saved=new Map(),width=1280,height=720,AudioContext}={}){
+function boot({webgl=true,failAssets=false,saved=new Map(),width=1280,height=720,AudioContext,deferTextures=false,failTextures=false}={}){
  const elements=new Map(),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  for(const match of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*)>/g)){const attrs={};for(const a of match[2].matchAll(/([\w-]+)(?:="([^"]*)")?/g))attrs[a[1]]=a[2]??'';if(attrs.id||attrs['data-dir'])elements.set(attrs.id||attrs['data-dir'],new Element(match[1],attrs));}
  const canvas=new Canvas(webgl);canvas.id='renderCanvas';elements.set(canvas.id,canvas);
@@ -26,7 +26,18 @@ function boot({webgl=true,failAssets=false,saved=new Map(),width=1280,height=720
  const store={getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,String(v))};let frame;
  Object.assign(globalThis,{window:win,document:doc,localStorage:store,HTMLCanvasElement:Canvas,Image:class{constructor(){this.complete=false;this.naturalWidth=0;}},requestAnimationFrame:f=>{frame=f;return 0;},cancelAnimationFrame(){}});
  class Engine extends B.NullEngine{constructor(){super({renderWidth:width,renderHeight:height});}static isSupported(){return webgl;}runRenderLoop(f){this.frame=f;}resize(){}getRenderWidth(){return win.innerWidth;}getRenderHeight(){return win.innerHeight;}getDeltaTime(){return 1000/60;}}
- class Texture extends B.RawTexture{constructor(url,scene){super(new Uint8Array([60,70,110,255]),1,1,B.Engine.TEXTUREFORMAT_RGBA,scene,false,false,B.Texture.NEAREST_SAMPLINGMODE);this.url=url;}}
+ const textures=[];
+ class Texture extends B.RawTexture{
+  constructor(url,scene,noMipmap,invertY,sampling,onLoad,onError){
+   super(new Uint8Array([60,70,110,255]),1,1,B.Engine.TEXTUREFORMAT_RGBA,scene,false,false,B.Texture.NEAREST_SAMPLINGMODE);
+   this.url=url;this.requestInvertY=invertY;this.failLoad=()=>onError?.();this.disposed=false;this._texture.isReady=!deferTextures&&!failTextures;textures.push(this);
+   if(failTextures)queueMicrotask(()=>onError?.('test image failure'));else if(!deferTextures)queueMicrotask(()=>this.onLoadObservable.notifyObservers(this));
+  }
+  getSize(){return {width:1672,height:941};}
+  getBaseSize(){return this.getSize();}
+  finish(){if(!this.disposed){this._texture.isReady=true;this.onLoadObservable.notifyObservers(this);}}
+  dispose(){this.disposed=true;super.dispose();}
+ }
  const original=B.SceneLoader.LoadAssetContainerAsync.bind(B.SceneLoader),imports=[];
  const wrapped={...B,Engine,Texture,SceneLoader:{...B.SceneLoader,LoadAssetContainerAsync:async(dir,file,scene)=>{imports.push(file);if(failAssets)throw Error('Test download failure');return original('',new Uint8Array(fs.readFileSync(path.join(root,dir,file.split('?')[0]))),scene,undefined,'.glb');}}};
  win.BABYLON=wrapped;globalThis.BABYLON=wrapped;
@@ -35,6 +46,6 @@ function boot({webgl=true,failAssets=false,saved=new Map(),width=1280,height=720
  code=code.replace('    resizeFallback();\n    window.addEventListener',`    globalThis.__starfallProbe={state,LEVELS,campaign,systems,quality,fb,ship,fallbackSky,startGameFallback,retryFallback,endFallback,nextLevelFallback,damageFallback,spawnObject,spawnBossFallback,updateFallback,drawFallback,input:()=>inputControls};\n    resizeFallback();\n    window.addEventListener`);
  code=code.replace('  init();\n})();',`  init();globalThis.__starfallProbe={state,LEVELS,campaign,systems,quality,scene,engine,presentation,playerRoot,pools,beginLevel,startGame,completeLevel,endGame,retryMission,damagePlayer,spawnAsteroid,spawnEnemy,spawnPowerup,spawnGate,spawnRelay,spawnBoss,createExplosionSprite,makeRingEffect,updateSpawns,updateObjects,updateLasers,updateBoss,updateTimers,updatePlayer,updateEncounters,step,clearWorld,updateParticles,resizeFlight,camera,space,planetMeshes,warpStreaks,updateWorld,PLAYER_LIMIT,launchPlasma,collectPickup,checkLevelComplete,firePlayerLaser,mats,audio,music,input:()=>inputControls};})();`);
  vm.runInThisContext(code,{filename:'space-dodger/game.js'});
- return {...globalThis.__starfallProbe,elements,win,doc,saved,imports,frame:()=>frame};
+ return {...globalThis.__starfallProbe,elements,win,doc,saved,imports,textures,frame:()=>frame};
 }
 module.exports={boot,B,root};

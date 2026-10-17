@@ -7,6 +7,7 @@ on:
       - 'apps/web/scripts/helpers/starfall-runtime.cjs'
       - 'tools/build-starfall-assets.py'
       - 'tools/render-starfall-assets.py'
+      - 'tools/package-starfall-backgrounds.py'
       - '.github/workflows/space-dodger.yml'
   push:
     branches: [main]
@@ -16,6 +17,7 @@ on:
       - 'apps/web/scripts/helpers/starfall-runtime.cjs'
       - 'tools/build-starfall-assets.py'
       - 'tools/render-starfall-assets.py'
+      - 'tools/package-starfall-backgrounds.py'
       - '.github/workflows/space-dodger.yml'
 permissions:
   contents: read

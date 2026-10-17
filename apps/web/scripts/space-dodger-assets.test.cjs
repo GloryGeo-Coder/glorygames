@@ -21,7 +21,7 @@ test('pinned engine files match their license manifest and all local HTML refere
  const engine=JSON.parse(fs.readFileSync(path.join(root,'vendor/engine-manifest.json')));for(const f of engine.files){const b=fs.readFileSync(path.join(root,'vendor',f.file));assert.equal(b.length,f.bytes);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),f.sha256);}
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);
  for(const m of html.matchAll(/(?:src|href)="([^"#]+)"/g)){const url=m[1].split('?')[0];assert.ok(!url.startsWith('https://'));assert.ok(fs.existsSync(url.startsWith('/')?path.join(root,'../../',url):path.join(root,url)),url);}
- assert.ok(html.includes('/games/_shared/game-tab.mjs?v=1'));assert.ok(html.includes('viewport-fit=cover'));assert.equal(JSON.parse(fs.readFileSync(path.join(root,'game.json'))).version,'4.1.0');
+ assert.ok(html.includes('/games/_shared/game-tab.mjs?v=1'));assert.ok(html.includes('viewport-fit=cover'));assert.equal(JSON.parse(fs.readFileSync(path.join(root,'game.json'))).version,'4.2.0');
 });
 test('campaign records reject corrupt saves and preserve progress and checkpoints',()=>{
  const context={window:{}};vm.runInNewContext(fs.readFileSync(path.join(root,'starfall-systems.js'),'utf8'),context);const S=context.window.StarfallSystems;const map=new Map();const storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};
