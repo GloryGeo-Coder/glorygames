@@ -1,0 +1,83 @@
+{
+  "license": "Original WebGameArena assets; Glory Mulopo",
+  "forward": "+Z",
+  "assets": [
+    {
+      "file": "pathfinder.glb",
+      "bytes": 34072,
+      "triangles": 420,
+      "draw_primitives": 6,
+      "sha256": "cc264821f56a4464791d543ebf97402ee6a190b824a2f6ddf31f3b9994e3ae63"
+    },
+    {
+      "file": "red_scout.glb",
+      "bytes": 33668,
+      "triangles": 420,
+      "draw_primitives": 5,
+      "sha256": "3ec26efea6e2d42e6c8adcc13c2813d55529dec6fba14595ee565d813d07f820"
+    },
+    {
+      "file": "siege_fighter.glb",
+      "bytes": 36260,
+      "triangles": 456,
+      "draw_primitives": 5,
+      "sha256": "4a6455ce7ae90f0805ec749fa7182776b22ac7493c70a857bc55e8b70089981f"
+    },
+    {
+      "file": "warden_drone.glb",
+      "bytes": 33664,
+      "triangles": 420,
+      "draw_primitives": 5,
+      "sha256": "8ac3489392f7aec51938daa4cef982de67d7b8f0b265539705f87f8aa20a6d2f"
+    },
+    {
+      "file": "sovereign_citadel.glb",
+      "bytes": 52180,
+      "triangles": 688,
+      "draw_primitives": 4,
+      "sha256": "60038153ffa2af3db81f67108d7f750160375dbff5cb4d2366a438e903ce2fba"
+    },
+    {
+      "file": "lava_asteroid.glb",
+      "bytes": 6984,
+      "triangles": 72,
+      "draw_primitives": 2,
+      "sha256": "7259236f5a8a4471151824df968d77d2affbec31565946ea4e8f88cf0001b070"
+    },
+    {
+      "file": "cryo_shard.glb",
+      "bytes": 6980,
+      "triangles": 72,
+      "draw_primitives": 2,
+      "sha256": "3b09a2ccfcba62cea3fa479ad6667faa309ce2173fe57bc4bd91ed8c7c6a7e19"
+    },
+    {
+      "file": "command_relay.glb",
+      "bytes": 8460,
+      "triangles": 96,
+      "draw_primitives": 2,
+      "sha256": "3d27e616adf70397c6313352641cc09749bbe9b6491471cdbd90bbc35e245759"
+    },
+    {
+      "file": "dawn_ark.glb",
+      "bytes": 20220,
+      "triangles": 252,
+      "draw_primitives": 3,
+      "sha256": "21f6eab63f54e312997d26003608fa7562cc5511e8bd8dbc674982424a335ec4"
+    },
+    {
+      "file": "orbital_ring.glb",
+      "bytes": 11892,
+      "triangles": 144,
+      "draw_primitives": 2,
+      "sha256": "6c8f5b6ae1b56dbf702b5a7e2dda3ef49cff1a51ba5cac29b461ae15478af216"
+    },
+    {
+      "file": "escape_pod.glb",
+      "bytes": 9844,
+      "triangles": 108,
+      "draw_primitives": 3,
+      "sha256": "68c697d8e32973eb7fd3df4a78ff19ffded37358ebaefbefe8b010647fcbcc21"
+    }
+  ]
+}

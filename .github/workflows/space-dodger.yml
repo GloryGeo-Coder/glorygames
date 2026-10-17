@@ -1,0 +1,32 @@
+name: Space Dodger Starfall Odyssey
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/space-dodger/**'
+      - 'apps/web/scripts/space-dodger*'
+      - 'apps/web/scripts/helpers/starfall-runtime.cjs'
+      - 'tools/build-starfall-assets.py'
+      - '.github/workflows/space-dodger.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/space-dodger/**'
+      - 'apps/web/scripts/space-dodger*'
+      - 'apps/web/scripts/helpers/starfall-runtime.cjs'
+      - 'tools/build-starfall-assets.py'
+      - '.github/workflows/space-dodger.yml'
+permissions:
+  contents: read
+jobs:
+  starfall:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/space-dodger/game.js
+      - run: node --check apps/web/public/games/space-dodger/starfall-systems.js
+      - run: node --check apps/web/public/games/space-dodger/starfall-3d.js
+      - run: node --test apps/web/scripts/space-dodger-*.test.cjs

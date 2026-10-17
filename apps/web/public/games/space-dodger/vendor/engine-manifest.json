@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "runtime_version": "9.31.0",
+  "files": [
+    {
+      "package": "babylonjs",
+      "version": "9.31.0",
+      "license": "Apache-2.0",
+      "file": "babylon-9.31.0.js",
+      "bytes": 8627936,
+      "sha256": "bd2b5c55c4a5eeabc50346cf8c6d3ce26ffa7e9a4e352165b1345a3e683c66e4"
+    },
+    {
+      "package": "babylonjs-loaders",
+      "version": "9.31.0",
+      "license": "Apache-2.0",
+      "file": "babylon-loaders-9.31.0.min.js",
+      "bytes": 849596,
+      "sha256": "547d1abc5ec729367fdb4d01c1d581943f2a010bfbf80a500cdf7a5200585368"
+    }
+  ]
+}
