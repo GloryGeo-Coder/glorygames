@@ -1,92 +1,348 @@
-"""Original compact Starfall spacecraft and landmarks. No existing assets are regenerated.
-Uses the repository's standard-library glTF geometry writer. +Y up, nose +Z.
+"""Build the original Starfall v4.1 models. +Y up, flight nose +Z.
+All detail is geometry/material data inside the GLBs; no remote texture dependencies.
 """
 from pathlib import Path
-import importlib.util, math, json, struct, hashlib
-spec=importlib.util.spec_from_file_location('wga_geometry',Path(__file__).with_name('build-high-speed-racer-assets.py'))
-g=importlib.util.module_from_spec(spec);spec.loader.exec_module(g)
-g.OUT=Path(__file__).resolve().parents[1]/'apps/web/public/games/space-dodger/assets/models/starfall'
-M=g.Model;mat=g.material
-assets=[]
-def save(m,name):
-    entry=m.save(name);p=g.OUT/name;b=p.read_bytes();n=struct.unpack_from('<I',b,12)[0];doc=json.loads(b[20:20+n]);doc['asset']['generator']='WebGameArena original Starfall asset builder';doc['extras']['forward']='+Z'
-    j=json.dumps(doc,separators=(',',':')).encode();j+=b' '*((-len(j))%4);tail=b[20+n:];data=struct.pack('<III',0x46546c67,2,20+len(j)+len(tail))+struct.pack('<II',len(j),0x4e4f534a)+j+tail;p.write_bytes(data)
-    entry.update(bytes=len(data),sha256=hashlib.sha256(data).hexdigest());assets.append(entry)
-def disk(m,name,material,x,y,z,r,n=12):
-    for i in range(n):
-        a,b=i*math.tau/n,(i+1)*math.tau/n;m.tri(name,material,(x,y,z),(x+r*math.cos(a),y+r*math.sin(a),z),(x+r*math.cos(b),y+r*math.sin(b),z))
-def wing(m,name,material,side,width,z):
-    a=(side*.42,-.05,z+.85);b=(side*width,-.16,z-.65);c=(side*(width-.18),-.16,z-1.15);d=(side*.38,-.05,z-.75)
-    m.quad(name,material,a,b,c,d);m.quad(name,material,(a[0],a[1]-.13,a[2]),(d[0],d[1]-.13,d[2]),(c[0],c[1]-.13,c[2]),(b[0],b[1]-.13,b[2]))
-    m.quad(name,1,b,(b[0],b[1]-.13,b[2]),(c[0],c[1]-.13,c[2]),c)
-def fighter(file,variant):
-    hero=variant==0;color=[(.72,.79,.89),(.16,.20,.28),(.27,.17,.22),(.21,.26,.28)][variant]
-    mats=[mat('Armour panels',color,.25,.35),mat('Carbon framing',(.025,.035,.06),.2,.55),mat('Cockpit glass',(.025,.12,.20),.28,.2),mat('Signal red',(.75,.045,.075),.2,.36,(.45,.01,.025)),mat('Blue engine',(.12,.65,.94),.1,.3,(.2,.8,1))]
-    m=M('Starfall '+('pathfinder' if hero else 'interceptor'),mats)
-    m.loft('Hull',0,[(-1.75,.52,-.18,.20),(-.7,.67,-.22,.38),(.5,.55,-.18,.30),(1.7,.22,-.08,.13),(2.1,.035,-.01,.05)])
-    m.loft('Hull',2,[(-.6,.30,.26,.38),(0,.35,.30,.63),(.75,.23,.24,.46),(1.05,.16,.17,.24)])
-    for side in [-1,1]:
-        wing(m,'Hull',0,side,[1.9,1.45,1.8,1.7][variant],-.15)
-        m.box('Hull',3,(side*1.32,-.06,-.65),(.12,.08,1.25));m.box('Hull',1,(side*1.77,-.12,-.25),(.13,.15,1.6))
-        m.box('Hull',0,(side*.55,.03,-1.37),(.48,.43,.90));disk(m,'Hull',4 if hero else 3,side*.55,.03,-1.84,.19)
-        m.box('Hull',1,(side*.55,.28,-1.2),(.09,.58,.56));m.box('Hull',3,(side*.22,.37,-.25),(.08,.03,.76))
-        for i in range(5):m.box('Hull',1,(side*.7,.13,-.8+i*.22),(.14,.05,.06))
-    if variant==2:
-        for x in [-1,0,1]:m.box('Hull',0,(x*.6,.24,-.65),(.45,.4,.85))
-    disk(m,'Nose',4 if hero else 3,0,.02,2.105,.035)
-    save(m,file)
-def fortress():
-    mats=[mat('Fortress armour',(.08,.10,.16),.28,.48),mat('Reactor red',(.95,.03,.16),.1,.32,(1,.015,.08)),mat('Silver braces',(.30,.37,.46),.4,.32)]
-    m=M('Starfall Sovereign citadel',mats)
-    m.loft('Citadel',0,[(-2.5,1.8,-.9,.2),(-1.2,4,-.8,.65),(1.1,3.5,-.65,.85),(2.2,2.3,-.4,.3)])
-    for side in [-1,1]:
+import importlib.util
+import math
+import json
+import struct
+import hashlib
+
+spec = importlib.util.spec_from_file_location("wga_geometry", Path(__file__).with_name("build-high-speed-racer-assets.py"))
+g = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(g)
+g.OUT = Path(__file__).resolve().parents[1] / "apps/web/public/games/space-dodger/assets/models/starfall"
+mat = g.material
+assets = []
+
+
+class Model(g.Model):
+    def smooth_tri(self, name, material, points, normals):
+        self.groups[name, material].extend((list(p), list(n)) for p, n in zip(points, normals))
+
+
+def save(model, name):
+    entry = model.save(name)
+    path = g.OUT / name
+    raw = path.read_bytes()
+    length = struct.unpack_from("<I", raw, 12)[0]
+    doc = json.loads(raw[20:20 + length])
+    doc["asset"]["generator"] = "WebGameArena Starfall visual asset builder v4.1"
+    doc["extras"]["forward"] = "+Z"
+    text = json.dumps(doc, separators=(",", ":")).encode()
+    text += b" " * (-len(text) % 4)
+    tail = raw[20 + length:]
+    data = struct.pack("<III", 0x46546C67, 2, 20 + len(text) + len(tail))
+    data += struct.pack("<II", len(text), 0x4E4F534A) + text + tail
+    path.write_bytes(data)
+    entry.update(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+    assets.append(entry)
+
+
+def bevel(m, name, material, pos, size, amount=.12):
+    """Closed chamfered box; face normals retain crisp manufactured edges."""
+    half = [v / 2 for v in size]
+    cut = min(amount, min(half) * .45)
+    for axis in range(3):
+        u, v = (axis + 1) % 3, (axis + 2) % 3
+        a, b = half[u], half[v]
+        outline = [(-a + cut, -b), (a - cut, -b), (a, -b + cut), (a, b - cut),
+                   (a - cut, b), (-a + cut, b), (-a, b - cut), (-a, -b + cut)]
+        for side in [-1, 1]:
+            points = []
+            for x, y in outline:
+                p = list(pos)
+                p[axis] += side * half[axis]
+                p[u] += x
+                p[v] += y
+                points.append(p)
+            if side < 0:
+                points.reverse()
+            for i in range(1, 7):
+                m.tri(name, material, points[0], points[i], points[i + 1])
+    # Each bevel edge joins the adjacent face polygons.
+    for axis in range(3):
+        u, v = (axis + 1) % 3, (axis + 2) % 3
+        for su in [-1, 1]:
+            for sv in [-1, 1]:
+                points = []
+                for end, face in [(-1, u), (1, u), (1, v), (-1, v)]:
+                    p = list(pos)
+                    p[axis] += end * (half[axis] - cut)
+                    p[u] += su * (half[u] if face == u else half[u] - cut)
+                    p[v] += sv * (half[v] if face == v else half[v] - cut)
+                    points.append(p)
+                if su * sv > 0:
+                    points.reverse()
+                m.quad(name, material, *points)
+    for sx in [-1, 1]:
+        for sy in [-1, 1]:
+            for sz in [-1, 1]:
+                signs = [sx, sy, sz]
+                p = []
+                for axis in range(3):
+                    p.append([pos[i] + signs[i] * (half[i] if i == axis else half[i] - cut) for i in range(3)])
+                if sx * sy * sz < 0:
+                    p.reverse()
+                m.tri(name, material, *p)
+
+
+def tube(m, name, material, x, y, sections, segments=16):
+    """Smooth axial metal / reactor rings. Each section is (z, radius)."""
+    for (z0, r0), (z1, r1) in zip(sections, sections[1:]):
+        slope = (r0 - r1) / (z1 - z0)
+        norm = math.sqrt(1 + slope * slope)
+        for i in range(segments):
+            angles = [i * math.tau / segments, (i + 1) * math.tau / segments]
+            a, b = angles
+            p = [(x + math.cos(t) * r, y + math.sin(t) * r, z) for z, r, t in
+                 [(z0, r0, a), (z0, r0, b), (z1, r1, b), (z1, r1, a)]]
+            n = [(math.cos(t) / norm, math.sin(t) / norm, slope / norm) for t in [a, b, b, a]]
+            if z1 < z0:
+                p.reverse()
+                n.reverse()
+            m.smooth_tri(name, material, p[:3], n[:3])
+            m.smooth_tri(name, material, [p[0], p[2], p[3]], [n[0], n[2], n[3]])
+
+
+def disk(m, name, material, x, y, z, radius, segments=16, rear=False):
+    for i in range(segments):
+        a, b = i * math.tau / segments, (i + 1) * math.tau / segments
+        p = [(x, y, z), (x + math.cos(a) * radius, y + math.sin(a) * radius, z),
+             (x + math.cos(b) * radius, y + math.sin(b) * radius, z)]
+        if rear:
+            p.reverse()
+        m.tri(name, material, *p)
+
+
+def wing(m, material, side, width, sweep):
+    a = (side * .42, -.06, .7 + sweep)
+    b = (side * width, -.15, -.3 + sweep)
+    c = (side * (width - .12), -.16, -1.23)
+    d = (side * .4, -.06, -1.25)
+    top = [a, b, c, d]
+    if side < 0:
+        top.reverse()
+    bottom = [(x, y - .13, z) for x, y, z in top]
+    m.quad("Hull", material, *top)
+    m.quad("Hull", 1, *reversed(bottom))
+    for i in range(4):
+        j = (i + 1) % 4
+        m.quad("Hull", 1, top[i], bottom[i], bottom[j], top[j])
+
+
+def fighter(filename, variant):
+    hero = variant == 0
+    colors = [(.63, .72, .83), (.15, .20, .28), (.30, .16, .19), (.23, .29, .28)]
+    materials = [
+        mat("Ceramic armour", colors[variant], .38, .31, coat=True),
+        mat("Graphite frame", (.022, .031, .048), .42, .46),
+        mat("Polarised canopy", (.025, .13, .22), .45, .13, coat=True),
+        mat("Crimson markings", (.72, .025, .055), .3, .32, (.12, .003, .006)),
+        mat("Ion reactor", (.12, .58, .85) if hero else (.85, .065, .025), .1, .28,
+            (.15, .75, 1) if hero else (1, .04, .012)),
+        mat("Titanium edges", (.35, .43, .52), .65, .25)
+    ]
+    m = Model("Pathfinder" if hero else ["", "Red scout", "Siege fighter", "Warden drone"][variant], materials)
+    # Preserve flight envelope; silhouettes differ through sweep, fuselage and nacelles.
+    width = [1.9, 1.45, 1.8, 1.7][variant]
+    m.loft("Hull", 0, [(-1.72, .46, -.2, .21), (-1.1, .62, -.23, .3),
+                      (-.35, .65, -.22, .34), (.5, .48, -.18, .27),
+                      (1.45, .23, -.08, .14), (2.1, .028, -.015, .045)])
+    m.loft("Hull", 1, [(-.65, .34, .23, .38), (0, .37, .26, .66), (.64, .25, .2, .48), (1.05, .13, .13, .24)])
+    m.loft("Hull", 2, [(-.51, .29, .34, .4), (0, .315, .36, .605), (.6, .21, .29, .43), (.87, .13, .22, .26)])
+    for side in [-1, 1]:
+        wing(m, 0, side, width, [.2, -.3, -.1, .65][variant])
+        # Flush livery and panel strips follow the wing, rather than glowing solid wings.
+        m.box("Hull", 3, (side * (width * .66), -.095, -.56), (.13, .025, .95))
+        m.box("Hull", 5, (side * (width - .13), -.12, -.63), (.055, .05, 1.05))
+        bevel(m, "Hull", 0, (side * .59, .015, -1.29), (.46, .48, .98), .07)
+        tube(m, "Hull", 5, side * .59, .015, [(-1.81, .18), (-1.64, .23), (-1.26, .21)])
+        tube(m, "Hull", 1, side * .59, .015, [(-1.825, .15), (-1.55, .12)])
+        disk(m, "Hull", 4, side * .59, .015, -1.84, .13, rear=True)
+        tube(m, "Hull", 4, side * .59, .015, [(-1.835, .17), (-1.85, .155)])
         for i in range(4):
-            x=side*(.9+i*.66);h=2.8-i*.55
-            m.box('Citadel',0,(x,.8+h*.42,-.65+i*.3),(.55,h,.65));m.box('Citadel',1,(x,.7+h*.57,-.28+i*.3),(.09,.36,.035))
-        for z in [-1.6,-.7,.2,1.1]:m.box('Citadel',2,(side*2.7,.32,z),(1.3,.10,.17))
-        for x in [1.4,2.7]:
-            m.box('Citadel',0,(side*x,-.25,2),(.33,.42,2));disk(m,'Citadel',1,side*x,-.25,3.01,.17)
-    m.box('Citadel',2,(0,.05,2.22),(1.4,1.35,.24));disk(m,'Reactor',1,0,.03,2.38,.55,16)
+            m.box("Hull", 1, (side * .59, .26, -1.48 + i * .14), (.3, .025, .048))
+        # Twin tapered tail fins, navigation light, shoulder intakes.
+        outline=[(-1.58,.2),(-1.3,.7),(-1.08,.65),(-.82,.2)]
+        left=[(side*.59-.035,y,z) for z,y in outline]
+        right=[(side*.59+.035,y,z) for z,y in outline]
+        m.quad("Hull",0,*left);m.quad("Hull",0,*reversed(right))
+        for i in range(4):
+            j=(i+1)%4
+            m.quad("Hull",0,left[i],right[i],right[j],left[j])
+        bevel(m, "Hull", 1, (side * .48, .21, -.65), (.28, .12, .35), .025)
+        m.box("Hull", 4, (side * (width - .08), -.11, -.22), (.075, .045, .12))
+        m.box("Hull", 3, (side * .21, .35, -.23), (.045, .025, .48))
+        if variant == 2:
+            bevel(m, "Hull", 0, (side * 1.13, -.02, -.35), (.45, .35, 1.25), .06)
+            tube(m, "Hull", 5, side * 1.13, -.02, [(.28, .12), (.72, .08)], 12)
+            disk(m, "Hull", 4, side * 1.13, -.02, .73, .07, 12)
+        if variant == 3:
+            tube(m, "Hull", 5, side * 1.25, .02, [(-.5, .35), (-.28, .35)], 16)
+            disk(m, "Hull", 2, side * 1.25, .02, -.27, .27)
+    disk(m, "Nose", 5, 0, .02, 2.105, .028, 8)
+    save(m, filename)
+
+
+def fortress():
+    materials = [mat("Citadel armour", (.075, .09, .135), .4, .38),
+                 mat("Reactor conduits", (.8, .018, .055), .12, .28, (1, .01, .045)),
+                 mat("Titanium ribs", (.28, .34, .43), .6, .28),
+                 mat("Deep recess", (.012, .018, .03), .2, .55)]
+    m = Model("Sovereign citadel", materials)
+    m.loft("Citadel", 0, [(-2.5, 1.8, -.85, .15), (-1.2, 4, -.8, .65),
+                         (.25, 3.8, -.72, .82), (1.25, 3.35, -.6, .65), (2.2, 2.3, -.4, .3)])
+    for side in [-1, 1]:
+        for i in range(4):
+            x, height = side * (.9 + i * .66), 2.8 - i * .55
+            bevel(m, "Citadel", 0, (x, .8 + height * .42, -.65 + i * .3), (.55, height, .65), .1)
+            for j in range(3):
+                m.box("Citadel", 1, (x, .8 + height * .4 + j * .25, -.31 + i * .3), (.22, .07, .025))
+        for z in [-1.6, -.7, .2, 1.1]:
+            m.box("Citadel", 2, (side * 2.7, .42, z), (1.3, .08, .13))
+        for x in [1.4, 2.7]:
+            bevel(m, "Citadel", 0, (side * x, -.25, 1.7), (.36, .45, 1.3), .06)
+            tube(m, "Citadel", 2, side * x, -.25, [(2.1, .19), (2.8, .15), (3.0, .2)], 12)
+            disk(m, "Citadel", 3, side * x, -.25, 3.01, .14, 12)
+        tube(m, "Citadel", 2, side * 1.2, -.18, [(-2.51, .4), (-2.16, .5)], 16)
+        disk(m, "Citadel", 1, side * 1.2, -.18, -2.52, .29, rear=True)
+    tube(m, "Citadel", 2, 0, .03, [(2.22, .9), (2.4, .85), (2.42, .64)], 32)
+    tube(m, "Reactor", 1, 0, .03, [(2.43, .6), (2.44, .53)], 32)
+    disk(m, "Reactor", 1, 0, .03, 2.405, .47, 32)
+    for i in range(12):
+        a = i * math.tau / 12
+        m.box("Citadel", 3, (math.cos(a) * .76, .03 + math.sin(a) * .76, 2.43), (.095, .095, .12))
+    save(m, "sovereign_citadel.glb")
+
+
+def rock(filename, ice=False):
+    materials = [mat("Glacial stone" if ice else "Basalt", (.24, .38, .47) if ice else (.12, .085, .09), .08, .7),
+                 mat("Fresh fracture", (.4, .57, .65) if ice else (.24, .17, .16), .15, .57),
+                 mat("Crystal vein" if ice else "Magma fissure", (.09, .5, .68) if ice else (.7, .07, .008), .05, .38,
+                     (.05, .28, .46) if ice else (.75, .035, .002))]
+    m = Model("Cryo shard" if ice else "Lava asteroid", materials)
+    segments, rings = (16, 9) if ice else (24, 13)
+    points = []
+    for j in range(rings + 1):
+        latitude = math.pi * j / rings
+        ring = []
+        for i in range(segments):
+            longitude = math.tau * i / segments
+            r = 1 + .11 * math.sin(i * 2.7 + j * 1.9) + .07 * math.sin(i * 4.1 - j)
+            # Broad crater basin and fractured surface, rather than emissive polygon patches.
+            crater = math.exp(-((latitude - 1.05) ** 2 + (longitude - 2.1) ** 2) * 8)
+            r -= .22 * crater
+            ring.append((math.sin(latitude) * math.cos(longitude) * r,
+                         math.cos(latitude) * (1.08 if ice else .95),
+                         math.sin(latitude) * math.sin(longitude) * r))
+        points.append(ring)
+    for j in range(rings):
+        for i in range(segments):
+            k = (i + 1) % segments
+            material = 1 if (i * 3 + j * 7) % 11 < 3 else 0
+            m.quad("Asteroid", material, points[j][i], points[j][k], points[j + 1][k], points[j + 1][i])
     for i in range(18):
-        a=i*math.tau/18;x,y=math.cos(a)*.89,math.sin(a)*.89;m.box('Citadel',2,(x,y,2.26),(.10,.16,.18))
-    save(m,'sovereign_citadel.glb')
-def rock(file,ice=False):
-    mats=[mat('Rock',(.24,.30,.38) if ice else (.14,.10,.13),.1,.78),mat('Crystal seams' if ice else 'Lava seams',(.1,.6,.8) if ice else (.8,.10,.01),0,.5,(.1,.5,.8) if ice else (.8,.08,.008))]
-    m=M('Crystal shard' if ice else 'Fractured asteroid',mats)
-    rings=[]
-    for j,(y,r) in enumerate([(-1,.3),(-.5,.94),(.3,1.02),(.85,.47)]):
-        rings.append([(math.cos(i*math.tau/9)*r*(1+.14*math.sin(i*9+j)),y,math.sin(i*math.tau/9)*r) for i in range(9)])
-    for j in range(3):
-        for i in range(9):m.quad('Asteroid',1 if (i+j*3)%8==0 else 0,rings[j][i],rings[j][(i+1)%9],rings[j+1][(i+1)%9],rings[j+1][i])
-    for i in range(9):m.tri('Asteroid',0,(0,-1.05,0),rings[0][(i+1)%9],rings[0][i]);m.tri('Asteroid',0,(0,1,0),rings[-1][i],rings[-1][(i+1)%9])
-    save(m,file)
+        j, k = 2 + (i * 7) % (rings - 3), (i * 5) % segments
+        a, b = points[j][k], points[j + 1][(k + i % 2) % segments]
+        a = tuple(v * 1.009 for v in a)
+        b = tuple(v * 1.009 for v in b)
+        c = (b[0] + .025, b[1] + .01, b[2] + .025)
+        m.tri("Asteroid", 2, a, b, c)
+    save(m, filename)
+
+
 def relay():
-    m=M('Remnant command relay',[mat('Relay alloy',(.20,.24,.33),.3,.4),mat('Red signal',(1,.06,.18),.1,.3,(1,.02,.08))])
-    m.box('Relay',0,(0,0,0),(.65,.65,.65))
-    for side in [-1,1]:
-        m.box('Relay',0,(side*1.15,0,0),(1.5,.08,.95));m.box('Relay',1,(side*1.2,.055,0),(1.2,.03,.55))
-        m.box('Relay',0,(0,side*.9,0),(.1,1.4,.12))
-    disk(m,'Relay',1,0,0,.34,.22);save(m,'command_relay.glb')
+    m = Model("Remnant command relay", [
+        mat("Relay alloy", (.28, .34, .42), .6, .28), mat("Solar cells", (.015, .045, .10), .35, .26),
+        mat("Signal red", (.8, .02, .06), .1, .3, (.8, .01, .03))])
+    bevel(m, "Relay", 0, (0, 0, 0), (.65, .65, .65), .1)
+    for side in [-1, 1]:
+        m.box("Relay", 0, (side * 1.15, 0, 0), (1.5, .08, .95))
+        for col in range(5):
+            for row in range(3):
+                m.box("Relay", 1, (side * (.52 + col * .27), .052, (row - 1) * .28), (.23, .02, .23))
+        m.box("Relay", 0, (0, side * .9, 0), (.065, 1.4, .065))
+        m.box("Relay", 2, (0, side * 1.51, 0), (.095, .07, .095))
+    tube(m, "Relay", 0, 0, 0, [(.32, .26), (.46, .31), (.5, .18)], 24)
+    disk(m, "Relay", 2, 0, 0, .505, .14, 24)
+    save(m, "command_relay.glb")
+
+
 def ark():
-    m=M('Dawn Ark rescue ship',[mat('Ark hull',(.6,.65,.7),.2,.5),mat('Ark blue',(.03,.45,.8),.1,.4,(.02,.6,1)),mat('Ark dark',(.035,.06,.12),.15,.6)])
-    m.loft('Ark',0,[(-2.6,.55,-.5,.5),(-1.8,1.1,-.55,.65),(1.1,.95,-.55,.6),(2.6,.2,-.2,.2)])
-    for side in [-1,1]:
-        for z in [-1.5,-.3,.9]:m.box('Ark',2,(side*1.08,0,z),(.35,1.05,1.0));m.box('Ark',1,(side*1.27,.16,z),(.02,.12,.6))
-        m.box('Ark',0,(side*.72,.1,-2.25),(.55,.65,.7));disk(m,'Ark',1,side*.72,.1,-2.61,.22)
-    save(m,'dawn_ark.glb')
+    m = Model("Dawn Ark", [mat("Ark ceramic", (.55, .63, .72), .32, .35),
+                           mat("Ion lights", (.02, .45, .7), .1, .3, (.025, .55, .85)),
+                           mat("Graphite decks", (.025, .045, .075), .35, .48),
+                           mat("Alloy seams", (.28, .37, .44), .55, .32)])
+    m.loft("Ark", 0, [(-2.6, .55, -.5, .5), (-1.8, 1.1, -.55, .65), (.8, 1, -.55, .64), (2.6, .2, -.2, .2)])
+    bevel(m, "Ark", 2, (0, .65, .4), (.82, .25, .8), .06)
+    for side in [-1, 1]:
+        for z in [-1.5, -.3, .9]:
+            bevel(m, "Ark", 0, (side * 1.08, 0, z), (.35, 1.05, 1), .08)
+            m.box("Ark", 2, (side * 1.08, .535, z), (.26, .02, .7))
+            m.box("Ark", 1, (side * 1.27, .16, z), (.02, .1, .6))
+            for y in [-.32, .36]:
+                m.box("Ark", 3, (side * 1.27, y, z), (.03, .05, .82))
+        tube(m, "Ark", 3, side * .72, .1, [(-2.62, .25), (-2.2, .32)], 20)
+        disk(m, "Ark", 1, side * .72, .1, -2.63, .18, 20, rear=True)
+        for i in range(8):
+            m.box("Ark", 1, (side * .68, .65, -1.3 + i * .3), (.12, .02, .06))
+    save(m, "dawn_ark.glb")
+
+
 def ring():
-    m=M('Orbital navigation ring',[mat('Station metal',(.20,.27,.35),.3,.45),mat('Guide cyan',(.08,.65,.85),.1,.3,(.02,.7,1))])
-    for i in range(24):
-        a,b=i*math.tau/24,(i+1)*math.tau/24
-        for r0,r1,z in [(9,10,-.5),(10,9,.5)]:m.quad('Ring',0,(math.cos(a)*r0,math.sin(a)*r0,z),(math.cos(b)*r0,math.sin(b)*r0,z),(math.cos(b)*r1,math.sin(b)*r1,z),(math.cos(a)*r1,math.sin(a)*r1,z))
-        m.quad('Ring',1,(math.cos(a)*9.1,math.sin(a)*9.1,-.52),(math.cos(b)*9.1,math.sin(b)*9.1,-.52),(math.cos(b)*9.25,math.sin(b)*9.25,-.52),(math.cos(a)*9.25,math.sin(a)*9.25,-.52))
-    save(m,'orbital_ring.glb')
+    m = Model("Orbital navigation ring", [
+        mat("Station metal", (.23, .30, .39), .55, .32), mat("Guide cyan", (.03, .5, .7), .1, .3, (.02, .55, .8)),
+        mat("Dark trusses", (.025, .04, .07), .4, .44)])
+    # Closed octagonal cross-section: both side walls and bevels, no paper-thin annulus.
+    profile = [(9.15, -.55), (9.85, -.55), (10, -.35), (10, .35),
+               (9.85, .55), (9.15, .55), (9, .35), (9, -.35)]
+    count = 64
+    for i in range(count):
+        a, b = i * math.tau / count, (i + 1) * math.tau / count
+        for j in range(8):
+            r0, z0 = profile[j]
+            r1, z1 = profile[(j + 1) % 8]
+            m.quad("Ring", 0, (math.cos(a) * r0, math.sin(a) * r0, z0),
+                   (math.cos(b) * r0, math.sin(b) * r0, z0),
+                   (math.cos(b) * r1, math.sin(b) * r1, z1), (math.cos(a) * r1, math.sin(a) * r1, z1))
+        m.quad("Ring", 1, (math.cos(a) * 9.12, math.sin(a) * 9.12, -.56),
+               (math.cos(b) * 9.12, math.sin(b) * 9.12, -.56),
+               (math.cos(b) * 9.23, math.sin(b) * 9.23, -.56), (math.cos(a) * 9.23, math.sin(a) * 9.23, -.56))
+    for i in range(12):
+        a = i * math.tau / 12
+        bevel(m, "Ring", 2, (math.cos(a) * 9.55, math.sin(a) * 9.55, -.59), (.38, .38, .24), .04)
+    save(m, "orbital_ring.glb")
+
+
 def pod():
-    m=M('Survey crew escape pod',[mat('Pod shell',(.68,.74,.79),.15,.4),mat('Rescue beacon',(.06,.8,.35),0,.3,(.04,1,.4)),mat('Pod window',(.025,.07,.13),.2,.3)])
-    m.loft('Pod',0,[(-.9,.25,-.25,.25),(-.5,.45,-.38,.40),(.45,.45,-.38,.40),(.85,.22,-.2,.2)])
-    m.box('Pod',2,(0,.4,0),(.5,.03,.6));m.box('Pod',1,(0,.05,.85),(.18,.18,.05));m.box('Pod',1,(.45,0,0),(.02,.18,.5));m.box('Pod',1,(-.45,0,0),(.02,.18,.5));save(m,'escape_pod.glb')
-if __name__=='__main__':
-    for name,index in [('pathfinder.glb',0),('red_scout.glb',1),('siege_fighter.glb',2),('warden_drone.glb',3)]:fighter(name,index)
-    fortress();rock('lava_asteroid.glb');rock('cryo_shard.glb',True);relay();ark();ring();pod()
-    (g.OUT/'assets.json').write_text(json.dumps({'license':'Original WebGameArena assets; Glory Mulopo','forward':'+Z','assets':assets},indent=2)+'\n')
-    print(json.dumps(assets,indent=2))
+    m = Model("Survey crew escape pod", [mat("Pod ceramic", (.66, .73, .80), .25, .32),
+                                         mat("Rescue beacon", (.04, .65, .26), .1, .3, (.03, .8, .3)),
+                                         mat("Polarised window", (.018, .08, .14), .4, .16, coat=True),
+                                         mat("Frame", (.10, .16, .20), .6, .35)])
+    m.loft("Pod", 0, [(-.9, .25, -.25, .25), (-.5, .45, -.38, .4), (.45, .45, -.38, .4), (.85, .22, -.2, .2)])
+    bevel(m, "Pod", 2, (0, .395, 0), (.5, .055, .6), .02)
+    for side in [-1, 1]:
+        bevel(m, "Pod", 3, (side * .43, -.02, 0), (.11, .5, .85), .035)
+        m.box("Pod", 1, (side * .495, .1, 0), (.025, .09, .5))
+        tube(m, "Pod", 3, side * .24, -.15, [(-.91, .09), (-.75, .12)], 12)
+        disk(m, "Pod", 1, side * .24, -.15, -.92, .065, 12, rear=True)
+    disk(m, "Pod", 1, 0, .02, .86, .075, 16)
+    save(m, "escape_pod.glb")
+
+
+if __name__ == "__main__":
+    for name, index in [("pathfinder.glb", 0), ("red_scout.glb", 1), ("siege_fighter.glb", 2), ("warden_drone.glb", 3)]:
+        fighter(name, index)
+    fortress()
+    rock("lava_asteroid.glb")
+    rock("cryo_shard.glb", True)
+    relay()
+    ark()
+    ring()
+    pod()
+    (g.OUT / "assets.json").write_text(json.dumps({
+        "license": "Original WebGameArena assets; Glory Mulopo", "forward": "+Z", "revision": "4.1",
+        "assets": assets
+    }, indent=2) + "\n")
+    print(json.dumps(assets, indent=2))

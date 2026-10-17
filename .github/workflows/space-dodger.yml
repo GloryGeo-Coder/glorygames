@@ -6,6 +6,7 @@ on:
       - 'apps/web/scripts/space-dodger*'
       - 'apps/web/scripts/helpers/starfall-runtime.cjs'
       - 'tools/build-starfall-assets.py'
+      - 'tools/render-starfall-assets.py'
       - '.github/workflows/space-dodger.yml'
   push:
     branches: [main]
@@ -14,6 +15,7 @@ on:
       - 'apps/web/scripts/space-dodger*'
       - 'apps/web/scripts/helpers/starfall-runtime.cjs'
       - 'tools/build-starfall-assets.py'
+      - 'tools/render-starfall-assets.py'
       - '.github/workflows/space-dodger.yml'
 permissions:
   contents: read
@@ -28,5 +30,6 @@ jobs:
           node-version: '24'
       - run: node --check apps/web/public/games/space-dodger/game.js
       - run: node --check apps/web/public/games/space-dodger/starfall-systems.js
+      - run: node --check apps/web/public/games/space-dodger/starfall-space.js
       - run: node --check apps/web/public/games/space-dodger/starfall-3d.js
       - run: node --test apps/web/scripts/space-dodger-*.test.cjs

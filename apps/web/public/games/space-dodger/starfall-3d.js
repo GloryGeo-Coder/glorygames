@@ -4,13 +4,13 @@
   const FILES={player:'pathfinder.glb',scout:'red_scout.glb',darter:'red_scout.glb',turret:'siege_fighter.glb',heavy:'siege_fighter.glb',shield:'warden_drone.glb',boss:'sovereign_citadel.glb',rock:'lava_asteroid.glb',ice:'cryo_shard.glb',relay:'command_relay.glb',ark:'dawn_ark.glb',ring:'orbital_ring.glb',pod:'escape_pod.glb'};
   function create(B,scene,quality,onStatus=()=>{}){
     const containers=new Map(),pending=new Map(),roots=new Set(),decor=[];let disposed=false,generation=0;
-    const key=new B.DirectionalLight('Starfall key light',new B.Vector3(-.4,-.8,.6),scene);key.intensity=1.8;
+    const key=new B.DirectionalLight('Starfall key light',new B.Vector3(-.4,-.8,.6),scene);key.diffuse=B.Color3.FromHexString('#e3edff');key.intensity=1.65;
     const rim=new B.DirectionalLight('Starfall blue rim',new B.Vector3(.6,.3,-1),scene);rim.diffuse=B.Color3.FromHexString('#75bfff');rim.intensity=.8;
     let glow=null;if(!quality.compact&&B.GlowLayer){glow=new B.GlowLayer('Starfall reactor glow',scene,{mainTextureFixedSize:512,blurKernelSize:24});glow.intensity=.38;}
     async function load(kind){
       const file=FILES[kind];if(!file||disposed)return null;
       if(containers.has(file))return containers.get(file);if(pending.has(file))return pending.get(file);
-      const request=B.SceneLoader.LoadAssetContainerAsync('assets/models/starfall/',file,scene).then(c=>{
+      const request=B.SceneLoader.LoadAssetContainerAsync('assets/models/starfall/',file+'?v=4.1',scene,undefined,'.glb').then(c=>{
         if(disposed||scene.isDisposed){c.dispose();return null;}containers.set(file,c);onStatus(file,true);return c;
       }).catch(()=>{onStatus(file,false);return null;}).finally(()=>pending.delete(file));pending.set(file,request);return request;
     }

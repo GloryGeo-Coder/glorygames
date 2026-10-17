@@ -1,0 +1,76 @@
+{
+  "revision": "4.1",
+  "source": "Original Starfall GLBs and direction-based nebula shader",
+  "assets": [
+    {
+      "file": "assets/backgrounds/starfall-nebula-0-v41.jpg",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 318754,
+      "sha256": "4ac7be247e8c8306d0a40fcb9955232bd0d6e63acaa7aad4ff88669cf61acdb0"
+    },
+    {
+      "file": "assets/backgrounds/starfall-nebula-1-v41.jpg",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 300420,
+      "sha256": "dd5f47414ff2ea8c3c0f31f68c377e6805653b4c404b14337367a2c8c2bc4f96"
+    },
+    {
+      "file": "assets/backgrounds/starfall-nebula-2-v41.jpg",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 310841,
+      "sha256": "dac666ac27d1ea668e117537dbdb246a2969ea32b09c23da110cb25cad75c53f"
+    },
+    {
+      "file": "assets/backgrounds/starfall-nebula-3-v41.jpg",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 308804,
+      "sha256": "d0977a18dc2d7cc2908bfbbf505b7fbddce433c317be6e182094821dc321ead4"
+    },
+    {
+      "file": "assets/backgrounds/starfall-nebula-4-v41.jpg",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 317929,
+      "sha256": "05c4fa661b14abbf507f65f7a4b57d4a21304352058e91c7919362416106dc27"
+    },
+    {
+      "file": "assets/backgrounds/starfall-nebula-5-v41.jpg",
+      "width": 2048,
+      "height": 1024,
+      "bytes": 301941,
+      "sha256": "a7f6f1e05f2fef5ce34d3430531c4c0737b68b5a09313fb7a090c4b98a532325"
+    },
+    {
+      "file": "assets/sprites/starfall-asteroids-v41.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 76880,
+      "sha256": "e61a2185b4633ff8b6a0007b3d5ea168556d814ec79bb4dfcc19d16ab653a20b"
+    },
+    {
+      "file": "assets/sprites/starfall-boss-v41.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 27239,
+      "sha256": "628eba3bd672ef5df165d671329f080860d64ec95a97cd72eaafa92d219a4ddc"
+    },
+    {
+      "file": "assets/sprites/starfall-enemies-v41.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 33159,
+      "sha256": "3ae8274c5ebad8876b145f709a1cab98a2e994d241f3eda1f73254f9ff3e5da7"
+    },
+    {
+      "file": "assets/sprites/starfall-player-v41.png",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 47439,
+      "sha256": "e8e4dd124f37fef780ad9a6b8b22f5edd7c57b3589efe504d66caf94f6d590eb"
+    }
+  ]
+}

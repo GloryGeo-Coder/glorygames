@@ -253,27 +253,14 @@
   const SAFE_LOCAL_KEY = "wga_space_dodger_starfall_odyssey_v3";
 
   const ASSET_PATHS = {
-    backgrounds: [
-      "assets/backgrounds/bg-blue-nebula.png",
-      "assets/backgrounds/bg-lava-asteroid-field.png",
-      "assets/backgrounds/bg-nebula-citadel.png",
-      "assets/backgrounds/bg-orbital-station-ring.png",
-      "assets/backgrounds/bg-crystal-comet-field.png",
-      "assets/backgrounds/bg-asteroid-battlefield.png"
-    ],
-    player: "assets/sprites/player_ship_sheet.png",
-    enemy: "assets/sprites/enemy_ship_sheet.png",
-    boss: "assets/sprites/boss_mothership_sheet.png",
-    asteroid: "assets/sprites/asteroid_sheet.png",
+    player: "assets/sprites/starfall-player-v41.png",
+    enemy: "assets/sprites/starfall-enemies-v41.png",
+    boss: "assets/sprites/starfall-boss-v41.png",
+    asteroid: "assets/sprites/starfall-asteroids-v41.png",
     core: "assets/sprites/star_crystal.png",
     shield: "assets/sprites/shield_pickup.png",
     time: "assets/sprites/time_pickup.png"
   };
-
-  function levelBackgroundPath(index) {
-    if(index>=12)return ASSET_PATHS.backgrounds[[5,0,2,3,4,2][index-12]||0];
-    return ASSET_PATHS.backgrounds[index % ASSET_PATHS.backgrounds.length];
-  }
 
   const state = {
     status: "menu",
@@ -405,11 +392,7 @@
     };
 
 
-    const fallbackBgImages = ASSET_PATHS.backgrounds.map((src) => {
-      const img = new Image();
-      img.src = src;
-      return img;
-    });
+    const fallbackSky = window.StarfallSpace.canvasSky();
 
     function loadFallbackSprite(src) {
       const img = new Image();
@@ -430,15 +413,6 @@
 
     function fallbackAssetReady(image) {
       return !!(image && image.complete && image.naturalWidth && image.naturalHeight);
-    }
-
-    function drawImageCover(image, x, y, w, h) {
-      const iw = image.naturalWidth || image.width || 1;
-      const ih = image.naturalHeight || image.height || 1;
-      const scale = Math.max(w / iw, h / ih);
-      const dw = iw * scale;
-      const dh = ih * scale;
-      ctx.drawImage(image, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
     }
 
     function drawFallbackSprite(image, frame, x, y, w, h, rotation = 0, glowColor = null, glow = 18) {
@@ -528,15 +502,7 @@
     }
 
     function buildStars() {
-      fb.stars = [];
-      for (let i = 0; i < 150; i += 1) {
-        fb.stars.push({
-          x: Math.random() * fb.w,
-          y: Math.random() * fb.h,
-          z: Math.random() * 1 + 0.2,
-          r: Math.random() * 1.7 + 0.3
-        });
-      }
+      fb.stars=Array.from({length:quality.stars},()=>({x:(Math.random()-.5)*150,y:(Math.random()-.5)*150,z:1+Math.random()*120}));
     }
 
     function clamp(v, min, max) {
@@ -772,6 +738,7 @@
     function updateFallback(dt) {
       if(state.status==='transition'){transitionRemaining-=dt;if(transitionRemaining<=0&&transitionTarget>=0){const next=transitionTarget;state.levelIndex=next;resetRunStats();state.status='playing';campaign.enter(next,state);refreshCampaignMenu();showToastFallback(`Sector ${next+1} · ${currentLevel().name}`);}updateFlightHud();return;}
       if (state.status !== "playing") return;
+      if(!quality.reducedMotion)window.StarfallSpace.advanceStars(fb.stars,dt,state.input.boost);
       inputControls?.sync();
 
       const lvl = currentLevel();
@@ -962,53 +929,15 @@
       const lvl = currentLevel();
       ctx.clearRect(0, 0, fb.w, fb.h);
 
-      const image = fallbackBgImages[state.levelIndex % fallbackBgImages.length];
-      if (image && image.complete && image.naturalWidth) {
-        drawImageCover(image, 0, 0, fb.w, fb.h);
-        const shade = ctx.createLinearGradient(0, 0, 0, fb.h);
-        shade.addColorStop(0, "rgba(2,5,16,0.22)");
-        shade.addColorStop(0.48, "rgba(5,8,24,0.18)");
-        shade.addColorStop(1, "rgba(2,5,16,0.68)");
-        ctx.fillStyle = shade;
-        ctx.fillRect(0, 0, fb.w, fb.h);
-      } else {
-        const bg = ctx.createLinearGradient(0, 0, fb.w, fb.h);
-        bg.addColorStop(0, "#020510");
-        bg.addColorStop(0.45, "#0b1640");
-        bg.addColorStop(1, "#180626");
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, fb.w, fb.h);
-      }
-
-      fb.stars.forEach((s) => {
-        s.y += (0.25 + s.z) * (state.status === "playing" ? 0.8 : 0.2);
-        if (s.y > fb.h) { s.y = -4; s.x = Math.random() * fb.w; }
-        ctx.globalAlpha = 0.45 + s.z * 0.4;
-        ctx.fillStyle = s.z > 0.8 ? "#ffffff" : lvl.hue;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
+      fallbackSky.draw(ctx,fb.w,fb.h,state.levelIndex,lvl.hue);
+      fb.stars.forEach((star) => {
+        const p=window.StarfallSpace.projectStar(star,fb.w,fb.h);
+        if(p.x<0||p.x>fb.w||p.y<0||p.y>fb.h)return;
+        ctx.globalAlpha=Math.min(.85,.2+20/star.z);
+        ctx.fillStyle=star.z<30?"#e5f3ff":"#8eaacb";
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
       });
-      ctx.globalAlpha = 1;
-
-      // Cinematic fallback: no grid lines, only moving stars and background art.
-      const cx = fb.w * 0.5;
-      const horizon = fb.h * 0.34;
-      ctx.save();
-      ctx.globalAlpha = 0.28;
-      for (let i = 0; i < 18; i += 1) {
-        const a = (i / 18) * Math.PI * 2 + performance.now() * 0.00015;
-        const len = fb.w * (0.08 + (i % 5) * 0.018);
-        const x = cx + Math.cos(a) * fb.w * 0.34;
-        const y = horizon + Math.sin(a) * fb.h * 0.18;
-        ctx.strokeStyle = lvl.hue;
-        ctx.lineWidth = 1 + (i % 3);
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x + Math.cos(a) * len, y + Math.sin(a) * len * 0.35);
-        ctx.stroke();
-      }
-      ctx.restore();
+      ctx.globalAlpha=1;
 
       fb.objects.forEach(drawObjectFallback);
       fb.shots.forEach((s) => drawGlowCircle(s.x, s.y, s.r, s.color, 14));
@@ -1321,8 +1250,7 @@
   let engineTrail;
   let starParent;
   let tunnelParent;
-  let backgroundRoot;
-  let backgroundLayers = [];
+  const space = window.StarfallSpace.create(BABYLON,scene);
   let planetParent;
   let planetMeshes = [];
   let warpStreaks = [];
@@ -1510,11 +1438,11 @@
 
     for (const cfg of planetConfigs) {
       const sphere = BABYLON.MeshBuilder.CreateSphere(cfg.name, { diameter: cfg.r * 2, segments: 48 }, scene);
-      sphere.material = mats[cfg.mat];
+      space.planet(sphere, {planetBlue:'#3c8dff',planetRed:'#c96842',planetIce:'#69b9dd',planetViolet:'#8674c4'}[cfg.mat], cfg.mat==='planetIce');
       sphere.position.set(cfg.x, cfg.y, cfg.z);
       sphere.parent = planetParent;
       sphere.isPickable = false;
-      planetMeshes.push({ mesh: sphere, base: sphere.position.clone(), spin: randRange(0.025, 0.075), drift: randRange(0.05, 0.12), mat: cfg.mat });
+      planetMeshes.push({ mesh: sphere, spin: randRange(0.003, 0.008), mat: cfg.mat });
 
       if (cfg.ring) {
         const ring = BABYLON.MeshBuilder.CreateTorus(`${cfg.name}_ring`, { diameter: cfg.r * 2.9, thickness: 0.07, tessellation: 96 }, scene);
@@ -1524,7 +1452,7 @@
         ring.rotation.z = Math.PI * 0.08;
         ring.parent = planetParent;
         ring.isPickable = false;
-        planetMeshes.push({ mesh: ring, base: ring.position.clone(), spin: -randRange(0.015, 0.035), drift: randRange(0.035, 0.08), ring: true });
+        planetMeshes.push({ mesh: ring, spin: 0, ring: true });
       }
     }
 
@@ -1540,8 +1468,7 @@
   }
 
   function createTunnelGrid() {
-    // Grid removed: the game now uses a clean cinematic 3D starfield with planets,
-    // background nebula layers and forward motion instead of floor/tunnel lines.
+    // Distant sky/planets stay anchored; stars and near debris supply forward parallax.
     tunnelParent = null;
   }
 
@@ -1689,68 +1616,14 @@
     if (mesh && !mesh.isDisposed?.()) mesh.dispose();
   }
 
-  function makeBackgroundMaterial(name, imagePath, alpha = 0.72) {
-    const mat = new BABYLON.StandardMaterial(name, scene);
-    const texture = new BABYLON.Texture(imagePath, scene, true, false);
-    texture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-    texture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-    mat.diffuseTexture = texture;
-    mat.emissiveTexture = texture;
-    mat.diffuseColor = BABYLON.Color3.White();
-    mat.emissiveColor = BABYLON.Color3.White().scale(0.76);
-    mat.specularColor = BABYLON.Color3.Black();
-    mat.alpha = alpha;
-    mat.backFaceCulling = false;
-    mat.disableLighting = true;
-    return mat;
-  }
-
-  function createBackgroundLayers() {
-    backgroundRoot = new BABYLON.TransformNode("backgroundRoot", scene);
-    backgroundLayers = [];
-
-    const layerConfigs = [
-      { z: 150, y: 9.5, width: 150, height: 84, alpha: 0.93, speed: 0.0016, drift: 0.12 },
-      { z: 205, y: 14.0, width: 210, height: 118, alpha: 0.40, speed: -0.0009, drift: -0.08 },
-      { z: 92, y: -3.8, width: 110, height: 62, alpha: 0.24, speed: 0.0027, drift: 0.18 }
-    ];
-
-    for (let i = 0; i < layerConfigs.length; i++) {
-      const cfg = layerConfigs[i];
-      const mat = makeBackgroundMaterial(`spaceBackgroundMat_${i}`, levelBackgroundPath(i), cfg.alpha);
-      const plane = BABYLON.MeshBuilder.CreatePlane(`spaceBackgroundLayer_${i}`, { width: cfg.width, height: cfg.height }, scene);
-      plane.material = mat;
-      plane.position.set(0, cfg.y, cfg.z);
-      plane.renderingGroupId = 0;
-      plane.isPickable = false;
-      plane.parent = backgroundRoot;
-      backgroundLayers.push({ plane, mat, speed: cfg.speed, alpha: cfg.alpha, drift: cfg.drift, baseY: cfg.y, baseX: 0 });
-    }
-  }
-
   function applyLevelBackground(index) {
     void presentation.theme(index);
     const hue = LEVELS[index]?.hue || "#36dfff";
-    scene.clearColor = BABYLON.Color4.FromHexString(hue + "ff").scale(0.012);
+    space.theme(index,hue);
+    scene.clearColor = new BABYLON.Color4(.002,.004,.012,1);
     scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-    scene.fogDensity = 0.0028;
-    scene.fogColor = BABYLON.Color3.FromHexString(hue).scale(0.12);
-
-    for (let i = 0; i < backgroundLayers.length; i++) {
-      const layer = backgroundLayers[i];
-      const path = levelBackgroundPath(index + i);
-      const oldTexture = layer.mat.diffuseTexture;
-      const texture = new BABYLON.Texture(path, scene, true, false);
-      texture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-      texture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-      texture.uScale = i === 0 ? 1 : 1.08 + i * 0.06;
-      texture.vScale = i === 0 ? 1 : 1.08 + i * 0.06;
-      layer.mat.diffuseTexture = texture;
-      layer.mat.emissiveTexture = texture;
-      layer.mat.emissiveColor = BABYLON.Color3.White().scale(i === 0 ? 0.92 : 0.48);
-      layer.mat.alpha = layer.alpha;
-      if (oldTexture && !oldTexture.isDisposed) oldTexture.dispose();
-    }
+    scene.fogDensity = 0.0012;
+    scene.fogColor = BABYLON.Color3.FromHexString(hue).scale(0.035);
 
     const color = BABYLON.Color3.FromHexString(hue);
     if (mats.warpStreak) {
@@ -1760,19 +1633,6 @@
     if (mats.transparentCyan) {
       mats.transparentCyan.diffuseColor = color.scale(0.75);
       mats.transparentCyan.emissiveColor = color.scale(0.95);
-    }
-  }
-
-  function updateBackgroundLayers(dt) {
-    const t = performance.now() * 0.001;
-    for (const layer of backgroundLayers) {
-      const texture = layer.mat && layer.mat.diffuseTexture;
-      if (!texture) continue;
-      const boost = state.input.boost ? 2.2 : 1;
-      texture.uOffset += layer.speed * dt * 60 * boost;
-      texture.vOffset += layer.speed * 0.22 * dt * 60;
-      layer.plane.position.x = layer.baseX + Math.sin(t * 0.07 + layer.drift * 10) * layer.drift * 8;
-      layer.plane.position.y = layer.baseY + Math.cos(t * 0.05 + layer.drift * 5) * Math.abs(layer.drift) * 3;
     }
   }
 
@@ -2671,12 +2531,9 @@
     }
 
     if (planetParent) {
-      planetParent.rotation.y = Math.sin(state.elapsed * 0.025) * 0.035;
       for (const planet of planetMeshes) {
         const mesh = planet.mesh;
-        mesh.rotation.y += (planet.spin || 0.02) * dt;
-        mesh.position.x = planet.base.x + Math.sin(state.elapsed * (planet.drift || 0.05)) * 1.6;
-        mesh.position.y = planet.base.y + Math.cos(state.elapsed * (planet.drift || 0.05) * 0.8) * 0.55;
+        mesh.rotation.y += planet.spin * dt;
       }
       for (const streak of warpStreaks) {
         streak.position.z -= (state.input.boost ? 98 : 54) * dt;
@@ -2689,7 +2546,6 @@
       }
     }
 
-    updateBackgroundLayers(dt);
   }
 
   function missionProgress() {
@@ -2941,7 +2797,6 @@
     createStarfield();
     createPlanetField();
     createTunnelGrid();
-    createBackgroundLayers();
     applyLevelBackground(0);
     wireControls();
     updateUI();
