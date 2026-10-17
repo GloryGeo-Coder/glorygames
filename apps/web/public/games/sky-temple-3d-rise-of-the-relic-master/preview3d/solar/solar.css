@@ -1,0 +1,31 @@
+/* World 4 — Solar Sanctuary. Extends the already-tested preview3d/style.css. */
+:root{--cyan:#fff0b5;--gold:#f5d58b;--muted:#f4e8cf;}
+#app{background:radial-gradient(ellipse at 65% 5%,#f4c977,#6687ba 43%,#28345a 83%);}
+.skyGlow{pointer-events:none;background:radial-gradient(ellipse at 55% 14%,rgba(255,215,135,.20),transparent 56%),linear-gradient(180deg,rgba(170,116,47,.08),transparent 48%,rgba(18,29,52,.30));}
+.hudTitle,.hudStat,.hudBtn{border-color:rgba(246,202,123,.58);background:linear-gradient(145deg,rgba(55,45,77,.94),rgba(31,35,67,.90));}
+.hudTitle strong{color:#f7d9a2;}
+.questGuide{background:rgba(50,40,73,.89);border-color:rgba(255,202,110,.56);color:#f5f2ff;}
+.guardianHud{border-color:rgba(245,199,109,.67);background:rgba(45,34,64,.96);}
+.guardianHudLine strong{color:#f7e6c4;}
+.guardianHealthTrack{background:#382d4b;}
+#guardianHealthFill{background:linear-gradient(90deg,#f6bb61,#f7dd91,#f2eef6);}
+.guardianWarning{background:rgba(57,36,65,.96);border-color:rgba(255,200,133,.92);color:#fff3ff;}
+.guardianWarning[data-attack="bolt"]{border-color:#fff2ba;}
+.guardianWarning[data-attack="sigil"]{border-color:#f8cc82;}
+.guardianWarning[data-attack="wave"]{border-color:#f4ddac;}
+.actionBlast{border-color:rgba(255,213,130,.92);}
+.overlay{background:radial-gradient(ellipse at 80% 10%,rgba(207,145,83,.26),transparent 63%),linear-gradient(135deg,rgba(55,33,66,.96),rgba(26,32,62,.93)),url("../assets/SkyGarden_KeyArt.webp") center/cover no-repeat;}
+.panel{border-color:rgba(245,191,106,.57);background:linear-gradient(140deg,rgba(54,40,75,.97),rgba(22,30,59,.97));}
+.panel h1{color:#fff1c8;}.panel h2,.eyebrow{color:#ffe0a0;}
+/* Lightning warnings sit below boss warnings and above controls, never block input. */
+.solarHazardWarning{position:absolute;z-index:6;top:max(175px,calc(env(safe-area-inset-top) + 168px));left:50%;transform:translateX(-50%);max-width:min(520px,89vw);width:max-content;text-align:center;padding:8px 12px;line-height:1.4;border:1px solid rgba(255,214,134,.94);border-radius:13px;background:rgba(57,39,70,.95);box-shadow:0 6px 25px rgba(9,7,40,.5);color:#f1efff;font-size:12px;font-weight:850;pointer-events:none;}
+.solarHazardWarning[hidden]{display:none!important;}
+@media(max-width:700px){
+ .guardianHud{background:rgba(46,36,70,.96);}
+ .solarHazardWarning{top:max(130px,calc(env(safe-area-inset-top) + 124px));max-width:80vw;font-size:11px;padding:6px 8px;}
+ .questGuide{max-width:73vw;}
+}
+@media(max-height:510px) and (orientation:landscape){
+ .solarHazardWarning{top:max(66px,calc(env(safe-area-inset-top) + 62px));left:50%;max-width:57vw;font-size:10px;}
+}
+@media(prefers-reduced-motion:reduce){.skyGlow,.guardianWarning,.solarHazardWarning{animation:none!important;}}

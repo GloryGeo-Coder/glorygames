@@ -1,0 +1,29 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; color: #f4f7ff; background: #081426; }
+* { box-sizing: border-box; }
+body { margin: 0; background: radial-gradient(ellipse at 65% 0%, #194d62 0%, transparent 55%), #081426; }
+main { width: min(1120px, 100%); margin: auto; padding: max(28px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left)); }
+a { color: inherit; }
+a:focus-visible { outline: 3px solid #ffda8a; outline-offset: 6px; }
+header { padding: 0 0 28px; }
+.home { display: inline-block; padding: 12px 0; text-decoration: none; font-weight: 700; color: #c3deeb; }
+.eyebrow, .chapter { font-size: .75rem; letter-spacing: .14em; font-weight: 750; }
+.eyebrow { margin-top: 32px; color: #9bdddb; }
+h1 { margin: 12px 0; font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.05; letter-spacing: -.045em; }
+h1 span { color: #ffdb95; }
+.intro { max-width: 620px; color: #c3d2e6; font-size: 1.1rem; line-height: 1.6; }
+.start { display: inline-flex; align-items: center; gap: 20px; min-height: 52px; margin: 12px 0 0; padding: 14px 22px; border-radius: 14px; background: #ffda8a; color: #142238; font-weight: 750; text-decoration: none; }
+.save-note, footer { color: #adbed4; font-size: .85rem; line-height: 1.65; }
+h2 { font-size: 1.25rem; margin-bottom: 18px; }
+.worlds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.world { --accent: #9fe7b6; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 28px; min-height: 225px; border: 1px solid #344a63; border-radius: 20px; text-decoration: none; background: radial-gradient(ellipse at 100% 0%, #28573e 0%, transparent 70%), #102235; }
+.world.crystal { --accent: #c4bbff; background: radial-gradient(ellipse at 100% 0%, #3f346d 0%, transparent 70%), #102235; }
+.world.storm { --accent: #aaceff; background: radial-gradient(ellipse at 100% 0%, #284a77 0%, transparent 70%), #102235; }
+.world.solar { --accent: #ffdb95; background: radial-gradient(ellipse at 100% 0%, #66492a 0%, transparent 70%), #102235; }
+.world:hover { border-color: var(--accent); }
+.chapter, .enter { color: var(--accent); }
+h3 { font-size: 1.55rem; margin: 18px 0 0; line-height: 1.2; }
+.world p { color: #d0dcee; font-size: .95rem; line-height: 1.6; margin: 12px 0 20px; }
+.enter { margin-top: auto; font-weight: 650; }
+footer { padding-top: 30px; }
+@media (max-width: 600px) { .worlds { grid-template-columns: minmax(0, 1fr); } .world { min-height: 210px; padding: 24px; } }
+@media (prefers-reduced-motion: no-preference) { .world { transition: border-color .2s; } }

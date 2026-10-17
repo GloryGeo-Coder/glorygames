@@ -1,0 +1,53 @@
+/* Crystal Caverns level skin. Shared touch controls remain unchanged. */
+:root { --cyan:#c1c3ff; --gold:#f6c7ff; --muted:#d2c6f2; }
+body { background:#0a0824; }
+.skyGlow { background: radial-gradient(ellipse at 50% 32%, rgba(85,47,176,.14), transparent 56%); }
+.hudTitle { border-color:rgba(202,136,255,.38); background:linear-gradient(145deg,rgba(40,17,87,.84),rgba(16,11,51,.82)); }
+.guardianHud { border-color:rgba(206,160,255,.8);background:rgba(30,11,70,.88); }
+#guardianHealthFill { background:linear-gradient(90deg,#55d9f5,#b06dff,#f9a5ff); }
+.guardianWarning { background:rgba(41,15,70,.90); }
+.panel { border-color:rgba(199,145,255,.5); background:linear-gradient(140deg,rgba(34,17,79,.96),rgba(12,14,55,.96)); }
+.panel h1 { color:#f2dcff; }
+.panel h2,.eyebrow { color:#d6b1ff; }
+.overlay { background:linear-gradient(125deg,rgba(12,7,37,.95),rgba(25,9,62,.85)),url("../assets/SkyGarden_KeyArt.webp") center/cover no-repeat; }
+.questGuide {border-color:rgba(167,124,255,.4);background:rgba(19,8,64,.8);}
+.actionBlast {border-color:rgba(233,147,255,.88);}
+
+/* v0.4.1 — Crystal Caverns atmosphere and attack readability.
+   The world remains a live WebGL scene, with no image overlay masking touch input. */
+.skyGlow {
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 48% 22%, rgba(119,91,231,.16), transparent 52%),
+    radial-gradient(ellipse at 6% 85%, rgba(42,205,220,.065), transparent 48%),
+    linear-gradient(180deg, rgba(15,9,49,.08), transparent 44%, rgba(9,5,34,.15));
+}
+
+.guardianHud {
+  border-color:rgba(168,157,255,.72);
+  box-shadow:0 5px 22px rgba(12,3,38,.38), inset 0 1px rgba(213,205,255,.1);
+}
+.guardianHudLine strong {color:#f0e8ff;}
+.guardianHudLine span {color:#d7c4ff;}
+.guardianHealthTrack {background:#24183f;}
+#guardianHealthFill {background:linear-gradient(90deg,#53d4e5,#a47bfc,#e5a1ff);}
+
+.guardianWarning {
+  border-color:rgba(201,160,255,.9);
+  background:rgba(28,15,64,.95);
+  box-shadow:0 0 0 1px rgba(120,70,210,.22), 0 7px 25px rgba(8,4,29,.48);
+  color:#faf4ff;
+}
+.guardianWarning[data-attack="bolt"] {border-color:#bda1ff;}
+.guardianWarning[data-attack="sigil"] {border-color:#ffb3f9; color:#ffe5fb;}
+.guardianWarning[data-attack="wave"] {border-color:#84e4fa; color:#e4faff;}
+
+/* Make boss warning text readable above the game, not the mobile action pad. */
+@media (max-width: 700px) {
+  .guardianWarning {padding:7px 9px;line-height:1.35;}
+  .guardianHud {background:rgba(20,12,53,.9);}
+}
+@media (prefers-reduced-motion: reduce) {
+  .skyGlow {animation:none;}
+  .guardianWarning {animation:none;}
+}

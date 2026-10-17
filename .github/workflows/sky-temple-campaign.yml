@@ -1,0 +1,36 @@
+name: Sky Temple campaign QA
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/sky-temple-3d-rise-of-the-relic-master/preview3d/**'
+      - 'apps/web/public/_headers'
+      - 'tests/**'
+      - 'tools/audit-sky-temple.mjs'
+      - '.github/workflows/sky-temple-campaign.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/sky-temple-3d-rise-of-the-relic-master/preview3d/**'
+      - 'tests/**'
+      - 'tools/audit-sky-temple.mjs'
+      - '.github/workflows/sky-temple-campaign.yml'
+permissions:
+  contents: read
+jobs:
+  campaign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          sparse-checkout: |
+            apps/web/public/games/sky-temple-3d-rise-of-the-relic-master/preview3d
+            tests
+            tools
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Audit packaged assets and score isolation
+        run: node tools/audit-sky-temple.mjs
+      - name: Campaign regression and actual Babylon asset/runtime tests
+        run: node --test tests/*.test.mjs tests/*.test.cjs
