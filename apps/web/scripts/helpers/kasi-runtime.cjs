@@ -1,10 +1,10 @@
 /* Runs the shipped game logic; DOM/input adapters do not emulate browser CSS layout. */
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
 const root = path.resolve(__dirname, '../../public/games/kasi-quest');
-async function boot({ width = 1280, height = 720, saved = new Map(), failAssets = false, failLevels = false, nativeCanvas } = {}) {
+async function boot({ width = 1280, height = 720, saved = new Map(), failAssets = false, failLevels = false, failAtlases = [], wrongAtlasSize = false, noAnimation = false, nativeCanvas } = {}) {
   let clock = 0;
   const frames = [];
-  const calls = [], messages = [], captures = new Set();
+  const calls = [], messages = [], requests = [], captures = new Set();
   let doc;
   class Element {
     constructor(tag = 'div', attrs = {}) {
@@ -53,7 +53,8 @@ async function boot({ width = 1280, height = 720, saved = new Map(), failAssets 
   if (nativeCanvas) for (const key of ['width', 'height']) Object.defineProperty(canvas, key, { get:() => nativeCanvas[key], set:v => { nativeCanvas[key] = v; } });
   doc = new Element(); doc.hidden = false; doc.documentElement = new Element('html'); doc.body = new Element('body');
   doc.getElementById = id => elements.get(id); doc.createElement = tag => new Element(tag);
-  const win = new Element(); Object.assign(win, { innerWidth:width, innerHeight:height, devicePixelRatio:2, visualViewport:new Element(), location:{ origin:'https://webgamearena.com' }, setInterval:() => 1 });
+  const win = new Element(); Object.assign(win, { innerWidth:width, innerHeight:height, devicePixelRatio:2, visualViewport:new Element(), location:{ origin:'https://webgamearena.com' }, setInterval:() => 1,
+    setTimeout, clearTimeout, matchMedia:() => ({matches:false,addEventListener(){}}) });
   win.parent = win; win.postMessage = (message, origin) => messages.push({ message, origin });
   const sandbox = { window:win, document:doc, console, performance:{ now:() => clock },
     CanvasRenderingContext2D: Context, localStorage:{ getItem:k => saved.get(k) ?? null, setItem:(k,v) => saved.set(k,String(v)) },
@@ -62,9 +63,11 @@ async function boot({ width = 1280, height = 720, saved = new Map(), failAssets 
     Image: class {
       set src(url) {
         this.url = url;
+        requests.push(url);
         const png = fs.readFileSync(path.join(root,url));
         this.width = png.readUInt32BE(16); this.height = png.readUInt32BE(20);
-        queueMicrotask(() => { if (failAssets) this.onerror?.(); else if (nativeCanvas) {
+        if (wrongAtlasSize && url.includes('/animation/')) this.width+=1;
+        queueMicrotask(() => { if (failAssets || failAtlases.some(kind=>url.includes(`/animation/${kind}-`))) this.onerror?.(); else if (nativeCanvas) {
           const { loadImage } = require('@napi-rs/canvas');
           loadImage(path.join(root,url)).then(img => {
             this.width=img.width; this.height=img.height; images.set(this,img); this.onload?.();
@@ -77,20 +80,24 @@ async function boot({ width = 1280, height = 720, saved = new Map(), failAssets 
   if (nativeCanvas) { const draw = ctx.drawImage.bind(ctx); ctx.drawImage = (img,...args) => draw(images.get(img) || img,...args); }
   const context = vm.createContext(sandbox);
   vm.runInContext(fs.readFileSync(path.join(root, 'kasi-presentation.js'), 'utf8'), context);
+  if (!noAnimation) {
+    vm.runInContext(fs.readFileSync(path.join(root, 'kasi-animation-data.js'), 'utf8'), context);
+    vm.runInContext(fs.readFileSync(path.join(root, 'kasi-animation.js'), 'utf8'), context);
+  }
   let code = fs.readFileSync(path.join(root, 'game.js'), 'utf8');
   code = code.replace('  void boot();', `
-    globalThis.__kasiProbe = { player, input, prevInput, presentation, resetInput, fitCanvas, computeCamera,
+    globalThis.__kasiProbe = { player, input, prevInput, presentation, animation, updateActorAnimations, resetInput, fitCanvas, computeCamera,
       startOrRestart, startDaily, setPaused, resetLevelState, updatePlayer, updateGameplay, updateObstacles,
       updateEnemies, updateBosses, updateProjectiles, handleEnemyPlayerCollisions, damagePlayer,
       collectCoin, collectCollectible, hitBoss, defeatEnemy, pressSwitch, objectiveComplete,
       completeLevel, loadLevel, render, shoot, postScore,
       get state() { return { running, paused, loading, currentLevel, level, score, wallet, stars, upgrades,
-        enemies, bosses, obstacles, switches, doors, projectiles, enemyProjectiles, levelTime, display, cameraInsets }; }
+        enemies, bosses, obstacles, switches, doors, projectiles, enemyProjectiles, levelTime, display, cameraInsets, defeatRemaining }; }
     }; globalThis.__kasiReady = boot();`);
   vm.runInContext(code, context, { filename:'kasi-quest/game.js' });
   await context.__kasiReady;
   const probe = context.__kasiProbe;
-  return { ...probe, get state() { return probe.state; }, elements, win, doc, ctx, calls, saved, messages, captures,
+  return { ...probe, get state() { return probe.state; }, elements, win, doc, ctx, calls, saved, messages, requests, captures,
     frame(ms = 1000/60) { clock += ms; const pending=frames.splice(0); for(const fn of pending) fn(); },
     resize(w,h) { win.innerWidth=w; win.innerHeight=h; win.visualViewport.height=h; win.visualViewport.emit('resize'); },
   };

@@ -1,4 +1,4 @@
-/* Kasi Quest — Mobile & Gameplay Foundation v3.1
+/* Kasi Quest — Character & Enemy Animation v3.2
    WebGameArena standalone game
    Features:
    - Manual movement, shooting, moving enemies
@@ -61,6 +61,10 @@
   const missionHud = $("missionHud");
   const missionProgress = $("missionProgress");
   const presentation = window.KasiPresentation;
+  const animation = window.KasiAnimation?.create();
+  const motionPreference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  animation?.reduceMotion(!!motionPreference?.matches);
+  motionPreference?.addEventListener?.("change", event => animation?.reduceMotion(event.matches));
 
   if (!canvas || !ctx || !panel || !btnStart || !btnPause || !btnMute || !elLevelGrid || !presentation) {
     console.error(`[${GAME_SLUG}] Missing required DOM elements.`);
@@ -209,13 +213,20 @@
     coin: "./assets/items/coin_spin.png",
     bgForLevel: (n) => `./assets/backgrounds/level-${String(n).padStart(2, "0")}.png`,
   };
-  function loadImageSafe(url) {
+  function loadImageSafe(url, timeoutMs = 0) {
     if (!url) return Promise.resolve(null);
     if (imageCache.has(url)) return Promise.resolve(imageCache.get(url));
     return new Promise((resolve) => {
       const img = new Image();
-      img.onload = () => { imageCache.set(url, img); resolve(img); };
-      img.onerror = () => { imageCache.set(url, null); resolve(null); };
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true; if (timer !== null) window.clearTimeout(timer);
+        imageCache.set(url, value); resolve(value);
+      };
+      const timer = timeoutMs > 0 ? window.setTimeout(() => finish(null), timeoutMs) : null;
+      img.onload = () => finish(img);
+      img.onerror = () => finish(null);
       img.src = url;
     });
   }
@@ -233,11 +244,12 @@
   bgImg = null;
 
   async function loadAssetsOptional() {
+  if (animation) await animation.load(url => loadImageSafe(url, 15000));
   [imgPlayerIdle, imgPlayerRun, imgEnemy, imgBoss, imgTaxi, imgCoin] = await Promise.all([
-    loadImageSafe(ASSETS.playerIdle),
-    loadImageSafe(ASSETS.playerRun),
-    loadImageSafe(ASSETS.enemy),
-    loadImageSafe(ASSETS.boss),
+    animation?.has("player") ? null : loadImageSafe(ASSETS.playerIdle),
+    animation?.has("player") ? null : loadImageSafe(ASSETS.playerRun),
+    animation?.has("enemy") ? null : loadImageSafe(ASSETS.enemy),
+    animation?.has("boss") ? null : loadImageSafe(ASSETS.boss),
     loadImageSafe(ASSETS.taxi),
     loadImageSafe(ASSETS.coin),
   ]);
@@ -275,6 +287,7 @@
   let paused = false;
   let loading = false;
   let interrupted = false;
+  let defeatRemaining = 0;
   let score = 0;
   let coinsCollected = 0;
   let collectiblesCollected = 0;
@@ -419,6 +432,7 @@ const SCALE = {
   window.addEventListener("pagehide", pauseForInterruption);
   function pauseForInterruption() {
     resetInput();
+    if (defeatRemaining > 0) { defeatRemaining = 0; syncPlayUI(); }
     if (running || loading) interrupted = true;
     if (running && !paused) setPaused(true, "Game paused. Resume when you are ready.");
   }
@@ -901,6 +915,8 @@ const y = rawY - (h - baseH);
   }
   function resetLevelState({ resetScore = false } = {}) {
     resetInput();
+    defeatRemaining = 0;
+    animation?.reset();
     cameraState = null;
     resetPlayer();
     coinsCollected = 0;
@@ -942,6 +958,7 @@ const y = rawY - (h - baseH);
       player.invuln = 1.0;
       player.vx = -player.face * 190;
       player.vy = -420;
+      animation?.play(player, "player", "hurt");
       addText("Shield saved you", player.x, player.y, 1.2);
       beep(260, 0.05, "square", 0.04);
       return;
@@ -950,6 +967,8 @@ const y = rawY - (h - baseH);
     award(-55, player.x, player.y, reason === "time" ? "Time penalty" : "-55");
     beep(120, 0.09, "sawtooth", 0.05);
     if (player.lives <= 0) {
+      animation?.play(player, "player", "defeat");
+      defeatRemaining = animation?.has("player") && reason !== "fall" ? animation.duration("player", "defeat") + 0.1 : 0;
       postScore(mode === "daily" ? "daily_game_over" : "game_over");
       running = false;
       paused = true;
@@ -969,6 +988,7 @@ const y = rawY - (h - baseH);
     player.jumpHeld = false;
     cameraState = null;
     snapPlayerToGroundAtSpawn();
+    animation?.play(player, "player", "hurt");
   }
 
   function setHUD() {
@@ -1036,6 +1056,7 @@ const y = rawY - (h - baseH);
     const rate = fireRate();
     if (totalRunTime - lastShotAt < rate) return;
     lastShotAt = totalRunTime;
+    animation?.play(player, "player", "shoot");
     const dir = player.face >= 0 ? 1 : -1;
     const bulletW = 15 * SCALE.projectile;
 const bulletH = 7 * SCALE.projectile;
@@ -1056,6 +1077,7 @@ projectiles.push({
   function defeatEnemy(en, x, y, byShot = false) {
     if (!en.alive) return;
     en.alive = false;
+    animation?.play(en, "enemy", "defeat");
     enemiesDefeated += 1;
     addCombo(byShot ? 145 : 185, x, y, byShot ? "+145" : "+185");
     beep(byShot ? 300 : 220, 0.05, "square", 0.04);
@@ -1063,11 +1085,13 @@ projectiles.push({
   function hitBoss(boss, damage = 1, byStomp = false) {
     if (!boss.alive) return;
     boss.hp -= damage;
+    animation?.play(boss, "boss", "hurt");
     boss.phase = boss.hp <= Math.ceil(boss.maxHp * 0.5) ? 2 : 1;
     addCombo(byStomp ? 90 : 70, boss.x, boss.y, byStomp ? "Boss stomp" : "Boss hit");
     beep(220, 0.045, "square", 0.035);
     if (boss.hp <= 0) {
       boss.alive = false;
+      animation?.play(boss, "boss", "defeat");
       bossesDefeated += 1;
       addCombo(650 + boss.maxHp * 30, boss.x, boss.y, "Boss defeated");
       beep(700, 0.08, "triangle", 0.045);
@@ -1079,6 +1103,7 @@ projectiles.push({
   // Updates
   // ----------------------------
   function updatePlayer(dt) {
+    const wasGrounded = player.onGround;
     const target = (input.right ? 1 : 0) - (input.left ? 1 : 0);
     if (target) {
       player.vx += target * MOVE_ACC * dt;
@@ -1098,6 +1123,7 @@ projectiles.push({
       player.coyoteT = 0;
       player.jumpBufferT = 0;
       player.vy = -JUMP_V0;
+      animation?.cancel(player, "land");
       player.onGround = false;
       player.jumpHeld = true;
       player.jumpHoldT = 0;
@@ -1149,6 +1175,7 @@ projectiles.push({
 
     const worldW = level.width * tileSize;
     const worldH = level.height * tileSize;
+    if (!wasGrounded && player.onGround) animation?.play(player, "player", "land");
     player.x = clamp(player.x, 0, Math.max(0, worldW - player.w));
     if (player.y > worldH + 360) damagePlayer("fall");
     if (player.invuln > 0) player.invuln -= dt;
@@ -1230,6 +1257,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
         if (en.shootT <= 0 && Math.abs(player.x - en.x) < tileSize * 9) {
           en.shootT = 1.8;
           const dir = player.x < en.x ? -1 : 1;
+          animation?.play(en, "enemy", "shoot", dir);
           enemyProjectiles.push({ x: en.x + en.w / 2, y: en.y + en.h * 0.4, w: 12, h: 7, vx: dir * 360, vy: 0, life: 2.2 });
         }
       }
@@ -1284,6 +1312,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       if (b.shootT <= 0) {
         b.shootT = b.phase >= 2 ? 1.15 : 1.75;
         const dir = player.x < b.x ? -1 : 1;
+        animation?.play(b, "boss", "shoot", dir);
         enemyProjectiles.push({ x: b.x + b.w / 2, y: b.y + b.h * 0.35, w: 15, h: 9, vx: dir * (b.phase >= 2 ? 440 : 360), vy: 0, life: 2.4 });
         if (b.type === "final" && b.phase >= 2) {
           enemyProjectiles.push({ x: b.x + b.w / 2, y: b.y + b.h * 0.2, w: 12, h: 7, vx: dir * 380, vy: -140, life: 2.2 });
@@ -1362,7 +1391,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
         if (rectsOverlap(pr, { x: en.x, y: en.y, w: en.w, h: en.h })) {
           en.hp -= p.damage || 1;
           if (en.hp <= 0) defeatEnemy(en, en.x, en.y, true);
-          else addText("Hit", en.x, en.y);
+          else { animation?.play(en, "enemy", "hurt"); addText("Hit", en.x, en.y); }
           remove = true;
         }
       }
@@ -1456,6 +1485,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     handleEnemyPlayerCollisions();
     updateNpcs();
     updateFloatingText(dt);
+    updateActorAnimations(dt);
 
     if (level?.meta?.timeLimit && levelTime > Number(level.meta.timeLimit)) damagePlayer("time");
     if (now() - lastLiveScoreAt > 350) { lastLiveScoreAt = now(); postScore("live"); }
@@ -1463,6 +1493,17 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     prevInput.jump = input.jump;
     prevInput.action = input.action;
     setHUD();
+  }
+
+  function updateActorAnimations(dt) {
+    if (!animation) return;
+    animation.update(player, "player", dt);
+    for (const enemy of enemies) animation.update(enemy, "enemy", dt, {
+      windup: enemy.type === "shooter" && enemy.shootT > 0 && enemy.shootT < 0.28 && Math.abs(player.x - enemy.x) < tileSize * 9,
+    });
+    for (const boss of bosses) animation.update(boss, "boss", dt, {
+      windup: boss.shootT > 0 && boss.shootT < 0.3,
+    });
   }
 
   async function completeLevel() {
@@ -1713,9 +1754,10 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   }
   function drawEnemies(camX, camY) {
     for (const en of enemies) {
-      if (!en.alive) continue;
+      if (!en.alive && (!animation?.has("enemy") || animation.finished(en, "enemy"))) continue;
       const p = worldToScreen(en.x, en.y, camX, camY);
       if (p.x + en.w < -70 || p.x > viewW + 70 || p.y + en.h < -70 || p.y > viewH + 70) continue;
+      if (animation?.draw(ctx, en, "enemy", { ...p, w: en.w, h: en.h })) continue;
       if (imgEnemy) {
         presentation.drawSprite(ctx, imgEnemy, "enemy", { ...p, w: en.w, h: en.h }, en.dir);
       } else {
@@ -1731,9 +1773,9 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   }
   function drawBosses(camX, camY) {
     for (const b of bosses) {
-      if (!b.alive) continue;
+      if (!b.alive && (!animation?.has("boss") || animation.finished(b, "boss"))) continue;
       const p = worldToScreen(b.x, b.y, camX, camY);
-      if (!presentation.drawSprite(ctx, imgBoss, "boss", { ...p, w: b.w, h: b.h }, b.dir)) {
+      if (!animation?.draw(ctx, b, "boss", { ...p, w: b.w, h: b.h }) && !presentation.drawSprite(ctx, imgBoss, "boss", { ...p, w: b.w, h: b.h }, b.dir)) {
         ctx.fillStyle = b.phase >= 2 ? "rgba(251,113,133,.36)" : "rgba(250,204,21,.26)";
         ctx.strokeStyle = b.phase >= 2 ? "rgba(251,113,133,.95)" : "rgba(250,204,21,.9)";
         ctx.lineWidth = 3;
@@ -1741,6 +1783,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
         ctx.fillStyle = "#fff"; ctx.font = "900 11px system-ui"; ctx.textAlign = "center";
         ctx.fillText("BOSS", p.x + b.w / 2, p.y + b.h * 0.48);
       }
+      if (!b.alive) continue;
       const barW = Math.max(42, b.w);
       ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(p.x, p.y - 12, barW, 6);
       ctx.fillStyle = "rgba(34,197,94,.9)"; ctx.fillRect(p.x, p.y - 12, barW * clamp(b.hp / b.maxHp, 0, 1), 6);
@@ -1758,12 +1801,14 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   }
   function drawPlayer(camX, camY) {
     const p = worldToScreen(player.x, player.y, camX, camY);
-    if (player.invuln > 0 && Math.floor(totalRunTime * 18) % 2 === 0) return;
+    const pose = animation?.snapshot(player, "player");
+    if (player.lives > 0 && player.invuln > 0 && pose?.clip !== "hurt" && Math.floor(totalRunTime * 18) % 2 === 0) return;
+    const animated = animation?.draw(ctx, player, "player", { ...p, w: player.w, h: player.h });
     const img = Math.abs(player.vx) > 45 && imgPlayerRun ? imgPlayerRun : imgPlayerIdle;
-    if (img) {
+    if (!animated && img) {
       const name = img === imgPlayerRun ? "playerRun" : "playerIdle";
       presentation.drawSprite(ctx, img, name, { ...p, w: player.w, h: player.h }, player.face);
-    } else {
+    } else if (!animated) {
       ctx.fillStyle = "rgba(234,240,255,.18)"; ctx.strokeStyle = "rgba(56,189,248,.86)"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.roundRect(p.x, p.y, player.w, player.h, 7); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "rgba(234,240,255,.95)";
@@ -1894,9 +1939,10 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   }
   function syncPlayUI() {
     const playing = running && !paused;
-    panel.hidden = playing;
+    const hidePanel = playing || defeatRemaining > 0;
+    panel.hidden = hidePanel;
     // Retain this property for the shared game-tab fullscreen integration.
-    panel.style.display = playing ? "none" : "flex";
+    panel.style.display = hidePanel ? "none" : "flex";
     if (touch) touch.hidden = !playing;
     if (missionHud) missionHud.hidden = !playing;
     if (btnHudPause) btnHudPause.hidden = !playing;
@@ -1987,6 +2033,11 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     const dt = clamp((t - tPrev) / 1000, 0, 0.033);
     tPrev = t;
     if (running && !paused) updateGameplay(dt);
+    else if (!running && defeatRemaining > 0 && !document.hidden) {
+      animation?.update(player, "player", dt, { defeated: true });
+      defeatRemaining = Math.max(0, defeatRemaining - dt);
+      if (defeatRemaining === 0) syncPlayUI();
+    }
     render(dt);
     requestAnimationFrame(loop);
   }
