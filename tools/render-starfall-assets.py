@@ -48,7 +48,12 @@ for name, result, args in [
     ("glGetProgramiv", None, [uint, uint, ptr]), ("glGetProgramInfoLog", None, [uint, integer, ptr, ptr]),
     ("glGetAttribLocation", integer, [uint, C.c_char_p]), ("glGetUniformLocation", integer, [uint, C.c_char_p]),
     ("glUseProgram", None, [uint]), ("glUniform1f", None, [integer, flt]),
-    ("glUniform3f", None, [integer, flt, flt, flt]), ("glUniformMatrix4fv", None, [integer, integer, uint, ptr]),
+    ("glUniform3f", None, [integer, flt, flt, flt]), ("glUniform2f", None, [integer, flt, flt]),
+    ("glUniform1i", None, [integer, integer]), ("glGenTextures", None, [integer, ptr]),
+    ("glBindTexture", None, [uint, uint]), ("glActiveTexture", None, [uint]),
+    ("glTexParameteri", None, [uint, uint, integer]), ("glPixelStorei", None, [uint, integer]),
+    ("glTexImage2D", None, [uint, integer, integer, integer, integer, integer, uint, uint, ptr]),
+    ("glDeleteTextures", None, [integer, ptr]), ("glUniformMatrix4fv", None, [integer, integer, uint, ptr]),
     ("glGenBuffers", None, [integer, ptr]), ("glBindBuffer", None, [uint, uint]),
     ("glBufferData", None, [uint, C.c_size_t, ptr, uint]), ("glEnableVertexAttribArray", None, [uint]),
     ("glDisableVertexAttribArray", None, [uint]), ("glVertexAttribPointer", None, [uint, integer, uint, uint, integer, ptr]),
@@ -205,21 +210,38 @@ def shaders():
     return data
 
 
-def sky_image(w, h, sector=0, hue=(.21, .87, 1)):
+_sky_program = None
+
+
+def sky_image(w, h, sector=0):
+    """Exercise the shipped image-sampling shader, including its portrait/ultrawide crop."""
+    global _sky_program
     source = shaders()
-    p = program(source["vertex"], source["fragment"])
-    # Also compile the actual planetary vertex/fragment pair on GLES2.
-    program(source["vertex"], source["planetFragment"])
+    if _sky_program is None:
+        _sky_program = program(source["vertex"], source["fragment"])
+        program(source["vertex"], source["planetFragment"])
+    p = _sky_program
+    with Image.open(GAME / source["SKIES"][sector]["file"]) as file:
+        art = np.array(file.convert("RGB"))
+    data = np.ascontiguousarray(art[::-1])
+    texture = uint()
+    gl.glGenTextures(1,C.byref(texture))
+    gl.glActiveTexture(0x84C0)
+    gl.glBindTexture(0x0DE1,texture)
+    for key,value in [(0x2801,0x2601),(0x2800,0x2601),(0x2802,0x812F),(0x2803,0x812F)]:
+        gl.glTexParameteri(0x0DE1,key,value)
+    gl.glPixelStorei(0x0CF5,1)
+    gl.glTexImage2D(0x0DE1,0,0x1907,art.shape[1],art.shape[0],0,0x1907,0x1401,data.ctypes.data)
     gl.glViewport(0, 0, w, h)
-    gl.glClearColor(0, 0, 0, 0)
+    gl.glClearColor(1, 0, 1, 0)  # Uncovered pixels become an obvious failed assertion.
     gl.glClear(0x4000 | 0x100)
     gl.glDisable(0xB71)
     gl.glDisable(0xB44)
     gl.glUseProgram(p)
     matrix(p, "worldViewProjection", perspective(w / h) @ view((0, 0, 0), (0, 0, 1)))
-    vector(p, "nebulaHue", hue)
-    number(p, "sector", sector)
-    # A cube surrounds the eye; the fragment shader uses only the normalised ray.
+    gl.glUniform1i(gl.glGetUniformLocation(p,b"skyTexture"),0)
+    gl.glUniform2f(gl.glGetUniformLocation(p,b"viewportSize"),w,h)
+    gl.glUniform2f(gl.glGetUniformLocation(p,b"imageSize"),art.shape[1],art.shape[0])
     q = [[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1],[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1]]
     triangles = []
     for a,b,c,d in [(0,1,2,3),(5,4,7,6),(4,0,3,7),(1,5,6,2),(3,2,6,7),(4,5,1,0)]:
@@ -227,43 +249,40 @@ def sky_image(w, h, sector=0, hue=(.21, .87, 1)):
     draw(p, np.array(triangles) * 100)
     pixels = np.empty((h, w, 4), dtype=np.uint8)
     gl.glReadPixels(0, 0, w, h, 0x1908, 0x1401, pixels.ctypes.data)
+    gl.glDeleteTextures(1,C.byref(texture))
     assert gl.glGetError() == 0
-    return Image.fromarray(pixels[::-1])
-
-
-def panorama(sector, hue):
-    source = shaders()
-    fragment = source["fragment"].replace("varying vec3 vDirection;", "varying vec2 vUV;")
-    fragment = fragment.replace("vec3 d=normalize(vDirection),p=", "float lon=(vUV.x-.5)*6.2831853,lat=(vUV.y-.5)*3.14159265;vec3 d=vec3(sin(lon)*cos(lat),sin(lat),cos(lon)*cos(lat));vec3 p=")
-    vertex = "precision highp float;attribute vec3 position;varying vec2 vUV;void main(){vUV=position.xy*.5+.5;gl_Position=vec4(position,1.);}"
-    p = program(vertex, fragment)
-    gl.glViewport(0, 0, 2048, 1024)
-    gl.glDisable(0xB71)
-    gl.glDisable(0xB44)
-    gl.glUseProgram(p)
-    vector(p, "nebulaHue", hue)
-    number(p, "sector", sector)
-    draw(p, [[-1,-1,0],[1,-1,0],[1,1,0],[-1,-1,0],[1,1,0],[-1,1,0]])
-    pixels = np.empty((1024, 2048, 4), dtype=np.uint8)
-    gl.glReadPixels(0, 0, 2048, 1024, 0x1908, 0x1401, pixels.ctypes.data)
-    assert gl.glGetError() == 0
-    return Image.fromarray(pixels[::-1]).convert("RGB")
+    result = pixels[::-1].copy()
+    assert result[:,:,3].min()==255, "The sky must cover every pixel"
+    assert ((result[:,:,:3]>248).all(axis=2)).mean()<.03, "Background must not wash out to white"
+    # Compare nine actual GPU samples to bilinear source samples, catching white output, UV flips and stretching.
+    iw,ih=art.shape[1],art.shape[0]
+    scale=min(iw/w,ih/h)
+    for x,y in [(0,0),(w-1,0),(0,h-1),(w-1,h-1),(w//2,h//2),(w//4,h//4),(3*w//4,h//4),(w//4,3*h//4),(3*w//4,3*h//4)]:
+        sx=np.clip((iw-w*scale)/2+(x+.5)*scale-.5,0,iw-1)
+        sy=np.clip((ih-h*scale)/2+(y+.5)*scale-.5,0,ih-1)
+        x0,y0=int(sx),int(sy);x1,y1=min(iw-1,x0+1),min(ih-1,y0+1)
+        fx,fy=sx-x0,sy-y0
+        expected=(art[y0,x0]*(1-fx)+art[y0,x1]*fx)*(1-fy)+(art[y1,x0]*(1-fx)+art[y1,x1]*fx)*fy
+        assert np.abs(result[y,x,:3].astype(float)-expected).max()<4,(sector,w,h,x,y)
+    return Image.fromarray(result)
 
 
 if __name__ == "__main__":
     if "--review" in sys.argv:
         output = Path(sys.argv[-1])
         output.mkdir(exist_ok=True, parents=True)
-        for w,h in [(1600,900),(390,844),(1600,450)]:
-            image = sky_image(w,h)
-            assert np.array(image)[:,:,3].min() == 255, "Every viewport pixel must be covered"
-            image.save(output / f"sky-{w}x{h}.png")
+        for sector in range(18):
+            for w,h in [(1280,720),(390,844),(1600,450)]:
+                image=sky_image(w,h,sector)
+                if sector in [0,1,13,17]:
+                    image.save(output/f"sector-{sector+1}-{w}x{h}.png")
+        print("54 background render/crop/colour checks passed across all 18 sectors.")
         contact = Image.new("RGBA", (1536, 1024), "#060e20")
         for i, file in enumerate(["pathfinder.glb","red_scout.glb","siege_fighter.glb","warden_drone.glb","sovereign_citadel.glb","lava_asteroid.glb"]):
             image = model_image(file, eye=(4,5,-7) if i<4 else (3,4,8), up=(0,1,0))
             contact.alpha_composite(image,(i%3*512,i//3*512))
         contact.convert("RGB").save(output / "model-review.png")
-        print("GLES sky and planet shaders compiled; full pixel coverage at three aspect ratios.")
+        print("Shipped GLES sky/planet shaders compiled; 486 sampled pixels match the sector artwork.")
     else:
         output = GAME / "assets/sprites"
         sets = {"starfall-player-v41.png":["pathfinder.glb"]*4,
@@ -280,11 +299,7 @@ if __name__ == "__main__":
                 atlas.alpha_composite(image,(i%2*512,i//2*512))
             atlas.save(output / name, optimize=True)
             print(output / name)
-        colors = [(.21,.87,1),(1,.47,.29),(.65,.54,1),(.39,1,.72),(.41,.94,1),(1,.31,.55)]
-        for sector, hue in enumerate(colors):
-            name = GAME / "assets/backgrounds" / f"starfall-nebula-{sector}-v41.jpg"
-            panorama(sector, hue).save(name, quality=95, subsampling=0, optimize=True)
-            print(name)
+        # Sector artwork is packaged separately; preserve legacy v4.1 panoramas on disk.
         import hashlib
         files = [*output.glob("starfall-*-v41.png"), *(GAME / "assets/backgrounds").glob("starfall-nebula-*-v41.jpg")]
         manifest = {"revision":"4.1", "source":"Original Starfall GLBs and direction-based nebula shader", "assets":[]}
