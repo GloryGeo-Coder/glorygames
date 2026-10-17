@@ -1,0 +1,37 @@
+name: Dedicated game tabs
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/**'
+      - 'apps/web/src/app/play/**'
+      - 'apps/web/src/components/GameLaunch*'
+      - 'apps/web/src/lib/gameTabScores.ts'
+      - 'apps/web/scripts/game-tab*'
+      - 'apps/web/scripts/sky-temple-launch.test.tsx'
+      - '.github/workflows/game-tabs.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/**'
+      - 'apps/web/src/app/play/**'
+      - 'apps/web/src/components/GameLaunch*'
+      - 'apps/web/src/lib/gameTabScores.ts'
+      - 'apps/web/scripts/game-tab*'
+      - 'apps/web/scripts/sky-temple-launch.test.tsx'
+      - '.github/workflows/game-tabs.yml'
+permissions:
+  contents: read
+jobs:
+  game-tabs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - working-directory: apps/web
+        run: node --test scripts/game-tab-score.test.mjs scripts/game-tab-ui.test.mjs
+      - working-directory: apps/web
+        run: node --import tsx --test scripts/game-tabs.test.tsx scripts/sky-temple-launch.test.tsx

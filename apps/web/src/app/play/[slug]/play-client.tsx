@@ -2,29 +2,18 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import PlaySidebar from "@/components/PlaySidebar";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import SkyTempleLaunch from "@/components/SkyTempleLaunch";
 import { SKY_TEMPLE } from "@/lib/skyTempleLaunch";
+import GameLaunch from "@/components/GameLaunch";
+import { subscribeGameTabScores } from "@/lib/gameTabScores";
 
 type Props = {
   slug: string;
   title: string;
 };
-
-// These games benefit from a wider viewing angle. The notice is advisory,
-// not a blocker: players can continue in portrait orientation.
-const LANDSCAPE_RECOMMENDED = new Set([
-  "city-quest-rise-of-the-guardian",
-  "high-spead-racer",
-  "kasi-quest",
-  "lost-jungle-3d-temple-of-the-sun",
-  "neon-orb-defender",
-  "sky-temple-3d-rise-of-the-relic-master",
-  "space-dodger",
-  "space-pilot-platformer",
-]);
 
 type ChatMessage = {
   id?: string;
@@ -83,29 +72,6 @@ function mergeMessages(current: ChatMessage[], incoming: ChatMessage[]) {
     .slice(-80);
 }
 
-function extractScorePayload(data: any, slug: string) {
-  if (!data || typeof data !== "object") return null;
-
-  const type = data.type || data.event || data.name;
-  const looksLikeScoreEvent =
-    type === "gg:score" ||
-    type === "GG_SCORE" ||
-    type === "score" ||
-    typeof data.score === "number" ||
-    typeof data.value === "number";
-
-  if (!looksLikeScoreEvent) return null;
-
-  if (data.gameSlug && data.gameSlug !== slug) return null;
-  if (data.slug && data.slug !== slug) return null;
-
-  const rawScore = Number(data.score ?? data.value ?? 0);
-
-  if (!Number.isFinite(rawScore)) return null;
-
-  return Math.max(0, Math.floor(rawScore));
-}
-
 export default function PlayClient({ slug, title }: Props) {
   const { user } = useCurrentUser();
   const isSkyTemple = slug === SKY_TEMPLE.slug;
@@ -119,19 +85,7 @@ export default function PlayClient({ slug, title }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [guestName, setGuestName] = useState("Guest Player");
 
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(false);
-  const landscapeRecommended = LANDSCAPE_RECOMMENDED.has(slug);
-
-  const lastSubmittedScoreRef = useRef(0);
-  const pendingScoreRef = useRef(0);
-  const submitTimerRef = useRef<number | null>(null);
-
-  const effectivePlayerName = sanitizeGuestName(
-    user?.displayName || guestName || "Guest Player"
-  );
+  const effectivePlayerName = sanitizeGuestName(user?.displayName || guestName);
 
   useEffect(() => {
     try {
@@ -150,66 +104,6 @@ export default function PlayClient({ slug, title }: Props) {
       setGuestName("Guest Player");
     }
   }, []);
-
-  async function toggleFullscreen() {
-    const el = stageRef.current;
-    if (!el) return;
-
-    if (isExpanded) {
-      setIsExpanded(false);
-      return;
-    }
-
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-        return;
-      }
-      if (typeof el.requestFullscreen === "function") {
-        await el.requestFullscreen();
-        return;
-      }
-    } catch {
-      // The Fullscreen API is unavailable or blocked on some mobile browsers.
-    }
-
-    // iOS Safari and browsers that deny element fullscreen still get a
-    // full-viewport, fixed-position playing surface.
-    setIsExpanded(true);
-  }
-
-  useEffect(() => {
-    const onFs = () => setIsFullscreen(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", onFs);
-    return () => document.removeEventListener("fullscreenchange", onFs);
-  }, []);
-
-  useEffect(() => {
-    const updateOrientation = () =>
-      setIsPortrait(window.innerHeight > window.innerWidth);
-    updateOrientation();
-    window.addEventListener("resize", updateOrientation);
-    window.addEventListener("orientationchange", updateOrientation);
-    return () => {
-      window.removeEventListener("resize", updateOrientation);
-      window.removeEventListener("orientationchange", updateOrientation);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isExpanded) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onEscape = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") setIsExpanded(false);
-    };
-    window.addEventListener("keydown", onEscape);
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener("keydown", onEscape);
-    };
-  }, [isExpanded]);
 
   const loadChat = useCallback(async () => {
     try {
@@ -261,94 +155,16 @@ export default function PlayClient({ slug, title }: Props) {
     };
   }, [loadChat]);
 
-  async function submitScoreNow(score: number) {
-    if (!Number.isFinite(score) || score <= 0) return;
-    if (score <= lastSubmittedScoreRef.current) return;
-
-    lastSubmittedScoreRef.current = score;
-
-    const playerName = effectivePlayerName;
-
-    const requests: Promise<Response>[] = [
-      fetch("/api/daily-challenge/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        cache: "no-store",
-        body: JSON.stringify({
-          gameSlug: slug,
-          score,
-          playerName,
-        }),
-      }),
-    ];
-
-    if (user?.id) {
-      requests.push(
-        fetch(`/api/games/${encodeURIComponent(slug)}/score`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          cache: "no-store",
-          body: JSON.stringify({
-            score,
-            mode: "global",
-          }),
-        })
-      );
-    }
-
-    try {
-      await Promise.allSettled(requests);
-      setLeaderboardRefreshKey((key) => key + 1);
-      window.dispatchEvent(new Event("wga:score-submitted"));
-    } catch (error) {
-      console.warn("[PlayClient] score submit failed", error);
-    }
-  }
-
-  function scheduleScoreSubmit(score: number) {
-    pendingScoreRef.current = Math.max(pendingScoreRef.current, score);
-
-    if (submitTimerRef.current) {
-      window.clearTimeout(submitTimerRef.current);
-    }
-
-    submitTimerRef.current = window.setTimeout(() => {
-      const nextScore = pendingScoreRef.current;
-      pendingScoreRef.current = 0;
-      submitTimerRef.current = null;
-      submitScoreNow(nextScore);
-    }, 650);
-  }
-
   useEffect(() => {
-    function onMessage(ev: MessageEvent) {
-      const score = extractScorePayload(ev.data, slug);
-
-      if (score == null) return;
-
-      setLiveScore(score);
-
-      if (score > 0) {
-        scheduleScoreSubmit(score);
+    if (isSkyTemple) return;
+    return subscribeGameTabScores({ slug, onScore: (event) => {
+      setLiveScore(event.score);
+      if (event.status === "submitted") {
+        setLeaderboardRefreshKey((key) => key + 1);
+        window.dispatchEvent(new Event("wga:score-submitted"));
       }
-    }
-
-    window.addEventListener("message", onMessage);
-
-    return () => {
-      window.removeEventListener("message", onMessage);
-
-      if (submitTimerRef.current) {
-        window.clearTimeout(submitTimerRef.current);
-      }
-    };
-  }, [slug, user?.id, effectivePlayerName]);
+    } });
+  }, [slug, isSkyTemple]);
 
   async function sendChat(text: string, playerName?: string) {
     const cleanText = text.trim();
@@ -408,43 +224,20 @@ export default function PlayClient({ slug, title }: Props) {
 
   return (
     <div className="ggPlayLayout">
-      <div className={isExpanded ? "ggStage ggStageExpanded" : "ggStage"} ref={stageRef}>
+      <div className="ggStage">
         <div className="ggStageTopBar">
           <div className="ggStageTitle">
             <b>{title}</b>
             <span className="ggMuted">{isSkyTemple ? "Four-world adventure" : `• Live: ${liveScore}`}</span>
           </div>
 
-          {!isSkyTemple ? (
-            <button
-              className="ggBtn ggBtnGhost"
-              type="button"
-              onClick={toggleFullscreen}
-              aria-label={isFullscreen || isExpanded ? "Exit game fullscreen" : "Expand the game"}
-            >
-              {isFullscreen || isExpanded ? "Exit Fullscreen" : "Fullscreen"}
-            </button>
-          ) : null}
         </div>
-
-        {!isSkyTemple && landscapeRecommended && isPortrait && !isExpanded && !isFullscreen ? (
-          <p className="ggOrientationHint" role="status">
-            <span aria-hidden="true">↻</span> For a wider game view, rotate your phone sideways. Portrait play remains available.
-          </p>
-        ) : null}
 
         <div className="ggStageInner" id="gameMount">
           {isSkyTemple ? (
             <SkyTempleLaunch />
           ) : (
-            <iframe
-              className="ggGameFrame"
-              src={`/games/${slug}/index.html`}
-              title={title}
-              allow="fullscreen; autoplay; gamepad"
-              allowFullScreen
-              loading="eager"
-            />
+            <GameLaunch slug={slug} title={title} />
           )}
         </div>
       </div>
