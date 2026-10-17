@@ -1,83 +1,84 @@
 {
   "license": "Original WebGameArena assets; Glory Mulopo",
   "forward": "+Z",
+  "revision": "4.1",
   "assets": [
     {
       "file": "pathfinder.glb",
-      "bytes": 34072,
-      "triangles": 420,
-      "draw_primitives": 6,
-      "sha256": "cc264821f56a4464791d543ebf97402ee6a190b824a2f6ddf31f3b9994e3ae63"
+      "bytes": 77776,
+      "triangles": 1016,
+      "draw_primitives": 7,
+      "sha256": "c5abb95ac47e8b1786e8001f2e7cb3b81b32f86f47145b52f35b41ce5ec6259f"
     },
     {
       "file": "red_scout.glb",
-      "bytes": 33668,
-      "triangles": 420,
-      "draw_primitives": 5,
-      "sha256": "3ec26efea6e2d42e6c8adcc13c2813d55529dec6fba14595ee565d813d07f820"
+      "bytes": 77780,
+      "triangles": 1016,
+      "draw_primitives": 7,
+      "sha256": "3170411c2d2d562422199bb52293a78563ba3c43fb69ad0d2d6918397d8af3cc"
     },
     {
       "file": "siege_fighter.glb",
-      "bytes": 36260,
-      "triangles": 456,
-      "draw_primitives": 5,
-      "sha256": "4a6455ce7ae90f0805ec749fa7182776b22ac7493c70a857bc55e8b70089981f"
+      "bytes": 92768,
+      "triangles": 1224,
+      "draw_primitives": 7,
+      "sha256": "015b2b29dbd4bffe8ad24bb3ef0a1b9d675a3fc542fdb5aea74b89b4bebc8e9e"
     },
     {
       "file": "warden_drone.glb",
-      "bytes": 33664,
-      "triangles": 420,
-      "draw_primitives": 5,
-      "sha256": "8ac3489392f7aec51938daa4cef982de67d7b8f0b265539705f87f8aa20a6d2f"
+      "bytes": 84684,
+      "triangles": 1112,
+      "draw_primitives": 7,
+      "sha256": "3ce2b6ec03cdb9a7da11a0f1669705c5b255617bda32863cb7bb1517a6078948"
     },
     {
       "file": "sovereign_citadel.glb",
-      "bytes": 52180,
-      "triangles": 688,
-      "draw_primitives": 4,
-      "sha256": "60038153ffa2af3db81f67108d7f750160375dbff5cb4d2366a438e903ce2fba"
+      "bytes": 145832,
+      "triangles": 1980,
+      "draw_primitives": 5,
+      "sha256": "0f2cbc33ebd88ccba46cb9c1e816e71d1b5ed730fe2b9c8636a4caeaf2c05a95"
     },
     {
       "file": "lava_asteroid.glb",
-      "bytes": 6984,
-      "triangles": 72,
-      "draw_primitives": 2,
-      "sha256": "7259236f5a8a4471151824df968d77d2affbec31565946ea4e8f88cf0001b070"
+      "bytes": 45316,
+      "triangles": 594,
+      "draw_primitives": 3,
+      "sha256": "b8b278f4bb154ab9881037ebff331e39eeaf2792ca5e4df75ed2183cdd305a1e"
     },
     {
       "file": "cryo_shard.glb",
-      "bytes": 6980,
-      "triangles": 72,
-      "draw_primitives": 2,
-      "sha256": "3b09a2ccfcba62cea3fa479ad6667faa309ce2173fe57bc4bd91ed8c7c6a7e19"
+      "bytes": 22272,
+      "triangles": 274,
+      "draw_primitives": 3,
+      "sha256": "ad91f567b623f2cda6c49c14c95d908d9c91ffae66b8a965163ecc78868513db"
     },
     {
       "file": "command_relay.glb",
-      "bytes": 8460,
-      "triangles": 96,
-      "draw_primitives": 2,
-      "sha256": "3d27e616adf70397c6313352641cc09749bbe9b6491471cdbd90bbc35e245759"
+      "bytes": 46744,
+      "triangles": 620,
+      "draw_primitives": 3,
+      "sha256": "ccdc4ead7a2f049ca306895dd1d5c923442913d4181d9926e2871a84751dc962"
     },
     {
       "file": "dawn_ark.glb",
-      "bytes": 20220,
-      "triangles": 252,
-      "draw_primitives": 3,
-      "sha256": "21f6eab63f54e312997d26003608fa7562cc5511e8bd8dbc674982424a335ec4"
+      "bytes": 84484,
+      "triangles": 1136,
+      "draw_primitives": 4,
+      "sha256": "43256f9ffa9170e2f3a67f457ba54019906d14c86947bdeb42ea6628fb766ccd"
     },
     {
       "file": "orbital_ring.glb",
-      "bytes": 11892,
-      "triangles": 144,
-      "draw_primitives": 2,
-      "sha256": "6c8f5b6ae1b56dbf702b5a7e2dda3ef49cff1a51ba5cac29b461ae15478af216"
+      "bytes": 143848,
+      "triangles": 1968,
+      "draw_primitives": 3,
+      "sha256": "80f9261c9af261b41494346d417b1b5e1f07a8d0eaad2042ad0bd794aa240757"
     },
     {
       "file": "escape_pod.glb",
-      "bytes": 9844,
-      "triangles": 108,
-      "draw_primitives": 3,
-      "sha256": "68c697d8e32973eb7fd3df4a78ff19ffded37358ebaefbefe8b010647fcbcc21"
+      "bytes": 29860,
+      "triangles": 376,
+      "draw_primitives": 4,
+      "sha256": "54a077f9b5baef2eb0811056a5763f8268a89fdc3ec284566ff55142b44b927b"
     }
   ]
 }

@@ -5,12 +5,23 @@ for(const entry of manifest.assets)test(entry.file+': original compact self-cont
  const b=fs.readFileSync(path.join(root,'assets/models/starfall',entry.file));assert.equal(b.readUInt32LE(0),0x46546c67);assert.equal(b.readUInt32LE(8),b.length);const n=b.readUInt32LE(12),j=JSON.parse(b.subarray(20,20+n));
  assert.equal(j.extras.forward,'+Z');assert.ok(entry.triangles<3500);assert.ok(entry.draw_primitives<=7);assert.ok(b.length<200000);assert.equal(j.buffers[0].uri,undefined);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),entry.sha256);
  for(const a of j.accessors){const v=j.bufferViews[a.bufferView];assert.ok(v.byteOffset+v.byteLength<=j.buffers[0].byteLength);for(let i=0;i<v.byteLength;i+=4)assert.ok(Number.isFinite(b.readFloatLE(28+n+v.byteOffset+i)));}
+ for(const mesh of j.meshes)for(const primitive of mesh.primitives){
+  const pos=j.accessors[primitive.attributes.POSITION],normal=j.accessors[primitive.attributes.NORMAL];
+  const po=28+n+j.bufferViews[pos.bufferView].byteOffset,no=28+n+j.bufferViews[normal.bufferView].byteOffset;
+  let outward=0;
+  for(let i=0;i<normal.count;i++){
+   const p=[0,1,2].map(k=>b.readFloatLE(po+i*12+k*4)),v=[0,1,2].map(k=>b.readFloatLE(no+i*12+k*4));
+   assert.ok(Math.abs(Math.hypot(...v)-1)<.0001,'unit surface normals');
+   if(p.reduce((dot,x,k)=>dot+x*v[k],0)>0)outward++;
+  }
+  if(mesh.name==='Asteroid'&&primitive.material!==2)assert.ok(outward/normal.count>.9,'rock surfaces face outward with back-face culling');
+ }
 });
 test('pinned engine files match their license manifest and all local HTML references resolve',()=>{
  const engine=JSON.parse(fs.readFileSync(path.join(root,'vendor/engine-manifest.json')));for(const f of engine.files){const b=fs.readFileSync(path.join(root,'vendor',f.file));assert.equal(b.length,f.bytes);assert.equal(crypto.createHash('sha256').update(b).digest('hex'),f.sha256);}
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);
  for(const m of html.matchAll(/(?:src|href)="([^"#]+)"/g)){const url=m[1].split('?')[0];assert.ok(!url.startsWith('https://'));assert.ok(fs.existsSync(url.startsWith('/')?path.join(root,'../../',url):path.join(root,url)),url);}
- assert.ok(html.includes('/games/_shared/game-tab.mjs?v=1'));assert.ok(html.includes('viewport-fit=cover'));assert.equal(JSON.parse(fs.readFileSync(path.join(root,'game.json'))).version,'4.0.0');
+ assert.ok(html.includes('/games/_shared/game-tab.mjs?v=1'));assert.ok(html.includes('viewport-fit=cover'));assert.equal(JSON.parse(fs.readFileSync(path.join(root,'game.json'))).version,'4.1.0');
 });
 test('campaign records reject corrupt saves and preserve progress and checkpoints',()=>{
  const context={window:{}};vm.runInNewContext(fs.readFileSync(path.join(root,'starfall-systems.js'),'utf8'),context);const S=context.window.StarfallSystems;const map=new Map();const storage={getItem:k=>map.get(k),setItem:(k,v)=>map.set(k,v)};
