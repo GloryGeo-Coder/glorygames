@@ -6,6 +6,7 @@ on:
       - 'apps/web/scripts/kasi-quest*'
       - 'apps/web/scripts/helpers/kasi-runtime.cjs'
       - '.github/workflows/kasi-quest.yml'
+      - 'tools/build-kasi-animation-data.py'
   push:
     branches: [main]
     paths:
@@ -13,6 +14,7 @@ on:
       - 'apps/web/scripts/kasi-quest*'
       - 'apps/web/scripts/helpers/kasi-runtime.cjs'
       - '.github/workflows/kasi-quest.yml'
+      - 'tools/build-kasi-animation-data.py'
 permissions:
   contents: read
 jobs:
@@ -26,4 +28,6 @@ jobs:
           node-version: '24'
       - run: node --check apps/web/public/games/kasi-quest/game.js
       - run: node --check apps/web/public/games/kasi-quest/kasi-presentation.js
+      - run: node --check apps/web/public/games/kasi-quest/kasi-animation-data.js
+      - run: node --check apps/web/public/games/kasi-quest/kasi-animation.js
       - run: node --test apps/web/scripts/kasi-quest-*.test.cjs
