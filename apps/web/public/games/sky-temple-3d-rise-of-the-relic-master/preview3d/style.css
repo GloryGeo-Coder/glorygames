@@ -1,0 +1,167 @@
+:root{color-scheme:dark;--gold:#ffe198;--cyan:#5dedff;--muted:#adc5e0;--surface:rgba(6,18,43,.78)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#081b39;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#fff}
+button{font:inherit;cursor:pointer;color:inherit}
+#app{position:fixed;inset:0;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 70% 20%,#679ad4,#183d75 44%,#0b2249 80%)}
+#gameCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+.skyGlow{position:absolute;pointer-events:none;inset:0;background:linear-gradient(180deg,rgba(2,9,31,.22) 0%,transparent 38%,rgba(2,13,37,.22) 100%)}
+.hud{position:absolute;z-index:3;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;gap:9px;pointer-events:none}
+.hud[hidden],.questGuide[hidden],.toast[hidden],.touchControls[hidden],.orientationHint[hidden],.fpsDisplay[hidden]{display:none!important}
+.hudTitle,.hudStat,.hudBtn{background:linear-gradient(145deg,rgba(7,22,59,.88),rgba(7,14,33,.76));border:1px solid rgba(101,218,255,.38);box-shadow:0 8px 24px rgba(0,5,20,.22),inset 0 1px rgba(255,255,255,.13);backdrop-filter:blur(9px);border-radius:13px}
+.hudTitle{min-width:170px;padding:9px 13px;display:flex;flex-direction:column;line-height:1.12}
+.eyebrow{font-size:10px;color:var(--cyan);font-weight:850;letter-spacing:.17em}
+.hudTitle strong{font-size:18px;letter-spacing:.07em;color:var(--gold)}
+.hudStat{min-width:90px;min-height:52px;padding:7px 11px;display:flex;flex-direction:column;justify-content:center;text-align:center}
+.hudStat span{font-size:9px;letter-spacing:.11em;color:var(--muted);font-weight:850}
+.hudStat b{font-size:17px;margin-top:3px;color:#fff}
+.hudStat.health b{font-size:15px;color:#ff98c3;white-space:nowrap}
+.hudStat.score{margin-left:auto}
+.hudBtn{pointer-events:auto;min-width:48px;height:52px;font-size:23px}
+.questGuide{position:absolute;z-index:3;top:max(84px,calc(env(safe-area-inset-top) + 76px));left:max(12px,env(safe-area-inset-left));max-width:min(480px,calc(100% - 24px));padding:9px 14px;display:flex;align-items:center;gap:9px;font-size:13px;color:#e5f6ff;background:rgba(5,18,43,.75);border:1px solid rgba(86,195,251,.29);border-radius:12px;backdrop-filter:blur(8px);pointer-events:none}
+.questMark{color:var(--gold);font-size:19px}
+.toast{position:absolute;z-index:5;left:50%;bottom:25%;transform:translateX(-50%);width:max-content;max-width:80vw;text-align:center;padding:12px 19px;border:1px solid rgba(123,234,255,.46);border-radius:14px;background:rgba(7,24,53,.9);box-shadow:0 15px 35px rgba(0,0,0,.28);font-weight:760;color:#f5fbff;pointer-events:none}
+.touchControls{position:absolute;z-index:4;bottom:max(15px,calc(env(safe-area-inset-bottom) + 12px));left:max(15px,env(safe-area-inset-left));right:max(15px,env(safe-area-inset-right));display:flex;align-items:flex-end;justify-content:space-between;gap:12px;pointer-events:none}
+.joystickPad{position:relative;width:clamp(116px,20vh,146px);height:clamp(116px,20vh,146px);border-radius:50%;touch-action:none;pointer-events:auto;background:radial-gradient(circle at 45% 42%,rgba(30,144,222,.22),rgba(4,23,60,.66));border:2px solid rgba(113,215,255,.58);box-shadow:inset 0 0 24px rgba(13,140,239,.15),0 9px 25px rgba(0,0,0,.28)}
+.joystickRing{position:absolute;inset:22%;border:1px solid rgba(152,232,255,.35);border-radius:50%}
+.joystickThumb{position:absolute;left:50%;top:50%;width:42px;height:42px;border:2px solid var(--cyan);border-radius:50%;background:linear-gradient(140deg,#39bbff,#1658b4);transform:translate(-50%,-50%);box-shadow:0 0 17px rgba(35,207,255,.33);will-change:transform}
+.joystickHint{position:absolute;left:0;right:0;bottom:5px;text-align:center;font-size:9px;color:rgba(233,247,255,.85);letter-spacing:.2em;font-weight:800;pointer-events:none}
+.actionButtons{display:flex;align-items:flex-end;gap:9px;pointer-events:auto;touch-action:none}
+.action{width:clamp(60px,12vh,80px);height:clamp(60px,12vh,80px);border-radius:50%;background:linear-gradient(145deg,rgba(12,58,121,.88),rgba(4,20,53,.89));border:2px solid rgba(144,216,255,.67);box-shadow:0 7px 19px rgba(0,0,0,.24);font-size:26px;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;gap:2px;user-select:none;touch-action:none}
+.action span{font-size:9px;letter-spacing:.06em;font-weight:800}.actionJump{border-color:rgba(255,221,127,.8);background:linear-gradient(145deg,rgba(181,112,25,.92),rgba(81,41,13,.95))}
+.actionGlide{border-color:rgba(121,251,255,.7)}.actionBlast{border-color:rgba(206,123,255,.8)}.action:active,.action.active{filter:brightness(1.5);transform:scale(.94)}
+.orientationHint{position:absolute;left:50%;z-index:3;bottom:calc(155px + env(safe-area-inset-bottom));transform:translateX(-50%);border-radius:12px;padding:8px 12px;font-size:11px;text-align:center;width:min(330px,85vw);color:#dfedff;background:rgba(7,18,42,.78);pointer-events:none}
+.overlay{position:absolute;inset:0;z-index:10;display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:linear-gradient(135deg,rgba(4,13,36,.90),rgba(4,19,46,.71)),url("./assets/SkyGarden_KeyArt.webp") center / cover no-repeat;overflow-y:auto}
+.overlay.closed{display:none}.panel{position:relative;text-align:center;width:min(95vw,590px);max-height:min(96dvh,800px);overflow-y:auto;padding:clamp(20px,3vw,38px);border:1px solid rgba(131,219,255,.38);border-radius:22px;background:linear-gradient(140deg,rgba(18,42,83,.95),rgba(10,16,44,.97));box-shadow:0 25px 80px rgba(0,0,0,.45),inset 0 0 30px rgba(57,170,255,.11)}
+.panel:before{content:"";position:absolute;left:20%;right:20%;top:0;height:2px;background:linear-gradient(90deg,transparent,#66ecff,#f5d885,transparent)}
+.panel h1{margin:10px 0 0;font-size:clamp(34px,7vw,62px);line-height:1.04;font-weight:950;letter-spacing:-.06em;text-shadow:0 3px 0 rgba(4,7,30,.8),0 0 28px rgba(101,205,255,.36);color:#f8dfa2}
+.panel h1 em{font-style:normal;color:#88f2ff}
+.panel h2{font-size:clamp(17px,4vw,27px);margin:7px 0 14px;color:#74edff;letter-spacing:.035em}
+.panel p{font-size:14px;line-height:1.65;color:#d5e9ff;margin:0 0 16px}
+.instructions{display:grid;gap:9px;text-align:left;margin:19px 0;padding:13px;border-radius:14px;background:rgba(6,18,50,.57);border:1px solid rgba(137,215,255,.18);color:#c0d8f0;font-size:12px;line-height:1.65}
+.instructions strong{color:var(--gold);margin-right:9px}
+.panelActions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.primary,.secondary{min-height:48px;padding:11px 17px;border-radius:13px;font-weight:900;border:1px solid rgba(154,235,255,.45)}
+.primary{color:#071e41;background:linear-gradient(105deg,#ffe3a2,#87ebff);box-shadow:0 10px 32px rgba(28,174,250,.24)}
+.primary:disabled{opacity:.5;cursor:not-allowed}
+.secondary{background:rgba(82,137,188,.12)}
+.loadingText{font-size:12px!important;margin:15px 0 8px!important}.progressTrack{height:7px;width:100%;background:rgba(96,132,171,.2);border-radius:99px;overflow:hidden}.progressTrack div{height:100%;width:0;background:linear-gradient(90deg,#56dcff,#ffeaa3);transition:width .25s}
+.backLink{display:inline-block;margin-top:13px;color:var(--muted);font-size:12px;text-underline-offset:3px}
+.fpsDisplay{position:absolute;z-index:9;top:92px;right:10px;background:#000b;color:#fff;font:12px monospace;padding:8px;pointer-events:none}
+@media(max-width:700px){.hud{gap:5px;flex-wrap:wrap;align-items:stretch}.hudTitle{min-width:0;flex:1 1 100px;padding:7px 9px}.hudTitle strong{font-size:12px}.hudStat{min-width:58px;min-height:42px;padding:6px}.hudStat span{font-size:8px}.hudStat b{font-size:12px}.hudStat.health{min-width:70px}.hudStat.health b{font-size:11px}.hudStat.score{display:none}.hudBtn{height:42px;min-width:43px}.questGuide{top:max(64px,calc(env(safe-area-inset-top) + 54px));font-size:11px;padding:6px 9px;max-width:75vw}.panel{width:100%;max-height:96dvh;padding:20px 17px}.instructions{padding:10px;margin:12px 0}.orientationHint{bottom:calc(143px + env(safe-area-inset-bottom))}}
+@media(max-height:510px) and (orientation:landscape){.hudTitle{min-width:94px}.questGuide{top:auto;bottom:max(7px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);max-width:60%;font-size:10px;text-align:center}.joystickPad{width:105px;height:105px}.action{width:56px;height:56px;font-size:21px}.action span{font-size:8px}.touchControls{bottom:max(7px,env(safe-area-inset-bottom))}.orientationHint{display:none}.panel{max-height:96dvh;padding:14px}.panel h1{font-size:34px}.instructions{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
+
+/* Mobile touch-controls visibility hotfix: render visibly above the WebGL canvas. */
+.controlsToggle {
+  min-width: 88px;
+  height: 52px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.controlsToggle[aria-pressed="true"] {
+  border-color: rgba(111, 239, 255, .85);
+  background: rgba(23, 96, 144, .9);
+}
+.touchControls:not([hidden]) {
+  z-index: 7;
+  display: flex;
+  visibility: visible;
+  opacity: 1;
+}
+.joystickPad {
+  flex: 0 0 auto;
+  background: radial-gradient(circle at 45% 42%, rgba(21, 118, 198, .62), rgba(4, 23, 60, .9));
+  box-shadow: inset 0 0 24px rgba(13, 140, 239, .25), 0 9px 25px rgba(0, 0, 0, .4);
+}
+.action {
+  background: linear-gradient(145deg, rgba(12, 58, 121, .97), rgba(4, 20, 53, .97));
+}
+.actionJump { background: linear-gradient(145deg, rgba(181, 112, 25, .97), rgba(81, 41, 13, .98)); }
+.touchControls, .touchControls button, .joystickPad { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+@media (max-width: 700px) {
+  .controlsToggle { min-width: 62px; height: 42px; font-size: 10px; padding: 0 5px; }
+  .touchControls { gap: 6px; left: max(7px,env(safe-area-inset-left)); right: max(7px,env(safe-area-inset-right)); }
+  .actionButtons { gap: 5px; }
+  .joystickPad { width: clamp(96px, 23vw, 125px); height: clamp(96px, 23vw, 125px); }
+  .action { width: clamp(46px, 12.7vw, 62px); height: clamp(46px, 12.7vw, 62px); font-size: 22px; }
+  .action span { font-size: 8px; }
+}
+@media (orientation:landscape) and (max-height: 510px) {
+  .joystickPad { width: min(98px, 26vh); height: min(98px, 26vh); }
+  .action { width: min(55px, 16vh); height: min(55px, 16vh); }
+  .touchControls { bottom: max(5px,env(safe-area-inset-bottom)); }
+}
+
+/* Hero animation and combat: no change to the proven mobile control layout. */
+.damageFlash {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse, transparent 44%, rgba(255,65,124,.3) 86%, rgba(255,38,94,.52) 100%);
+  transition: opacity .14s ease-out;
+}
+.damageFlash.active { opacity: 1; }
+.actionBlast.cooldown {
+  border-color: rgba(212,201,255,.52);
+  filter: saturate(.68);
+  box-shadow: inset 0 0 13px rgba(82,45,120,.6);
+}
+@media (prefers-reduced-motion: reduce) {
+  .damageFlash { transition: none; }
+}
+
+
+/* Sky Garden guardian encounter — overlays sit below the existing HUD and
+   leave the bottom joystick/action-button area unobstructed. */
+.guardianHud {
+  position: absolute; z-index: 5; pointer-events: none;
+  top: max(139px, calc(env(safe-area-inset-top) + 128px));
+  left: 50%; transform: translateX(-50%);
+  width: min(410px, calc(100vw - 24px));
+  padding: 8px 11px 10px;
+  border: 1px solid rgba(230, 148, 255, .58);
+  border-radius: 12px;
+  background: rgba(23, 8, 55, .86);
+  color: #fbecff;
+  box-shadow: 0 5px 22px rgba(12, 3, 38, .38);
+}
+.guardianHudLine { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.guardianHudLine strong {font-size:12px;letter-spacing:.08em;color:#f5d9ff}
+.guardianHudLine span {font-size:10px;color:#f3a5ff;white-space:nowrap}
+.guardianHealthTrack {height:9px;border-radius:20px;overflow:hidden;margin-top:6px;background:#372354}
+#guardianHealthFill {height:100%;width:100%;background:linear-gradient(90deg,#8e48ec,#ea9bfa);transition:width .2s ease-out}
+.guardianWarning {
+  position:absolute; z-index:6; pointer-events:none; text-align:center;
+  top: max(215px, calc(env(safe-area-inset-top) + 200px));
+  left:50%; transform:translateX(-50%);
+  width:min(400px, 88vw);
+  border: 1px solid rgba(244, 162, 255, .76);
+  background:rgba(30, 7, 59, .9);
+  color:#ffe4ff;
+  font-size:12px;
+  font-weight:850;
+  line-height:1.4;
+  padding:8px 12px;
+  border-radius:12px;
+  text-shadow:0 1px 2px #1c082e;
+}
+@media (max-width:700px) {
+ .guardianHud {top:max(111px,calc(env(safe-area-inset-top) + 106px));width:min(315px,calc(100vw - 18px));padding:6px 8px}
+ .guardianHudLine strong{font-size:10px}
+ .guardianHudLine span{font-size:9px}
+ .guardianWarning{top:max(175px,calc(env(safe-area-inset-top) + 166px));font-size:11px;max-width:85vw}
+}
+@media (orientation:landscape) and (max-height:510px) {
+ .guardianHud{top:max(53px,calc(env(safe-area-inset-top) + 47px));width:250px;left:auto;right:max(8px,env(safe-area-inset-right));transform:none}
+ .guardianWarning{top:106px;left:auto;right:max(8px,env(safe-area-inset-right));transform:none;max-width:265px;font-size:10px}
+}
+@media (prefers-reduced-motion:reduce){#guardianHealthFill{transition:none}}
+
+/* Keep save/resume menus compact on smaller touchscreens. */
+.instructions[hidden]{display:none!important}

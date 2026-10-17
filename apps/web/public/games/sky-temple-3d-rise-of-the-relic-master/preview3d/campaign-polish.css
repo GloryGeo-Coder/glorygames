@@ -1,0 +1,37 @@
+/* Shared visual/audio finish. Existing touch geometry and HUD layout are retained. */
+#app { --chapter-accent:#8aefff; --chapter-soft:rgba(86,210,255,.14); --chapter-edge:rgba(131,219,255,.46); }
+#app[data-world="crystal"] { --chapter-accent:#dab4ff; --chapter-soft:rgba(183,131,255,.13); --chapter-edge:rgba(199,151,255,.48); }
+#app[data-world="storm"] { --chapter-accent:#bfbcff; --chapter-soft:rgba(127,119,255,.16); --chapter-edge:rgba(169,165,255,.48); }
+#app[data-world="solar"] { --chapter-accent:#ffe1a4; --chapter-soft:rgba(255,194,99,.12); --chapter-edge:rgba(255,210,136,.50); }
+#app .panel { border-color:var(--chapter-edge); box-shadow:0 25px 80px rgba(0,0,0,.45),inset 0 1px 28px var(--chapter-soft); }
+#app[data-mode="won"] .panel { border-color:#ffe39c; }
+.chapterLabel { display:table; margin:0 auto 14px; padding:6px 11px; border:1px solid var(--chapter-edge); border-radius:999px; color:var(--chapter-accent); background:var(--chapter-soft); font-size:10px; font-weight:800; letter-spacing:.12em; line-height:1.35; }
+.audioSettings { margin:15px 0 5px; border:1px solid var(--chapter-edge); border-radius:13px; background:rgba(2,10,27,.38); text-align:left; }
+.audioSettings summary { padding:12px 14px; min-height:44px; cursor:pointer; color:#edf7ff; font-size:13px; font-weight:800; }
+.audioSettings summary::marker { color:var(--chapter-accent); }
+.audioSettings[open] summary { border-bottom:1px solid rgba(167,205,240,.16); }
+.audioSettingsBody { padding:14px; }
+.audioSliderLabel { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 5px; font-size:12px; color:#e5f2ff; }
+.audioSliderLabel output { min-width:39px; color:var(--chapter-accent); text-align:right; font-variant-numeric:tabular-nums; }
+.audioSettings input[type="range"] { display:block; width:100%; min-height:36px; margin:0 0 9px; accent-color:var(--chapter-accent); cursor:pointer; touch-action:pan-y; }
+.audioSettings .audioTrack { color:var(--chapter-accent); font-size:11px; line-height:1.5; margin:5px 0 7px; overflow-wrap:anywhere; }
+.audioSettings .audioStatus { color:#c2d4e9; font-size:11px; line-height:1.5; margin:0; }
+.audioSettings summary:focus-visible,.audioSettings input:focus-visible,#app button:focus-visible { outline:2px solid var(--chapter-accent); outline-offset:3px; }
+#app .questGuide { border-color:var(--chapter-edge); text-shadow:0 1px 2px #061328; }
+#app .guardianWarning { box-shadow:0 0 0 1px rgba(255,255,255,.08),0 8px 22px rgba(0,0,0,.28); }
+.rewardPulseA { animation:relicGainA .52s ease-out; }
+.rewardPulseB { animation:relicGainB .52s ease-out; }
+@keyframes relicGainA { 0%,100%{filter:none} 35%{filter:brightness(1.65)} }
+@keyframes relicGainB { 0%,100%{filter:none} 35%{filter:brightness(1.65)} }
+@media(max-width:700px) {
+  .chapterLabel { margin-bottom:10px; font-size:9px; padding:5px 9px; }
+  .audioSettings { margin-top:11px; }
+  .audioSettingsBody { padding:11px; }
+}
+@media(max-height:510px) and (orientation:landscape) {
+  .chapterLabel { margin-bottom:8px; }
+  .audioSettings summary { min-height:40px; padding:9px 12px; }
+}
+@media(prefers-reduced-motion:reduce) { .rewardPulseA,.rewardPulseB { animation:none!important; } }
+
+#app .platformStatus{font-size:10px;line-height:1.5;color:#b5cde3;margin:10px 0 0;overflow-wrap:anywhere}

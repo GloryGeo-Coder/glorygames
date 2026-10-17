@@ -1,0 +1,31 @@
+/* World 3 — Storm Citadel. Extends the already-tested preview3d/style.css. */
+:root{--cyan:#9dd9ff;--gold:#ebca86;--muted:#d3d8f4;}
+#app{background:radial-gradient(ellipse at 65% 5%,#6166ab,#192451 43%,#080e27 83%);}
+.skyGlow{pointer-events:none;background:radial-gradient(ellipse at 55% 14%,rgba(132,125,255,.19),transparent 56%),linear-gradient(180deg,rgba(23,18,64,.08),transparent 48%,rgba(4,8,26,.32));}
+.hudTitle,.hudStat,.hudBtn{border-color:rgba(146,157,255,.50);background:linear-gradient(145deg,rgba(18,23,60,.91),rgba(9,12,37,.83));}
+.hudTitle strong{color:#f7d9a2;}
+.questGuide{background:rgba(20,18,60,.87);border-color:rgba(141,158,255,.57);color:#f5f2ff;}
+.guardianHud{border-color:rgba(152,166,255,.63);background:rgba(18,17,59,.94);}
+.guardianHudLine strong{color:#f7e6c4;}
+.guardianHealthTrack{background:#242046;}
+#guardianHealthFill{background:linear-gradient(90deg,#67d3fb,#7f74f4,#c279ff);}
+.guardianWarning{background:rgba(28,19,66,.96);border-color:rgba(209,169,255,.88);color:#fff3ff;}
+.guardianWarning[data-attack="bolt"]{border-color:#97dfff;}
+.guardianWarning[data-attack="sigil"]{border-color:#f5a8ff;}
+.guardianWarning[data-attack="wave"]{border-color:#e8d59e;}
+.actionBlast{border-color:rgba(215,164,255,.92);}
+.overlay{background:radial-gradient(ellipse at 80% 10%,rgba(83,75,173,.27),transparent 63%),linear-gradient(135deg,rgba(13,14,47,.97),rgba(24,15,61,.91)),url("../assets/SkyGarden_KeyArt.webp") center/cover no-repeat;}
+.panel{border-color:rgba(185,171,255,.55);background:linear-gradient(140deg,rgba(23,22,72,.97),rgba(10,12,43,.97));}
+.panel h1{color:#ffe5aa;}.panel h2,.eyebrow{color:#b5c4ff;}
+/* Lightning warnings sit below boss warnings and above controls, never block input. */
+.stormHazardWarning{position:absolute;z-index:6;top:max(175px,calc(env(safe-area-inset-top) + 168px));left:50%;transform:translateX(-50%);max-width:min(520px,89vw);width:max-content;text-align:center;padding:8px 12px;line-height:1.4;border:1px solid rgba(162,179,255,.94);border-radius:13px;background:rgba(17,15,56,.95);box-shadow:0 6px 25px rgba(9,7,40,.5);color:#f1efff;font-size:12px;font-weight:850;pointer-events:none;}
+.stormHazardWarning[hidden]{display:none!important;}
+@media(max-width:700px){
+ .guardianHud{background:rgba(21,17,62,.96);}
+ .stormHazardWarning{top:max(130px,calc(env(safe-area-inset-top) + 124px));max-width:80vw;font-size:11px;padding:6px 8px;}
+ .questGuide{max-width:73vw;}
+}
+@media(max-height:510px) and (orientation:landscape){
+ .stormHazardWarning{top:max(66px,calc(env(safe-area-inset-top) + 62px));left:50%;max-width:57vw;font-size:10px;}
+}
+@media(prefers-reduced-motion:reduce){.skyGlow,.guardianWarning,.stormHazardWarning{animation:none!important;}}
