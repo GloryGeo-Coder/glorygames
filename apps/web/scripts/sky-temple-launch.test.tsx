@@ -25,10 +25,11 @@ test("Sky Temple's actual play page opens the deployed campaign without an old-g
   assert.ok(existsSync(path.resolve("public", SKY_TEMPLE.href.slice(1))));
   assert.ok(!html.includes("Exit Fullscreen"));
 });
-test("other games retain their iframe, fullscreen control and chat", () => {
+test("other games open their original entry in a dedicated tab and retain chat", () => {
   const html = render("brick-blaster");
-  assert.match(html, /<iframe[^>]*src="\/games\/brick-blaster\/index.html"/);
-  assert.match(html, /Expand the game/);
+  assert.ok(!html.includes("<iframe"));
+  assert.match(html, /href="\/games\/brick-blaster\/index.html" target="_blank"/);
+  assert.match(html, /Play Game/);
   assert.match(html, /Game Chat/);
   assert.ok(!html.includes(SKY_TEMPLE.href));
 });
