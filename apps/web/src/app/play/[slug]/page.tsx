@@ -7,6 +7,7 @@ import PlayClient from "./play-client";
 import GameEditorial from "@/components/GameEditorial";
 import { getGameEditorial } from "@/content/gameEditorials";
 import { GameThumb } from "@/components/GameThumb";
+import { SKY_TEMPLE } from "@/lib/skyTempleLaunch";
 import { getFallbackGameBySlug, getRelatedFallbackGames } from "@/lib/fallbackGames";
 import {
   getGameFromDatabase,
@@ -76,7 +77,7 @@ function normalizeGame(game: any): PlayGame | null {
   return {
     id: String(game.id ?? `fallback-${game.slug}`),
     slug: String(game.slug),
-    title: String(game.title ?? titleFromSlug(String(game.slug))),
+    title: game.slug === SKY_TEMPLE.slug ? SKY_TEMPLE.title : String(game.title ?? titleFromSlug(String(game.slug))),
     description: game.description ?? null,
     category: game.category ?? "ARCADE",
     tags: Array.isArray(game.tags) ? game.tags : [],

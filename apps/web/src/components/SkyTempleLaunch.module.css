@@ -1,0 +1,14 @@
+.launch { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: auto; background: #081426; color: #f3f7ff; }
+.art { position: relative; flex: 1 1 220px; min-height: 140px; overflow: hidden; }
+.art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 55%, #081426); pointer-events: none; }
+.content { position: relative; flex: 0 0 auto; padding: 8px clamp(18px, 4vw, 36px) 28px; }
+.content h2 { margin: 8px 0 12px; font-size: clamp(1.4rem, 3vw, 2.2rem); line-height: 1.15; }
+.content p { line-height: 1.55; max-width: 620px; margin: 10px 0; color: #c5d5e8; }
+.content .chapter { color: #a5e5df; letter-spacing: .12em; font-size: .7rem; font-weight: 750; }
+.play { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 50px; margin: 10px 0; padding: 12px 26px; border-radius: 12px; color: #10213a; background: #ffda8a; font-weight: 800; text-decoration: none; }
+.play:hover { background: #ffe4a8; }
+.play:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+.content .note { font-size: .8rem; color: #aebed1; margin-bottom: 0; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 560px) { .art { flex-basis: 170px; } .content { padding: 4px 18px 22px; } .play { width: 100%; } }
+@media (orientation: landscape) and (max-height: 650px) { .launch { flex-direction: row; } .art { flex: 1 1 38%; min-height: 100%; } .content { flex: 1 1 62%; padding: 18px; } .content h2 { font-size: 1.4rem; } }

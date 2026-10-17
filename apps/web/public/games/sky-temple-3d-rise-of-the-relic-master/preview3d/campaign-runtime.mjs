@@ -1,4 +1,11 @@
 /** Browser lifecycle controls independent of the game rules and saved progress. */
+export function describeCampaignLoadError(error) {
+  if (/webgl|graphics context|context creation/i.test(String(error?.message || error || ''))) {
+    return { label: '3D GRAPHICS UNAVAILABLE', message: 'This browser could not start 3D graphics. Enable hardware acceleration and reload, or try another browser with WebGL support.' };
+  }
+  return { label: 'LOADING ISSUE', message: 'The game could not load its 3D assets. Check your connection and try again.' };
+}
+
 export async function toggleCampaignFullscreen({ document: doc = globalThis.document,
   onStatus = () => {} } = {}) {
   try {
