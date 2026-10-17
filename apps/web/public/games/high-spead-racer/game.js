@@ -151,14 +151,15 @@
   }
   resize();
 
-  const LEVELS = [
-    { title:"Coastal Sprint", mission:"Palm trees, smooth roads, and light traffic.", targetDistance:1200, baseSpeed:36, maxSpeed:62, spawnBase:1.16, pickupRate:2.0, hazardRate:999, curve:1.0, sky:new pc.Color(0.035,0.07,0.14), fog:new pc.Color(0.18,0.34,0.55), road:new pc.Color(0.11,0.115,0.13), shoulder:new pc.Color(0.16,0.28,0.16), terrainA:new pc.Color(0.1,0.4,0.18), terrainB:new pc.Color(0.45,0.34,0.2), env:"coast", musicRoot:110, bonus:800 },
-    { title:"Desert Boostway", mission:"Cacti, rocks, faster traffic, and wider sightlines.", targetDistance:1500, baseSpeed:42, maxSpeed:72, spawnBase:0.98, pickupRate:1.85, hazardRate:4.4, curve:1.15, sky:new pc.Color(0.09,0.06,0.035), fog:new pc.Color(0.55,0.38,0.18), road:new pc.Color(0.095,0.085,0.08), shoulder:new pc.Color(0.35,0.25,0.15), terrainA:new pc.Color(0.55,0.34,0.15), terrainB:new pc.Color(0.28,0.18,0.1), env:"desert", musicRoot:123.47, bonus:1100 },
-    { title:"Metro Night Run", mission:"Neon towers, billboards, and hazard gates.", targetDistance:1800, baseSpeed:48, maxSpeed:80, spawnBase:0.86, pickupRate:1.7, hazardRate:3.4, curve:1.25, sky:new pc.Color(0.018,0.025,0.07), fog:new pc.Color(0.12,0.2,0.55), road:new pc.Color(0.04,0.05,0.09), shoulder:new pc.Color(0.12,0.11,0.22), terrainA:new pc.Color(0.08,0.1,0.16), terrainB:new pc.Color(0.11,0.07,0.16), env:"metro", musicRoot:130.81, bonus:1500 },
-    { title:"Alpine Hyperpass", mission:"Pine forests, cool colors, and sharper curves.", targetDistance:2100, baseSpeed:54, maxSpeed:88, spawnBase:0.78, pickupRate:1.6, hazardRate:2.8, curve:1.55, sky:new pc.Color(0.045,0.07,0.09), fog:new pc.Color(0.4,0.55,0.68), road:new pc.Color(0.075,0.08,0.1), shoulder:new pc.Color(0.34,0.38,0.42), terrainA:new pc.Color(0.55,0.6,0.62), terrainB:new pc.Color(0.24,0.28,0.31), env:"alpine", musicRoot:146.83, bonus:1900 },
-    { title:"Jungle Storm Route", mission:"Dense foliage, glowing pickups, and high pressure traffic.", targetDistance:2400, baseSpeed:58, maxSpeed:94, spawnBase:0.72, pickupRate:1.52, hazardRate:2.45, curve:1.7, sky:new pc.Color(0.018,0.06,0.045), fog:new pc.Color(0.12,0.38,0.24), road:new pc.Color(0.05,0.065,0.055), shoulder:new pc.Color(0.1,0.23,0.12), terrainA:new pc.Color(0.08,0.32,0.1), terrainB:new pc.Color(0.03,0.16,0.08), env:"jungle", musicRoot:164.81, bonus:2300 },
-    { title:"Final Velocity", mission:"Neon arches, hyper-road textures, and maximum speed.", targetDistance:2800, baseSpeed:64, maxSpeed:106, spawnBase:0.64, pickupRate:1.42, hazardRate:2.05, curve:1.85, sky:new pc.Color(0.06,0.015,0.09), fog:new pc.Color(0.48,0.12,0.72), road:new pc.Color(0.05,0.04,0.07), shoulder:new pc.Color(0.18,0.08,0.24), terrainA:new pc.Color(0.18,0.08,0.25), terrainB:new pc.Color(0.08,0.06,0.12), env:"final", musicRoot:196.0, bonus:3000 }
-  ];
+  const LEVELS = window.RacerRoutes.map(route => {
+    const spec = { ...route };
+    for (const field of ["sky","fog","road","shoulder","terrainA","terrainB"]) spec[field] = new pc.Color(...route[field]);
+    return spec;
+  });
+  const routeSelect = $("routeSelect");
+  if (routeSelect) routeSelect.innerHTML = '<option value="campaign">Full 12-street campaign</option>' +
+    LEVELS.map((route, i) => `<option value="${i}">${i + 1}. ${route.title}</option>`).join("");
+
 
 
   // ---------- garage, coins, unlocks and upgrades ----------
@@ -444,301 +445,23 @@
       assetFailures ? "Some visual details could not load. You can still race." : "Ready to race";
     if (ui.startBtn) ui.startBtn.disabled = assetsPending > 0;
   }
-  // ---------- audio ----------
-  const audio = {
-    ctx: null,
-    muted: false,
-    master: null,
-    musicGain: null,
-    sfxGain: null,
-    engineGain: null,
-    engineOsc: null,
-    music: null,
-    currentLevel: -1,
-    ensure() {
-      if (this.muted) return false;
-      try {
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-          this.master = this.ctx.createGain();
-          this.musicGain = this.ctx.createGain();
-          this.sfxGain = this.ctx.createGain();
-          this.engineGain = this.ctx.createGain();
-          this.master.gain.value = 0.9;
-          this.musicGain.gain.value = 0.12;
-          this.sfxGain.gain.value = 0.8;
-          this.engineGain.gain.value = 0;
-          this.musicGain.connect(this.master);
-          this.sfxGain.connect(this.master);
-          this.engineGain.connect(this.master);
-          this.master.connect(this.ctx.destination);
-        }
-        if (this.ctx.state === "suspended") this.ctx.resume?.();
-        return true;
-      } catch {
-        this.muted = true;
-        muteBtn.textContent = "×";
-        return false;
+  // Gesture-unlocked music, layered engine samples, gear changes and effects.
+  let audioStorage = null; try { audioStorage = localStorage; } catch {}
+  const audio = window.RacerAudio.create({ window, getState: () => state,
+    getRoute: () => LEVELS[state.level] || LEVELS[0], getCar: () => getSelectedCar().model, storage: audioStorage,
+    onSettings: settings => {
+      muteBtn.textContent = settings.muted ? "×" : "♪";
+      muteBtn.setAttribute("aria-pressed", String(!settings.muted));
+      const menu = $("menuAudioBtn");
+      if (menu) { menu.textContent = settings.muted ? "Audio off" : "Audio on"; menu.setAttribute("aria-pressed", String(!settings.muted)); }
+      for (const bus of ["music", "engine", "effects"]) {
+        const slider = $(bus + "Volume"); if (slider) slider.value = String(Math.round(settings[bus] * 100));
       }
-    },
-    toggleMute() {
-      this.muted = !this.muted;
-      muteBtn.textContent = this.muted ? "×" : "♪";
-      if (this.muted) {
-        this.stopMusic();
-        this.stopEngine();
-      } else {
-        this.ensure();
-        if (state.mode === "running" || state.mode === "countdown") {
-          this.startMusic(state.level);
-          this.startEngine();
-        }
-      }
-    },
-    tone(freq=440, dur=0.08, type="sine", gain=0.035, dest=null, slideTo=null) {
-      if (!this.ensure() || !this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const amp = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, now);
-      if (slideTo) osc.frequency.exponentialRampToValueAtTime(Math.max(1, slideTo), now + dur);
-      amp.gain.setValueAtTime(Math.max(0.0001, gain), now);
-      amp.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-      osc.connect(amp).connect(dest || this.sfxGain || this.ctx.destination);
-      osc.start(now);
-      osc.stop(now + dur + 0.03);
-    },
-    noise(dur=0.08, gain=0.04) {
-      if (!this.ensure() || !this.ctx) return;
-      const now = this.ctx.currentTime;
-      const buffer = this.ctx.createBuffer(1, Math.max(1, Math.floor(this.ctx.sampleRate * dur)), this.ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 1.6);
-      const src = this.ctx.createBufferSource();
-      src.buffer = buffer;
-      const amp = this.ctx.createGain();
-      amp.gain.setValueAtTime(gain, now);
-      amp.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-      src.connect(amp).connect(this.sfxGain || this.ctx.destination);
-      src.start(now);
-      src.stop(now + dur);
-    },
-    startMusic(levelIndex=0) {
-      if (!this.ensure() || this.currentLevel === levelIndex) return;
-      this.stopMusic();
-      const spec = LEVELS[levelIndex] || LEVELS[0];
-      const now = this.ctx.currentTime;
-      const rootFreq = spec.musicRoot || 130.81;
-
-      const filter = this.ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.value = 1200 + levelIndex * 120;
-      filter.Q.value = 0.8;
-
-      const padGain = this.ctx.createGain();
-      padGain.gain.value = 0.0001;
-      padGain.gain.exponentialRampToValueAtTime(0.42, now + 0.9);
-      filter.connect(padGain).connect(this.musicGain);
-
-      const delay = this.ctx.createDelay(0.8);
-      const fb = this.ctx.createGain();
-      delay.delayTime.value = 0.26;
-      fb.gain.value = 0.22;
-      delay.connect(fb).connect(delay);
-      delay.connect(this.musicGain);
-
-      const nodes = [filter, padGain, delay, fb];
-      [rootFreq, rootFreq * 1.5, rootFreq * 2, rootFreq * 2.5].forEach((freq, i) => {
-        const osc = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        osc.type = i % 2 ? "triangle" : "sawtooth";
-        osc.frequency.value = freq;
-        osc.detune.value = (i - 1.5) * 5;
-        g.gain.value = 0.045 / (i + 1);
-        osc.connect(g).connect(filter);
-        osc.start(now);
-        nodes.push(osc, g);
-      });
-
-      let step = 0;
-      const melody = [0,3,5,7,10,7,5,3,0,5,7,12,10,7,3,5];
-      const bassPattern = [0,0,7,0,5,5,7,10];
-      const timer = setInterval(() => {
-        if (!this.ctx || !this.music || this.muted) return;
-        const speedLift = Math.min(10, Math.floor((state.roadSpeed - 36) / 6));
-        const note = rootFreq * Math.pow(2, (melody[step % melody.length] + speedLift * 0.35) / 12);
-        const bass = rootFreq / 2 * Math.pow(2, bassPattern[step % bassPattern.length] / 12);
-        this.tone(note, 0.14, "triangle", 0.012, delay);
-        if (step % 2 === 0) this.tone(bass, 0.16, "sine", 0.016, this.musicGain);
-        if (step % 4 === 3) this.tone(rootFreq * 4, 0.05, "square", 0.006, delay);
-        step++;
-      }, Math.max(210, 330 - levelIndex * 14));
-
-      this.music = { nodes, timer, padGain };
-      this.currentLevel = levelIndex;
-    },
-    stopMusic() {
-      if (!this.music) return;
-      const m = this.music;
-      if (m.timer) clearInterval(m.timer);
-      try {
-        const now = this.ctx?.currentTime || 0;
-        if (m.padGain && this.ctx) {
-          m.padGain.gain.cancelScheduledValues(now);
-          m.padGain.gain.setValueAtTime(Math.max(0.0001, m.padGain.gain.value || 0.0001), now);
-          m.padGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-        }
-        setTimeout(() => {
-          for (const n of m.nodes || []) {
-            try { n.stop?.(); } catch {}
-            try { n.disconnect?.(); } catch {}
-          }
-        }, 320);
-      } catch {}
-      this.music = null;
-      this.currentLevel = -1;
-    },
-    startEngine() {
-      if (!this.ensure() || this.engineOsc) return;
-      const osc = this.ctx.createOscillator();
-      const lfo = this.ctx.createOscillator();
-      const lfoGain = this.ctx.createGain();
-      osc.type = "sawtooth";
-      osc.frequency.value = 72;
-      lfo.type = "sine";
-      lfo.frequency.value = 9;
-      lfoGain.gain.value = 9;
-      lfo.connect(lfoGain).connect(osc.frequency);
-      osc.connect(this.engineGain);
-      osc.start();
-      lfo.start();
-      this.engineOsc = { osc, lfo };
-    },
-    stopEngine() {
-      if (!this.engineOsc) return;
-      try {
-        this.engineOsc.osc.stop();
-        this.engineOsc.lfo.stop();
-        this.engineOsc.osc.disconnect();
-        this.engineOsc.lfo.disconnect();
-      } catch {}
-      this.engineOsc = null;
-      if (this.engineGain) this.engineGain.gain.value = 0;
-    },
-    updateEngine() {
-      if (!this.ctx || !this.engineOsc || this.muted) return;
-      const now = this.ctx.currentTime;
-      const targetFreq = 55 + state.roadSpeed * 1.65;
-      const targetGain = state.mode === "running" ? 0.026 + (state.boostFactor - 1) * 0.045 : 0.005;
-      this.engineOsc.osc.frequency.setTargetAtTime(targetFreq, now, 0.045);
-      this.engineGain.gain.setTargetAtTime(targetGain, now, 0.06);
-    },
-    sfxLane() { this.tone(420, 0.055, "triangle", 0.025, this.sfxGain, 620); },
-    sfxNitro() { this.tone(180, 0.12, "sawtooth", 0.035, this.sfxGain, 460); },
-    sfxPickup() { this.tone(720, 0.07, "sine", 0.03); this.tone(1080, 0.09, "triangle", 0.02); },
-    sfxNearMiss() { this.tone(980, 0.06, "square", 0.018, this.sfxGain, 1240); },
-    sfxCrash() { this.noise(0.35, 0.09); this.tone(120, 0.22, "sawtooth", 0.055, this.sfxGain, 38); },
-    sfxLevel() { this.tone(440, 0.1, "triangle", 0.03); setTimeout(() => this.tone(660, 0.12, "triangle", 0.03), 120); setTimeout(() => this.tone(880, 0.16, "triangle", 0.025), 260); },
-    sfxHazard() { this.tone(220, 0.08, "square", 0.02, this.sfxGain, 140); }
-  };
-  muteBtn.addEventListener("click", () => audio.toggleMute());
-
-  // ---------- real audio file layer ----------
-  // These WAV files are included in assets/audio/. The procedural WebAudio layer
-  // remains as fallback/detail, while these real files add stronger game feel.
-  const REAL_AUDIO = {
-    engine: new Audio("assets/audio/engine_loop.wav"),
-    nitro: new Audio("assets/audio/nitro_loop.wav"),
-    crash: new Audio("assets/audio/crash_hit.wav"),
-    lane: new Audio("assets/audio/lane_whoosh.wav"),
-    pickup: new Audio("assets/audio/pickup_chime.wav"),
-    level: new Audio("assets/audio/level_complete.wav")
-  };
-
-  REAL_AUDIO.engine.loop = true;
-  REAL_AUDIO.nitro.loop = true;
-  REAL_AUDIO.engine.volume = 0.22;
-  REAL_AUDIO.nitro.volume = 0.0;
-  REAL_AUDIO.crash.volume = 0.8;
-  REAL_AUDIO.lane.volume = 0.42;
-  REAL_AUDIO.pickup.volume = 0.5;
-  REAL_AUDIO.level.volume = 0.58;
-
-  function safePlayAudio(a, restart = false) {
-    if (!a || audio.muted) return;
-    try {
-      if (restart) a.currentTime = 0;
-      const p = a.play();
-      if (p && p.catch) p.catch(() => {});
-    } catch {}
-  }
-
-  function safePauseAudio(a) {
-    try { a?.pause?.(); } catch {}
-  }
-
-  function setRealAudioMuted(muted) {
-    Object.values(REAL_AUDIO).forEach((a) => {
-      try { a.muted = muted; } catch {}
-    });
-    if (muted) {
-      safePauseAudio(REAL_AUDIO.engine);
-      safePauseAudio(REAL_AUDIO.nitro);
     }
-  }
-
-  const originalToggleMute = audio.toggleMute.bind(audio);
-  audio.toggleMute = function () {
-    originalToggleMute();
-    setRealAudioMuted(this.muted);
-  };
-
-  const originalStartEngine = audio.startEngine.bind(audio);
-  audio.startEngine = function () {
-    originalStartEngine();
-    safePlayAudio(REAL_AUDIO.engine);
-  };
-
-  const originalStopEngine = audio.stopEngine.bind(audio);
-  audio.stopEngine = function () {
-    originalStopEngine();
-    safePauseAudio(REAL_AUDIO.engine);
-    safePauseAudio(REAL_AUDIO.nitro);
-  };
-
-  const originalUpdateEngine = audio.updateEngine.bind(audio);
-  audio.updateEngine = function () {
-    originalUpdateEngine();
-    if (audio.muted) return;
-    try {
-      REAL_AUDIO.engine.volume = state.mode === "running" ? 0.17 + Math.min(0.12, state.roadSpeed / 850) : 0.05;
-      REAL_AUDIO.engine.playbackRate = Math.max(0.75, Math.min(1.8, state.roadSpeed / 58));
-      if (state.mode === "running" && REAL_AUDIO.engine.paused) safePlayAudio(REAL_AUDIO.engine);
-
-      if (state.mode === "running" && state.nitroHeld && state.nitro > 0) {
-        REAL_AUDIO.nitro.volume = Math.min(0.62, REAL_AUDIO.nitro.volume + 0.08);
-        REAL_AUDIO.nitro.playbackRate = 1.0 + Math.min(0.45, state.roadSpeed / 250);
-        if (REAL_AUDIO.nitro.paused) safePlayAudio(REAL_AUDIO.nitro);
-      } else {
-        REAL_AUDIO.nitro.volume = Math.max(0, REAL_AUDIO.nitro.volume - 0.08);
-        if (REAL_AUDIO.nitro.volume <= 0.02) safePauseAudio(REAL_AUDIO.nitro);
-      }
-    } catch {}
-  };
-
-  const originalLaneSfx = audio.sfxLane.bind(audio);
-  audio.sfxLane = function () { safePlayAudio(REAL_AUDIO.lane, true); originalLaneSfx(); };
-
-  const originalPickupSfx = audio.sfxPickup.bind(audio);
-  audio.sfxPickup = function () { safePlayAudio(REAL_AUDIO.pickup, true); originalPickupSfx(); };
-
-  const originalCrashSfx = audio.sfxCrash.bind(audio);
-  audio.sfxCrash = function () { safePlayAudio(REAL_AUDIO.crash, true); originalCrashSfx(); };
-
-  const originalLevelSfx = audio.sfxLevel.bind(audio);
-  audio.sfxLevel = function () { safePlayAudio(REAL_AUDIO.level, true); originalLevelSfx(); };
-
+  });
+  muteBtn.addEventListener("click", () => { audio.ensure(); audio.toggleMute(); });
+  for (const bus of ["music", "engine", "effects"]) $(bus + "Volume")?.addEventListener("input", event => audio.setVolume(bus, Number(event.target.value) / 100));
+  window.addEventListener("pagehide", event => { if (event.persisted) audio.pause(); else audio.dispose(); });
 
   // ---------- textures/materials ----------
   function createTexture(width, height, painter) {
@@ -1074,6 +797,16 @@
       camera.camera.clearColor = new pc.Color(.008,.016,.04);
     }
     presentation.theme(spec.env);
+    mountains.forEach(m => { m.enabled = !["metro","final","harbour","oldtown","industrial","tunnel","airport","skyway"].includes(spec.env); });
+    const seenMaterials = new Set();
+    for (const segment of CONTINUOUS_ROAD.instances) segment.forEach(node => {
+      for (const mesh of node.render?.meshInstances || []) {
+        const material = mesh.material;
+        if (material?.name === "Wet graphite asphalt" && !seenMaterials.has(material)) {
+          material.diffuse.copy(spec.road); material.update(); seenMaterials.add(material);
+        }
+      }
+    });
     neon.light.color = spec.env === "metro" || spec.env === "final" ? new pc.Color(0.42,0.2,1) : new pc.Color(0.2,0.45,1);
 
     mat.road.diffuse = spec.road.clone();
@@ -1809,6 +1542,7 @@
 
   function rebuildScenery(env) {
     destroyScenery();
+    if (["harbour","oldtown","industrial","tunnel","airport","skyway"].includes(env)) return;
 
     const count = quality.sceneryCount;
     for (let i = 0; i < count; i++) {
@@ -2027,7 +1761,7 @@
       rival.overtakeTimer = 0.4 + Math.random() * 1.6;
       rival.wobble = Math.random() * Math.PI * 2;
       rival.setLocalPosition(laneWorldX(rival.laneIndex, -20 - i * 6), 0, -20 - i * 6);
-      rival.setLocalEulerAngles(0, 180, 0);
+      rival.setLocalEulerAngles(0, 0, 0);
       rivalCars.push(rival);
     }
 
@@ -2131,7 +1865,7 @@
       rival.setLocalPosition(p);
 
       const lateralTilt = (targetX - p.x) * -4.5;
-      rival.setLocalEulerAngles(0, 180 + Math.sin(state.elapsed * 2.5 + i) * 1.4, lateralTilt);
+      rival.setLocalEulerAngles(0, Math.sin(state.elapsed * 2.5 + i) * 1.4, lateralTilt);
 
       rival.wheelSpin += state.roadSpeed * dt * 220;
       rival.wheels?.forEach((w) => w.setLocalEulerAngles(rival.wheelSpin, 0, rival.glbWheels ? 0 : 90));
@@ -2171,7 +1905,7 @@
     car.nearMissAwarded = false;
     car.aiAggression = 0.18 + state.level * 0.07;
     car.setLocalPosition(laneWorldX(lane, z), 0, z);
-    car.setLocalEulerAngles(0, 180, 0);
+    car.setLocalEulerAngles(0, 0, 0);
     trafficCars.push(car);
   }
 
@@ -2220,7 +1954,9 @@
 
     state.mode = "countdown";
     state.elapsed = 0;
-    state.level = 0;
+    const street = String(routeSelect?.value || "campaign");
+    state.singleStreet = /^\d+$/.test(street) && Number(street) < LEVELS.length;
+    state.level = state.singleStreet ? Number(street) : 0;
     state.levelDistance = 0;
     state.levelBanner = 0;
     state.countdown = 3.4;
@@ -2232,9 +1968,9 @@
     state.hazardTimer = 0;
     state.difficultyTimer = 0;
     const stats = selectedCarStats();
-    state.baseSpeed = LEVELS[0].baseSpeed + stats.speed;
-    state.roadSpeed = LEVELS[0].baseSpeed + stats.speed;
-    state.maxBaseSpeed = LEVELS[0].maxSpeed + stats.speed;
+    state.baseSpeed = LEVELS[state.level].baseSpeed + stats.speed;
+    state.roadSpeed = LEVELS[state.level].baseSpeed + stats.speed;
+    state.maxBaseSpeed = LEVELS[state.level].maxSpeed + stats.speed;
     state.laneIndex = 1;
     state.targetLaneIndex = 1;
     state.nitro = 100;
@@ -2274,8 +2010,8 @@
     pauseOverlay.style.display = "none";
     pauseBtn.textContent = "Ⅱ";
 
-    applyLevelTheme(0);
-    showLevelBanner(0);
+    applyLevelTheme(state.level);
+    showLevelBanner(state.level);
     initRivals();
     audio.startEngine();
     updateHUD();
@@ -2296,9 +2032,10 @@
     countdownEl.style.display = "none";
     levelOverlay.style.display = "none";
     pauseOverlay.style.display = "none";
-    audio.sfxCrash();
+    if (win) audio.sfxLevel(); else audio.sfxCrash();
     audio.stopEngine();
-    if (ui.gameOverTitle) ui.gameOverTitle.textContent = win ? "Campaign Complete!" : "Crash!";
+    audio.stopMusic();
+    if (ui.gameOverTitle) ui.gameOverTitle.textContent = win ? (state.singleStreet ? "Street Complete!" : "Campaign Complete!") : "Crash!";
     const coinReward = Math.max(20, Math.floor(state.score / 320) + state.level * 35 + (win ? 500 : 0));
     awardCoins(coinReward);
     profile.bestScore = Math.max(profile.bestScore, Math.floor(state.score));
@@ -2318,6 +2055,8 @@
     state.score += current.bonus;
     state.nitro = Math.min(100, state.nitro + 45);
     audio.sfxLevel();
+
+    if (state.singleStreet) { endGame(true); return; }
 
     if (state.level >= LEVELS.length - 1) {
       state.finishedCampaign = true;
@@ -2343,13 +2082,13 @@
   let pausedMode = null;
   function togglePause(force = null) {
     if (!["running", "countdown", "paused"].includes(state.mode)) return;
-    const shouldPause = force === null ? state.mode === "running" : !!force;
+    const shouldPause = force === null ? state.mode !== "paused" : !!force;
     if (shouldPause && state.mode !== "paused") pausedMode = state.mode;
     state.mode = shouldPause ? "paused" : pausedMode === "countdown" ? "countdown" : "running";
     pauseOverlay.style.display = shouldPause ? "grid" : "none";
     pauseBtn.textContent = shouldPause ? "▶" : "Ⅱ";
-    if (shouldPause) audio.stopEngine();
-    else audio.startEngine();
+    if (shouldPause) audio.pause();
+    else audio.resume();
   }
 
   function moveLeft() {
@@ -2412,7 +2151,7 @@
   });
 
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) { pointerNitro = false; state.nitroHeld = false; togglePause(true); audio.stopEngine(); }
+    if (document.hidden) { pointerNitro = false; state.nitroHeld = false; togglePause(true); audio.pause(); }
   });
   window.addEventListener("blur", () => { pointerNitro = false; state.nitroHeld = false; togglePause(true); });
   document.addEventListener("keydown", (e) => {
@@ -2666,7 +2405,7 @@
       p.x += (targetX - p.x) * Math.min(1, dt * (3.2 + state.level * 0.28));
       p.y = .05 + trackCrestAt(p.z) * 0.22;
       car.setLocalPosition(p);
-      car.setLocalEulerAngles(0, 180 + Math.sin(state.elapsed * 3 + p.z) * 1.2, (targetX - p.x) * -4);
+      car.setLocalEulerAngles(0, Math.sin(state.elapsed * 3 + p.z) * 1.2, (targetX - p.x) * -4);
       car.wheelSpin += state.roadSpeed * dt * 220;
       car.wheels?.forEach((w) => w.setLocalEulerAngles(car.wheelSpin, 0, car.glbWheels ? 0 : 90));
       animateDriverSprite(car, i + car.laneIndex, car.aiAggression > 0.3);
@@ -2883,6 +2622,11 @@
   });
   $("helpBtn")?.addEventListener("click", () => $("helpPanel")?.classList.remove("hidden"));
   $("helpCloseBtn")?.addEventListener("click", () => { $("helpPanel")?.classList.add("hidden"); $("helpBtn")?.focus(); });
+  $("changeStreetBtn")?.addEventListener("click", () => {
+    audio.stopEngine(); audio.stopMusic(); state.mode = "menu";
+    ui.gameOverOverlay?.classList.add("hidden"); ui.startOverlay?.classList.remove("hidden");
+    setOverlayState();
+  });
   bindGarageControls();
   refreshGarageUi();
 

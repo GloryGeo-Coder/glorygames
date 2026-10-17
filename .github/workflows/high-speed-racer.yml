@@ -6,6 +6,7 @@ on:
       - 'apps/web/scripts/high-speed-racer*'
       - 'apps/web/scripts/helpers/racer-runtime.cjs'
       - 'tools/build-high-speed-racer-assets.py'
+      - 'tools/build-racer-*.py'
       - '.github/workflows/high-speed-racer.yml'
   push:
     branches: [main]
@@ -14,6 +15,7 @@ on:
       - 'apps/web/scripts/high-speed-racer*'
       - 'apps/web/scripts/helpers/racer-runtime.cjs'
       - 'tools/build-high-speed-racer-assets.py'
+      - 'tools/build-racer-*.py'
       - '.github/workflows/high-speed-racer.yml'
 permissions:
   contents: read

@@ -43,3 +43,13 @@ button:focus-visible { outline:3px solid #e6faff; outline-offset:3px; }
   .menu-panel p {font-size:11px; margin:6px 0;}
 }
 @media (prefers-reduced-motion:reduce) { * {scroll-behavior:auto!important;transition:none!important;} }
+.street-label { display:block; margin:12px 0 5px; font-size:11px; color:#9be6f3; text-transform:uppercase; letter-spacing:.08em; }
+.street-select { display:block; width:100%; min-height:44px; margin:0 0 12px; padding:8px 10px; border:1px solid #43cce46b; border-radius:10px; color:#eaf7ff; background:#102036; font:16px system-ui; }
+.audio-settings { margin:12px 0; color:#b9d8e8; font-size:12px; }
+.audio-settings summary { min-height:32px; cursor:pointer; padding:7px 0; }
+.audio-settings label { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:44px; }
+.audio-settings input { width:65%; min-height:36px; accent-color:#34d5e6; }
+.change-street-btn { display:block; width:100%; min-height:44px; padding:10px 18px; margin-top:12px; border:1px solid #43cce46b; border-radius:12px; background:#102036; color:white; font:700 14px system-ui; cursor:pointer; }
+.mini-map { display:flex; align-items:center; justify-content:space-evenly; }
+.map-dot { width:9px; height:9px; margin:0; }
+.map-player { display:none; }
