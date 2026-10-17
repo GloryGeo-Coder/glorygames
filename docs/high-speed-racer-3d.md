@@ -1,4 +1,6 @@
-# High Speed Racer 3D graphics upgrade
+# High Speed Racer 3D graphics foundation (v0.15)
+
+The foundation was merged through PR #13. See `racer-streets-audio.md` for the subsequent gameplay, street and audio expansion.
 
 The dedicated game tab remains the platform standard. This release changes only the racer, its asset authoring source, documentation and tests. Sky Temple and the other games are unchanged.
 
@@ -29,6 +31,6 @@ The racer tests use the actual shipped PlayCanvas engine and its NullGraphicsDev
 
 Local browser visual testing was blocked by the browser's URL security policy. Physical desktop/phone review is still needed before merging the graphics upgrade: inspect the live menu car, each route, paint/reflections, road seams, touch controls, HUD spacing, audio, restart, portrait/landscape rotation, fullscreen and save restoration. Use `?scores=0` on the direct game URL for score-free QA.
 
-The pull request remains open for this review; this release is not a production deployment. Roll back a manual installation by restoring only the manifest's modified files and removing its added files. Existing assets and saves are unaffected.
+PR #13 has been merged into main. Roll back a manual installation by restoring only the manifest's modified files and removing its added files. Existing assets and saves are unaffected.
 
 Rebuild the seven original assets with `python3 tools/build-high-speed-racer-assets.py`; it requires only Python's standard library and does not alter the previous GLBs. Exported GLBs can be imported into Blender for further art work.

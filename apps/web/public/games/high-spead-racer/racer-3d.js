@@ -8,7 +8,10 @@
       reducedMotion: Boolean(win.matchMedia?.('(prefers-reduced-motion: reduce)').matches) };
   };
   function create({ app, root, camera, pc, quality }) {
-    const objects = [], skylineAssets = [], shadowCars = new Set();
+    const objects = [], skylineAssets = [], shadowCars = new Set(), streetObjects = [];
+    const streetAssets = new Map(), streetPending = new Set();
+    const STREETS = new Set(['harbour','oldtown','industrial','tunnel','airport','skyway']);
+    let streetEnv = null;
     let env = 'coast';
     const soft = document.createElement('canvas'); soft.width = soft.height = 64;
     const ctx = soft.getContext('2d');
@@ -85,9 +88,37 @@
     });
     function theme(next) {
       env=next;
-      const city=['coast','metro','final'].includes(env);
+      const city=['coast','metro','final','harbour','oldtown','industrial','airport','skyway'].includes(env);
       objects.forEach(e=>{e.enabled=city;});
       cyan.light.intensity=city?1.4:.8; pink.light.intensity=city?1.2:.4;
+      const colors={oldtown:[[1,.45,.12],[1,.12,.08]],industrial:[[1,.2,.05],[1,.03,.08]],
+        airport:[[.32,.65,1],[.7,.8,1]],tunnel:[[.04,.7,1],[.4,.08,1]]}[env]||[[.10,.62,1],[1,.03,.3]];
+      cyan.light.color=new pc.Color(...colors[0]);pink.light.color=new pc.Color(...colors[1]);
+      app.scene.ambientLight=new pc.Color(...(env==='tunnel'?[.13,.18,.26]:env==='oldtown'?[.34,.27,.24]:[.24,.28,.38]));
+      buildStreet(next);
+    }
+    function buildStreet(next) {
+      if(streetEnv!==next){streetObjects.splice(0).forEach(e=>e.destroy());streetEnv=next;}
+      if(!STREETS.has(next)||streetObjects.length)return;
+      const asset=streetAssets.get(next);
+      if(!asset){
+        if(streetPending.has(next))return;
+        streetPending.add(next);
+        app.assets.loadFromUrl(`assets/models/streets/${next}.glb`,'container',(error,loaded)=>{
+          streetPending.delete(next);
+          if(error){console.warn('Street scenery unavailable',next);return;}
+          streetAssets.set(next,loaded);if(env===next)buildStreet(next);
+        });return;
+      }
+      const centered=next==='tunnel'||next==='skyway', count=quality.compact?10:16;
+      for(let i=0;i<count;i++){
+        const e=asset.resource.instantiateRenderEntity({castShadows:false});e.name=`Street ${next} ${i}`;
+        root.addChild(e);const side=i%2?1:-1;
+        e.streetSpacing=next==='tunnel'?24:next==='skyway'?40:30;
+        e.streetCount=count;e.setLocalPosition(centered?0:side*(19+(i%3)*3),.02,12-i*e.streetSpacing);
+        if(!centered)e.setLocalEulerAngles(0,side>0?-90:90,0);
+        streetObjects.push(e);
+      }
     }
     function update(dt,state,player) {
       const animate=state.mode==='running';
@@ -95,6 +126,10 @@
         const p=e.getLocalPosition(); p.z+=state.roadSpeed*dt*.28;
         if(p.z>40) p.z-=Math.max(400,Math.ceil(quality.skylineCount/2)*29);
         e.setLocalPosition(p);
+      });
+      if(animate) streetObjects.forEach(e=>{
+        const p=e.getLocalPosition();p.z+=state.roadSpeed*dt;
+        if(p.z>48)p.z-=e.streetSpacing*e.streetCount;e.setLocalPosition(p);
       });
       if(player) {
         const p=player.getLocalPosition();
@@ -104,7 +139,7 @@
         if(car.neonShadow) car.neonShadow.setLocalPosition(0,.026-car.getLocalPosition().y,0);
       }
     }
-    return {attachCar,theme,update,quality};
+    return {attachCar,theme,update,quality,streetObjects};
   }
   window.Racer3D={qualityFor,create};
 })();

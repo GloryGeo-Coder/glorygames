@@ -6,7 +6,7 @@
   <title>High Speed Racer</title>
   <link rel="stylesheet" href="./style.css" />
   <script src="./vendor/playcanvas-2.23.1.min.js"></script>
-  <link rel="stylesheet" href="./racer-3d.css?v=1" />
+  <link rel="stylesheet" href="./racer-3d.css?v=2.1" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body class="is-menu">
@@ -37,7 +37,7 @@
         </div>
 
         <div class="hud-card distance-card">
-          <span id="premiumLevel" class="level-chip">LEVEL 1/6</span>
+          <span id="premiumLevel" class="level-chip">LEVEL 1/12</span>
           <span id="lapValue" class="lap-chip">LAP 1/3</span>
           <span class="label">Lap Distance</span>
           <span id="distanceValue" class="value">0/1200 m</span>
@@ -54,6 +54,7 @@
         <span class="map-dot"></span>
         <span class="map-dot"></span>
         <span class="map-dot"></span>
+        <span class="map-dot"></span><span class="map-dot"></span><span class="map-dot"></span><span class="map-dot"></span><span class="map-dot"></span><span class="map-dot"></span>
         <span class="map-player">▲</span>
       </div>
 
@@ -73,14 +74,16 @@
       <div class="menu-panel">
         <div class="kicker">Neon Highway Racing</div>
         <h1><span>HIGH SPEED</span><strong>RACER</strong></h1>
-        <p>Dodge traffic, collect nitro, clear six high-speed routes, and chase the top score.</p>
+        <p>Dodge traffic, collect nitro, race twelve distinct streets, and chase the top score.</p>
 
+        <label class="street-label" for="routeSelect">Choose your street</label>
+        <select id="routeSelect" class="street-select" aria-label="Race route"><option value="campaign">Full 12-street campaign</option></select>
         <button id="startBtn" class="play-btn" disabled>
           <span class="play-icon">▶</span>
           <span>PLAY</span>
         </button>
 
-        <div class="route-badges"><span>6 routes</span><span>4 garage cars</span><span>3 laps per route</span></div>
+        <div class="route-badges"><span>12 streets</span><span>4 garage cars</span><span>3 laps per route</span></div>
         <p id="loadingStatus" role="status">Preparing your car and track…</p>
         <div class="menu-actions">
           <button id="garageBtn" type="button"><span>🏎️</span> Garage</button>
@@ -88,6 +91,11 @@
           <button id="helpBtn" type="button"><span>?</span> Help</button>
         </div>
 
+        <details class="audio-settings"><summary>Audio mix</summary>
+          <label for="musicVolume">Music <input id="musicVolume" type="range" min="0" max="100" value="28" /></label>
+          <label for="engineVolume">Engine <input id="engineVolume" type="range" min="0" max="100" value="48" /></label>
+          <label for="effectsVolume">Effects <input id="effectsVolume" type="range" min="0" max="100" value="65" /></label>
+        </details>
         <div class="controls-list">
           <span>Desktop: A/D or ←/→ to change lanes • Space/Shift for Nitro • P to pause</span>
           <span>Mobile: tap buttons or swipe left/right</span>
@@ -104,6 +112,7 @@
           <span class="play-icon">↻</span>
           <span>RACE AGAIN</span>
         </button>
+        <button id="changeStreetBtn" class="change-street-btn" type="button">Change street</button>
       </div>
     </div>
 
@@ -163,7 +172,7 @@
 
   <div id="helpPanel" class="help-panel hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <section><h2 id="helpTitle">Own the night</h2>
-      <p>Change lanes to avoid traffic. Collect cyan pickups to refill Nitro and earn points. Beat rivals through three laps on each of six routes.</p>
+      <p>Change lanes to avoid traffic. Collect cyan pickups to refill Nitro and earn points. Beat rivals through three laps on each of twelve streets, or select a single street from the menu.</p>
       <p><b>Desktop:</b> A/D or arrow keys to steer. Hold Space or Shift for Nitro. P or Escape pauses; M toggles audio.</p>
       <p><b>Mobile:</b> use the steering buttons or swipe. Hold NITRO to boost. Landscape gives a wider view.</p>
       <p>Race rewards buy cars and upgrades in your garage. Progress is saved on this device.</p>
@@ -171,8 +180,10 @@
     </section>
   </div>
   <script src="./vendor/posteffect-bloom-2.23.1.js"></script>
-  <script src="./racer-3d.js"></script>
-  <script src="./game.js?v=2.0"></script>
+  <script src="./racer-3d.js?v=2.1"></script>
+  <script src="./racer-routes.js?v=2.1"></script>
+  <script src="./racer-audio.js?v=2.1"></script>
+  <script src="./game.js?v=2.1"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

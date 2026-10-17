@@ -1,0 +1,41 @@
+{
+  "original_assets": true,
+  "assets": [
+    {
+      "file": "harbour.glb",
+      "bytes": 53080,
+      "triangles": 696,
+      "draw_primitives": 4
+    },
+    {
+      "file": "oldtown.glb",
+      "bytes": 29308,
+      "triangles": 360,
+      "draw_primitives": 5
+    },
+    {
+      "file": "industrial.glb",
+      "bytes": 23628,
+      "triangles": 288,
+      "draw_primitives": 4
+    },
+    {
+      "file": "tunnel.glb",
+      "bytes": 10296,
+      "triangles": 108,
+      "draw_primitives": 3
+    },
+    {
+      "file": "airport.glb",
+      "bytes": 14996,
+      "triangles": 168,
+      "draw_primitives": 4
+    },
+    {
+      "file": "skyway.glb",
+      "bytes": 21968,
+      "triangles": 276,
+      "draw_primitives": 2
+    }
+  ]
+}
