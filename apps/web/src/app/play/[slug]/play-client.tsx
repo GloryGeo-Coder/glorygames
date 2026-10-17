@@ -5,6 +5,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PlaySidebar from "@/components/PlaySidebar";
 import { useCurrentUser } from "@/lib/useCurrentUser";
+import SkyTempleLaunch from "@/components/SkyTempleLaunch";
+import { SKY_TEMPLE } from "@/lib/skyTempleLaunch";
 
 type Props = {
   slug: string;
@@ -106,6 +108,7 @@ function extractScorePayload(data: any, slug: string) {
 
 export default function PlayClient({ slug, title }: Props) {
   const { user } = useCurrentUser();
+  const isSkyTemple = slug === SKY_TEMPLE.slug;
 
   const [liveScore, setLiveScore] = useState(0);
   const [leaderboardRefreshKey, setLeaderboardRefreshKey] = useState(0);
@@ -409,34 +412,40 @@ export default function PlayClient({ slug, title }: Props) {
         <div className="ggStageTopBar">
           <div className="ggStageTitle">
             <b>{title}</b>
-            <span className="ggMuted">• Live: {liveScore}</span>
+            <span className="ggMuted">{isSkyTemple ? "Four-world adventure" : `• Live: ${liveScore}`}</span>
           </div>
 
-          <button
-            className="ggBtn ggBtnGhost"
-            type="button"
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen || isExpanded ? "Exit game fullscreen" : "Expand the game"}
-          >
-            {isFullscreen || isExpanded ? "Exit Fullscreen" : "Fullscreen"}
-          </button>
+          {!isSkyTemple ? (
+            <button
+              className="ggBtn ggBtnGhost"
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen || isExpanded ? "Exit game fullscreen" : "Expand the game"}
+            >
+              {isFullscreen || isExpanded ? "Exit Fullscreen" : "Fullscreen"}
+            </button>
+          ) : null}
         </div>
 
-        {landscapeRecommended && isPortrait && !isExpanded && !isFullscreen ? (
+        {!isSkyTemple && landscapeRecommended && isPortrait && !isExpanded && !isFullscreen ? (
           <p className="ggOrientationHint" role="status">
             <span aria-hidden="true">↻</span> For a wider game view, rotate your phone sideways. Portrait play remains available.
           </p>
         ) : null}
 
         <div className="ggStageInner" id="gameMount">
-          <iframe
-            className="ggGameFrame"
-            src={`/games/${slug}/index.html`}
-            title={title}
-            allow="fullscreen; autoplay; gamepad"
-            allowFullScreen
-            loading="eager"
-          />
+          {isSkyTemple ? (
+            <SkyTempleLaunch />
+          ) : (
+            <iframe
+              className="ggGameFrame"
+              src={`/games/${slug}/index.html`}
+              title={title}
+              allow="fullscreen; autoplay; gamepad"
+              allowFullScreen
+              loading="eager"
+            />
+          )}
         </div>
       </div>
 

@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { toggleCampaignFullscreen, bindCampaignRuntime } from '../apps/web/public/games/sky-temple-3d-rise-of-the-relic-master/preview3d/campaign-runtime.mjs';
+import { toggleCampaignFullscreen, bindCampaignRuntime, describeCampaignLoadError } from '../apps/web/public/games/sky-temple-3d-rise-of-the-relic-master/preview3d/campaign-runtime.mjs';
+
+test('graphics initialization failures are distinguished from asset loading failures', () => {
+  for (const message of ['WebGL not supported', 'Unable to create graphics context']) {
+    const failure = describeCampaignLoadError(new Error(message));
+    assert.equal(failure.label, '3D GRAPHICS UNAVAILABLE');
+    assert.match(failure.message, /hardware acceleration/);
+    assert.ok(!failure.message.includes('connection'));
+  }
+  const failure = describeCampaignLoadError(new Error('404 world.glb'));
+  assert.equal(failure.label, 'LOADING ISSUE');
+  assert.match(failure.message, /3D assets/);
+});
 
 test('fullscreen works when supported and preserves full-window fallback when denied', async () => {
   let requested = 0, exited = 0, notice = '';

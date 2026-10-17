@@ -1,5 +1,5 @@
 import { createCampaignPlatform } from "../campaign-platform.mjs";
-import { bindCampaignRuntime } from "../campaign-runtime.mjs";
+import { bindCampaignRuntime, describeCampaignLoadError } from "../campaign-runtime.mjs?v=0.13.1";
 import { createCampaignAudio } from "../campaign-audio.mjs";
 import { createCampaignPresentation } from "../campaign-presentation.mjs";
 import { worldBalance, createJumpAssist, nextForwardCheckpoint, questDirection, canChargeDrone, droneWarningTime } from "../campaign-balance.mjs";
@@ -490,7 +490,8 @@ async function loadGame() {
     showSaveOptions();
   } catch (err) {
     console.error("[SkyTemple3D] Scene initialization failed", err);
-    menu("Sky Temple 3D", "Unable to open Crystal Caverns", `The game could not load its 3D assets. ${err?.message || "Try again with a stable connection."}`, "Try Again", "CONNECTION ISSUE");
+    const failure = describeCampaignLoadError(err);
+    menu("Sky Temple 3D", "Unable to open Crystal Caverns", failure.message, "Try Again", failure.label);
     ui.primaryBtn.disabled = false;
     ui.primaryBtn.dataset.retry = "true";
     setMode("error");

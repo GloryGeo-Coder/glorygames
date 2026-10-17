@@ -1101,68 +1101,70 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "sky-temple-3d-rise-of-the-relic-master": {
     "category": "Adventure",
-    "summary": "Explore floating fantasy worlds, collect relics and confront guardians using movement, flight and energy abilities.",
+    "summary": "Explore four 3D worlds, collect ancient relics and defeat their Guardians with jumps, gliding and relic blasts.",
     "overview": [
-      "Sky Temple: Rise of the Relic Master is a fantasy adventure set among floating islands, temples, bridges and caverns. You traverse platforms and explore worlds while gathering relics, dealing with hostile characters and unlocking ways to improve your hero.",
-      "The presentation uses a custom browser-friendly 3D-style projection and a third-person view rather than requiring a downloadable game client. The experience includes character skins, a shop, movement powers, energy attacks and staged boss fights."
+      "Sky Temple 3D: Rise of the Relic Master is a browser adventure across floating islands, crystal caverns, stormy citadels and a sunlit sanctuary. Recover ancient relics and face a Guardian in each world.",
+      "Select Play Game to open the campaign in a new tab with the whole window available. Each world includes exploration music, Guardian music, sound effects and saved checkpoints."
     ],
     "story": [
       "The journey leads through Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary. Each environment introduces new platforming and combat situations on the way to the Relic Master.",
       "Named guardians help distinguish the stages: Garden Sentinel, Crystal Warden, Thunder Golem and Relic Master. Relics and world exploration connect the fights into a larger fantasy quest."
     ],
     "howToPlay": [
-      "Enter the starting world and read the objective before leaving the safe area.",
-      "Move between islands, paths and platforms, watching for gaps and enemies.",
-      "Jump to reach platforms and use the flight ability when it becomes available.",
-      "Fire energy blasts to defend yourself against hostile enemies or turrets.",
-      "Collect relics and useful powers, and visit the shop or map when needed.",
-      "Advance through the available eight levels and prepare for world-specific guardians."
+      "Select Play Game, then start or continue your adventure from the world chooser.",
+      "Move across islands and bridges, jumping over gaps and holding Glide to extend your descent.",
+      "Use relic blasts to defeat drones and respond to Guardian attacks.",
+      "Find five relics in each world and defeat its Guardian.",
+      "Use the portals to travel through Sky Garden, Crystal Caverns and Storm Citadel, then complete the final challenge in Solar Sanctuary."
     ],
     "desktop": [
-      "W or Up moves forward, S or Down moves back, and A/D or Left/Right move sideways.",
-      "Space or F jumps or flies when flight is active; J or Ctrl fires, M opens the map and P opens the shop."
+      "WASD or arrow keys move. Space jumps, Shift glides and E fires a relic blast.",
+      "Drag on the game canvas to turn the camera. Use the pause menu for resume, fullscreen and separate music/effects volume controls."
     ],
     "mobile": [
-      "Use the displayed movement, Jump, Fly and Shoot controls.",
-      "Check the in-game map and shop interface when those actions are available."
+      "Drag the movement pad, use Jump and Blast, and hold Glide.",
+      "Drag the game canvas to turn the camera. Portrait and landscape play are supported."
     ],
     "systems": [
       {
         "title": "Four fantasy worlds",
-        "body": "Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary provide distinct settings for the adventure."
+        "body": "Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary each have distinct routes, hazards and a Guardian."
       },
       {
-        "title": "Powers and combat",
-        "body": "Shield, flight, energy blasts, extra life and speed boosts are character abilities."
+        "title": "Movement and combat",
+        "body": "Jump, glide and aim relic blasts while responding to drones, projectiles and Guardian warnings."
       },
       {
-        "title": "Unlocks and bosses",
-        "body": "The game includes character skins, a shop and boss stages that punctuate the exploration."
+        "title": "World music and checkpoints",
+        "body": "Exploration and Guardian themes change with each encounter. Checkpoints, audio preferences and progress are saved on the device."
       }
     ],
     "progression": [
-      "Eight levels guide the player through the fantasy settings, with cutscenes and major encounters at key points.",
-      "Colourful 3D-style environments, character movement, flight and combat effects bring the sky worlds to life in the browser. Learn each world's routes and guardian patterns to move closer to the Relic Master."
+      "Recover the five relics in each world, defeat Garden Sentinel, Crystal Warden and Thunder Golem, and face the Relic Master in Solar Sanctuary.",
+      "Progress and campaign scores stay on this device. Use the same browser profile to continue a saved adventure."
     ],
     "tips": [
-      "Plan a landing before launching into a long jump or flight.",
-      "Use the map when a floating-world route becomes difficult to follow.",
-      "Learn whether an enemy is a patrol, hunter, drone or turret before approaching it.",
-      "Reserve defensive powers for sections with multiple attacks.",
-      "Explore for relics rather than immediately running to the next visible encounter."
+      "Plan a landing before jumping or gliding.",
+      "Explore the side routes to find every relic.",
+      "Watch Guardian warnings and move clear before an attack lands.",
+      "Pause to adjust music and sound effects independently."
     ],
     "faqs": [
       {
         "q": "How many worlds are there?",
-        "a": "The adventure spans four worlds: Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
+        "a": "Four: Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
       },
       {
         "q": "Can the character fly?",
-        "a": "Yes. Flight is an unlockable or available power used through the designated jump/fly control."
+        "a": "Hold Glide to slow your descent and extend jumps. The campaign uses jumping and gliding rather than an unlockable flight power."
       },
       {
-        "q": "Is this a downloadable 3D game?",
-        "a": "No. It runs in the browser and uses custom 3D-style projection."
+        "q": "What does my browser need?",
+        "a": "A browser with working WebGL graphics. If 3D graphics cannot start, enable hardware acceleration or try another supported browser."
+      },
+      {
+        "q": "Will my progress be saved?",
+        "a": "Checkpoints, collected relics, scores and audio preferences are saved on the device when browser storage is available."
       }
     ]
   },
