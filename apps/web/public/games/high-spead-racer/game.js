@@ -99,7 +99,7 @@
     const levelLabel = $("premiumLevel");
     const progressFill = $("premiumProgressFill");
     const miniMapDots = document.querySelectorAll(".map-dot");
-    if (levelLabel) levelLabel.textContent = `LEVEL ${state.level + 1}/${LEVELS.length}`;
+    if (levelLabel) levelLabel.textContent = state.careerJob ? `JOB ${career.JOBS.indexOf(state.careerJob)+1}/${career.JOBS.length}` : `LEVEL ${state.level + 1}/${LEVELS.length}`;
     if (progressFill) {
       progressFill.style.width = `${Math.max(0, Math.min(100, (state.lapDistance / levelLapLength()) * 100))}%`;
     }
@@ -157,13 +157,14 @@
     return spec;
   });
   const routeSelect = $("routeSelect");
-  if (routeSelect) routeSelect.innerHTML = '<option value="campaign">Full 12-street campaign</option>' +
+  if (routeSelect) routeSelect.innerHTML = '<option value="career">City of Legends · Chapter One</option><option value="campaign">Full 12-street campaign</option>' +
     LEVELS.map((route, i) => `<option value="${i}">${i + 1}. ${route.title}</option>`).join("");
 
 
 
   // ---------- garage, coins, unlocks and upgrades ----------
   const GARAGE_CARS = [
+    { id: "veyra-starter", name: "Family Coupe", model: "audi", price: 0, speed: 0, handling: 3, nitro: 2, label: "Worn RWD starter" },
     { id: "mclaren-senna", name: "Crimson Apex", model: "mclaren", price: 0, speed: 7, handling: 5, nitro: 4, label: "Hypercar" },
     { id: "dodge-challenger", name: "Golden Charger", model: "challenger", price: 850, speed: 4, handling: 1, nitro: 6, label: "Muscle" },
     { id: "porsche-911-gt2", name: "Silver GT", model: "porsche", price: 1500, speed: 6, handling: 5, nitro: 3, label: "Track Focused" },
@@ -175,8 +176,8 @@
   const profile = {
     coins: 0,
     bestScore: 0,
-    owned: { "mclaren-senna": true },
-    selectedCar: "mclaren-senna",
+    owned: { "veyra-starter": true, "mclaren-senna": true },
+    selectedCar: "veyra-starter",
     upgrades: { speed: 0, handling: 0, nitro: 0 }
   };
 
@@ -218,6 +219,7 @@
   }
 
   function getSelectedCar() {
+    if (state?.careerJob) return GARAGE_CARS.find(c => c.id === (state.careerJob.loaner ? "porsche-911-gt2" : "veyra-starter"));
     return GARAGE_CARS.find((c) => c.id === profile.selectedCar) || GARAGE_CARS[0];
   }
 
@@ -238,8 +240,8 @@
     const car = getSelectedCar();
     return {
       speed: car.speed + profile.upgrades.speed * 2,
-      handling: car.handling + profile.upgrades.handling * 2,
-      nitro: car.nitro + profile.upgrades.nitro * 2
+      handling: car.handling + profile.upgrades.handling * 2 + (state.careerJob && career.data.driver?.identity === "precision" ? 1.5 : 0),
+      nitro: car.nitro + profile.upgrades.nitro * 2 + (state.careerJob && career.data.driver?.identity === "bold" ? 1.5 : 0)
     };
   }
 
@@ -346,6 +348,11 @@
   }
 
   loadProfile();
+  let careerStorage = null;
+  try { careerStorage = localStorage; } catch {}
+  const career = window.RacerCareer.create(careerStorage);
+  let chosenJob = Math.max(0, career.next());
+  const driving = window.RacerDriving;
 
   const state = {
     mode: "menu",
@@ -388,6 +395,8 @@
     passedFinishLines: 0,
     checkpointCombo: 0
   };
+  Object.assign(state, {careerJob:null, raceTime:0, boostSeconds:0, condition:100, impacts:0,
+    impactFactor:1, impactVelocity:0, contactCooldown:0, brakeHeld:false, rivalsTotal:7});
 
   const trafficCars = [];
   const rivalCars = [];
@@ -448,7 +457,8 @@
   // Gesture-unlocked music, layered engine samples, gear changes and effects.
   let audioStorage = null; try { audioStorage = localStorage; } catch {}
   const audio = window.RacerAudio.create({ window, getState: () => state,
-    getRoute: () => LEVELS[state.level] || LEVELS[0], getCar: () => getSelectedCar().model, storage: audioStorage,
+    getRoute: () => ({...(LEVELS[state.level] || LEVELS[0]),targetDistance:levelLapLength()}),
+    getCar: () => getSelectedCar().id === "veyra-starter" ? "starter" : getSelectedCar().model, storage: audioStorage,
     onSettings: settings => {
       muteBtn.textContent = settings.muted ? "×" : "♪";
       muteBtn.setAttribute("aria-pressed", String(!settings.muted));
@@ -742,6 +752,13 @@
       if (!node.render || !node.render.meshInstances) return;
       node.render.meshInstances.forEach((mi) => {
         if (!mi.material) return;
+        if (car.modelType === "player" && getSelectedCar().id === "veyra-starter" && mi.material.name === "Ceramic metallic paint") {
+          const worn = mi.material.clone();
+          const color = {ember:[.28,.13,.10],ocean:[.08,.22,.25],graphite:[.16,.18,.20]}[career.data.driver?.look || "ember"];
+          worn.diffuse.set(...color); worn.metalness = .24; worn.gloss = .18;
+          mi.material = worn;
+          model.once("destroy", () => worn.destroy());
+        }
         mi.material.cull = pc.CULLFACE_NONE;
         mi.material.depthWrite = true;
         mi.material.update();
@@ -1595,9 +1612,9 @@
 
   function showLevelBanner(levelIndex) {
     const spec = LEVELS[levelIndex] || LEVELS[0];
-    $("levelKicker").textContent = `Level ${levelIndex + 1}/${LEVELS.length}`;
-    $("levelTitle").textContent = spec.title;
-    $("levelText").textContent = spec.mission;
+    $("levelKicker").textContent = state.careerJob ? `City of Legends · Job ${career.JOBS.indexOf(state.careerJob)+1}/${career.JOBS.length}` : `Level ${levelIndex + 1}/${LEVELS.length}`;
+    $("levelTitle").textContent = state.careerJob?.title || spec.title;
+    $("levelText").textContent = state.careerJob?.radio || spec.mission;
     levelOverlay.style.display = "block";
     state.levelBanner = 3.2;
   }
@@ -1607,6 +1624,7 @@
 
   // ---------- laps, checkpoints, finish lines and road sections ----------
   function levelLapLength() {
+    if (state.careerJob) return state.careerJob.distance;
     const spec = LEVELS[state.level] || LEVELS[0];
     return spec.targetDistance;
   }
@@ -1746,21 +1764,24 @@
       r.destroy();
     }
 
-    const startingOffsets = [130, 70, 25, -35, -85, -140, -205];
+    const startingOffsets = [22, 40, 58, -20, -38, -56, -74];
 
     for (let i = 0; i < state.rivalsTotal; i++) {
       const rival = buildTrafficCar(trafficMats[(i + 1) % trafficMats.length]);
       rival.name = `rival-${RIVAL_NAMES[i] || i}`;
       rival.isRival = true;
-      rival.rivalName = RIVAL_NAMES[i] || `Rival ${i + 1}`;
-      rival.laneIndex = i % 3;
+      rival.rivalName = state.careerJob?.id === "first-green" ? "Ivo" : RIVAL_NAMES[i] || `Rival ${i + 1}`;
+      rival.laneIndex = (i + 2) % 3;
       rival.progress = state.levelDistance + startingOffsets[i];
       rival.lastProgress = rival.progress;
-      rival.rivalSpeed = state.baseSpeed * (0.86 + i * 0.018 + Math.random() * 0.08);
+      rival.rivalSpeed = state.baseSpeed * (1.015 + i * .012);
+      rival.impactFactor = 1;
+      rival.contactCooldown = 0;
       rival.aggression = 0.22 + i * 0.055;
       rival.overtakeTimer = 0.4 + Math.random() * 1.6;
       rival.wobble = Math.random() * Math.PI * 2;
-      rival.setLocalPosition(laneWorldX(rival.laneIndex, -20 - i * 6), 0, -20 - i * 6);
+      const z = driving.visibleZ(rival.progress, state.levelDistance);
+      rival.setLocalPosition(laneWorldX(rival.laneIndex, z), 0, z);
       rival.setLocalEulerAngles(0, 0, 0);
       rivalCars.push(rival);
     }
@@ -1770,14 +1791,15 @@
   }
 
   function resetRivalsForLevel() {
-    const offsets = [95, 45, 10, -30, -75, -125, -180];
+    const offsets = [22, 40, 58, -20, -38, -56, -74];
     rivalCars.forEach((rival, i) => {
-      rival.progress = state.levelDistance + offsets[i] + Math.random() * 30;
+      rival.progress = state.levelDistance + offsets[i];
       rival.lastProgress = rival.progress;
-      rival.rivalSpeed = state.baseSpeed * (0.9 + i * 0.018 + Math.random() * 0.06);
-      rival.laneIndex = i % 3;
+      rival.rivalSpeed = state.baseSpeed * (1.015 + i * .012);
+      rival.impactFactor = 1; rival.contactCooldown = 0; rival.enabled = true;
+      rival.laneIndex = (i + 2) % 3;
       rival.overtakeTimer = 0.3 + Math.random() * 1.2;
-      const z = 8 - (rival.progress - state.levelDistance) * 0.16;
+      const z = driving.visibleZ(rival.progress, state.levelDistance);
       rival.setLocalPosition(laneWorldX(rival.laneIndex, z), 0, z);
     });
     state.racePosition = calculateRacePosition();
@@ -1800,10 +1822,13 @@
       const tp = traffic.getLocalPosition();
       if (Math.abs(tp.z - z) < 18) blocked.add(traffic.laneIndex);
     }
+    for (const other of rivalCars) {
+      if (other !== rival && Math.abs(other.getLocalPosition().z - z) < 12) blocked.add(other.laneIndex);
+    }
 
     // Avoid the player if side-by-side.
     const playerPos = playerCar.getLocalPosition();
-    if (Math.abs(playerPos.z - z) < 7) blocked.add(state.laneIndex);
+    if (Math.abs(playerPos.z - z) < 12) blocked.add(state.targetLaneIndex);
 
     // Try to move to a free lane.
     const options = [0, 1, 2].filter((lane) => lane !== rival.laneIndex && !blocked.has(lane));
@@ -1825,23 +1850,22 @@
       const rival = rivalCars[i];
       const gap = rival.progress - playerProgress; // positive means rival ahead
 
-      // Rubber-band AI: racers behind push harder, racers far ahead ease off.
-      const targetSpeed =
-        state.baseSpeed *
-        (0.9 + i * 0.015 + state.level * 0.018 + rival.aggression * 0.16) +
-        (gap < -80 ? 12 : 0) -
-        (gap > 260 ? 10 : 0) +
-        Math.sin(state.elapsed * 0.8 + rival.wobble) * 2.6;
-
-      rival.rivalSpeed += (targetSpeed - rival.rivalSpeed) * Math.min(1, dt * 0.8);
+      rival.contactCooldown = Math.max(0, rival.contactCooldown - dt);
+      rival.impactFactor = driving.recover(rival.impactFactor, dt);
+      let targetSpeed = driving.rivalPace(state.baseSpeed, i, gap, state.elapsed, rival.wobble, state.careerJob?.pace || 1);
+      // Brake behind occupied lanes while looking for an opening. The prologue rival
+      // lifts early, creating the opening described by Mara over the radio.
+      for (const other of [...trafficCars, ...rivalCars]) {
+        if (other === rival || other.laneIndex !== rival.laneIndex) continue;
+        const separation = rival.getLocalPosition().z - other.getLocalPosition().z;
+        targetSpeed = driving.followingSpeed(targetSpeed, rival.rivalSpeed, separation, other.rivalSpeed ?? other.baseSpeed);
+      }
+      if (state.careerJob?.id === "first-green" && state.levelDistance > 420 && state.levelDistance < 640) targetSpeed *= .72;
+      rival.rivalSpeed = driving.approachSpeed(rival.rivalSpeed, targetSpeed * rival.impactFactor, dt);
       rival.lastProgress = rival.progress;
-      rival.progress += rival.rivalSpeed * dt * 0.92;
-
-      // Keep rivals close enough to stay visually and competitively relevant.
-      if (rival.progress - playerProgress > 430) rival.progress = playerProgress + 430;
-      if (rival.progress - playerProgress < -280) rival.progress = playerProgress - 280;
-
-      const z = pc.math.clamp(8 - (rival.progress - playerProgress) * 0.16, -92, 24);
+      rival.progress += rival.rivalSpeed * dt * driving.DISTANCE_SCALE;
+      const z = driving.visibleZ(rival.progress, playerProgress + state.roadSpeed * dt * driving.DISTANCE_SCALE);
+      rival.enabled = z > -200 && z < 38;
 
       rival.overtakeTimer -= dt;
       if (rival.overtakeTimer <= 0) {
@@ -1859,7 +1883,7 @@
 
       const targetX = laneWorldX(rival.laneIndex, z);
       const p = rival.getLocalPosition();
-      p.z += (z - p.z) * Math.min(1, dt * 5.5);
+      p.z = z;
       p.x += (targetX - p.x) * Math.min(1, dt * (3.8 + state.level * 0.28 + stats.handling * 0.08));
       p.y = trackCrestAt(z) * 0.22 + Math.sin(state.elapsed * 8 + i) * 0.025;
       rival.setLocalPosition(p);
@@ -1867,15 +1891,12 @@
       const lateralTilt = (targetX - p.x) * -4.5;
       rival.setLocalEulerAngles(0, Math.sin(state.elapsed * 2.5 + i) * 1.4, lateralTilt);
 
-      rival.wheelSpin += state.roadSpeed * dt * 220;
+      rival.wheelSpin += rival.rivalSpeed * dt * 220;
       rival.wheels?.forEach((w) => w.setLocalEulerAngles(rival.wheelSpin, 0, rival.glbWheels ? 0 : 90));
       animateDriverSprite(rival, i + rival.laneIndex, rival.aggression > 0.3);
 
-      // Rival collision: a direct hit ends the run, but slight passes become overtakes.
       if (rectHit(playerPos.x, playerPos.z, 2.12, 4.0, p.x, p.z, 2.1, 4.0)) {
-        state.cameraShake = 0.46;
-        endGame(false);
-        return;
+        resolveContact(rival, rival.rivalSpeed);
       }
     }
 
@@ -1897,11 +1918,17 @@
   }
 
   function spawnTrafficCar() {
-    const lane = Math.floor(Math.random() * 3);
+    if (trafficCars.length >= (quality.compact ? 10 : 16)) return;
+    const fast = Math.random() < .22;
+    const z = fast ? 33 : -135 - Math.random() * 30;
+    const lanes = [0,1,2].filter(lane => ![...trafficCars,...rivalCars].some(other => other.laneIndex === lane && Math.abs(other.getLocalPosition().z-z)<14));
+    if (!lanes.length) return;
+    const lane = lanes[Math.floor(Math.random() * lanes.length)];
     const car = buildTrafficCar(trafficMats[Math.floor(Math.random() * trafficMats.length)]);
-    const z = -135 - Math.random() * 45;
     car.laneIndex = lane;
-    car.baseSpeed = state.roadSpeed * (0.50 + Math.random() * 0.35);
+    car.cruiseRatio = fast ? 1.08 + Math.random() * .09 : .79 + Math.random() * .19;
+    car.baseSpeed = state.baseSpeed * car.cruiseRatio;
+    car.impactFactor = 1; car.contactCooldown = 0;
     car.nearMissAwarded = false;
     car.aiAggression = 0.18 + state.level * 0.07;
     car.setLocalPosition(laneWorldX(lane, z), 0, z);
@@ -1955,8 +1982,14 @@
     state.mode = "countdown";
     state.elapsed = 0;
     const street = String(routeSelect?.value || "campaign");
-    state.singleStreet = /^\d+$/.test(street) && Number(street) < LEVELS.length;
-    state.level = state.singleStreet ? Number(street) : 0;
+    state.careerJob = street === "career" && career.data.driver && career.unlocked(chosenJob) ? career.JOBS[chosenJob] : null;
+    state.singleStreet = !!state.careerJob || /^\d+$/.test(street) && Number(street) < LEVELS.length;
+    state.level = state.careerJob ? state.careerJob.route : state.singleStreet ? Number(street) : 0;
+    state.totalLaps = state.careerJob ? 1 : 3;
+    state.rivalsTotal = state.careerJob ? state.careerJob.rivals : 7;
+    Object.assign(state, {raceTime:0,boostSeconds:0,condition:100,impacts:0,impactFactor:1,impactVelocity:0,contactCooldown:0,brakeHeld:false});
+    pointerBrake = false;
+    refreshPlayerCarModel();
     state.levelDistance = 0;
     state.levelBanner = 0;
     state.countdown = 3.4;
@@ -1968,9 +2001,10 @@
     state.hazardTimer = 0;
     state.difficultyTimer = 0;
     const stats = selectedCarStats();
-    state.baseSpeed = LEVELS[state.level].baseSpeed + stats.speed;
-    state.roadSpeed = LEVELS[state.level].baseSpeed + stats.speed;
-    state.maxBaseSpeed = LEVELS[state.level].maxSpeed + stats.speed;
+    state.baseSpeed = (state.careerJob?.baseSpeed ?? LEVELS[state.level].baseSpeed) + stats.speed;
+    state.roadSpeed = state.baseSpeed;
+    state.previousSpeed = state.roadSpeed;
+    state.maxBaseSpeed = (state.careerJob?.maxSpeed ?? LEVELS[state.level].maxSpeed) + stats.speed;
     state.laneIndex = 1;
     state.targetLaneIndex = 1;
     state.nitro = 100;
@@ -2011,6 +2045,9 @@
     pauseBtn.textContent = "Ⅱ";
 
     applyLevelTheme(state.level);
+    document.body.classList.toggle("rain-race", state.careerJob?.weather === "rain");
+    if (state.careerJob?.weather === "fog") { app.scene.fogStart = 35; app.scene.fogEnd = 170; }
+    $("missionHud").textContent = state.careerJob ? `${state.careerJob.title} · ${missionGoal(state.careerJob)}` : "Contact costs speed. Recover and keep racing.";
     showLevelBanner(state.level);
     initRivals();
     audio.startEngine();
@@ -2019,6 +2056,7 @@
   }
 
   function startGame() {
+    if (routeSelect?.value === "career" && !career.data.driver) { openCareer(); return; }
     audio.ensure();
     ui.startOverlay?.classList.add("hidden");
     resetWorld();
@@ -2032,11 +2070,13 @@
     countdownEl.style.display = "none";
     levelOverlay.style.display = "none";
     pauseOverlay.style.display = "none";
-    if (win) audio.sfxLevel(); else audio.sfxCrash();
+    const result = state.careerJob ? career.result(state.careerJob, {time:state.raceTime,condition:state.condition,boostSeconds:state.boostSeconds,position:calculateRacePosition()}) : null;
+    if (result) win = result.success;
+    if (win) audio.sfxLevel();
     audio.stopEngine();
     audio.stopMusic();
-    if (ui.gameOverTitle) ui.gameOverTitle.textContent = win ? (state.singleStreet ? "Street Complete!" : "Campaign Complete!") : "Crash!";
-    const coinReward = Math.max(20, Math.floor(state.score / 320) + state.level * 35 + (win ? 500 : 0));
+    if (ui.gameOverTitle) ui.gameOverTitle.textContent = result ? (win ? "Job Complete!" : "Try This Job Again") : win ? (state.singleStreet ? "Street Complete!" : "Campaign Complete!") : "Race Finished";
+    const coinReward = result ? result.payment : Math.max(20, Math.floor(state.score / 320) + state.level * 35 + (win ? 500 : 0));
     awardCoins(coinReward);
     profile.bestScore = Math.max(profile.bestScore, Math.floor(state.score));
     saveProfile();
@@ -2045,6 +2085,9 @@
       ui.finalStats.textContent =
         `Final Score: ${Math.floor(state.score)} • Position: ${state.racePosition}/${state.rivalsTotal + 1} • Laps: ${state.passedFinishLines}/${state.totalLaps} • Checkpoints: ${state.passedCheckpoints} • Overtakes: ${state.overtakes} • Coins Earned: ${coinReward} • Total Coins: ${Math.floor(profile.coins)} • Level: ${state.level + 1}/${LEVELS.length}`;
     }
+    $("careerResult").textContent = result ? `${win ? state.careerJob.outro : "Mara · The garage is still here. Bring what you learned and try again."}  ${state.raceTime.toFixed(1)}s · ${Math.round(state.condition)}% condition · ${state.boostSeconds.toFixed(1)}s under boost · +${result.reputation} reputation.` : `${state.impacts} contacts · ${state.raceTime.toFixed(1)}s · ${Math.round(state.condition)}% condition`;
+    $("nextJobBtn").classList.toggle("hidden", !result || !win || chosenJob >= career.JOBS.length - 1);
+    refreshCareerUi();
     ui.gameOverOverlay?.classList.remove("hidden");
     setOverlayState();
     postScore(true);
@@ -2052,7 +2095,7 @@
 
   function advanceLevel() {
     const current = LEVELS[state.level];
-    state.score += current.bonus;
+    state.score += state.careerJob ? 0 : current.bonus;
     state.nitro = Math.min(100, state.nitro + 45);
     audio.sfxLevel();
 
@@ -2089,6 +2132,7 @@
     pauseBtn.textContent = shouldPause ? "▶" : "Ⅱ";
     if (shouldPause) audio.pause();
     else audio.resume();
+    if (shouldPause) { pointerBrake = false; pointerNitro = false; state.brakeHeld = false; state.nitroHeld = false; }
   }
 
   function moveLeft() {
@@ -2104,6 +2148,7 @@
   }
 
   let pointerNitro = false;
+  let pointerBrake = false;
   function setNitro(on) {
     pointerNitro = on;
     if (state.mode !== "running") {
@@ -2135,8 +2180,9 @@
   bindPress(ui.leftBtn, moveLeft);
   bindPress(ui.rightBtn, moveRight);
   bindPress(ui.nitroBtn, () => setNitro(true), () => setNitro(false));
+  bindPress($("brakeBtn"), () => { pointerBrake = true; }, () => { pointerBrake = false; });
   ui.startBtn?.addEventListener("click", startGame);
-  ui.restartBtn?.addEventListener("click", resetWorld);
+  ui.restartBtn?.addEventListener("click", () => { audio.ensure(); resetWorld(); });
   pauseBtn.addEventListener("click", () => togglePause());
   $("resumeBtn")?.addEventListener("click", () => togglePause(false));
 
@@ -2155,7 +2201,18 @@
   });
   window.addEventListener("blur", () => { pointerNitro = false; state.nitroHeld = false; togglePause(true); });
   document.addEventListener("keydown", (e) => {
-    if (["ArrowLeft","ArrowRight","KeyA","KeyD","Space","ShiftLeft","ShiftRight","KeyP","Escape","KeyM"].includes(e.code)) e.preventDefault();
+    if (!$("careerPanel").classList.contains("hidden")) {
+      if (e.code === "Escape") { e.preventDefault(); $("careerCloseBtn").click(); }
+      if (e.code === "Tab") {
+        const controls = [...$("careerPanel").querySelectorAll("button:not(:disabled),input,select")];
+        const first = controls[0], last = controls.at(-1);
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+      return;
+    }
+    if (["INPUT","SELECT","TEXTAREA"].includes(e.target?.tagName)) return;
+    if (["ArrowLeft","ArrowRight","ArrowDown","KeyS","KeyA","KeyD","Space","ShiftLeft","ShiftRight","KeyP","Escape","KeyM"].includes(e.code)) e.preventDefault();
     audio.ensure();
     if (e.code === "KeyP" || e.code === "Escape") togglePause();
     if (e.code === "KeyM") audio.toggleMute();
@@ -2165,10 +2222,40 @@
     if (app.keyboard.wasPressed(pc.KEY_LEFT) || app.keyboard.wasPressed(pc.KEY_A)) moveLeft();
     if (app.keyboard.wasPressed(pc.KEY_RIGHT) || app.keyboard.wasPressed(pc.KEY_D)) moveRight();
     state.nitroHeld = pointerNitro || app.keyboard.isPressed(pc.KEY_SPACE) || app.keyboard.isPressed(pc.KEY_SHIFT);
+    state.brakeHeld = pointerBrake || app.keyboard.isPressed(pc.KEY_DOWN) || app.keyboard.isPressed(pc.KEY_S);
   }
 
   function rectHit(ax, az, aw, al, bx, bz, bw, bl) {
     return Math.abs(ax - bx) < (aw + bw) * 0.5 && Math.abs(az - bz) < (al + bl) * 0.5;
+  }
+
+  function resolveContact(other, otherSpeed = 0, hazard = false) {
+    if (state.mode !== "running" || state.contactCooldown > 0 || (other.contactCooldown || 0) > 0) return false;
+    const p = playerCar.getLocalPosition(), op = other.getLocalPosition();
+    const impact = driving.contact({dx:p.x-op.x,dz:p.z-op.z,playerSpeed:state.roadSpeed,otherSpeed,
+      heavy:other.modelIndex === 1,hazard});
+    state.contactCooldown = .5;
+    other.contactCooldown = 1.15;
+    state.impacts++;
+    state.condition = Math.max(0, state.condition - impact.damage);
+    state.impactFactor = Math.max(.3, Math.min(state.impactFactor, impact.speedFactor));
+    state.roadSpeed *= impact.speedFactor;
+    state.impactVelocity += impact.push;
+    state.nearMissChain = 0;
+    state.cameraShake = Math.max(state.cameraShake, .16 + impact.severity * .35);
+    if (!hazard) {
+      // Rear contact pushes the leading car forward; side contact makes it back off.
+      other.impactFactor = impact.side ? .72 : .9;
+      const direction = op.z <= p.z ? -1 : 1;
+      if (other.isRival) other.progress -= direction * 4.8 * driving.DISTANCE_SCALE;
+      op.z += direction * 4.8;
+      op.x -= impact.push * .28;
+      other.setLocalPosition(op);
+      other.laneIndex = chooseRivalLane(other, op.z);
+    }
+    audio.sfxCrash();
+    createPopText(impact.side ? "SCRAPE · HOLD YOUR LINE" : "IMPACT · RECOVER", p.x, 2.5, p.z - 4, "#ffb86b");
+    return true;
   }
 
   function updateHUD() {
@@ -2177,11 +2264,14 @@
     const rivalEl = $("rivalValue");
     const overtakesEl = $("overtakeValue");
     if (coinHud) coinHud.textContent = Math.floor(profile.coins).toLocaleString();
-    if (posEl) posEl.textContent = `${state.racePosition}/${state.rivalsTotal + 1}`;
-    if (rivalEl) rivalEl.textContent = `${Math.max(0, state.racePosition - 1)} ahead`;
+    if (posEl) posEl.textContent = state.rivalsTotal ? `${state.racePosition}/${state.rivalsTotal + 1}` : "SOLO";
+    if (rivalEl) rivalEl.textContent = state.rivalsTotal ? `${Math.max(0, state.racePosition - 1)} ahead` : "Drive the objective";
     if (overtakesEl) overtakesEl.textContent = `${state.overtakes} overtakes`;
+    const nearest = rivalCars.reduce((best, r) => Math.min(best, Math.abs(r.progress-state.levelDistance)), Infinity);
+    $("driveStatus").textContent = `G${Math.max(1,Math.min(6,Math.floor((state.roadSpeed-28)/13)+1))} · ${Math.round(state.condition)}% · ${state.brakeHeld ? "BRAKING" : state.impactFactor < .97 ? "RECOVERING" : "GRIP"}${Number.isFinite(nearest) ? ` · gap ${(nearest/Math.max(1,state.roadSpeed*driving.DISTANCE_SCALE)).toFixed(1)}s` : ""}`;
+    if (state.careerJob) $("missionHud").textContent = `${state.careerJob.title} · ${state.raceTime.toFixed(1)}s${state.careerJob.goal === "test" ? ` · boost ${state.boostSeconds.toFixed(1)}/${state.careerJob.limit}s` : ""} · ${missionGoal(state.careerJob)}`;
     if (ui.score) ui.score.textContent = Math.floor(state.score).toString();
-    if (ui.speed) ui.speed.textContent = Math.floor(state.roadSpeed * 6).toString();
+    if (ui.speed) ui.speed.textContent = Math.floor(state.roadSpeed * (state.careerJob ? 3.6 : 6)).toString();
     const lapEl = $("lapValue");
     const checkpointEl = $("checkpointValue");
     if (lapEl) lapEl.textContent = `LAP ${state.currentLap}/${state.totalLaps}`;
@@ -2237,7 +2327,14 @@
     const targetZ = 8;
     const targetX = laneWorldX(state.targetLaneIndex, targetZ);
     const oldX = pos.x;
-    pos.x += (targetX - pos.x) * Math.min(1, dt * (10.5 + selectedCarStats().handling * 0.55));
+    const wet = state.careerJob?.weather === "rain";
+    const grip = wet ? .78 : 1;
+    state.contactCooldown = Math.max(0, state.contactCooldown - dt);
+    state.impactFactor = driving.recover(state.impactFactor, dt);
+    pos.x += (targetX - pos.x) * Math.min(1, dt * (10.5 + selectedCarStats().handling * 0.55) * grip);
+    pos.x += state.impactVelocity * dt;
+    state.impactVelocity *= Math.exp(-dt * (wet ? 3.5 : 5));
+    pos.x = pc.math.clamp(pos.x, laneWorldX(0,targetZ)-1.1, laneWorldX(2,targetZ)+1.1);
     pos.z += (targetZ - pos.z) * Math.min(1, dt * 5);
     const bob = Math.sin(state.elapsed * state.roadSpeed * 0.22) * 0.035;
     pos.y = .05 + trackCrestAt(targetZ) * 0.22 + bob;
@@ -2245,13 +2342,16 @@
 
     const lateralVel = (pos.x - oldX) / Math.max(0.001, dt);
     const tilt = pc.math.clamp(-lateralVel * 0.045, -14, 14);
-    playerCar.setLocalEulerAngles(0, Math.sin(state.elapsed * 3) * 0.6, tilt);
+    const pitch = pc.math.clamp((state.roadSpeed - (state.previousSpeed ?? state.roadSpeed)) * 1.2, -3, 3);
+    state.previousSpeed = state.roadSpeed;
+    playerCar.setLocalEulerAngles(pitch, Math.sin(state.elapsed * 3) * 0.6 - state.impactVelocity * .6, tilt);
 
     playerCar.wheelSpin += state.roadSpeed * dt * 260;
     playerCar.wheels.forEach((w) => w.setLocalEulerAngles(playerCar.wheelSpin, 0, playerCar.glbWheels ? 0 : 90));
     animateDriverSprite(playerCar, 0, state.nitroHeld);
 
-    if (state.nitroHeld && state.nitro > 0) {
+    if (state.nitroHeld && state.nitro > 0 && !state.brakeHeld) {
+      state.boostSeconds += dt;
       state.nitro -= dt * Math.max(16, 26 - selectedCarStats().nitro * 0.9);
       state.boostFactor = 1.48 + selectedCarStats().nitro * 0.018;
       playerCar.flames.forEach((f, i) => {
@@ -2268,7 +2368,8 @@
     }
 
     state.nitro = pc.math.clamp(state.nitro, 0, 100);
-    state.roadSpeed = state.baseSpeed * state.boostFactor;
+    const targetSpeed = state.baseSpeed * state.boostFactor * state.impactFactor * (state.brakeHeld ? (wet ? .56 : .43) : 1);
+    state.roadSpeed = driving.approachSpeed(state.roadSpeed, targetSpeed, dt, state.brakeHeld ? (wet ? 24 : 36) : 23);
     if (Math.abs(pos.x - targetX) < 0.24) state.laneIndex = state.targetLaneIndex;
   }
 
@@ -2375,7 +2476,7 @@
       if (Math.random() > 0.18) spawnPickup();
     }
 
-    if (state.hazardTimer >= spec.hazardRate) {
+    if (!state.careerJob && state.hazardTimer >= spec.hazardRate) {
       state.hazardTimer = 0;
       if (state.level > 0 && Math.random() > 0.28) spawnHazard();
     }
@@ -2392,6 +2493,14 @@
     for (let i = trafficCars.length - 1; i >= 0; i--) {
       const car = trafficCars[i];
       const p = car.getLocalPosition();
+      car.contactCooldown = Math.max(0, (car.contactCooldown || 0) - dt);
+      car.impactFactor = driving.recover(car.impactFactor ?? 1, dt);
+      let targetSpeed = state.baseSpeed * car.cruiseRatio;
+      for (const other of [...trafficCars, ...rivalCars]) {
+        if (other === car || other.laneIndex !== car.laneIndex) continue;
+        targetSpeed = driving.followingSpeed(targetSpeed, car.baseSpeed, p.z-other.getLocalPosition().z, other.rivalSpeed ?? other.baseSpeed);
+      }
+      car.baseSpeed = driving.approachSpeed(car.baseSpeed, targetSpeed * car.impactFactor, dt);
       p.z += (state.roadSpeed - car.baseSpeed) * dt;
       const targetX = laneWorldX(car.laneIndex, p.z);
 
@@ -2406,7 +2515,7 @@
       p.y = .05 + trackCrestAt(p.z) * 0.22;
       car.setLocalPosition(p);
       car.setLocalEulerAngles(0, Math.sin(state.elapsed * 3 + p.z) * 1.2, (targetX - p.x) * -4);
-      car.wheelSpin += state.roadSpeed * dt * 220;
+      car.wheelSpin += car.baseSpeed * dt * 220;
       car.wheels?.forEach((w) => w.setLocalEulerAngles(car.wheelSpin, 0, car.glbWheels ? 0 : 90));
       animateDriverSprite(car, i + car.laneIndex, car.aiAggression > 0.3);
 
@@ -2424,17 +2533,15 @@
         }
       }
 
-      if (p.z > 24) {
+      if (p.z > 48 || p.z < -210) {
         car.destroy();
         trafficCars.splice(i, 1);
-        state.score += 35 + state.level * 8;
+        if (p.z > 48) state.score += 35 + state.level * 8;
         continue;
       }
 
       if (rectHit(playerPos.x, playerPos.z, 2.18, 4.15, p.x, p.z, 2.16, 4.05)) {
-        state.cameraShake = 0.5;
-        endGame(false);
-        return;
+        resolveContact(car, car.baseSpeed);
       }
     }
   }
@@ -2488,9 +2595,8 @@
       }
 
       if (rectHit(playerPos.x, playerPos.z, 2.05, 3.8, p.x, p.z, 2.7, 0.95)) {
-        state.cameraShake = 0.42;
-        endGame(false);
-        return;
+        resolveContact(h, 0, true);
+        h.destroy(); hazards.splice(i, 1);
       }
     }
   }
@@ -2548,7 +2654,7 @@
   }
 
   function updateGame(dt) {
-    state.elapsed += dt;
+    if (state.mode !== "paused") state.elapsed += dt;
     presentation.update(dt, state, playerCar);
     updateCountdown(dt);
     updateLevelBanner(dt);
@@ -2560,6 +2666,7 @@
     }
 
     handleKeyboard();
+    state.raceTime += dt;
     updatePlayer(dt);
     updateRoad(dt);
     updateSpawns(dt);
@@ -2571,7 +2678,7 @@
     updateParticles(dt);
     updateCamera(dt);
 
-    const distanceStep = state.roadSpeed * dt * 0.92;
+    const distanceStep = state.roadSpeed * dt * driving.DISTANCE_SCALE;
     state.distance += distanceStep;
     state.levelDistance += distanceStep;
     updateLapState(distanceStep);
@@ -2589,6 +2696,77 @@
 
   app.on("update", (dt) => updateGame(Math.min(dt, 1/30)));
 
+  function missionGoal(job) {
+    if (job.goal === "delivery") return `Deliver with ${job.limit}%+ condition`;
+    if (job.goal === "test") return `${job.limit}s under Nitro`;
+    if (job.goal === "time") return `Beat ${job.limit}s`;
+    return job.rivals === 1 ? "Beat Ivo" : `Finish top ${job.limit}`;
+  }
+
+  function refreshCareerUi() {
+    const driver = career.data.driver;
+    $("driverName").value = driver?.name || "";
+    $("driverLook").value = driver?.look || "ember";
+    $("driverIdentity").value = driver?.identity || "balanced";
+    $("driverPreview").dataset.look = driver?.look || "ember";
+    $("careerProgress").textContent = `${driver?.name || "Unknown driver"} · ${career.data.reputation} reputation · ${career.garage()}`;
+    const count = career.JOBS.filter(j => career.data.completed[j.id]).length;
+    $("garageMilestones").textContent = `${count > 0 ? "▣ First rival photograph" : "□ Empty photo wall"}  ·  ${count > 1 ? "▣ Customer showcase" : "□ Customer showcase"}  ·  ${count > 3 ? "★ Local trophy" : "☆ Local trophy"}  ·  ${count > 4 ? "★ Crew invitation" : "☆ Crew invitation"}`;
+    $("careerJobs").innerHTML = career.JOBS.map((job,i) => `<button type="button" class="career-job${i===chosenJob ? " selected" : ""}" data-job="${i}" ${career.unlocked(i)?"":"disabled"} aria-pressed="${i===chosenJob}"><small>${career.data.completed[job.id]?"✓ COMPLETE":career.unlocked(i)?"AVAILABLE":"LOCKED"} · ${job.district}</small><b>${job.title}</b><span>${missionGoal(job)} · ${job.reward} coins</span></button>`).join("");
+    const job = career.JOBS[chosenJob];
+    $("jobTitle").textContent = job.title;
+    $("jobBrief").textContent = job.brief;
+    $("jobRadio").textContent = job.radio;
+    $("jobBest").textContent = career.data.best[job.id] ? `Personal best: ${career.data.best[job.id].time.toFixed(1)}s · ${Math.round(career.data.best[job.id].condition)}% condition` : `${job.weather === "rain" ? "Rain · reduced grip" : job.weather === "fog" ? "Fog · shorter visibility" : "Dry roads"} · ${job.distance}m`;
+    $("careerChapter").textContent = count === career.JOBS.length ? "Chapter One complete · Revisit any job or race all twelve streets." : "Chapter One · Save the Family Garage";
+    $("garageCareer").textContent = `${career.garage()} · ${career.data.reputation} reputation`;
+  }
+
+  function openCareer() {
+    refreshCareerUi();
+    $("careerPanel").classList.remove("hidden");
+    (career.data.driver ? $("careerStartBtn") : $("driverName")).focus();
+  }
+
+  function launchCareer(event) {
+    event?.preventDefault();
+    if (ui.startBtn?.disabled) { toast("Preparing your car and track…"); return; }
+    if (!career.unlocked(chosenJob)) return;
+    career.setDriver({name:$("driverName").value,look:$("driverLook").value,identity:$("driverIdentity").value});
+    $("careerPanel").classList.add("hidden");
+    routeSelect.value = "career";
+    startGame();
+  }
+
+  $("careerBtn")?.addEventListener("click", openCareer);
+  $("careerCloseBtn")?.addEventListener("click", () => { $("careerPanel").classList.add("hidden"); $("careerBtn").focus(); });
+  $("careerForm")?.addEventListener("submit", launchCareer);
+  $("driverLook")?.addEventListener("change", () => { $("driverPreview").dataset.look = $("driverLook").value; });
+  $("careerJobs")?.addEventListener("click", e => {
+    const button = e.target.closest("[data-job]");
+    if (!button) return;
+    const index = Number(button.dataset.job);
+    if (!Number.isInteger(index) || !career.JOBS[index] || !career.unlocked(index)) return;
+    // Keep edits while choosing a job; they are saved when the driver accepts it.
+    const draft = {name:$("driverName").value,look:$("driverLook").value,identity:$("driverIdentity").value};
+    chosenJob = index; refreshCareerUi();
+    $("driverName").value = draft.name; $("driverLook").value = draft.look; $("driverIdentity").value = draft.identity;
+    $("driverPreview").dataset.look = draft.look;
+    $("careerJobs").querySelector(`[data-job="${index}"]`)?.focus();
+  });
+  $("nextJobBtn")?.addEventListener("click", () => {
+    chosenJob = Math.min(career.JOBS.length - 1, chosenJob + 1);
+    returnToMenu(); openCareer();
+  });
+
+  function returnToMenu() {
+    audio.stopEngine(); audio.stopMusic(); state.mode = "menu";
+    state.careerJob = null; state.brakeHeld = false; state.nitroHeld = false;
+    pointerBrake = false; pointerNitro = false;
+    document.body.classList.remove("rain-race");
+    ui.gameOverOverlay?.classList.add("hidden"); ui.startOverlay?.classList.remove("hidden");
+    refreshPlayerCarModel(); refreshGarageUi(); refreshCareerUi(); setOverlayState();
+  }
 
   function bindGarageControls() {
     const garageBtn = $("garageBtn");
@@ -2622,13 +2800,10 @@
   });
   $("helpBtn")?.addEventListener("click", () => $("helpPanel")?.classList.remove("hidden"));
   $("helpCloseBtn")?.addEventListener("click", () => { $("helpPanel")?.classList.add("hidden"); $("helpBtn")?.focus(); });
-  $("changeStreetBtn")?.addEventListener("click", () => {
-    audio.stopEngine(); audio.stopMusic(); state.mode = "menu";
-    ui.gameOverOverlay?.classList.add("hidden"); ui.startOverlay?.classList.remove("hidden");
-    setOverlayState();
-  });
+  $("changeStreetBtn")?.addEventListener("click", returnToMenu);
   bindGarageControls();
   refreshGarageUi();
+  refreshCareerUi();
 
   camera.setLocalPosition(0, 4.35, 17.8);
   camera.lookAt(0, 1, -8);

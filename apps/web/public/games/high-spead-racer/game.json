@@ -1,18 +1,20 @@
 {
-  "name": "High Speed Racer",
+  "name": "High Speed Racer: City of Legends",
   "slug": "high-spead-racer",
-  "version": "2.1.0",
-  "description": "Twelve-street 3D racing with same-direction rivals, original GLB scenery, four music soundtracks, layered engine sounds and garage upgrades.",
+  "version": "2.2.0",
+  "description": "Build your name in Veyra Bay through six career jobs, twelve arcade streets, reactive rivals and recoverable collisions. Original 3D cars, music, garage upgrades and saved driver identity.",
   "engine": "PlayCanvas",
   "thumbnail": "thumb.png",
   "controls": {
     "mobile": [
       "Tap left/right to change lanes",
+      "Hold Brake to slow down",
       "Hold Nitro to boost",
       "Swipe left/right on the screen"
     ],
     "desktop": [
       "Left/Right or A/D to change lanes",
+      "S or Down to brake",
       "Space or Shift for Nitro",
       "P or Esc to pause",
       "M to mute"
@@ -66,6 +68,15 @@
     "four original instrumental music loops",
     "sample-based engine and gear shifts",
     "separate music engine and effect volume",
-    "harbour old town industrial tunnel airport and skyway environments"
+    "harbour old town industrial tunnel airport and skyway environments",
+    "City of Legends Chapter One",
+    "six playable story jobs",
+    "driver appearance and driving identity",
+    "family starter coupe",
+    "additive career reputation save",
+    "recoverable collisions and condition",
+    "independent opponent pace and traffic following",
+    "brake control",
+    "rain grip and mountain fog"
   ]
 }

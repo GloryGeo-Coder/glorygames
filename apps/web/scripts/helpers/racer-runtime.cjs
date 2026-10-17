@@ -45,9 +45,9 @@ pc.AssetRegistry.prototype.loadFromUrl=function(url,type,cb){
 function boot(profile,{failAssets=false}={}){
   globalThis.__failRacerAssets=failAssets;
   if(profile) storage.setItem('high-spead-racer-profile-v1',JSON.stringify(profile));
-  for(const file of ['racer-routes.js','racer-audio.js','racer-3d.js']) vm.runInThisContext(fs.readFileSync(path.join(base,file),'utf8'),{filename:file});
+  for(const file of ['racer-routes.js','racer-driving.js','racer-career.js','racer-audio.js','racer-3d.js']) vm.runInThisContext(fs.readFileSync(path.join(base,file),'utf8'),{filename:file});
   let code=fs.readFileSync(path.join(base,'game.js'),'utf8');
-  code=code.replace(/\}\)\(\);\s*$/,`globalThis.__racerProbe={state,profile,LEVELS,app,playerCar,trafficCars,rivalCars,pickups,hazards,modelCars,CONTINUOUS_ROAD,presentation,startGame,resetWorld,updateGame,updatePlayer,updateTraffic,updateRivals,updatePickups,updateLapState,applyLevelTheme,audio,handleKeyboard,moveLeft,moveRight,setNitro,togglePause,advanceLevel,endGame,spawnTrafficCar,rectHit,selectOrBuyCar,buyUpgrade,postScore};})();`);
+  code=code.replace(/\}\)\(\);\s*$/,`globalThis.__racerProbe={state,profile,LEVELS,app,playerCar,trafficCars,rivalCars,pickups,hazards,modelCars,CONTINUOUS_ROAD,presentation,startGame,resetWorld,updateGame,updatePlayer,updateTraffic,updateRivals,updatePickups,updateLapState,applyLevelTheme,audio,handleKeyboard,moveLeft,moveRight,setNitro,togglePause,advanceLevel,endGame,spawnTrafficCar,spawnHazard,updateHazards,resolveContact,rectHit,selectOrBuyCar,buyUpgrade,postScore,career,launchCareer,returnToMenu,missionGoal,levelRaceDistance};})();`);
   vm.runInThisContext(code,{filename:'game.js'});
   return globalThis.__racerProbe;
 }

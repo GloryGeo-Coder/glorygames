@@ -101,9 +101,10 @@
       const speed=Math.max(0,Number(state.roadSpeed)||0),nextGear=Math.max(1,Math.min(6,Math.floor((speed-28)/13)+1));
       if(running&&gear&&gear!==nextGear&&ctx.currentTime-lastShift>.55){effect('gear');lastShift=ctx.currentTime;}
       gear=nextGear;
-      const character={mclaren:1,challenger:.82,porsche:1.1,audi:1.04}[getCar()]||1;
+      const character={starter:.9,mclaren:1,challenger:.82,porsche:1.1,audi:1.04}[getCar()]||1;
       const rpm=running?Math.max(2200,Math.min(8400,3100+((speed-28)%13)/13*3700+(state.nitroHeld?650:0))):1500;
-      const lift=Math.max(0,Math.min(1,(rpm-2200)/5600)),duck=ctx.currentTime-lastShift<.12?.55:1;
+      const lift=Math.max(0,Math.min(1,(rpm-2200)/5600)),duck=ctx.currentTime-lastShift<.12?.55:state.contactCooldown>.25?.45:state.brakeHeld?.65:1;
+      if(musicVoice&&running){const progress=Math.min(1,(state.lapDistance||0)/(getRoute().targetDistance||1200));ramp(musicVoice.volume.gain,.68+progress*.32,.3);}
       for(const [key,v] of loops){
         const gain=key==='low'?(.12+.19*Math.sqrt(1-lift)) * duck:key==='high'?.28*Math.sqrt(lift)*duck:key==='nitro'?(running&&state.nitroHeld&&state.nitro>0?.20:0):(running?.025+speed/6000:0);
         ramp(v.volume.gain,gain,.055);

@@ -25,7 +25,7 @@ test('actual PlayCanvas parses the new GLBs and retains the full playable racer'
   assert.equal(r.modelCars.traffic.size,r.rivalCars.length+r.trafficCars.length,'destroyed cars do not accumulate in model registry');
   r.resetWorld();r.state.mode='running';r.spawnTrafficCar();
   const car=r.trafficCars.at(-1);assert.ok(car.forward.z<-.98);car.setLocalPosition(r.playerCar.getLocalPosition());r.updateTraffic(0);
-  assert.equal(r.state.mode,'ended','actual collision ends the race');
+  assert.equal(r.state.mode,'running','actual collision slows the player without ending the race');assert.ok(r.state.impactFactor<1);
   await new Promise(resolve=>setTimeout(resolve,60));r.audio.dispose();r.app.render();r.app.destroy();
 });
 
@@ -44,7 +44,7 @@ test('six new streets import their real landmark GLBs and single-street mode com
     assert.ok(r.presentation.streetObjects.every(e=>e.enabled));r.app.render();
   }
   elements.get('routeSelect').value='9';r.resetWorld();assert.equal(r.state.level,9);assert.equal(r.state.singleStreet,true);
-  assert.equal(r.state.baseSpeed,r.LEVELS[9].baseSpeed+r.profile.upgrades.speed*2+({'mclaren-senna':7,'dodge-challenger':4,'porsche-911-gt2':6,'audi-r8':5}[r.profile.selectedCar]));
+  assert.equal(r.state.baseSpeed,r.LEVELS[9].baseSpeed+r.profile.upgrades.speed*2+({'veyra-starter':0,'mclaren-senna':7,'dodge-challenger':4,'porsche-911-gt2':6,'audi-r8':5}[r.profile.selectedCar]));
   r.advanceLevel();assert.equal(r.state.mode,'ended');assert.equal(r.state.finishedCampaign,false);
   assert.equal(elements.get('gameOverTitle').textContent,'Street Complete!');assert.equal(r.state.score,r.LEVELS[9].bonus);
   elements.get('changeStreetBtn').emit('click');assert.equal(r.state.mode,'menu');
