@@ -2,18 +2,18 @@
   "slug": "space-dodger-starfall-odyssey",
   "title": "Space Dodger 3D: Starfall Odyssey",
   "category": "Adventure",
-  "description": "A Babylon.js-powered 3D space adventure with asteroids, enemy spaceships, bosses, power-ups, animated effects, story missions and procedural audio.",
-  "version": "3.0.0-babylon",
+  "description": "An eighteen-sector 3D space campaign with original GLB spacecraft, reactive bosses, rescue missions, ion storms, command relays, an Ark escort, gravity gates, saved checkpoints and separate audio controls.",
+  "version": "4.0.0",
   "engine": "Babylon.js",
   "thumbnail": "thumb.png",
   "entry": "index.html",
   "controls": {
-    "desktop": "WASD or Arrow Keys to fly, Space or mouse/tap to shoot, Shift to boost.",
-    "mobile": "Use on-screen thrusters, FIRE and BOOST buttons."
+    "desktop": "WASD or Arrow Keys to fly, Space or mouse/tap to shoot, Shift to boost. E releases plasma; P/Esc pauses; M mutes. Automatic fire is adjustable.",
+    "mobile": "Use on-screen thrusters, FIRE and BOOST buttons. Drag the canvas to fly; PLASMA releases a stored charge."
   },
   "features": [
     "Babylon.js 3D scene",
-    "12 story levels",
+    "18 story sectors",
     "Asteroids and plasma gates",
     "AI enemy ships and enemy shooting",
     "Boss battles",
@@ -21,7 +21,16 @@
     "Animated particles and engine trails",
     "Procedural background music and SFX",
     "Responsive mobile controls",
-    "WebGameArena score bridge"
+    "WebGameArena score bridge",
+    "Original solid GLB spacecraft and citadel",
+    "Six rescue, storm, relay, escort, gravity and Sovereign missions",
+    "Unlocked-sector selection and checkpoint continuation",
+    "Sector medals and personal records",
+    "Pause, mute, auto-fire and separate music/effects volumes",
+    "Guaranteed mission cores",
+    "Manual plasma burst",
+    "Self-hosted pinned engine",
+    "Compatibility flight on devices without WebGL"
   ],
   "scoreBridge": [
     "GG_SCORE",

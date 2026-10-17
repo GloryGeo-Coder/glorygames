@@ -1170,13 +1170,13 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "space-dodger": {
     "category": "Adventure",
-    "summary": "Pilot a 3D spacecraft through twelve story missions involving asteroids, hostile ships and boss encounters.",
+    "summary": "Pilot a 3D spacecraft through eighteen story missions involving asteroids, hostile ships and boss encounters.",
     "overview": [
       "Space Dodger: Starfall Odyssey extends the idea of asteroid avoidance into a larger three-dimensional space adventure. Players control a spacecraft, navigate obstacles and fight AI-controlled enemies while following mission-based progression.",
-      "Built as a Babylon.js space adventure, Starfall Odyssey includes asteroid fields, plasma gates, glowing engine trails, collectible power-ups, enemy fire and major boss encounters. Staying aware of the space around your ship matters as much as firing quickly."
+      "Built as a Babylon.js space adventure, Starfall Odyssey includes asteroid fields, plasma gates, glowing engine trails, collectible power-ups, enemy fire and major boss encounters. Solid spacecraft and fortress models give depth to the action. Rescue pods, disable command relays, escort the Dawn Ark and cross charged ion lanes. Staying aware of the space around your ship matters as much as firing quickly."
     ],
     "story": [
-      "Starfall Odyssey casts the player as a pilot making their way through a dangerous region of space. Rather than surviving one endless meteor field, you work through twelve story levels involving shifting hazards and hostile spacecraft.",
+      "Starfall Odyssey casts the player as a pilot making their way through a dangerous region of space. Rather than surviving one endless meteor field, you work through eighteen story levels involving shifting hazards and hostile spacecraft.",
       "Each mission makes the surrounding space feel like territory to be crossed and defended. Boss encounters raise the stakes and require a different rhythm from ordinary asteroid avoidance."
     ],
     "howToPlay": [
@@ -1185,14 +1185,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Fire at hostile ships when you have a clear opportunity.",
       "Use boost to cross a dangerous stretch or reposition, but plan the path beyond the acceleration.",
       "Look for helpful power-ups and collectibles.",
-      "Complete mission objectives and progress through the twelve-story-level sequence."
+      "Complete mission objectives and progress through the eighteen-sector campaign."
     ],
     "desktop": [
       "Use WASD or arrow keys to fly.",
-      "Use Space or the mouse to shoot, and Shift to boost."
+      "Use Space or hold the mouse to shoot, Shift to boost, E for plasma, P/Escape to pause and M to mute."
     ],
     "mobile": [
-      "Use the on-screen thrusters for flight and the FIRE and BOOST buttons for attacks and acceleration."
+      "Drag to fly or use the on-screen thrusters. FIRE shoots, BOOST accelerates and PLASMA releases a stored charge. Automatic fire is available in the flight settings."
     ],
     "systems": [
       {
@@ -1209,8 +1209,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Work through twelve story missions with increasingly demanding hazards, hostile ships and major boss encounters.",
-      "Practise turning, firing and boosting until controlling the ship feels natural. Your best runs can contribute scores to WebGameArena when leaderboard saving is enabled."
+      "Work through eighteen story missions with increasingly demanding hazards, hostile ships and major boss encounters.",
+      "Practise turning, firing and boosting until controlling the ship feels natural. Cleared sectors unlock checkpoint continuation and replay, with medals and personal records saved on your device. Your best runs can contribute scores to WebGameArena when leaderboard saving is enabled."
     ],
     "tips": [
       "Keep moving when hostile projectiles are approaching rather than staying directly in one firing line.",
@@ -1230,7 +1230,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "How many story levels are included?",
-        "a": "Twelve are listed in the game."
+        "a": "Eighteen sectors include asteroid routes, rescues, ion storms, command relays, an Ark escort, gravity gates and boss battles. Cleared sectors unlock checkpoint continuation and replay."
       }
     ]
   },

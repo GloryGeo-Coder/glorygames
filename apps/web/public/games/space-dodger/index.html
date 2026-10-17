@@ -6,6 +6,7 @@
   <title>Space Dodger 3D: Starfall Odyssey</title>
   <meta name="description" content="A 3D space adventure with asteroid fields, enemy ships, bosses, power-ups and story missions." />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./starfall-polish.css?v=4" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
@@ -18,16 +19,18 @@
         <strong>Starfall Odyssey</strong>
       </div>
       <div class="stat"><span>Score</span><b id="scoreText">0</b></div>
-      <div class="stat"><span>Level</span><b id="levelText">1/12</b></div>
+      <div class="stat"><span>Sector</span><b id="levelText">1/18</b></div>
       <div class="stat"><span>Hull</span><b id="hullText">100%</b></div>
       <div class="stat"><span>Shield</span><b id="shieldText">0%</b></div>
     </section>
+    <div class="flight-actions"><button id="pauseBtn" type="button" aria-label="Pause or resume flight">Ⅱ</button><button id="muteBtn" type="button" aria-label="Toggle audio" aria-pressed="false">♪</button></div>
 
     <section id="missionPanel" class="mission-panel">
-      <p id="missionTitle">Mission loading...</p>
+      <p id="missionTitle">Launch Corridor — Earth Orbit</p>
       <small id="missionText">Prepare for launch.</small>
       <div class="mission-meter"><span id="missionMeter"></span></div>
     </section>
+    <div class="flight-readout"><div class="boost-meter" aria-label="Boost energy"><span id="boostFill"></span></div><span id="powerText">3 lives · Plasma 0</span><span id="sectorAlert" role="status"></span></div>
 
     <section id="bossPanel" class="boss-panel hidden">
       <span id="bossName">Boss</span>
@@ -43,19 +46,28 @@
       <div class="launch-card">
         <img src="./thumb.png" alt="Space Dodger Starfall Odyssey thumbnail" />
         <div class="launch-copy">
-          <p class="eyebrow">3D Space Adventure</p>
+          <p class="eyebrow">Eighteen sectors. One route home.</p>
           <h1>Space Dodger 3D: Starfall Odyssey</h1>
           <p>
             Fly through asteroid storms, defeat AI drone squadrons, collect cores,
-            unlock power-ups and destroy the Starfall Mothership.
+            rescue survivors, escort the Dawn Ark and break the Starfall Sovereign.
           </p>
+          <label class="sector-label" for="sectorSelect">Flight plan</label>
+          <select id="sectorSelect" aria-label="Select unlocked sector"><option value="continue">Continue · Sector 1</option></select>
+          <p id="campaignStatus" class="campaign-status">1/18 sectors unlocked</p>
           <div class="launch-actions">
             <button id="startBtn" class="primary">Launch Mission</button>
             <button id="howBtn" class="secondary">Controls</button>
           </div>
+          <details class="flight-settings"><summary>Flight &amp; audio settings</summary>
+            <label><input id="autoFire" type="checkbox" checked /> Automatic laser fire</label>
+            <label><input id="reduceMotion" type="checkbox" /> Reduced camera effects</label>
+            <label for="musicVolume">Music <input id="musicVolume" type="range" min="0" max="100" value="16" /></label>
+            <label for="effectsVolume">Effects <input id="effectsVolume" type="range" min="0" max="100" value="46" /></label>
+          </details>
+          <p id="loadingStatus" role="status">Preparing spacecraft detail…</p>
           <p id="controlsHelp" class="controls-help">
-            Desktop: WASD / Arrow keys to fly, Space or mouse to shoot, Shift to boost.
-            Mobile: use the on-screen thrusters and fire buttons.
+            WASD / Arrow keys fly. Space or hold the canvas to fire. Shift boosts. E launches a stored plasma burst. P/Escape pauses; M mutes. Mobile: drag to fly or use thrusters, FIRE, BOOST and PLASMA. Gold cores advance objectives; green pods carry survivors. Progress saves at sector checkpoints on this device.
           </p>
         </div>
       </div>
@@ -69,9 +81,12 @@
         <div class="launch-actions">
           <button id="retryBtn" class="primary">Retry Mission</button>
           <button id="restartBtn" class="secondary">Restart Odyssey</button>
+          <button id="hangarBtn" class="secondary">Flight plan</button>
         </div>
       </div>
     </section>
+
+    <section id="pauseOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pauseTitle"><div class="end-card"><p class="eyebrow">Flight suspended</p><h2 id="pauseTitle">Take a breath, pilot.</h2><p>Movement, threats and sector transitions are paused.</p><div class="launch-actions"><button id="resumeBtn" class="primary">Resume flight</button><button id="pauseHangarBtn" class="secondary">Flight plan</button></div></div></section>
 
     <section id="mobileControls" aria-label="Mobile controls">
       <div class="pad">
@@ -85,14 +100,18 @@
       <div class="actions">
         <button id="boostBtn" aria-label="Boost">BOOST</button>
         <button id="fireBtn" aria-label="Fire">FIRE</button>
+        <button id="plasmaBtn" aria-label="Launch plasma burst">PLASMA</button>
       </div>
     </section>
 
     <div id="toast" class="toast hidden"></div>
   </main>
 
-  <script src="https://cdn.babylonjs.com/babylon.js"></script>
-  <script src="./game.js"></script>
+  <script src="./vendor/babylon-9.31.0.js"></script>
+  <script src="./vendor/babylon-loaders-9.31.0.min.js"></script>
+  <script src="./starfall-systems.js?v=4"></script>
+  <script src="./starfall-3d.js?v=4"></script>
+  <script src="./game.js?v=4"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

@@ -230,7 +230,7 @@
       name: "Odyssey Finale",
       zone: "Starfall Core",
       mission: "Defeat the Starfall Mothership and restore the route home.",
-      tip: "Final mission. Every mechanic returns: rocks, drones, mines, shields, boss lasers and plasma gates.",
+      tip: "The Mothership blocks our passage. Every mechanic returns: rocks, drones, mines, shields, boss lasers and plasma gates.",
       duration: 140,
       cores: 20,
       kills: 32,
@@ -244,6 +244,11 @@
     }
   ];
 
+  const systems = window.StarfallSystems;
+  LEVELS.push(...systems.levels);
+  const quality = systems.quality(window);
+  let storage = null; try { storage = localStorage; } catch {}
+  const campaign = systems.createCampaign(storage, LEVELS.length);
   const PLAYER_LIMIT = { x: 9.6, yMin: -3.2, yMax: 4.6 };
   const SAFE_LOCAL_KEY = "wga_space_dodger_starfall_odyssey_v3";
 
@@ -266,6 +271,7 @@
   };
 
   function levelBackgroundPath(index) {
+    if(index>=12)return ASSET_PATHS.backgrounds[[5,0,2,3,4,2][index-12]||0];
     return ASSET_PATHS.backgrounds[index % ASSET_PATHS.backgrounds.length];
   }
 
@@ -294,6 +300,48 @@
     input: { x: 0, y: 0, fire: false, boost: false },
     motion: { x: 0, y: 0 }
   };
+  systems.resetMission(state);
+  let transitionRemaining = 0, transitionTarget = -1;
+  let inputControls = null;
+  const settings = {muted:false,music:.16,effects:.46};
+  try { const saved=JSON.parse(storage?.getItem('wga_starfall_audio_v4')||'null');if(saved){settings.muted=!!saved.muted;for(const k of ['music','effects'])if(Number.isFinite(saved[k]))settings[k]=Math.max(0,Math.min(1,saved[k]));} } catch {}
+  function refreshCampaignMenu() {
+    const select = $('sectorSelect'), value = select.value || 'continue';
+    select.innerHTML = `<option value="continue">Continue · Sector ${campaign.data.last+1}</option>` + LEVELS.map((level,i)=>`<option value="${i}" ${i>=campaign.data.unlocked?'disabled':''}>${i+1}. ${level.name}${campaign.data.best[i]?` · ${'★'.repeat(campaign.data.best[i].medal)}`:''}</option>`).join('');
+    select.value = value;
+    $('campaignStatus').textContent = `${campaign.data.unlocked}/${LEVELS.length} sectors unlocked · ${Object.keys(campaign.data.best).length} cleared · Best ${Math.floor(state.bestScore).toLocaleString()}`;
+  }
+  function requestedSector(){const value=$('sectorSelect').value;return value==='continue'||!value?campaign.data.last:Math.max(0,Math.min(campaign.data.unlocked-1,Number(value)||0));}
+  function resetFlightInput(){inputControls?.clear();state.motion.x=0;state.motion.y=0;}
+  function updateFlightHud(){
+    $('boostFill').style.width=`${state.boostEnergy}%`;
+    $('powerText').textContent=`${state.lives} lives · ${state.doubleLaser>0?'DOUBLE ':''}${state.slowMo>0?'SLOW ':''}${state.magnet>0?'MAGNET ':''}Plasma ${state.plasma}`;
+    document.body.dataset.status=state.status;
+  }
+  let pausedStatus='playing';
+  function setupFlightControls(adapter){
+    function mix(){adapter.mix?.(settings);$('muteBtn').setAttribute('aria-pressed',String(settings.muted));$('muteBtn').textContent=settings.muted?'×':'♪';try{storage?.setItem('wga_starfall_audio_v4',JSON.stringify(settings));}catch{}}
+    function pause(force){
+      if(!['playing','transition','paused'].includes(state.status))return;
+      const on=typeof force==='boolean'?force:state.status!=='paused';
+      if(on&&state.status!=='paused'){pausedStatus=state.status;state.status='paused';resetFlightInput();adapter.suspend?.();}
+      else if(!on&&state.status==='paused'){state.status=pausedStatus;adapter.resume?.();}
+      $('pauseOverlay').classList.toggle('hidden',state.status!=='paused');$('pauseBtn').textContent=state.status==='paused'?'▶':'Ⅱ';updateFlightHud();
+    }
+    const mute=()=>{settings.muted=!settings.muted;mix();if(!settings.muted&&state.status!=='paused')adapter.ensure();};
+    function menu(){transitionRemaining=0;transitionTarget=-1;state.status='menu';resetFlightInput();adapter.menu?.();refreshCampaignMenu();ui.startOverlay.classList.remove('hidden');ui.gameOverOverlay.classList.add('hidden');$('pauseOverlay').classList.add('hidden');updateFlightHud();}
+    inputControls=systems.bindInput({window,document,canvas:ui.canvas,getState:()=>state,ensureAudio:adapter.ensure,onPause:pause,onMute:mute,onPlasma:adapter.plasma,onPointer:adapter.pointer});
+    ui.startBtn.addEventListener('click',()=>{resetFlightInput();adapter.ensure();adapter.start();});
+    ui.retryBtn.addEventListener('click',()=>{resetFlightInput();adapter.ensure();adapter.retry();});
+    ui.restartBtn.addEventListener('click',()=>{$('sectorSelect').value='0';adapter.ensure();adapter.start();});
+    ui.howBtn.addEventListener('click',()=>ui.help.classList.toggle('visible'));
+    $('pauseBtn').addEventListener('click',()=>pause());$('resumeBtn').addEventListener('click',()=>pause(false));$('muteBtn').addEventListener('click',mute);
+    $('hangarBtn').addEventListener('click',menu);$('pauseHangarBtn').addEventListener('click',menu);$('plasmaBtn').addEventListener('click',()=>{adapter.ensure();adapter.plasma();});
+    $('autoFire').addEventListener('change',()=>inputControls.sync());$('reduceMotion').checked=quality.reducedMotion;$('reduceMotion').addEventListener('change',()=>{quality.reducedMotion=$('reduceMotion').checked;});
+    for(const key of ['music','effects']){const control=$(key+'Volume');control.value=String(settings[key]*100);control.addEventListener('input',()=>{settings[key]=Number(control.value)/100;mix();});}
+    window.addEventListener('pagehide',()=>{resetFlightInput();pause(true);adapter.suspend?.();});mix();updateFlightHud();return {pause,menu,mix};
+  }
+  refreshCampaignMenu();
 
   function canUseBabylonEngine() {
     try {
@@ -414,13 +462,13 @@
       return true;
     }
 
-    function postFallbackScore() {
+    function postFallbackScore(final = false) {
       const payloads = [
         { type: "GG_SCORE", score: Math.max(0, Math.floor(state.score)), game: "space-dodger-starfall-odyssey" },
         { type: "gg:score", score: Math.max(0, Math.floor(state.score)), slug: "space-dodger-starfall-odyssey" }
       ];
       try {
-        payloads.forEach((payload) => window.parent && window.parent.postMessage(payload, "*"));
+        payloads.forEach((payload) => window.parent && window.parent.postMessage({...payload,final}, "*"));
       } catch (err) {}
     }
 
@@ -435,14 +483,14 @@
           this.muted = true;
         }
       },
-      beep(freq = 440, duration = 0.08, type = "sine", gain = 0.035) {
-        if (!this.ctx || this.muted) return;
+      beep(freq = 440, duration = 0.08, type = "sine", gain = 0.035, bus = 'effects') {
+        if (!this.ctx || this.muted || settings[bus]<=0) return;
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const amp = this.ctx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, now);
-        amp.gain.setValueAtTime(gain, now);
+        amp.gain.setValueAtTime(Math.max(.0001,gain*settings[bus]/(bus==='music'?.16:.46)), now);
         amp.gain.exponentialRampToValueAtTime(0.001, now + duration);
         osc.connect(amp).connect(this.ctx.destination);
         osc.start(now);
@@ -459,18 +507,18 @@
         const lvl = LEVELS[state.levelIndex];
         const notes = lvl.music || [196, 247, 294, 392];
         const note = notes[fb.musicStep % notes.length];
-        this.beep(note * 0.5, 0.16, "triangle", 0.012);
-        if (state.combo >= 6) this.beep(note, 0.08, "sine", 0.01);
+        this.beep(note * 0.5, 0.16, "triangle", 0.012,'music');
+        if (state.combo >= 6) this.beep(note, 0.08, "sine", 0.01,'music');
         fb.musicStep += 1;
         fb.musicTimer = state.combo >= 10 ? 0.22 : 0.32;
       }
     };
 
     function resizeFallback() {
-      fb.dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      fb.dpr = Math.max(1, Math.min(quality.pixelRatio, window.devicePixelRatio || 1));
       const rect = canvas.getBoundingClientRect();
       fb.w = Math.max(320, rect.width || window.innerWidth);
-      fb.h = Math.max(420, rect.height || window.innerHeight);
+      fb.h = Math.max(280, rect.height || window.innerHeight);
       canvas.width = Math.floor(fb.w * fb.dpr);
       canvas.height = Math.floor(fb.h * fb.dpr);
       ctx.setTransform(fb.dpr, 0, 0, fb.dpr, 0, 0);
@@ -500,6 +548,7 @@
     }
 
     function resetRunStats() {
+      systems.resetMission(state);resetFlightInput();transitionRemaining=0;transitionTarget=-1;
       state.hull = 100;
       state.shield = 0;
       state.cores = 0;
@@ -520,6 +569,7 @@
       fb.bossActive = false;
       fb.bossHp = 0;
       fb.bossMax = 0;
+      fb.coreTimer=0;fb.specialTimer=0;
       fb.objects = [];
       fb.shots = [];
       fb.enemyShots = [];
@@ -539,10 +589,10 @@
       ui.hullText.textContent = `${Math.max(0, Math.round(state.hull))}%`;
       ui.shieldText.textContent = `${Math.max(0, Math.round(state.shield))}%`;
       ui.missionTitle.textContent = `${lvl.name} — ${lvl.zone}`;
-      ui.missionText.textContent =
-        `Fallback 2D mode: ${fb.coreCount}/${lvl.cores} cores • ${fb.killCount}/${lvl.kills} enemies • ${Math.round(progress * 100)}% route`;
+      ui.missionText.textContent = systems.objective(lvl,state);
       ui.missionMeter.style.width = `${Math.round(progress * 100)}%`;
       ui.mentorText.textContent = lvl.tip;
+      updateFlightHud();
       if (fb.bossActive) {
         ui.bossPanel.classList.remove("hidden");
         ui.bossName.textContent = lvl.boss ? lvl.boss.name : "Boss";
@@ -562,7 +612,7 @@
     function startGameFallback(fresh = false) {
       fallbackAudio.ensure();
       if (fresh) {
-        state.levelIndex = 0;
+        state.levelIndex = requestedSector();
         state.score = 0;
         state.lives = 3;
       }
@@ -571,8 +621,10 @@
       ui.startOverlay.classList.add("hidden");
       ui.gameOverOverlay.classList.add("hidden");
       resetRunStats();
+      if($('sectorSelect').value==='continue'&&campaign.data.checkpoint?.level===state.levelIndex){for(const key of ['score','hull','shield','lives'])state[key]=campaign.data.checkpoint[key];}
+      campaign.enter(state.levelIndex,state);refreshCampaignMenu();
       const lvl = currentLevel();
-      showToastFallback(`Fallback mode active — ${lvl.name}`);
+      showToastFallback(`Sector ${state.levelIndex+1} · ${lvl.name}`);
       updateUIFallback();
     }
 
@@ -581,12 +633,16 @@
       state.status = "playing";
       ui.gameOverOverlay.classList.add("hidden");
       resetRunStats();
+      state.lives=3;
       updateUIFallback();
     }
 
     function endFallback(win) {
+      if(state.status==='ended')return;
       state.status = "ended";
-      postFallbackScore();
+      transitionRemaining=0;transitionTarget=-1;resetFlightInput();
+      state.bestScore=Math.max(state.bestScore,Math.floor(state.score));try{storage?.setItem(SAFE_LOCAL_KEY,JSON.stringify({bestScore:state.bestScore}));}catch{}
+      postFallbackScore(true);refreshCampaignMenu();updateFlightHud();
       ui.gameOverOverlay.classList.remove("hidden");
       $("endKicker").textContent = win ? "Odyssey Report" : "Mission Failed";
       $("endTitle").textContent = win ? "Starfall Route Restored" : "Ship Reboot Required";
@@ -596,20 +652,22 @@
     }
 
     function nextLevelFallback() {
+      if(state.status!=='playing')return;
       fallbackAudio.beep(784, 0.16, "triangle", 0.045);
       postFallbackScore();
       state.score += 900 + state.levelIndex * 120;
+      const medal=campaign.complete(state.levelIndex,state);refreshCampaignMenu();
       if (state.levelIndex >= LEVELS.length - 1) {
         endFallback(true);
         return;
       }
-      state.levelIndex += 1;
-      resetRunStats();
-      showToastFallback(`Mission ${state.levelIndex + 1}: ${currentLevel().name}`);
-      updateUIFallback();
+      transitionTarget=state.levelIndex+1;transitionRemaining=2.2;campaign.enter(transitionTarget,{...state,hull:100,shield:0});state.status='transition';resetFlightInput();
+      showToastFallback(`SECTOR CLEARED · ${'★'.repeat(medal)} · JUMPING`);updateFlightHud();
     }
 
     function damageFallback(amount) {
+      if(state.status!=='playing'||state.invulnerable>0)return;
+      state.invulnerable=.65;
       if (state.shield > 0) {
         state.shield = Math.max(0, state.shield - amount * 1.25);
         fallbackAudio.beep(220, 0.08, "triangle", 0.03);
@@ -625,6 +683,7 @@
         } else {
           state.hull = 100;
           state.shield = 30;
+          state.invulnerable=2;
           showToastFallback(`Circuit rebooted. Lives left: ${state.lives}`);
         }
       }
@@ -672,6 +731,9 @@
       if (kind === "asteroid") Object.assign(base, { r: 24 + Math.random() * 22, hp: 2, color: "#8a7dff", frame: Math.floor(Math.random() * 4) });
       if (kind === "enemy") Object.assign(base, { r: 26, hp: 2 + Math.floor(state.levelIndex / 3), color: "#ff784a", frame: Math.floor(Math.random() * 4) });
       if (kind === "heavy") Object.assign(base, { r: 34, hp: 5 + Math.floor(state.levelIndex / 2), color: "#ff315a", frame: 3 });
+      if(kind==='rescue')Object.assign(base,{r:21,color:'#64ffb8'});
+      if(kind==='gate')Object.assign(base,{r:36,color:'#ffd44a'});
+      if(kind==='relay')Object.assign(base,{r:25,hp:6,vy:24,vx:0,color:'#ff668d'});
 
       fb.objects.push(base);
     }
@@ -701,22 +763,24 @@
       if (ship.fire > 0 || state.status !== "playing") return;
       const spread = state.doubleLaser > 0 ? [-14, 14] : [0];
       spread.forEach((offset) => {
-        fb.shots.push({ x: ship.x + offset, y: ship.y - 36, vy: -780, r: 6, color: "#36dfff", damage: state.plasma > 0 ? 3 : 1 });
+        fb.shots.push({ x: ship.x + offset, y: ship.y - 36, vy: -780, r: 6, color: "#36dfff", damage: 1 });
       });
       ship.fire = state.doubleLaser > 0 ? 0.12 : 0.18;
       fallbackAudio.beep(680, 0.055, "square", 0.02);
     }
 
     function updateFallback(dt) {
+      if(state.status==='transition'){transitionRemaining-=dt;if(transitionRemaining<=0&&transitionTarget>=0){const next=transitionTarget;state.levelIndex=next;resetRunStats();state.status='playing';campaign.enter(next,state);refreshCampaignMenu();showToastFallback(`Sector ${next+1} · ${currentLevel().name}`);}updateFlightHud();return;}
       if (state.status !== "playing") return;
+      inputControls?.sync();
 
       const lvl = currentLevel();
       state.elapsed += dt * (state.slowMo > 0 ? 0.65 : 1);
+      state.invulnerable=Math.max(0,state.invulnerable-dt);
       fb.levelTime += dt;
       state.doubleLaser = Math.max(0, state.doubleLaser - dt);
       state.slowMo = Math.max(0, state.slowMo - dt);
       state.magnet = Math.max(0, state.magnet - dt);
-      state.plasma = Math.max(0, state.plasma - dt);
       ship.fire = Math.max(0, ship.fire - dt);
 
       const boost = (state.input.boost && state.boostEnergy > 4) ? 1.55 : 1;
@@ -733,6 +797,13 @@
       ship.y = clamp(ship.y + ship.vy * dt * boost, fb.h * 0.22, fb.h - 84);
 
       if (state.input.fire) fireFallback();
+      fb.coreTimer-=dt;fb.specialTimer-=dt;
+      if(fb.coreTimer<=0&&!fb.bossActive){spawnObject('core');fb.coreTimer=2.25;}
+      if(fb.specialTimer<=0&&!fb.bossActive){if(lvl.rescues&&state.rescues<lvl.rescues)spawnObject('rescue');if(lvl.relays&&state.relays<lvl.relays)spawnObject('relay');if(lvl.gates)spawnObject('gate');fb.specialTimer=lvl.gates?4.6:6;}
+      if(lvl.gravity||state.levelIndex===6||state.levelIndex===9)ship.x=clamp(ship.x+Math.sin(state.elapsed*.75)*dt*40,40,fb.w-40);
+      if(lvl.escort){if(state.escortHull<=0){endFallback(false);return;}state.escortHull=Math.min(100,state.escortHull+dt*.12);}
+      if(lvl.storm||state.levelIndex===8){const phase=state.elapsed%8;state.stormLane=Math.floor(state.elapsed/8)%3;if(phase<1)state.stormHit=false;$('sectorAlert').textContent=phase<1.6?'ION LANE CHARGING · MOVE':phase<2.6?'ION DISCHARGE · EVADE':'';if(phase>=1.6&&phase<2.6&&!state.stormHit&&Math.floor(ship.x/fb.w*3)===state.stormLane){state.stormHit=true;damageFallback(18);}}
+      else if(!fb.bossActive)$('sectorAlert').textContent='';
 
       fb.spawnTimer -= dt;
       if (fb.spawnTimer <= 0) {
@@ -751,7 +822,7 @@
         fb.enemyTimer = Math.max(0.55, (lvl.enemyRate || 2) * (0.82 - state.levelIndex * 0.025));
       }
 
-      if (lvl.boss && !fb.bossActive && state.elapsed >= (lvl.boss.at || lvl.duration * 0.5)) spawnBossFallback();
+      if (lvl.boss && !fb.bossActive && !state.bossDefeated && state.elapsed >= (lvl.boss.at || lvl.duration * 0.5)) spawnBossFallback();
 
       fb.shots.forEach((s) => { s.y += s.vy * dt; });
       fb.enemyShots.forEach((s) => { s.x += s.vx * dt; s.y += s.vy * dt; });
@@ -789,7 +860,7 @@
       fb.shots.forEach((shot) => {
         fb.objects.forEach((o) => {
           if (o._dead || shot._dead) return;
-          if (!["asteroid", "mine", "enemy", "heavy", "boss"].includes(o.kind)) return;
+          if (!["asteroid", "mine", "enemy", "heavy", "boss","relay"].includes(o.kind)) return;
           const dx = shot.x - o.x;
           const dy = shot.y - o.y;
           if (dx * dx + dy * dy < (shot.r + o.r) * (shot.r + o.r)) {
@@ -802,11 +873,13 @@
               state.score += o.kind === "boss" ? 3000 : 160 + state.combo * 5;
               state.combo += 1;
               if (o.kind !== "asteroid" && o.kind !== "mine") {
+                if(o.kind==='relay')state.relays++;
                 fb.killCount += 1;
                 state.kills = fb.killCount;
               }
               if (o.kind === "boss") {
                 fb.bossActive = false;
+                state.bossDefeated=true;
                 fallbackAudio.boom();
                 showToastFallback("Boss defeated");
               } else {
@@ -826,7 +899,10 @@
         const dy = ship.y - o.y;
         if (dx * dx + dy * dy < (o.r + 26) * (o.r + 26)) {
           o._dead = true;
-          if (o.kind === "core") {
+          if(o.kind==='rescue'||o.kind==='gate'){
+            if(o.kind==='rescue')state.rescues++;else state.gates++;
+            state.score+=o.kind==='rescue'?350:180;state.combo++;fallbackAudio.beep(880,.1,'triangle',.03);
+          } else if (o.kind === "core") {
             fb.coreCount += 1;
             state.cores = fb.coreCount;
             state.score += 120 + state.combo * 6;
@@ -839,7 +915,7 @@
             if (p === "double") state.doubleLaser = 10;
             if (p === "slow") state.slowMo = 8;
             if (p === "magnet") state.magnet = 10;
-            if (p === "plasma") state.plasma = 8;
+            if (p === "plasma") state.plasma = Math.min(3,state.plasma+1);
             state.score += 180;
             fallbackAudio.beep(920, 0.11, "triangle", 0.035);
             showToastFallback(`${p.toUpperCase()} power-up`);
@@ -869,14 +945,12 @@
         p.vy *= Math.pow(0.08, dt);
       });
 
-      fb.objects = fb.objects.filter((o) => !o._dead && o.y < fb.h + 120);
+      fb.objects = fb.objects.filter((o) => {if(!o._dead&&o.y>=fb.h+120&&lvl.escort&&['enemy','heavy'].includes(o.kind))state.escortHull=Math.max(0,state.escortHull-1.5);return !o._dead && o.y < fb.h + 120;});
       fb.shots = fb.shots.filter((s) => !s._dead && s.y > -60);
       fb.enemyShots = fb.enemyShots.filter((s) => !s._dead && s.y < fb.h + 80);
       fb.particles = fb.particles.filter((p) => p.life > 0);
 
-      const routeComplete = state.elapsed >= lvl.duration;
-      const goalsComplete = fb.coreCount >= lvl.cores && fb.killCount >= lvl.kills;
-      if (routeComplete && goalsComplete && !fb.bossActive && !fb.objects.some((o) => o.kind === "boss")) {
+      if (systems.complete(lvl,state,state.bossDefeated) && !fb.bossActive && !fb.objects.some((o) => o.kind === "boss"&&!o._dead)) {
         nextLevelFallback();
       }
 
@@ -970,6 +1044,11 @@
     }
 
     function drawObjectFallback(o) {
+      if(['rescue','relay','gate'].includes(o.kind)){
+        ctx.save();ctx.translate(o.x,o.y);ctx.strokeStyle=o.color;ctx.fillStyle='#0a1b31';ctx.lineWidth=3;ctx.shadowColor=o.color;ctx.shadowBlur=12;
+        if(o.kind==='gate'){ctx.beginPath();ctx.arc(0,0,o.r,0,Math.PI*2);ctx.stroke();}else{ctx.fillRect(-o.r,-o.r*.6,o.r*2,o.r*1.2);ctx.strokeRect(-o.r,-o.r*.6,o.r*2,o.r*1.2);ctx.fillStyle=o.color;ctx.fillRect(-4,-12,8,24);ctx.fillRect(-12,-4,24,8);}
+        ctx.restore();return;
+      }
       ctx.save();
       ctx.translate(o.x, o.y);
       ctx.shadowColor = o.color;
@@ -1148,55 +1227,16 @@
       requestAnimationFrame(loopFallback);
     }
 
-    function setInputFromKey(key, on) {
-      if (key === "ArrowLeft" || key.toLowerCase() === "a") state.input.x = on ? -1 : (state.input.x < 0 ? 0 : state.input.x);
-      if (key === "ArrowRight" || key.toLowerCase() === "d") state.input.x = on ? 1 : (state.input.x > 0 ? 0 : state.input.x);
-      if (key === "ArrowUp" || key.toLowerCase() === "w") state.input.y = on ? 1 : (state.input.y > 0 ? 0 : state.input.y);
-      if (key === "ArrowDown" || key.toLowerCase() === "s") state.input.y = on ? -1 : (state.input.y < 0 ? 0 : state.input.y);
-      if (key === " " || key === "Spacebar") state.input.fire = on;
-      if (key === "Shift") state.input.boost = on;
-    }
-
-    document.addEventListener("keydown", (e) => {
-      fallbackAudio.ensure();
-      setInputFromKey(e.key, true);
-      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "Spacebar", "Shift"].includes(e.key)) e.preventDefault();
+    setupFlightControls({ensure:()=>{fallbackAudio.ensure();fallbackAudio.ctx?.resume?.()?.catch?.(()=>{});},start:()=>startGameFallback(true),retry:retryFallback,
+      menu:()=>{fb.objects=[];fb.shots=[];fb.enemyShots=[];},
+      plasma:()=>{if(state.status==='playing'&&state.plasma>0){state.plasma--;fb.shots.push({x:ship.x,y:ship.y-36,vy:-900,r:14,color:'#ffd44a',damage:9});fallbackAudio.beep(220,.2,'triangle',.04);}},
+      suspend:()=>{fallbackAudio.ctx?.suspend?.()?.catch?.(()=>{});},resume:()=>{fallbackAudio.ctx?.resume?.()?.catch?.(()=>{});},mix:()=>{fallbackAudio.muted=settings.muted;},
+      pointer:e=>{const rect=canvas.getBoundingClientRect();ship.x=clamp((e.clientX-rect.left)/rect.width*fb.w,32,fb.w-32);ship.y=clamp((e.clientY-rect.top)/rect.height*fb.h,fb.h*.20,fb.h-84);}
     });
-    document.addEventListener("keyup", (e) => setInputFromKey(e.key, false));
-
-    document.querySelectorAll("[data-dir]").forEach((btn) => {
-      const dir = btn.dataset.dir;
-      const set = (on) => {
-        if (dir === "left") state.input.x = on ? -1 : (state.input.x < 0 ? 0 : state.input.x);
-        if (dir === "right") state.input.x = on ? 1 : (state.input.x > 0 ? 0 : state.input.x);
-        if (dir === "up") state.input.y = on ? 1 : (state.input.y > 0 ? 0 : state.input.y);
-        if (dir === "down") state.input.y = on ? -1 : (state.input.y < 0 ? 0 : state.input.y);
-      };
-      btn.addEventListener("pointerdown", (e) => { e.preventDefault(); fallbackAudio.ensure(); set(true); });
-      btn.addEventListener("pointerup", () => set(false));
-      btn.addEventListener("pointercancel", () => set(false));
-      btn.addEventListener("pointerleave", () => set(false));
-    });
-
-    ui.fireBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); fallbackAudio.ensure(); state.input.fire = true; });
-    ui.fireBtn.addEventListener("pointerup", () => { state.input.fire = false; });
-    ui.fireBtn.addEventListener("pointercancel", () => { state.input.fire = false; });
-    ui.fireBtn.addEventListener("pointerleave", () => { state.input.fire = false; });
-
-    ui.boostBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); fallbackAudio.ensure(); state.input.boost = true; });
-    ui.boostBtn.addEventListener("pointerup", () => { state.input.boost = false; });
-    ui.boostBtn.addEventListener("pointercancel", () => { state.input.boost = false; });
-    ui.boostBtn.addEventListener("pointerleave", () => { state.input.boost = false; });
-
-    ui.startBtn.addEventListener("click", () => startGameFallback(true));
-    ui.retryBtn.addEventListener("click", () => retryFallback());
-    ui.restartBtn.addEventListener("click", () => startGameFallback(true));
-    ui.howBtn.addEventListener("click", () => ui.help.classList.toggle("visible"));
-
-    ui.mentorText.textContent = "WebGL is not available on this device/browser, so Space Dodger loaded the 2D fallback mode automatically.";
-    ui.missionTitle.textContent = "Fallback Flight Mode";
-    ui.missionText.textContent = "The game will still run, with the same levels, enemies, shooting, bosses and score bridge.";
-    ui.missionMeter.style.width = "0%";
+    try{state.bestScore=Math.max(0,Number(JSON.parse(storage?.getItem(SAFE_LOCAL_KEY)||'null')?.bestScore)||0);}catch{}
+    refreshCampaignMenu();$('loadingStatus').textContent='Compatibility flight ready · all eighteen sectors available.';
+    ui.mentorText.textContent='Commander Nova: Flight systems ready. Gold cores power the jump drive; green pods carry survivors.';
+    ui.missionTitle.textContent='Starfall Odyssey';ui.missionText.textContent='Choose a sector and launch.';
 
     resizeFallback();
     window.addEventListener("resize", resizeFallback);
@@ -1208,13 +1248,18 @@
     return;
   }
 
-  const engine = new BABYLON.Engine(ui.canvas, true, {
-    preserveDrawingBuffer: true,
+  let engine;
+  try {engine = new BABYLON.Engine(ui.canvas, true, {
+    preserveDrawingBuffer: false,
     stencil: true,
     antialias: true,
     adaptToDeviceRatio: true
-  });
+  });}catch{startCanvasFallback();return;}
   const scene = new BABYLON.Scene(engine);
+  engine.setHardwareScalingLevel(1/Math.min(window.devicePixelRatio||1,quality.pixelRatio));
+  const presentation = window.Starfall3D.create(BABYLON,scene,quality,(file,ok)=>{
+    if(file==='pathfinder.glb')$('loadingStatus').textContent=ok?'Spacecraft ready · checkpoints save on this device.':'Spacecraft details unavailable. Solid flight geometry is ready.';
+  });
   scene.clearColor = new BABYLON.Color4(0.005, 0.01, 0.035, 1);
   scene.collisionsEnabled = false;
 
@@ -1282,6 +1327,7 @@
   let planetMeshes = [];
   let warpStreaks = [];
   let playerSprite = null;
+  let escortMesh=null,stormSheet=null;
   const spriteManagers = {};
   let rngSeed = 42;
 
@@ -1388,14 +1434,14 @@
     engineR.parent = root;
     engineR.position.x = 0.42;
 
-    const shieldRing = BABYLON.MeshBuilder.CreateTorus("playerShieldRing", { majorRadius: 1.35, minorRadius: 0.025, tessellation: 48 }, scene);
+    const shieldRing = BABYLON.MeshBuilder.CreateTorus("playerShieldRing", { diameter: 2.7, thickness: 0.05, tessellation: 48 }, scene);
     shieldRing.material = mats.transparentCyan;
     shieldRing.parent = root;
     shieldRing.rotation.x = Math.PI / 2;
     shieldRing.isVisible = false;
     root.shieldRing = shieldRing;
 
-    const trail = new BABYLON.ParticleSystem("engineTrail", 650, scene);
+    const trail = new BABYLON.ParticleSystem("engineTrail", quality.particles, scene);
     const tex = new BABYLON.DynamicTexture("sparkTexture", { width: 64, height: 64 }, scene, false);
     const ctx = tex.getContext();
     const grad = ctx.createRadialGradient(32, 32, 4, 32, 32, 32);
@@ -1425,6 +1471,7 @@
     trail.start();
 
     playerRoot = root;
+    void presentation.attach(root,'player',quality.compact?.85:1);
     engineTrail = trail;
     root.position.set(0, 0, 0);
     playerSprite = createAssetSprite("player", "playerShipSprite", root.position, 3.9);
@@ -1439,9 +1486,9 @@
   function createStarfield() {
     starParent = new BABYLON.TransformNode("starParent", scene);
     const starMat = makeMat("starMat", "#dff8ff", 0.9);
-    for (let i = 0; i < 260; i++) {
-      const star = BABYLON.MeshBuilder.CreateSphere("star", { diameter: randRange(0.035, 0.11), segments: 6 }, scene);
-      star.material = starMat;
+    const source=BABYLON.MeshBuilder.CreateSphere('starTemplate',{diameter:.07,segments:4},scene);source.material=starMat;source.isVisible=false;
+    for (let i = 0; i < quality.stars; i++) {
+      const star = source.createInstance('star');star.isVisible=true;star.scaling.setAll(randRange(.5,1.5));
       star.position.set(randRange(-45, 45), randRange(-18, 23), randRange(10, 150));
       star.parent = starParent;
       pools.stars.push(star);
@@ -1470,7 +1517,7 @@
       planetMeshes.push({ mesh: sphere, base: sphere.position.clone(), spin: randRange(0.025, 0.075), drift: randRange(0.05, 0.12), mat: cfg.mat });
 
       if (cfg.ring) {
-        const ring = BABYLON.MeshBuilder.CreateTorus(`${cfg.name}_ring`, { majorRadius: cfg.r * 1.45, minorRadius: 0.035, tessellation: 96 }, scene);
+        const ring = BABYLON.MeshBuilder.CreateTorus(`${cfg.name}_ring`, { diameter: cfg.r * 2.9, thickness: 0.07, tessellation: 96 }, scene);
         ring.material = mats.transparentCyan;
         ring.position.copyFrom(sphere.position);
         ring.rotation.x = Math.PI * 0.63;
@@ -1500,6 +1547,7 @@
 
 
   function ensureSpriteManagers() {
+    if (window.Starfall3D) return;
     if (spriteManagers.ready || spriteManagers.disabled) return;
     try {
       spriteManagers.player = new BABYLON.SpriteManager("shipSpriteManager", ASSET_PATHS.player, 12, 512, scene);
@@ -1566,6 +1614,7 @@
   }
 
   function createAssetSprite(managerName, spriteName, position, size, cellIndex = 0) {
+    if (window.Starfall3D) return null;
     try {
       const mat = createAssetPlaneMaterial(managerName, cellIndex);
       if (!mat) return null;
@@ -1680,6 +1729,7 @@
   }
 
   function applyLevelBackground(index) {
+    void presentation.theme(index);
     const hue = LEVELS[index]?.hue || "#36dfff";
     scene.clearColor = BABYLON.Color4.FromHexString(hue + "ff").scale(0.012);
     scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
@@ -1726,13 +1776,15 @@
     }
   }
 
-  function makeExplosionSprite(position, color = "#36dfff", scale = 1) {
+  function createExplosionSprite(position, color = "#36dfff", scale = 1) {
     const root = new BABYLON.TransformNode("explosion", scene);
     root.position.copyFrom(position);
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < (quality.compact?5:10); i++) {
       const shard = BABYLON.MeshBuilder.CreatePlane("sparkShard", { size: randRange(0.22, 0.42) * scale }, scene);
-      shard.material = choose([mats.cyanGlow, mats.pinkGlow, mats.goldGlow, mats.greenGlow]);
+      const sparkMaterial=choose([mats.cyanGlow, mats.pinkGlow, mats.goldGlow, mats.greenGlow]).clone('spark material');
+      shard.material=sparkMaterial;
+      shard.onDisposeObservable.add(()=>sparkMaterial.dispose());
       shard.position.set(randRange(-0.2, 0.2), randRange(-0.2, 0.2), randRange(-0.2, 0.2));
       shard.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
       shard.parent = root;
@@ -1749,21 +1801,25 @@
   }
 
   function makeRingEffect(position, matName = "transparentCyan", scale = 1) {
-    const ring = BABYLON.MeshBuilder.CreateTorus("energyRing", { majorRadius: 0.7 * scale, minorRadius: 0.025 * scale, tessellation: 48 }, scene);
-    ring.material = mats[matName];
+    const ring = BABYLON.MeshBuilder.CreateTorus("energyRing", { diameter: 1.4 * scale, thickness: 0.05 * scale, tessellation: 48 }, scene);
+    const ringMaterial=mats[matName].clone('ring effect material');ring.material=ringMaterial;
+    ring.onDisposeObservable.add(()=>ringMaterial.dispose());
     ring.position.copyFrom(position);
     ring.rotation.x = Math.PI / 2;
     pools.particles.push({ root: ring, life: 0.55, maxLife: 0.55, type: "ring" });
   }
 
   function spawnAsteroid() {
+    if(pools.objects.length>=(quality.compact?35:55))return;
     const lv = LEVELS[state.levelIndex];
     const hot = rand() > 0.72;
-    const mesh = BABYLON.MeshBuilder.CreateIcoSphere("asteroid", { radius: randRange(0.55, 1.35), subdivisions: 2 }, scene);
-    mesh.material = hot ? mats.asteroidHot : mats.asteroid;
+    const mesh = new BABYLON.TransformNode('asteroidRoot',scene);
+    const hull=BABYLON.MeshBuilder.CreateIcoSphere("asteroid", { radius: randRange(0.55, 1.35), subdivisions: 1 }, scene);hull.parent=mesh;
+    hull.material = hot ? mats.asteroidHot : mats.asteroid;
     mesh.position.set(randRange(-PLAYER_LIMIT.x, PLAYER_LIMIT.x), randRange(PLAYER_LIMIT.yMin, PLAYER_LIMIT.yMax + 0.7), randRange(96, 136));
     mesh.scaling.set(randRange(0.75, 1.35), randRange(0.65, 1.25), randRange(0.75, 1.55));
     mesh.rotation.set(rand(), rand(), rand());
+    void presentation.attach(mesh,state.levelIndex%4===0?'ice':'rock',.85);
 
     const frame = Math.floor(rand() * 4);
     const spriteSize = Math.max(2.0, mesh.scaling.length() * 1.35 + 1.05);
@@ -1813,7 +1869,7 @@
     wingR.rotation.z = -0.24;
 
     if (type === "shield") {
-      const ring = BABYLON.MeshBuilder.CreateTorus("shieldEnemyRing", { majorRadius: 0.9, minorRadius: 0.025, tessellation: 42 }, scene);
+      const ring = BABYLON.MeshBuilder.CreateTorus("shieldEnemyRing", { diameter: 1.8, thickness: 0.05, tessellation: 42 }, scene);
       ring.material = mats.transparentCyan;
       ring.parent = root;
       ring.rotation.x = Math.PI / 2;
@@ -1834,10 +1890,12 @@
       }
     }
 
+    if(type!=='mine')void presentation.attach(root,type,type==='heavy'?1.0:.63);
     return root;
   }
 
   function spawnEnemy(forcedType) {
+    if(pools.objects.filter(o=>o.kind==='enemy').length>=(quality.compact?12:20))return;
     const lv = LEVELS[state.levelIndex];
     const type = forcedType || choose(lv.enemyTypes);
     const mesh = createEnemyMesh(type);
@@ -1873,22 +1931,24 @@
     });
   }
 
-  function spawnPowerup() {
+  function spawnPowerup(forcedType, position) {
     const types = ["shield", "repair", "double", "magnet", "slow", "plasma", "core"];
-    const type = choose(types);
+    const type = forcedType || choose(types);
     const root = new BABYLON.TransformNode(`pickup_${type}`, scene);
-    const matName = type === "repair" ? "greenGlow" : type === "plasma" ? "pinkGlow" : type === "shield" ? "cyanGlow" : "goldGlow";
+    const matName = type === "repair" || type === "rescue" ? "greenGlow" : type === "plasma" ? "pinkGlow" : type === "shield" ? "cyanGlow" : "goldGlow";
 
     const sphere = BABYLON.MeshBuilder.CreateSphere("pickupOrb", { diameter: type === "core" ? 0.52 : 0.72, segments: 18 }, scene);
     sphere.material = mats[matName];
     sphere.parent = root;
 
-    const ring = BABYLON.MeshBuilder.CreateTorus("pickupRing", { majorRadius: 0.48, minorRadius: 0.025, tessellation: 36 }, scene);
+    const ring = BABYLON.MeshBuilder.CreateTorus("pickupRing", { diameter: 0.96, thickness: 0.05, tessellation: 36 }, scene);
     ring.material = mats[matName];
     ring.parent = root;
     ring.rotation.x = Math.PI / 2;
 
     root.position.set(randRange(-PLAYER_LIMIT.x * 0.88, PLAYER_LIMIT.x * 0.88), randRange(PLAYER_LIMIT.yMin + 0.3, PLAYER_LIMIT.yMax), randRange(94, 134));
+    if(position)root.position.copyFrom(position);
+    if(type==='rescue')void presentation.attach(root,'pod',.85);
 
     const spriteKey = type === "shield" || type === "repair" ? "shield" : type === "slow" ? "time" : "core";
     const spriteSize = type === "core" ? 1.25 : 1.42;
@@ -1914,14 +1974,14 @@
 
   function spawnGate() {
     const root = new BABYLON.TransformNode("plasmaGate", scene);
-    const matName = rand() > 0.5 ? "transparentCyan" : "transparentPink";
+    const matName = LEVELS[state.levelIndex].gates?'goldGlow':rand() > 0.5 ? "transparentCyan" : "transparentPink";
     for (let i = 0; i < 3; i++) {
-      const ring = BABYLON.MeshBuilder.CreateTorus("gateRing", { majorRadius: 1.4 + i * 0.28, minorRadius: 0.025, tessellation: 72 }, scene);
+      const ring = BABYLON.MeshBuilder.CreateTorus("gateRing", { diameter: 2.8 + i * 0.56, thickness: 0.05, tessellation: 72 }, scene);
       ring.material = mats[matName];
       ring.parent = root;
       ring.rotation.x = Math.PI / 2;
     }
-    root.position.set(randRange(-6, 6), randRange(-2.2, 3.8), randRange(108, 148));
+    root.position.set(randRange(-PLAYER_LIMIT.x*.72, PLAYER_LIMIT.x*.72), randRange(-2.2, 3.8), 90);
     pools.objects.push({
       mesh: root,
       kind: "gate",
@@ -1966,6 +2026,7 @@
 
     root.rotation.y = Math.PI;
     root.position.set(0, 2.2, 124);
+    void presentation.attach(root,'boss',state.levelIndex===17?1.25:1);
     return root;
   }
 
@@ -1997,6 +2058,7 @@
       phase: 1,
       radius: 4.8
     };
+    state.boss.spawnAt=state.elapsed;
     ui.bossName.textContent = lv.boss.name;
     ui.bossPanel.classList.remove("hidden");
     sfx.bossIntro();
@@ -2004,6 +2066,7 @@
   }
 
   function clearWorld(keepPlayer = true) {
+    escortMesh?.dispose();escortMesh=null;if(stormSheet)stormSheet.setEnabled(false);
     for (const list of [pools.objects, pools.lasers, pools.enemyLasers, pools.particles]) {
       for (const obj of list) {
         if (obj.sprite && !obj.sprite.isDisposed) obj.sprite.dispose();
@@ -2024,6 +2087,7 @@
   }
 
   function beginLevel(index) {
+    clearWorld(true);
     state.levelIndex = clamp(index, 0, LEVELS.length - 1);
     state.elapsed = 0;
     state.cores = 0;
@@ -2033,7 +2097,10 @@
     state.boss = null;
     state.slowMo = 0;
     state.magnet = 0;
-    clearWorld(true);
+    systems.resetMission(state);resetFlightInput();transitionRemaining=0;transitionTarget=-1;
+    for(const timer of ['asteroid','enemy','pickup','gate','core','special'])updateSpawns[timer]=0;
+    playerRoot.position.set(0,0,0);state.fireCooldown=0;
+    state.status='playing';
     rngSeed = 1000 + index * 773;
 
     const lv = LEVELS[state.levelIndex];
@@ -2042,6 +2109,8 @@
     ui.missionTitle.textContent = `${lv.name} — ${lv.zone}`;
     ui.missionText.textContent = lv.mission;
     applyLevelBackground(state.levelIndex);
+    campaign.enter(state.levelIndex,state);refreshCampaignMenu();
+    if(lv.escort)createEscort();
     updateUI();
 
     sfx.levelStart();
@@ -2053,12 +2122,13 @@
       state.score = 0;
       state.hull = 100;
       state.shield = 0;
-      state.levelIndex = 0;
+      state.levelIndex = requestedSector();
       state.combo = 0;
       state.lives = 3;
       state.boostEnergy = 100;
       state.doubleLaser = 0;
       state.plasma = 0;
+      if($('sectorSelect').value==='continue'&&campaign.data.checkpoint?.level===state.levelIndex){const checkpoint=campaign.data.checkpoint;for(const key of ['score','hull','shield','lives'])state[key]=checkpoint[key];}
     }
     state.status = "playing";
     ui.startOverlay.classList.add("hidden");
@@ -2072,6 +2142,7 @@
     if (state.levelCompletePending) return;
     state.levelCompletePending = true;
     state.score += 800 + state.hull * 4 + state.combo * 25;
+    const medal=campaign.complete(state.levelIndex,state);refreshCampaignMenu();
     sfx.levelClear();
     postScore(false);
 
@@ -2081,11 +2152,14 @@
     }
 
     setMentor(`Route cleared. Jumping to the next sector: ${LEVELS[state.levelIndex + 1].name}.`);
-    setTimeout(() => beginLevel(state.levelIndex + 1), 1800);
+    state.hull=Math.min(100,state.hull+18);state.shield=Math.min(100,state.shield+15);
+    transitionTarget=state.levelIndex+1;campaign.enter(transitionTarget,state);transitionRemaining=2.2;state.status='transition';resetFlightInput();
+    $('sectorAlert').textContent=`SECTOR CLEARED · ${'★'.repeat(medal)} · JUMPING`;
   }
 
   function endGame(won) {
     state.status = "ended";
+    transitionRemaining=0;transitionTarget=-1;resetFlightInput();
     clearWorld(true);
     music.stop();
     state.bestScore = Math.max(state.bestScore, Math.floor(state.score));
@@ -2098,6 +2172,7 @@
       ? `Final score: ${Math.floor(state.score)}. Best: ${state.bestScore}.`
       : `Final score: ${Math.floor(state.score)}. Best: ${state.bestScore}. Retry from this sector or restart the Odyssey.`;
     ui.gameOverOverlay.classList.remove("hidden");
+    updateFlightHud();refreshCampaignMenu();
     won ? sfx.victory() : sfx.gameOver();
   }
 
@@ -2105,9 +2180,28 @@
     state.hull = 100;
     state.shield = 25;
     state.combo = 0;
+    state.lives=3;
     state.status = "playing";
     ui.gameOverOverlay.classList.add("hidden");
     beginLevel(state.levelIndex);
+  }
+
+  function launchPlasma(){if(state.status!=='playing'||state.plasma<1)return;state.plasma--;firePlayerLaser(true);}
+  function createEscort(){escortMesh=new BABYLON.TransformNode('Dawn Ark escort',scene);escortMesh.position.set(0,-.8,11);const hull=BABYLON.MeshBuilder.CreateBox('Ark safety hull',{width:2,height:.6,depth:4},scene);hull.material=mats.shipWhite;hull.parent=escortMesh;void presentation.attach(escortMesh,'ark',.72);}
+  function spawnRelay(){const mesh=new BABYLON.TransformNode('Command relay',scene);const box=BABYLON.MeshBuilder.CreateBox('Relay safety core',{size:.9},scene);box.parent=mesh;box.material=mats.enemyRed;mesh.position.set(randRange(-PLAYER_LIMIT.x*.75,PLAYER_LIMIT.x*.75),randRange(-1.4,3),65);void presentation.attach(mesh,'relay',.8);pools.objects.push({mesh,kind:'enemy',type:'relay',hp:6,maxHp:6,radius:1.3,speed:5,fireTimer:99,movePhase:0,baseX:mesh.position.x});}
+  function updateEncounters(dt){
+    const lv=LEVELS[state.levelIndex];
+    if(lv.gravity||state.levelIndex===6||state.levelIndex===9)playerRoot.position.x=clamp(playerRoot.position.x+Math.sin(state.elapsed*.75)*dt*1.2,-PLAYER_LIMIT.x,PLAYER_LIMIT.x);
+    if(lv.escort){if(state.escortHull<=0){endGame(false);return;}state.escortHull=Math.min(100,state.escortHull+dt*.12);}
+    if(lv.storm||state.levelIndex===8){
+      const phase=state.elapsed%8;state.stormLane=Math.floor(state.elapsed/8)%3;
+      if(phase<1)state.stormHit=false;
+      const x=(state.stormLane-1)*PLAYER_LIMIT.x*.68;
+      if(!stormSheet){stormSheet=BABYLON.MeshBuilder.CreateBox('Ion lane warning',{width:1,height:9,depth:.15},scene);stormSheet.material=mats.transparentPink.clone('Ion lane material');stormSheet.isPickable=false;}
+      stormSheet.setEnabled(phase<2.6);stormSheet.position.set(x,.7,3);stormSheet.scaling.x=PLAYER_LIMIT.x*.64;stormSheet.material.alpha=phase<1.6?.09:.35;
+      $('sectorAlert').textContent=phase<1.6?'ION LANE CHARGING · MOVE':phase<2.6?'ION DISCHARGE · EVADE':'';
+      if(phase>=1.6&&phase<2.6&&!state.stormHit&&Math.abs(playerRoot.position.x-x)<PLAYER_LIMIT.x*.32){state.stormHit=true;damagePlayer(18,'ion');}
+    }else if(!state.boss)$('sectorAlert').textContent='';
   }
 
   function setMentor(text) {
@@ -2115,7 +2209,8 @@
   }
 
   function damagePlayer(amount, source = "impact") {
-    if (state.status !== "playing") return;
+    if (state.status !== "playing" || state.invulnerable>0) return;
+    state.invulnerable=.65;
     if (state.shield > 0) {
       state.shield = Math.max(0, state.shield - amount * 1.25);
       sfx.shield();
@@ -2127,11 +2222,12 @@
     sfx.hit();
     makeRingEffect(playerRoot.position, "transparentPink", 1.35);
     if (source === "laser") setMentor("Enemy laser hit! Keep moving diagonally to break their aim.");
-    if (state.hull <= 0) endGame(false);
+    if (state.hull <= 0){state.lives--;if(state.lives<=0)endGame(false);else{state.hull=100;state.shield=30;state.invulnerable=2;showToast(`Emergency reboot · ${state.lives} remaining`);}}
   }
 
   function collectPickup(obj) {
     const type = obj.type;
+    if(type==='rescue'){state.rescues++;state.score+=350;sfx.power();setMentor('Escape pod secured. The Dawn Ark will carry these survivors home.');return;}
     if (type === "core") {
       state.cores++;
       state.score += 120 + state.combo * 4;
@@ -2260,7 +2356,7 @@
 
     if (engineTrail) {
       engineTrail.emitter = new BABYLON.Vector3(playerRoot.position.x, playerRoot.position.y - 0.04, playerRoot.position.z - 1.85);
-      engineTrail.emitRate = state.input.boost ? 360 : 140;
+      engineTrail.emitRate = quality.reducedMotion?35:quality.compact?(boost>1?160:70):(boost>1?300:140);
     }
 
     if (state.input.boost && state.boostEnergy > 0) {
@@ -2285,21 +2381,24 @@
     }
 
     if (state.status === "playing") {
-      camera.position.x = BABYLON.Scalar.Lerp(camera.position.x, playerRoot.position.x * 0.14, 0.055);
+      camera.position.x = BABYLON.Scalar.Lerp(camera.position.x, quality.reducedMotion?0:playerRoot.position.x * 0.14, 0.055);
       camera.position.y = BABYLON.Scalar.Lerp(camera.position.y, 2.15 + playerRoot.position.y * 0.08, 0.055);
-      camera.position.z = BABYLON.Scalar.Lerp(camera.position.z, -13.5 - (state.input.boost ? 1.2 : 0), 0.055);
+      camera.position.z = BABYLON.Scalar.Lerp(camera.position.z, (window.innerHeight>window.innerWidth?-19:-13.5) - (boost>1&&!quality.reducedMotion ? 1.2 : 0), 0.055);
       camera.setTarget(new BABYLON.Vector3(playerRoot.position.x * 0.18, 0.75 + playerRoot.position.y * 0.12, 64));
     }
 
     if (state.input.fire) firePlayerLaser(false);
-    if (state.plasma > 0 && state.input.fire && state.fireCooldown < 0.02 && state.combo >= 8) {
-      state.plasma--;
-      firePlayerLaser(true);
-    }
   }
 
   function updateSpawns(dt) {
     const lv = LEVELS[state.levelIndex];
+    updateSpawns.core=(updateSpawns.core||0)-dt;updateSpawns.special=(updateSpawns.special||0)-dt;
+    if(updateSpawns.core<=0&&!state.boss){spawnPowerup('core',new BABYLON.Vector3(clamp(playerRoot.position.x+randRange(-1.8,1.8),-PLAYER_LIMIT.x,PLAYER_LIMIT.x),clamp(playerRoot.position.y+randRange(-1.4,1.4),PLAYER_LIMIT.yMin,PLAYER_LIMIT.yMax),70));updateSpawns.core=2.25;}
+    if(updateSpawns.special<=0&&!state.boss){
+      if(lv.rescues&&state.rescues<lv.rescues)spawnPowerup('rescue',new BABYLON.Vector3(randRange(-PLAYER_LIMIT.x*.6,PLAYER_LIMIT.x*.6),randRange(-1.8,3),68));
+      if(lv.relays&&state.relays<lv.relays)spawnRelay();
+      updateSpawns.special=6;
+    }
 
     updateSpawns.asteroid = (updateSpawns.asteroid || 0) - dt;
     updateSpawns.enemy = (updateSpawns.enemy || 0) - dt;
@@ -2324,7 +2423,7 @@
 
       if (updateSpawns.gate <= 0 && state.levelIndex >= 2) {
         spawnGate();
-        updateSpawns.gate = randRange(6.5, 12.5);
+        updateSpawns.gate = lv.gates?4.6:randRange(6.5, 12.5);
       }
     }
 
@@ -2352,8 +2451,9 @@
         if (obj.type === "darter" || obj.type === "mine") {
           pos.x = obj.baseX + Math.sin(obj.movePhase * 2.3) * 1.2;
         }
+        pos.x=clamp(pos.x,-PLAYER_LIMIT.x,PLAYER_LIMIT.x);
         obj.fireTimer -= dt;
-        if (obj.type !== "mine" && obj.fireTimer <= 0 && pos.z < 62) {
+        if (!["mine","relay"].includes(obj.type) && obj.fireTimer <= 0 && pos.z < 62) {
           enemyFire(obj, obj.type === "turret" || obj.type === "heavy");
           obj.fireTimer = obj.type === "heavy" ? randRange(0.55, 1.15) : randRange(1.0, 2.0);
         }
@@ -2378,11 +2478,13 @@
           if (obj.kind === "pickup") {
             collectPickup(obj);
           } else if (obj.kind === "gate") {
+            state.gates++;
             state.score += 180;
             state.combo++;
             sfx.collect();
           } else {
             damagePlayer(obj.kind === "enemy" ? 19 : 14, "impact");
+            if(state.status!=='playing')return;
             createExplosionSprite(pos, "#ff315a", 0.8);
           }
           disposeGameObject(obj);
@@ -2392,6 +2494,7 @@
       }
 
       if (pos.z < -8) {
+        if(LEVELS[state.levelIndex].escort&&obj.kind==='enemy'){state.escortHull=Math.max(0,state.escortHull-1.5);}
         if (obj.kind === "enemy" || obj.kind === "asteroid") {
           state.combo = 0;
         }
@@ -2404,6 +2507,7 @@
   function updateLasers(dt) {
     for (let i = pools.lasers.length - 1; i >= 0; i--) {
       const l = pools.lasers[i];
+      const previousZ=l.mesh.position.z;
       l.mesh.position.z += l.speed * dt;
       l.life -= dt;
 
@@ -2411,15 +2515,17 @@
       for (let j = pools.objects.length - 1; j >= 0; j--) {
         const obj = pools.objects[j];
         if (obj.kind !== "enemy" && obj.kind !== "asteroid") continue;
-        if (Math.abs(l.mesh.position.z - obj.mesh.position.z) > obj.radius + 0.8) continue;
+        if (obj.mesh.position.z+obj.radius+.8<Math.min(previousZ,l.mesh.position.z)||obj.mesh.position.z-obj.radius-.8>Math.max(previousZ,l.mesh.position.z)) continue;
         const dist = vecDistance2D(l.mesh.position.x, l.mesh.position.y, obj.mesh.position.x, obj.mesh.position.y);
         if (dist <= obj.radius + l.radius) {
-          obj.hp -= l.damage;
+          const guarded=obj.type!=='shield'&&pools.objects.some(other=>other!==obj&&other.kind==='enemy'&&other.type==='shield'&&BABYLON.Vector3.DistanceSquared(other.mesh.position,obj.mesh.position)<36);
+          obj.hp -= l.damage*(guarded?.5:1);
           hit = true;
           makeRingEffect(l.mesh.position, l.plasma ? "transparentPink" : "transparentCyan", l.plasma ? 0.9 : 0.45);
           if (obj.hp <= 0) {
             state.score += obj.kind === "enemy" ? 150 + state.combo * 8 : 45;
             if (obj.kind === "enemy") {
+              if(obj.type==='relay')state.relays++;
               state.kills++;
               state.combo++;
             }
@@ -2433,11 +2539,12 @@
 
       if (!hit && state.boss) {
         const b = state.boss;
-        if (Math.abs(l.mesh.position.z - b.mesh.position.z) < 3.6) {
+        if (b.mesh.position.z+3.6>=previousZ&&b.mesh.position.z-3.6<=l.mesh.position.z) {
           const dist = vecDistance2D(l.mesh.position.x, l.mesh.position.y, b.mesh.position.x, b.mesh.position.y);
           if (dist < b.radius + l.radius) {
-            b.hp = Math.max(0, b.hp - l.damage);
-            state.score += 35 * l.damage;
+            const damage=b.shielded&&!l.plasma?0:l.damage;
+            b.hp = Math.max(0, b.hp - damage);
+            state.score += 35 * damage;
             hit = true;
             makeRingEffect(l.mesh.position, l.plasma ? "transparentPink" : "transparentCyan", l.plasma ? 1.4 : 0.7);
             sfx.bossHit();
@@ -2449,6 +2556,7 @@
               if (b.sprite && !b.sprite.isDisposed) b.sprite.dispose();
               b.mesh.dispose();
               state.boss = null;
+              state.bossDefeated=true;
               ui.bossPanel.classList.add("hidden");
               completeLevel();
             }
@@ -2472,6 +2580,7 @@
         const dist = vecDistance2D(l.mesh.position.x, l.mesh.position.y, playerRoot.position.x, playerRoot.position.y);
         if (dist < l.radius + 0.65) {
           damagePlayer(12, "laser");
+          if(state.status!=='playing')return;
           createExplosionSprite(l.mesh.position, "#ff315a", 0.6);
           l.mesh.dispose();
           pools.enemyLasers.splice(i, 1);
@@ -2489,6 +2598,10 @@
     if (!state.boss) return;
     const b = state.boss;
     const t = state.elapsed;
+    b.phase=b.hp<b.maxHp*.45?2:1;
+    b.shielded=(t-b.spawnAt)%7<1.4;
+    $('sectorAlert').textContent=b.shielded?'CORE SHIELDED · EVADE':`CORE EXPOSED · PHASE ${b.phase}`;
+    b.mesh.getChildMeshes().filter(mesh=>mesh.name.includes('Reactor')).forEach(mesh=>{mesh.visibility=b.shielded?.22:1;});
     b.mesh.position.z = BABYLON.Scalar.Lerp(b.mesh.position.z, 48, 0.016);
     b.mesh.position.x = Math.sin(t * 0.6) * 3.1;
     b.mesh.position.y = 1.8 + Math.sin(t * 0.9) * 0.65;
@@ -2498,7 +2611,7 @@
     b.waveTimer -= dt;
     if (b.fireTimer <= 0 && b.mesh.position.z < 55) {
       bossFire();
-      b.fireTimer = b.hp < b.maxHp * 0.45 ? 0.75 : 1.25;
+      b.fireTimer = b.hp < b.maxHp * 0.45 ? 0.9 : 1.4;
     }
 
     if (b.waveTimer <= 0) {
@@ -2547,6 +2660,7 @@
   }
 
   function updateWorld(dt) {
+    presentation.update(dt,state);
     for (const star of pools.stars) {
       star.position.z -= ((state.input.boost ? 44 : 24) + state.levelIndex * 1.1) * dt;
       if (star.position.z < -8) {
@@ -2592,13 +2706,12 @@
   function checkLevelComplete() {
     const lv = LEVELS[state.levelIndex];
     if (state.boss) return;
-    const objectivesMet = state.cores >= lv.cores && state.kills >= lv.kills && state.elapsed >= Math.min(lv.duration, 45);
-    const timeMet = state.elapsed >= lv.duration && state.cores >= Math.ceil(lv.cores * 0.65) && state.kills >= Math.ceil(lv.kills * 0.65);
-    if (!lv.boss && (objectivesMet || timeMet)) completeLevel();
+    if (systems.complete(lv,state,state.bossDefeated)) completeLevel();
   }
 
   function updateTimers(dt) {
     state.elapsed += dt;
+    state.invulnerable=Math.max(0,state.invulnerable-dt);
     state.fireCooldown = Math.max(0, state.fireCooldown - dt);
     state.doubleLaser = Math.max(0, state.doubleLaser - dt);
     state.slowMo = Math.max(0, state.slowMo - dt);
@@ -2613,32 +2726,44 @@
     ui.hullText.textContent = `${Math.ceil(state.hull)}%`;
     ui.shieldText.textContent = `${Math.ceil(state.shield)}%`;
     ui.missionTitle.textContent = `${lv.name} — ${lv.zone}`;
-    ui.missionText.textContent = `${state.cores}/${lv.cores} cores • ${state.kills}/${lv.kills} targets • ${Math.max(0, Math.ceil(lv.duration - state.elapsed))}s`;
+    ui.missionText.textContent = systems.objective(lv,state);
     ui.missionMeter.style.width = `${Math.floor(missionProgress() * 100)}%`;
+    updateFlightHud();
   }
 
-  function tick() {
-    const rawDt = Math.min(0.033, engine.getDeltaTime() / 1000);
+  function step(rawDt) {
     const dt = state.status === "playing" ? rawDt : rawDt * 0.3;
 
     if (state.status === "playing") {
+      inputControls?.sync();
       updateTimers(dt);
       updatePlayer(dt);
       updateSpawns(dt);
       updateObjects(dt);
+      if(state.status!=='playing')return;
       updateLasers(dt);
+      if(state.status!=='playing')return;
       updateBoss(dt);
+      updateEncounters(dt);
+      if(state.status!=='playing')return;
       updateParticles(dt);
       updateWorld(dt);
       checkLevelComplete();
       updateUI();
       postScore(false);
-    } else {
+    } else if(state.status==='transition'){
+      transitionRemaining-=rawDt;
+      if(transitionRemaining<=0&&transitionTarget>=0)beginLevel(transitionTarget);
+      updateFlightHud();
+    } else if(state.status!=='paused') {
       updateParticles(dt);
       updateWorld(dt);
     }
 
-    music.update(rawDt);
+    if(state.status==='playing')music.update(rawDt);
+  }
+  function tick() {
+    step(Math.min(.033,engine.getDeltaTime()/1000));
     scene.render();
   }
 
@@ -2649,19 +2774,19 @@
     sfxGain: null,
     ensure() {
       if (this.ctx) {
-        if (this.ctx.state === "suspended") this.ctx.resume();
+        if (this.ctx.state === "suspended"&&state.status!=='paused') this.ctx.resume()?.catch?.(()=>{});
         return;
       }
       const Ctx = window.AudioContext || window.webkitAudioContext;
       if (!Ctx) return;
-      this.ctx = new Ctx();
+      try{this.ctx = new Ctx();}catch{return;}
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.62;
+      this.master.gain.value = settings.muted?0:.62;
       this.master.connect(this.ctx.destination);
       this.musicGain = this.ctx.createGain();
-      this.musicGain.gain.value = 0.16;
+      this.musicGain.gain.value = settings.music;
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.value = 0.46;
+      this.sfxGain.gain.value = settings.effects;
       this.musicGain.connect(this.master);
       this.sfxGain.connect(this.master);
     },
@@ -2776,6 +2901,7 @@
     update() {
       if (!this.active || !audio.ctx) return;
       const now = audio.ctx.currentTime;
+      this.nextTime=Math.max(this.nextTime,now-.1);
       while (this.nextTime < now + 0.12) {
         const note = this.notes[this.step % this.notes.length];
         const bass = note / 2;
@@ -2794,80 +2920,19 @@
   };
 
   function wireControls() {
-    const keys = new Set();
-
-    window.addEventListener("keydown", (e) => {
-      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "Shift", "KeyW", "KeyA", "KeyS", "KeyD"].includes(e.code)) {
-        e.preventDefault();
-      }
-      keys.add(e.code);
-      syncKeys();
-    }, { passive: false });
-
-    window.addEventListener("keyup", (e) => {
-      keys.delete(e.code);
-      syncKeys();
+    setupFlightControls({ensure:()=>audio.ensure(),start:()=>startGame(true),retry:retryMission,
+      menu:()=>{music.stop();clearWorld(true);},plasma:launchPlasma,
+      suspend:()=>{try{audio.ctx?.suspend()?.catch?.(()=>{});}catch{}},
+      resume:()=>{audio.ensure();music.nextTime=audio.ctx?.currentTime||0;},
+      mix:()=>{if(audio.master)audio.master.gain.value=settings.muted?0:.62;if(audio.musicGain)audio.musicGain.gain.value=settings.music;if(audio.sfxGain)audio.sfxGain.gain.value=settings.effects;},
+      pointer:e=>{const rect=ui.canvas.getBoundingClientRect();const x=((e.clientX-rect.left)/rect.width)*2-1,y=1-((e.clientY-rect.top)/rect.height)*2;playerRoot.position.x=clamp(x*PLAYER_LIMIT.x,-PLAYER_LIMIT.x,PLAYER_LIMIT.x);playerRoot.position.y=clamp(y*5,PLAYER_LIMIT.yMin,PLAYER_LIMIT.yMax);}
     });
+  }
 
-    function syncKeys() {
-      state.input.x = (keys.has("ArrowRight") || keys.has("KeyD") ? 1 : 0) - (keys.has("ArrowLeft") || keys.has("KeyA") ? 1 : 0);
-      state.input.y = (keys.has("ArrowUp") || keys.has("KeyW") ? 1 : 0) - (keys.has("ArrowDown") || keys.has("KeyS") ? 1 : 0);
-      state.input.fire = keys.has("Space");
-      state.input.boost = keys.has("ShiftLeft") || keys.has("ShiftRight");
-    }
-
-    let pointerDown = false;
-    ui.canvas.addEventListener("pointerdown", (e) => {
-      pointerDown = true;
-      ui.canvas.setPointerCapture?.(e.pointerId);
-      state.input.fire = true;
-      audio.ensure();
-    });
-
-    ui.canvas.addEventListener("pointermove", (e) => {
-      if (!pointerDown || state.status !== "playing") return;
-      const rect = ui.canvas.getBoundingClientRect();
-      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-      playerRoot.position.x = BABYLON.Scalar.Lerp(playerRoot.position.x, nx * PLAYER_LIMIT.x, 0.18);
-      playerRoot.position.y = BABYLON.Scalar.Lerp(playerRoot.position.y, clamp(ny * 5, PLAYER_LIMIT.yMin, PLAYER_LIMIT.yMax), 0.18);
-    });
-
-    window.addEventListener("pointerup", () => {
-      pointerDown = false;
-      state.input.fire = false;
-    });
-
-    document.querySelectorAll("#mobileControls [data-dir]").forEach((btn) => {
-      const dir = btn.getAttribute("data-dir");
-      const set = (on) => {
-        if (dir === "left") state.input.x = on ? -1 : 0;
-        if (dir === "right") state.input.x = on ? 1 : 0;
-        if (dir === "up") state.input.y = on ? 1 : 0;
-        if (dir === "down") state.input.y = on ? -1 : 0;
-      };
-      btn.addEventListener("pointerdown", (e) => { e.preventDefault(); set(true); audio.ensure(); });
-      btn.addEventListener("pointerup", () => set(false));
-      btn.addEventListener("pointercancel", () => set(false));
-      btn.addEventListener("pointerleave", () => set(false));
-    });
-
-    const fireSet = (on) => { state.input.fire = on; };
-    ui.fireBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); audio.ensure(); fireSet(true); });
-    ui.fireBtn.addEventListener("pointerup", () => fireSet(false));
-    ui.fireBtn.addEventListener("pointercancel", () => fireSet(false));
-    ui.fireBtn.addEventListener("pointerleave", () => fireSet(false));
-
-    const boostSet = (on) => { state.input.boost = on; };
-    ui.boostBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); audio.ensure(); boostSet(true); });
-    ui.boostBtn.addEventListener("pointerup", () => boostSet(false));
-    ui.boostBtn.addEventListener("pointercancel", () => boostSet(false));
-    ui.boostBtn.addEventListener("pointerleave", () => boostSet(false));
-
-    ui.startBtn.addEventListener("click", () => startGame(true));
-    ui.retryBtn.addEventListener("click", () => retryMission());
-    ui.restartBtn.addEventListener("click", () => startGame(true));
-    ui.howBtn.addEventListener("click", () => ui.help.classList.toggle("visible"));
+  function resizeFlight(){
+    engine.resize();const portrait=window.innerHeight>window.innerWidth;camera.position.z=portrait?-19:-13.5;camera.fov=portrait?1.04:.92;
+    const aspect=engine.getRenderWidth()/Math.max(1,engine.getRenderHeight());PLAYER_LIMIT.x=clamp(Math.tan(camera.fov*.5)*Math.abs(camera.position.z)*aspect-1.55,1.5,9.6);
+    if(playerRoot)playerRoot.position.x=clamp(playerRoot.position.x,-PLAYER_LIMIT.x,PLAYER_LIMIT.x);
   }
 
   function init() {
@@ -2882,11 +2947,11 @@
     updateUI();
 
     engine.runRenderLoop(tick);
-    window.addEventListener("resize", () => engine.resize());
+    resizeFlight();window.addEventListener("resize", resizeFlight);window.addEventListener("orientationchange",resizeFlight);window.visualViewport?.addEventListener("resize",resizeFlight);
 
     // Decorative idle flight while on the launch screen.
     scene.onBeforeRenderObservable.add(() => {
-      if (state.status !== "playing" && playerRoot) {
+      if (["menu","ended"].includes(state.status) && playerRoot && !quality.reducedMotion) {
         const t = performance.now() * 0.001;
         playerRoot.position.x = Math.sin(t * 0.7) * 1.1;
         playerRoot.position.y = Math.sin(t * 0.9) * 0.35;
