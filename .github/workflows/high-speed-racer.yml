@@ -30,4 +30,6 @@ jobs:
           node-version: '24'
       - run: node --check apps/web/public/games/high-spead-racer/game.js
       - run: node --check apps/web/public/games/high-spead-racer/racer-3d.js
+      - run: node --check apps/web/public/games/high-spead-racer/racer-driving.js
+      - run: node --check apps/web/public/games/high-spead-racer/racer-career.js
       - run: node --test apps/web/scripts/high-speed-racer-*.test.*

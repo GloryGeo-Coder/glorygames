@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 const code=readFileSync(new URL('../public/games/high-spead-racer/racer-audio.js',import.meta.url),'utf8');
 class Param {constructor(value=0){this.value=value;}cancelScheduledValues(){}setTargetAtTime(v){this.value=v;}}
-class Node {constructor(){this.gain=new Param();this.frequency=new Param();this.playbackRate=new Param(1);this.threshold=new Param();this.knee=new Param();this.ratio=new Param();this.attack=new Param();this.release=new Param();}connect(n){return n;}disconnect(){this.disconnected=true;}start(){this.started=true;}stop(){this.stopped=true;this.onended?.();}}
+class Node {constructor(){this.gain=new Param();this.frequency=new Param();this.playbackRate=new Param(1);this.threshold=new Param();this.knee=new Param();this.ratio=new Param();this.attack=new Param();this.release=new Param();}connect(n){this.output=n;return n;}disconnect(){this.disconnected=true;}start(){this.started=true;}stop(){this.stopped=true;this.onended?.();}}
 class Context {constructor(){this.currentTime=0;this.state='suspended';this.destination={};this.sources=[];Context.last=this;}createGain(){return new Node();}createDynamicsCompressor(){return new Node();}createOscillator(){return new Node();}createBufferSource(){const n=new Node();this.sources.push(n);return n;}async decodeAudioData(b){return {key:b.key,duration:31};}async resume(){this.state='running';}async suspend(){this.state='suspended';}async close(){this.state='closed';}}
 const flush=async()=>{for(let i=0;i<15;i++)await Promise.resolve();};
 function harness({fetcher,storage,car='mclaren'}={}){
@@ -52,4 +52,12 @@ test('unsupported audio contexts never prevent the game starting',()=>{
 test('garage vehicle selection changes the engine character',async()=>{
  const a=harness({car:'mclaren'});a.state.mode='running';a.api.startEngine();await flush();a.api.updateEngine();const bright=Context.last.sources.find(n=>n.buffer?.key==='engine_low.wav').playbackRate.value;a.api.dispose();
  const b=harness({car:'challenger'});b.state.mode='running';b.api.startEngine();await flush();b.api.updateEngine();const muscle=Context.last.sources.find(n=>n.buffer?.key==='engine_low.wav').playbackRate.value;assert.ok(muscle<bright);b.api.dispose();
+});
+test('an impact stumbles the engine mix and the soundtrack builds toward the final sector',async()=>{
+ const h=harness({car:'starter'});h.state.mode='running';h.route.targetDistance=1000;h.api.startEngine();h.api.startMusic();await flush();
+ const engine=Context.last.sources.find(n=>n.buffer?.key==='engine_low.wav');const music=Context.last.sources.find(n=>n.buffer?.key==='midnight_grid.mp3');
+ h.api.updateEngine();const clean=engine.output.gain.value,opening=music.output.gain.value;
+ h.state.contactCooldown=.5;h.api.updateEngine();assert.ok(engine.output.gain.value<clean*.5);
+ h.state.contactCooldown=0;h.state.lapDistance=990;h.api.updateEngine();assert.ok(music.output.gain.value>opening);
+ assert.equal(engine.output.gain.value,clean);h.api.dispose();
 });

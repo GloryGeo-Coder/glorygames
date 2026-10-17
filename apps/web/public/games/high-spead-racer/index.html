@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>High Speed Racer</title>
+  <title>High Speed Racer: City of Legends</title>
   <link rel="stylesheet" href="./style.css" />
   <script src="./vendor/playcanvas-2.23.1.min.js"></script>
-  <link rel="stylesheet" href="./racer-3d.css?v=2.1" />
+  <link rel="stylesheet" href="./racer-3d.css?v=2.2" />
+  <link rel="stylesheet" href="./racer-career.css?v=2.2" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body class="is-menu">
   <div id="gameWrap">
     <canvas id="application-canvas"></canvas>
+    <div id="rainVeil" aria-hidden="true"></div>
 
     <div id="hud" aria-label="Race HUD">
       <div class="hud-top">
@@ -67,25 +69,27 @@
           <div id="nitroFill" class="nitro-fill"></div>
         </div>
       </div>
+      <div class="drive-readout"><span id="driveStatus">G1 · 100% · GRIP</span><span id="missionHud">Recover and keep racing.</span></div>
     </div>
 
     <div id="startOverlay" class="overlay start-overlay">
       <div class="start-bg"></div>
       <div class="menu-panel">
-        <div class="kicker">Neon Highway Racing</div>
+        <div class="kicker">Veyra Bay · City of Legends</div>
         <h1><span>HIGH SPEED</span><strong>RACER</strong></h1>
-        <p>Dodge traffic, collect nitro, race twelve distinct streets, and chase the top score.</p>
+        <p>Return to Veyra Bay. Save the family garage. Build a name the streets remember.</p>
 
         <label class="street-label" for="routeSelect">Choose your street</label>
-        <select id="routeSelect" class="street-select" aria-label="Race route"><option value="campaign">Full 12-street campaign</option></select>
+        <select id="routeSelect" class="street-select" aria-label="Race route"><option value="career">City of Legends · Chapter One</option><option value="campaign">Full 12-street campaign</option></select>
         <button id="startBtn" class="play-btn" disabled>
           <span class="play-icon">▶</span>
           <span>PLAY</span>
         </button>
 
-        <div class="route-badges"><span>12 streets</span><span>4 garage cars</span><span>3 laps per route</span></div>
+        <div class="route-badges"><span>12 streets</span><span>6 story jobs</span><span>5 garage cars</span></div>
         <p id="loadingStatus" role="status">Preparing your car and track…</p>
         <div class="menu-actions">
+          <button id="careerBtn" type="button">City of Legends</button>
           <button id="garageBtn" type="button"><span>🏎️</span> Garage</button>
           <button id="menuAudioBtn" type="button" aria-pressed="true"><span>🔊</span> Audio on</button>
           <button id="helpBtn" type="button"><span>?</span> Help</button>
@@ -97,8 +101,8 @@
           <label for="effectsVolume">Effects <input id="effectsVolume" type="range" min="0" max="100" value="65" /></label>
         </details>
         <div class="controls-list">
-          <span>Desktop: A/D or ←/→ to change lanes • Space/Shift for Nitro • P to pause</span>
-          <span>Mobile: tap buttons or swipe left/right</span>
+          <span>A/D or ←/→ steer • S/↓ brake • Space/Shift Nitro • P pause</span>
+          <span>Mobile: tap buttons or swipe. Contact costs speed; keep racing.</span>
         </div>
       </div>
     </div>
@@ -106,13 +110,15 @@
     <div id="gameOverOverlay" class="overlay hidden">
       <div class="end-panel">
         <div class="kicker">Race Report</div>
-        <h2 id="gameOverTitle">Crash!</h2>
+        <h2 id="gameOverTitle">Race Report</h2>
         <p id="finalStats">Final Score: 0</p>
+        <p id="careerResult" role="status"></p>
+        <button id="nextJobBtn" class="change-street-btn hidden" type="button">Next story job</button>
         <button id="restartBtn" class="play-btn small">
           <span class="play-icon">↻</span>
           <span>RACE AGAIN</span>
         </button>
-        <button id="changeStreetBtn" class="change-street-btn" type="button">Change street</button>
+        <button id="changeStreetBtn" class="change-street-btn" type="button">Garage &amp; streets</button>
       </div>
     </div>
 
@@ -122,6 +128,7 @@
         <button id="garageCloseBtn" class="garage-close" type="button">×</button>
         <div class="kicker">Garage & Upgrades</div>
         <h2>Choose Your Racer</h2>
+        <p id="garageCareer"></p>
 
         <div class="garage-summary">
           <div>
@@ -165,16 +172,46 @@
 
     <div id="mobileControls">
       <button id="leftBtn" class="control-btn" type="button" aria-label="Steer left">◀</button>
+      <button id="brakeBtn" class="control-btn brake" type="button" aria-label="Hold to brake">BRAKE</button>
       <button id="nitroBtn" class="control-btn nitro" type="button" aria-label="Hold to use Nitro">NITRO</button>
       <button id="rightBtn" class="control-btn" type="button" aria-label="Steer right">▶</button>
     </div>
   </div>
 
+  <div id="careerPanel" class="career-panel hidden" role="dialog" aria-modal="true" aria-labelledby="careerTitle">
+    <section class="career-inner">
+      <button id="careerCloseBtn" class="career-close" type="button" aria-label="Close career">×</button>
+      <div class="kicker">High Speed Racer: City of Legends</div>
+      <h2 id="careerTitle">Your name starts here.</h2>
+      <p id="careerChapter">Chapter One · Save the Family Garage</p>
+      <p id="careerProgress"></p>
+      <div id="garageMilestones" class="garage-wall"></div>
+      <form id="careerForm">
+        <div class="driver-grid">
+          <div id="driverPreview" class="driver-preview" data-look="ember" aria-label="Driver racing suit preview">
+            <svg viewBox="0 0 120 140" role="img" aria-label="Helmet and racing suit"><path class="suit" d="M13 134V100Q16 81 43 77H77Q104 81 107 100V134Z"/><path class="helmet" d="M29 44Q29 12 60 12T91 44V65Q83 82 60 84Q37 82 29 65Z"/><path class="visor" d="M33 40Q60 31 87 40L83 57H37Z"/><path class="stripe" d="M54 84H66V134H54Z"/></svg>
+          </div>
+          <div class="driver-fields">
+            <label for="driverName">Driver name<input id="driverName" name="driverName" maxlength="20" placeholder="Your racing name" autocomplete="nickname" /></label>
+            <label for="driverLook">Appearance<select id="driverLook" name="driverLook"><option value="ember">Ember suit &amp; faded copper paint</option><option value="ocean">Ocean suit &amp; faded teal paint</option><option value="graphite">Graphite suit &amp; faded grey paint</option></select></label>
+            <label for="driverIdentity">Driving identity<select id="driverIdentity" name="driverIdentity"><option value="balanced">All-rounder · balanced</option><option value="precision">Precision · sharper response</option><option value="bold">Bold · longer boost</option></select></label>
+          </div>
+        </div>
+        <div class="career-layout">
+          <nav id="careerJobs" aria-label="Story jobs"></nav>
+          <div class="job-brief"><h3 id="jobTitle"></h3><p id="jobBrief"></p><blockquote id="jobRadio"></blockquote><p id="jobBest"></p></div>
+        </div>
+        <button id="careerStartBtn" class="play-btn small" type="submit">ACCEPT JOB · DRIVE</button>
+        <p class="career-save-note">Driver, garage and career progress save on this device. Story jobs use the Family Coupe or a customer’s loan car; your arcade garage stays yours.</p>
+      </form>
+    </section>
+  </div>
+
   <div id="helpPanel" class="help-panel hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
     <section><h2 id="helpTitle">Own the night</h2>
-      <p>Change lanes to avoid traffic. Collect cyan pickups to refill Nitro and earn points. Beat rivals through three laps on each of twelve streets, or select a single street from the menu.</p>
-      <p><b>Desktop:</b> A/D or arrow keys to steer. Hold Space or Shift for Nitro. P or Escape pauses; M toggles audio.</p>
-      <p><b>Mobile:</b> use the steering buttons or swipe. Hold NITRO to boost. Landscape gives a wider view.</p>
+      <p>Start City of Legends to save the family garage through six story jobs. Or race three laps on a single street or all twelve streets. Collect cyan pickups to refill Nitro. Bumps and hazards slow you down and affect condition, then you recover. They never end your race.</p>
+      <p><b>Desktop:</b> A/D or arrow keys to steer. Hold S or Down to brake. Hold Space or Shift for Nitro. P or Escape pauses; M toggles audio.</p>
+      <p><b>Mobile:</b> use the steering buttons or swipe. Hold BRAKE to slow down or NITRO to boost. Landscape gives a wider view.</p>
       <p>Race rewards buy cars and upgrades in your garage. Progress is saved on this device.</p>
       <button id="helpCloseBtn" type="button">Back to garage</button>
     </section>
@@ -182,8 +219,10 @@
   <script src="./vendor/posteffect-bloom-2.23.1.js"></script>
   <script src="./racer-3d.js?v=2.1"></script>
   <script src="./racer-routes.js?v=2.1"></script>
-  <script src="./racer-audio.js?v=2.1"></script>
-  <script src="./game.js?v=2.1"></script>
+  <script src="./racer-audio.js?v=2.2"></script>
+  <script src="./racer-driving.js?v=2.2"></script>
+  <script src="./racer-career.js?v=2.2"></script>
+  <script src="./game.js?v=2.2"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
