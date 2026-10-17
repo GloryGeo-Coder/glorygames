@@ -1,8 +1,8 @@
 {
-  "name": "High Spead Racer",
+  "name": "High Speed Racer",
   "slug": "high-spead-racer",
-  "version": "1.9.2",
-  "description": "High Spead Racer updated to use the user-uploaded road model converted from OBJ/FBX source into assets/models/uploaded_road_track.glb as the main road.",
+  "version": "2.0.0",
+  "description": "Six-route 3D arcade racing with original GLB cars, neon city skylines, reflective paint and highway materials, garage upgrades, rivals, laps and mobile controls.",
   "engine": "PlayCanvas",
   "thumbnail": "thumb.png",
   "controls": {
@@ -53,6 +53,14 @@
     "unlockable cars",
     "uploaded_road_track.glb",
     "user uploaded road model",
-    "visible continuous road fix"
+    "visible continuous road fix",
+    "original PBR vehicle GLBs",
+    "neon skyline GLBs",
+    "batched seamless highway",
+    "animated GLB wheels",
+    "image-based reflections",
+    "dedicated game tab",
+    "mobile Nitro hold",
+    "pinned local engine"
   ]
 }

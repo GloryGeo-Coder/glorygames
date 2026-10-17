@@ -1,0 +1,45 @@
+/* Dedicated tab presentation; existing garage and race HUD selectors remain valid. */
+#gameWrap { height:100vh; height:100dvh; }
+.start-overlay { place-items:center start; padding:clamp(18px,5vw,80px); backdrop-filter:none; background:transparent; overflow-y:auto; }
+.start-bg { background:linear-gradient(90deg,rgba(3,7,18,.95),rgba(3,7,18,.64) 40%,transparent 73%); filter:none; pointer-events:none; }
+.menu-panel { width:min(470px,47vw); padding:30px; border-radius:24px; text-align:left; background:rgba(5,12,25,.76); backdrop-filter:blur(8px); }
+.menu-panel h1 { margin:12px 0 20px; font-style:italic; line-height:.96; letter-spacing:-.04em; }
+.menu-panel h1 span { font-size:clamp(28px,4.2vw,60px); }
+.menu-panel h1 strong { font-size:clamp(52px,7.8vw,108px); color:#ff3954; text-shadow:0 3px 0 #730b27,0 0 30px #ff174830; }
+.menu-panel p { font-size:14px; line-height:1.65; max-width:360px; color:#bfd0e4; }
+.menu-panel .play-btn { width:100%; min-height:54px; }
+.menu-actions { margin-top:14px; }
+.menu-actions button { min-height:44px; }
+.controls-list { margin-top:18px; font-size:11px; line-height:1.65; }
+.route-badges { display:flex; gap:8px; flex-wrap:wrap; margin:18px 0; }
+.route-badges span { border:1px solid #43cce438; border-radius:7px; padding:6px 9px; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#9be6f3; }
+#loadingStatus { min-height:20px; font-size:12px; color:#91e0ee; margin:10px 0 0; }
+.render-error { position:fixed; inset:0; z-index:50; display:grid; place-items:center; padding:24px; background:#061020; color:white; text-align:center; font:16px/1.6 system-ui; }
+.render-error div { max-width:520px; }
+.render-error a,.render-error button { display:inline-block; padding:12px 18px; margin:8px; border:1px solid #62c4e2; border-radius:10px; background:#122e48; color:white; font:inherit; text-decoration:none; }
+.help-panel { position:absolute; inset:0; z-index:20; display:grid; place-items:center; padding:20px; background:#020714dd; overflow:auto; }
+.help-panel.hidden { display:none; }
+.help-panel section { max-width:480px; padding:26px; border:1px solid #35c6e875; border-radius:20px; background:#0b192c; line-height:1.7; }
+.help-panel button { min-height:44px; padding:10px 20px; background:#33d6e8; color:#04111c; border:0; border-radius:10px; font-weight:800; }
+.help-panel h2 { margin-top:0; }
+button:focus-visible { outline:3px solid #e6faff; outline-offset:3px; }
+@media (max-width:760px) and (orientation:portrait) {
+  .start-overlay { align-items:end; padding:max(12px,env(safe-area-inset-bottom)) 12px; }
+  .start-bg { background:linear-gradient(0deg,#030712 12%,#03071299 55%,transparent 85%); }
+  .menu-panel { width:100%; padding:18px 20px; max-height:72dvh; overflow:auto; }
+  .menu-panel h1 { margin:5px 0 9px; }
+  .menu-panel h1 span { font-size:28px; }
+  .menu-panel h1 strong { font-size:52px; }
+  .menu-panel p { margin:8px 0; font-size:12px; }
+  .route-badges { margin:10px 0; }
+  .controls-list { margin-top:10px; }
+  #loadingStatus { margin-top:6px; }
+}
+@media (max-height:580px) and (orientation:landscape) {
+  .start-overlay { align-items:start; padding:12px; }
+  .menu-panel { width:46%; max-height:calc(100dvh - 24px); overflow:auto; padding:15px 20px; }
+  .menu-panel h1 { margin:6px 0; } .menu-panel h1 span {font-size:25px;} .menu-panel h1 strong {font-size:46px;}
+  .route-badges { margin:8px 0; } .controls-list {font-size:10px; margin-top:8px;}
+  .menu-panel p {font-size:11px; margin:6px 0;}
+}
+@media (prefers-reduced-motion:reduce) { * {scroll-behavior:auto!important;transition:none!important;} }

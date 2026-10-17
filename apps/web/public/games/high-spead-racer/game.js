@@ -7,7 +7,7 @@
   if (!canvas || typeof pc === "undefined") {
     const msg = document.createElement("div");
     msg.style.cssText = "position:fixed;inset:0;display:grid;place-items:center;background:#050816;color:white;font-family:system-ui;padding:24px;text-align:center;z-index:9999";
-    msg.innerHTML = "<div><h2>High Spead Racer</h2><p>PlayCanvas could not load. Check that playcanvas-stable.min.js is included before game.js.</p></div>";
+    msg.innerHTML = "<div><h2>High Speed Racer</h2><p>The race could not load. Check your connection and reload this tab.</p><button onclick=\"location.reload()\">Try again</button></div>";
     document.body.appendChild(msg);
     return;
   }
@@ -32,7 +32,8 @@
   function makeUi(id, css, html = "") {
     let el = $(id);
     if (!el) {
-      el = document.createElement("div");
+      el = document.createElement(id === "pauseBtn" || id === "muteBtn" ? "button" : "div");
+      if (id === "pauseBtn" || id === "muteBtn") { el.type = "button"; el.setAttribute("aria-label", id === "pauseBtn" ? "Pause or resume race" : "Toggle audio"); }
       el.id = id;
       el.innerHTML = html;
       document.body.appendChild(el);
@@ -59,7 +60,7 @@
     "position:absolute;inset:0;display:none;place-items:center;z-index:5;background:rgba(5,8,22,.45);backdrop-filter:blur(6px);color:white;font-family:system-ui;text-align:center;padding:24px;",
     `<div style="width:min(92vw,420px);padding:24px;border-radius:24px;background:rgba(8,14,28,.9);border:1px solid rgba(120,180,255,.25);box-shadow:0 16px 40px rgba(0,0,0,.4)">
        <div style="color:#77b8ff;text-transform:uppercase;font-size:12px;letter-spacing:.14em;font-weight:900">Race Paused</div>
-       <h2 style="margin:8px 0 10px;font-size:36px">High Spead Racer</h2>
+       <h2 style="margin:8px 0 10px;font-size:36px">High Speed Racer</h2>
        <p style="margin:0 0 16px;color:#d4e6ff">Press P / Esc or tap Resume to continue.</p>
        <button id="resumeBtn" style="border:0;border-radius:16px;padding:14px 18px;width:100%;font-size:16px;font-weight:900;color:white;background:linear-gradient(135deg,#28a8ff,#6d4dff);box-shadow:0 10px 24px rgba(70,110,255,.35)">Resume</button>
      </div>`
@@ -106,10 +107,27 @@
   }
 
 
-  const app = new pc.Application(canvas, {
-    mouse: new pc.Mouse(canvas),
-    touch: new pc.TouchDevice(canvas),
-    keyboard: new pc.Keyboard(window)
+  const quality = window.Racer3D.qualityFor();
+  function graphicsError(message) {
+    const panel = document.createElement("div"); panel.className = "render-error";
+    panel.innerHTML = `<div><h2>High Speed Racer</h2><p>${message}</p><button type="button">Try again</button><a href="/play/${GAME_SLUG}">Game information</a></div>`;
+    panel.querySelector("button").addEventListener("click", () => location.reload());
+    document.body.appendChild(panel);
+  }
+  let app;
+  try {
+    app = new pc.Application(canvas, {
+      mouse: new pc.Mouse(canvas), touch: new pc.TouchDevice(canvas), keyboard: new pc.Keyboard(window),
+      graphicsDeviceOptions: { alpha: false, antialias: !quality.compact, powerPreference: "high-performance" }
+    });
+  } catch (error) {
+    console.error("3D graphics unavailable", error);
+    graphicsError("3D graphics could not start. Enable hardware acceleration or try another browser with WebGL 2 support.");
+    return;
+  }
+  app.graphicsDevice.maxPixelRatio = Math.min(window.devicePixelRatio || 1, quality.pixelRatio);
+  canvas.addEventListener("webglcontextlost", event => {
+    event.preventDefault(); togglePause(true); graphicsError("The browser interrupted 3D graphics. Reload to return to the track. Your garage progress is saved.");
   });
 
   app.start();
@@ -117,8 +135,7 @@
   app.setCanvasResolution(pc.RESOLUTION_AUTO);
   app.scene.gammaCorrection = pc.GAMMA_SRGB;
   app.scene.toneMapping = pc.TONEMAP_ACES;
-  // The game runs inside a responsive iframe; its dimensions can change
-  // without a traditional window resize (fullscreen, layout and orientation).
+  // The dedicated tab follows viewport, browser fullscreen and orientation changes.
   const gameWrap = document.getElementById("gameWrap");
   const resize = () => {
     const width = gameWrap?.clientWidth || window.innerWidth;
@@ -146,10 +163,10 @@
 
   // ---------- garage, coins, unlocks and upgrades ----------
   const GARAGE_CARS = [
-    { id: "mclaren-senna", name: "McLaren Senna", model: "mclaren", price: 0, speed: 7, handling: 5, nitro: 4, label: "Hypercar" },
-    { id: "dodge-challenger", name: "Dodge Challenger", model: "challenger", price: 850, speed: 4, handling: 1, nitro: 6, label: "Muscle" },
-    { id: "porsche-911-gt2", name: "Porsche 911 GT2", model: "porsche", price: 1500, speed: 6, handling: 5, nitro: 3, label: "Track Focused" },
-    { id: "audi-r8", name: "Audi R8", model: "audi", price: 2200, speed: 5, handling: 4, nitro: 5, label: "Balanced Supercar" }
+    { id: "mclaren-senna", name: "Crimson Apex", model: "mclaren", price: 0, speed: 7, handling: 5, nitro: 4, label: "Hypercar" },
+    { id: "dodge-challenger", name: "Golden Charger", model: "challenger", price: 850, speed: 4, handling: 1, nitro: 6, label: "Muscle" },
+    { id: "porsche-911-gt2", name: "Silver GT", model: "porsche", price: 1500, speed: 6, handling: 5, nitro: 3, label: "Track Focused" },
+    { id: "audi-r8", name: "Azure Coupe", model: "audi", price: 2200, speed: 5, handling: 4, nitro: 5, label: "Balanced Supercar" }
   ];
 
   const PROFILE_KEY = "high-spead-racer-profile-v1";
@@ -315,6 +332,9 @@
       playerCar.importedModel = null;
     }
     playerCar.modelIndex = selectedModelIndex();
+    playerCar.wheels = playerCar.fallbackWheels;
+    playerCar.glbWheels = false;
+    playerCar.fallbackMesh.enabled = true;
     applyImportedCarModel(playerCar);
   }
 
@@ -397,10 +417,10 @@
   sun.addComponent("light", {
     type: "directional",
     color: new pc.Color(1, 0.96, 0.9),
-    intensity: 1.7,
+    intensity: 1.35,
     castShadows: false
   });
-  sun.setLocalEulerAngles(45, 25, 0);
+  sun.setLocalEulerAngles(35, -35, 0);
   root.addChild(sun);
 
   const neon = new pc.Entity("neonFill");
@@ -413,6 +433,17 @@
   neon.setLocalPosition(0, 9, 7);
   root.addChild(neon);
 
+  camera.camera.toneMapping = pc.TONEMAP_ACES;
+  const presentation = window.Racer3D.create({ app, root, camera, pc, quality });
+  let assetsPending = 5, assetFailures = 0;
+  function assetReady(error) {
+    if (error) assetFailures++;
+    assetsPending = Math.max(0, assetsPending - 1);
+    const status = $("loadingStatus");
+    if (status) status.textContent = assetsPending ? "Preparing your car and track…" :
+      assetFailures ? "Some visual details could not load. You can still race." : "Ready to race";
+    if (ui.startBtn) ui.startBtn.disabled = assetsPending > 0;
+  }
   // ---------- audio ----------
   const audio = {
     ctx: null,
@@ -923,24 +954,23 @@
   // These are real local GLB files inside assets/models/. The game still keeps
   // the old procedural car meshes as a fallback while the GLB files load.
   const MODEL_URLS = {
-    player: "assets/models/vehicle_mclaren_senna.glb",
+    player: "assets/models/neon/apex_red.glb",
     playerVariants: [
-      "assets/models/vehicle_mclaren_senna.glb",
-      "assets/models/vehicle_challenger.glb",
-      "assets/models/vehicle_porsche_911_gt2.glb",
-      "assets/models/vehicle_audi_r8.glb"
+      "assets/models/neon/apex_red.glb",
+      "assets/models/neon/muscle_gold.glb",
+      "assets/models/neon/gt_silver.glb",
+      "assets/models/neon/coupe_blue.glb"
     ],
     traffic: [
-      "assets/models/vehicle_mclaren_senna.glb",
-      "assets/models/vehicle_challenger.glb",
-      "assets/models/vehicle_porsche_911_gt2.glb",
-      "assets/models/vehicle_audi_r8.glb"
+      "assets/models/neon/apex_red.glb",
+      "assets/models/neon/muscle_gold.glb",
+      "assets/models/neon/gt_silver.glb",
+      "assets/models/neon/coupe_blue.glb"
     ]
   };
   const BUILDING_MODEL_URLS = [
-    "assets/models/roadside_bauhaus.glb",
-    "assets/models/roadside_urban_block.glb",
-    "assets/models/roadside_bamboo_house.glb"
+    "assets/models/neon/skyline_cyan.glb",
+    "assets/models/neon/skyline_magenta.glb"
   ];
 
   const importedSceneryModels = {
@@ -955,8 +985,8 @@
   };
 
   const modelCars = {
-    player: [],
-    traffic: []
+    player: new Set(),
+    traffic: new Set()
   };
 
   function instantiateGlb(asset) {
@@ -996,6 +1026,13 @@
     });
 
     car.importedModel = model;
+    const wheels = [];
+    model.forEach(node => { if (/^Wheel_[FR][LR]$/.test(node.name)) wheels.push(node); });
+    car.wheels = wheels.length ? wheels : (car.fallbackWheels || car.wheels);
+    car.glbWheels = wheels.length > 0;
+    // The new glass cockpit contains its own geometry; legacy driver billboards
+    // stay available only when the fallback car is visible.
+    if (car.driverSprite) car.driverSprite.enabled = false;
     if (car.fallbackMesh) car.fallbackMesh.enabled = false;
     return true;
   }
@@ -1004,42 +1041,21 @@
     car.modelType = type;
     car.modelIndex = modelIndex;
     car.importedModel = null;
-    modelCars[type].push(car);
+    modelCars[type].add(car);
+    car.once("destroy", () => modelCars[type].delete(car));
+    presentation.attachCar(car);
     applyImportedCarModel(car);
   }
 
   function loadGlbCarModels() {
-    const load = (url, onDone) => {
-      try {
-        app.assets.loadFromUrl(url, "container", (err, asset) => {
-          if (err) {
-            console.warn("Could not load GLB model:", url, err);
-            return;
-          }
-          onDone(asset);
-        });
-      } catch (err) {
-        console.warn("GLB model request failed:", url, err);
-      }
-    };
-
-    load(MODEL_URLS.player, (asset) => {
-      importedModels.player = asset;
-      importedModels.playerVariants[0] = asset;
-      modelCars.player.forEach(applyImportedCarModel);
-    });
-
-    MODEL_URLS.playerVariants.forEach((url, i) => {
-      if (i === 0) return;
-      load(url, (asset) => {
-        importedModels.playerVariants[i] = asset;
+    MODEL_URLS.playerVariants.forEach((url, index) => {
+      app.assets.loadFromUrl(url, "container", (error, asset) => {
+        assetReady(error);
+        if (error) { console.warn("Vehicle detail unavailable", url, error); return; }
+        importedModels.playerVariants[index] = asset;
+        importedModels.traffic[index] = asset;
+        if (index === 0) importedModels.player = asset;
         modelCars.player.forEach(applyImportedCarModel);
-      });
-    });
-
-    MODEL_URLS.traffic.forEach((url, i) => {
-      load(url, (asset) => {
-        importedModels.traffic[i] = asset;
         modelCars.traffic.forEach(applyImportedCarModel);
       });
     });
@@ -1048,11 +1064,16 @@
 
   function applyLevelTheme(levelIndex) {
     const spec = LEVELS[levelIndex] || LEVELS[0];
-    app.scene.fog = pc.FOG_LINEAR;
+    app.scene.fog.type = pc.FOG_LINEAR;
     app.scene.fogColor = spec.fog.clone();
-    app.scene.fogStart = 58;
-    app.scene.fogEnd = 230;
+    app.scene.fogStart = 95;
+    app.scene.fogEnd = 370;
     camera.camera.clearColor = spec.sky.clone();
+    if (["coast", "metro", "final"].includes(spec.env)) {
+      app.scene.fogColor = new pc.Color(.025,.045,.10);
+      camera.camera.clearColor = new pc.Color(.008,.016,.04);
+    }
+    presentation.theme(spec.env);
     neon.light.color = spec.env === "metro" || spec.env === "final" ? new pc.Color(0.42,0.2,1) : new pc.Color(0.2,0.45,1);
 
     mat.road.diffuse = spec.road.clone();
@@ -1129,7 +1150,10 @@
     if (!entity) return entity;
     entity.spriteKey = key;
     entity.spriteAdditive = additive;
-    spriteTargets.push(entity);
+    if (!spriteTextures[key]) {
+      spriteTargets.push(entity);
+      entity.once("destroy", () => { const i = spriteTargets.indexOf(entity); if (i >= 0) spriteTargets.splice(i, 1); });
+    }
     applySpriteTarget(entity);
     return entity;
   }
@@ -1196,13 +1220,13 @@
   // corner chevrons, bends and crests. The old procedural road remains as
   // fallback until this GLB finishes loading.
   const CONTINUOUS_ROAD = {
-    url: "assets/models/uploaded_road_track.glb",
+    url: "assets/models/neon/neon_highway_128.glb",
     asset: null,
     instances: [],
-    length: 492.800,
+    length: 128,
     loaded: false,
-    instanceCount: 4,
-    startZ: 8
+    instanceCount: 5,
+    startZ: 44
   };
 
   function continuousRoadCenterX(s) {
@@ -1270,11 +1294,12 @@
   function loadContinuousRoadTrack() {
     try {
       app.assets.loadFromUrl(CONTINUOUS_ROAD.url, "container", (err, asset) => {
+        assetReady(err);
         if (err) {
           console.warn("Could not load continuous road GLB:", CONTINUOUS_ROAD.url, err);
           roadSegments.forEach((seg) => (seg.enabled = true));
           floor.enabled = true;
-          toast("Road GLB failed - using fallback road");
+          toast("Track details unavailable. The race is still playable.");
           return;
         }
 
@@ -1299,7 +1324,7 @@
           }, 1400);
 
           console.log("Uploaded road model loaded:", CONTINUOUS_ROAD.url, CONTINUOUS_ROAD.instances.length, "segments");
-          toast("Uploaded road fixed: lights moved to roadside");
+
         }
       });
     } catch (err) {
@@ -1395,7 +1420,7 @@
 
   const floor = makeBox(root, "floor", new pc.Vec3(240, 0.2, 540), new pc.Vec3(0, -0.55, -100), makeMaterial({ diffuse:new pc.Color(0.05,0.08,0.08) }));
 
-  
+
   function tuneImportedSceneryMaterials(model) {
     if (!model || !model.forEach) return;
     model.forEach((node) => {
@@ -1475,7 +1500,7 @@
     entity.turnToRoad = true;
     entity.roadsideMinOffset = 11.5;
     entity.roadsideOffsetRange = 10.5;
-    entity.buildingBaseScale = index === 2 ? 1.45 : (index === 0 ? 1.35 : 1.2);
+    entity.buildingBaseScale = .65;
 
     entity.addChild(model);
     model.setLocalPosition(0, 0, 0);
@@ -1534,7 +1559,7 @@
     const wheels = [];
     [[-1.15,0.33,-1.45],[1.15,0.33,-1.45],[-1.15,0.33,1.45],[1.15,0.33,1.45]].forEach(([x,y,z]) => {
       const wheel = makeCylinder(fallback, "wheel", new pc.Vec3(0.5,0.26,0.5), new pc.Vec3(x,y,z), mat.wheel);
-      wheel.setLocalEulerAngles(90,0,0);
+      wheel.setLocalEulerAngles(0,0,90);
       wheels.push(wheel);
     });
 
@@ -1554,9 +1579,10 @@
 
     car.flames = [flameL, flameR];
     car.wheels = wheels;
+    car.fallbackWheels = wheels;
     car.wheelSpin = 0;
     registerCarForModel(car, "player", selectedModelIndex());
-    car.setLocalPosition(0,0,8);
+    car.setLocalPosition(0,.05,8);
     return car;
   }
 
@@ -1580,7 +1606,7 @@
     const wheels = [];
     [[-1,0.31,-1.3],[1,0.31,-1.3],[-1,0.31,1.3],[1,0.31,1.3]].forEach(([x,y,z]) => {
       const wheel = makeCylinder(fallback, "wheel", new pc.Vec3(0.45,0.25,0.45), new pc.Vec3(x,y,z), mat.wheel);
-      wheel.setLocalEulerAngles(90,0,0);
+      wheel.setLocalEulerAngles(0,0,90);
       wheels.push(wheel);
     });
 
@@ -1591,6 +1617,7 @@
     car.driverFrames = ["driverTraffic0", "driverTraffic1", "driverTraffic2", "driverTraffic3"];
 
     car.wheels = wheels;
+    car.fallbackWheels = wheels;
     car.wheelSpin = 0;
     const modelIndex = Math.floor(Math.random() * MODEL_URLS.traffic.length);
     registerCarForModel(car, "traffic", modelIndex);
@@ -1783,7 +1810,7 @@
   function rebuildScenery(env) {
     destroyScenery();
 
-    const count = 46;
+    const count = quality.sceneryCount;
     for (let i = 0; i < count; i++) {
       let e;
 
@@ -2107,7 +2134,7 @@
       rival.setLocalEulerAngles(0, 180 + Math.sin(state.elapsed * 2.5 + i) * 1.4, lateralTilt);
 
       rival.wheelSpin += state.roadSpeed * dt * 220;
-      rival.wheels?.forEach((w) => w.setLocalEulerAngles(90 + rival.wheelSpin, 0, 0));
+      rival.wheels?.forEach((w) => w.setLocalEulerAngles(rival.wheelSpin, 0, rival.glbWheels ? 0 : 90));
       animateDriverSprite(rival, i + rival.laneIndex, rival.aggression > 0.3);
 
       // Rival collision: a direct hit ends the run, but slight passes become overtakes.
@@ -2212,6 +2239,7 @@
     state.targetLaneIndex = 1;
     state.nitro = 100;
     state.nitroHeld = false;
+    pointerNitro = false;
     state.boostFactor = 1;
     state.cameraShake = 0;
     state.nearMissChain = 0;
@@ -2222,7 +2250,7 @@
     state.previousRacePosition = 1;
     state.overtakes = 0;
 
-    playerCar.setLocalPosition(laneWorldX(1, 8), 0, 8);
+    playerCar.setLocalPosition(laneWorldX(1, 8), .05, 8);
     playerCar.setLocalEulerAngles(0, 0, 0);
     playerCar.flames.forEach((f) => (f.enabled = false));
     courseGates.forEach((g) => (g.enabled = false));
@@ -2312,10 +2340,12 @@
     postScore(false);
   }
 
+  let pausedMode = null;
   function togglePause(force = null) {
-    if (state.mode !== "running" && state.mode !== "paused") return;
+    if (!["running", "countdown", "paused"].includes(state.mode)) return;
     const shouldPause = force === null ? state.mode === "running" : !!force;
-    state.mode = shouldPause ? "paused" : "running";
+    if (shouldPause && state.mode !== "paused") pausedMode = state.mode;
+    state.mode = shouldPause ? "paused" : pausedMode === "countdown" ? "countdown" : "running";
     pauseOverlay.style.display = shouldPause ? "grid" : "none";
     pauseBtn.textContent = shouldPause ? "▶" : "Ⅱ";
     if (shouldPause) audio.stopEngine();
@@ -2334,7 +2364,9 @@
     audio.sfxLane();
   }
 
+  let pointerNitro = false;
   function setNitro(on) {
+    pointerNitro = on;
     if (state.mode !== "running") {
       state.nitroHeld = false;
       return;
@@ -2348,6 +2380,7 @@
     const down = (e) => {
       e.preventDefault();
       audio.ensure();
+      try { btn.setPointerCapture(e.pointerId); } catch {}
       onDown();
     };
     const up = (e) => {
@@ -2378,6 +2411,10 @@
     touchStart = null;
   });
 
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { pointerNitro = false; state.nitroHeld = false; togglePause(true); audio.stopEngine(); }
+  });
+  window.addEventListener("blur", () => { pointerNitro = false; state.nitroHeld = false; togglePause(true); });
   document.addEventListener("keydown", (e) => {
     if (["ArrowLeft","ArrowRight","KeyA","KeyD","Space","ShiftLeft","ShiftRight","KeyP","Escape","KeyM"].includes(e.code)) e.preventDefault();
     audio.ensure();
@@ -2388,7 +2425,7 @@
   function handleKeyboard() {
     if (app.keyboard.wasPressed(pc.KEY_LEFT) || app.keyboard.wasPressed(pc.KEY_A)) moveLeft();
     if (app.keyboard.wasPressed(pc.KEY_RIGHT) || app.keyboard.wasPressed(pc.KEY_D)) moveRight();
-    state.nitroHeld = app.keyboard.isPressed(pc.KEY_SPACE) || app.keyboard.isPressed(pc.KEY_SHIFT);
+    state.nitroHeld = pointerNitro || app.keyboard.isPressed(pc.KEY_SPACE) || app.keyboard.isPressed(pc.KEY_SHIFT);
   }
 
   function rectHit(ax, az, aw, al, bx, bz, bw, bl) {
@@ -2464,7 +2501,7 @@
     pos.x += (targetX - pos.x) * Math.min(1, dt * (10.5 + selectedCarStats().handling * 0.55));
     pos.z += (targetZ - pos.z) * Math.min(1, dt * 5);
     const bob = Math.sin(state.elapsed * state.roadSpeed * 0.22) * 0.035;
-    pos.y = trackCrestAt(targetZ) * 0.22 + bob;
+    pos.y = .05 + trackCrestAt(targetZ) * 0.22 + bob;
     playerCar.setLocalPosition(pos);
 
     const lateralVel = (pos.x - oldX) / Math.max(0.001, dt);
@@ -2472,7 +2509,7 @@
     playerCar.setLocalEulerAngles(0, Math.sin(state.elapsed * 3) * 0.6, tilt);
 
     playerCar.wheelSpin += state.roadSpeed * dt * 260;
-    playerCar.wheels.forEach((w) => w.setLocalEulerAngles(90 + playerCar.wheelSpin, 0, 0));
+    playerCar.wheels.forEach((w) => w.setLocalEulerAngles(playerCar.wheelSpin, 0, playerCar.glbWheels ? 0 : 90));
     animateDriverSprite(playerCar, 0, state.nitroHeld);
 
     if (state.nitroHeld && state.nitro > 0) {
@@ -2568,7 +2605,7 @@
       sl.z += state.roadSpeed * dt * 2.6;
       sl.entity.setLocalScale(0.08, 1.6 + Math.random() * 0.4, 1);
       if (sl.z > 16 || sl.life <= 0) {
-        sl.entity.enabled = false;
+        sl.entity.destroy();
         speedLines.splice(i, 1);
       }
     }
@@ -2627,11 +2664,11 @@
       }
 
       p.x += (targetX - p.x) * Math.min(1, dt * (3.2 + state.level * 0.28));
-      p.y = trackCrestAt(p.z) * 0.22;
+      p.y = .05 + trackCrestAt(p.z) * 0.22;
       car.setLocalPosition(p);
       car.setLocalEulerAngles(0, 180 + Math.sin(state.elapsed * 3 + p.z) * 1.2, (targetX - p.x) * -4);
       car.wheelSpin += state.roadSpeed * dt * 220;
-      car.wheels?.forEach((w) => w.setLocalEulerAngles(90 + car.wheelSpin, 0, 0));
+      car.wheels?.forEach((w) => w.setLocalEulerAngles(car.wheelSpin, 0, car.glbWheels ? 0 : 90));
       animateDriverSprite(car, i + car.laneIndex, car.aiAggression > 0.3);
 
       if (!car.nearMissAwarded && p.z > playerPos.z - 2.8 && p.z < playerPos.z + 4.8) {
@@ -2749,6 +2786,14 @@
 
   function updateCamera(dt) {
     const pos = playerCar.getLocalPosition();
+    if (state.mode === "menu") {
+      const t = quality.reducedMotion ? 0 : Math.sin(state.elapsed * .14) * .23;
+      playerCar.setLocalEulerAngles(0, 155 + t * 25, 0);
+      const portrait = window.innerHeight > window.innerWidth;
+      camera.setLocalPosition(portrait ? 4.4 : 6.6, 3.0, portrait ? 14.7 : 15.5);
+      camera.lookAt(portrait ? -.15 : -2.0, portrait ? -1.25 : 1.05, 7.5);
+      return;
+    }
     const bendLook = trackCurveAt(-42) * 0.045;
     const crestLift = trackCrestAt(-35) * 0.55;
     const desired = new pc.Vec3(pos.x * 0.55 + bendLook, 4.35 + crestLift, pos.z + 10.2);
@@ -2765,6 +2810,7 @@
 
   function updateGame(dt) {
     state.elapsed += dt;
+    presentation.update(dt, state, playerCar);
     updateCountdown(dt);
     updateLevelBanner(dt);
     audio.updateEngine();
@@ -2830,6 +2876,13 @@
     $("nitroUpgradeBtn")?.addEventListener("click", () => buyUpgrade("nitro"));
   }
 
+  $("menuAudioBtn")?.addEventListener("click", () => {
+    audio.ensure(); audio.toggleMute();
+    $("menuAudioBtn").textContent = audio.muted ? "Audio off" : "Audio on";
+    $("menuAudioBtn").setAttribute("aria-pressed", String(!audio.muted));
+  });
+  $("helpBtn")?.addEventListener("click", () => $("helpPanel")?.classList.remove("hidden"));
+  $("helpCloseBtn")?.addEventListener("click", () => { $("helpPanel")?.classList.add("hidden"); $("helpBtn")?.focus(); });
   bindGarageControls();
   refreshGarageUi();
 
