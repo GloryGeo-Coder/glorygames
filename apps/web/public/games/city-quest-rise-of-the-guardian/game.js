@@ -321,6 +321,7 @@
 
   enrichWalkerThreats();
   window.CityCampaign.extend(levelDefs);
+  window.CityTownship.expand(levelDefs);
 
   const imageSources = new Set();
   for(const [kind,urls] of Object.entries(spriteGroups))if(!kind.startsWith('hero_')&&!['walker','boss_taxi'].includes(kind)) {imageSources.add(urls[0]);if(kind==='drone')imageSources.add(urls[1]);}
@@ -389,6 +390,8 @@
     out.best=Math.max(out.best,out.score,readBest());
     out.unlockedLevels=clamp(Math.floor(Number(out.unlockedLevels)||1),1,levelDefs.length);
     out.levelIndex=clamp(Math.floor(Number(out.levelIndex)||0),0,out.unlockedLevels-1);
+    out.completedLevels=clamp(Math.floor(Number(out.completedLevels)||Math.max(0,out.unlockedLevels-1)),0,levelDefs.length);
+    out.campaignVersion=22;
     out.lives=clamp(Math.floor(Number(out.lives)||3),1,5);
     if(!['hero_blue','hero_green','hero_shadow'].includes(out.skin)||out.skin==='hero_green'&&out.coins<25||out.skin==='hero_shadow'&&out.coins<60)out.skin='hero_blue';
     out.started=false;out.paused=false;out.onMap=false;out.muted=!!out.muted;
@@ -716,7 +719,7 @@
     if(!state.started||state.paused||game.levelComplete||game.gameOver)return;
     const lv = currentLevel();
     for (const npc of lv.npcs || []) {
-      if (!game.missionAccepted && Math.abs((player.x+player.w/2)-npc.x) < 120 && Math.abs(player.y+player.h-npc.y)<100) {
+      if (Math.abs((player.x+player.w/2)-npc.x) < 120 && Math.abs(player.y+player.h-npc.y)<100) {
         game.missionAccepted = true;
         game.missionShown = true;
         game.speechTimer = 4.4;
@@ -775,7 +778,7 @@
     if(landing){player.y=landing.y-player.h;player.vy=0;player.onGround=true;riding=landing.move||landing.moving?landing:null;}
     if(player.vy<0)for(const p of surfaces)if(!p.move&&!p.ledge&&player.x+player.w>p.x&&player.x<p.x+p.w&&oldY>=p.y+p.h-1&&player.y<p.y+p.h){player.y=p.y+p.h;player.vy=0;}
     if(player.y>DESIGN_H+180){loseLife('You fell!');return;}
-    const next=currentLevel().checkpoints.findLast((c,i)=>i>checkpoint.index&&player.x>=c.x&&player.x<c.x+110&&Math.abs(player.y-c.y)<165);
+    const next=currentLevel().checkpoints.findLast((c,i)=>i>checkpoint.index&&player.x>=c.x&&player.x<c.x+110&&Math.abs(player.y-c.y)<260);
     if(next){checkpoint={...next,index:currentLevel().checkpoints.indexOf(next)};game.speechText='Checkpoint reached';game.speechTimer=2;sfx('power');}
     if(player.onGround) {
       coyote=.11;
@@ -982,6 +985,7 @@
     const bonus = 300 + state.lives * 100 + game.objectiveCount * 20 + (player.shield ? 100 : 0);
     state.score += bonus;
     state.best = Math.max(state.best, state.score);
+    state.completedLevels=Math.max(state.completedLevels||0,state.levelIndex+1);
     state.unlockedLevels = Math.max(state.unlockedLevels, state.levelIndex + 2);
     state.unlockedLevels = Math.min(state.unlockedLevels, levelDefs.length);
     game.stars = state.lives === 3 ? 3 : state.lives === 2 ? 2 : 1;
@@ -1112,7 +1116,7 @@
       const x = npc.x - 30 - cam;
       const y = npc.y - 98 + hover;
       if (img && img.width) art.prop(ctx,img,x,y,64,98);
-      if (!game.missionAccepted && Math.abs((player.x+player.w/2)-npc.x) < 130) {
+      if (Math.abs((player.x+player.w/2)-npc.x) < 130) {
         ctx.fillStyle = 'rgba(255,255,255,0.9)';
         ctx.font = '900 16px Inter, system-ui, sans-serif';
         ctx.fillText('Action', npc.x-cam-24, npc.y-62 + hover);

@@ -1,0 +1,85 @@
+{
+  "base_commit": "53f6c8dff13471abebf1cf5c1311b59427f1d123",
+  "levels": [
+    {
+      "id": 1,
+      "title": "Rooftop Dawn",
+      "width": 4900,
+      "enemies": 9,
+      "bg": "./assets/backgrounds/level-01.png",
+      "boss": false
+    },
+    {
+      "id": 2,
+      "title": "Main Street Dash",
+      "width": 5300,
+      "enemies": 11,
+      "bg": "./assets/backgrounds/level-02.png",
+      "boss": false
+    },
+    {
+      "id": 3,
+      "title": "Market Maze",
+      "width": 5660,
+      "enemies": 11,
+      "bg": "./assets/backgrounds/level-03.png",
+      "boss": false
+    },
+    {
+      "id": 4,
+      "title": "Taxi Rank Run",
+      "width": 5860,
+      "enemies": 9,
+      "bg": "./assets/backgrounds/level-04.png",
+      "boss": false
+    },
+    {
+      "id": 5,
+      "title": "Hidden Cave",
+      "width": 5720,
+      "enemies": 10,
+      "bg": "./assets/backgrounds/level-05.png",
+      "boss": false
+    },
+    {
+      "id": 6,
+      "title": "Guardian Showdown",
+      "width": 5420,
+      "enemies": 6,
+      "bg": "./assets/backgrounds/level-06.png",
+      "boss": true
+    },
+    {
+      "id": 7,
+      "title": "Rail Yard Chase",
+      "width": 6480,
+      "enemies": 12,
+      "bg": "./assets/backgrounds/level-07.png",
+      "boss": false
+    },
+    {
+      "id": 8,
+      "title": "Skyline Bridge",
+      "width": 6680,
+      "enemies": 11,
+      "bg": "./assets/backgrounds/level-08.png",
+      "boss": false
+    },
+    {
+      "id": 9,
+      "title": "Underground Vault",
+      "width": 6740,
+      "enemies": 12,
+      "bg": "./assets/backgrounds/level-09.png",
+      "boss": false
+    },
+    {
+      "id": 10,
+      "title": "Final Guardian Trial",
+      "width": 7040,
+      "enemies": 10,
+      "bg": "./assets/backgrounds/level-10.png",
+      "boss": true
+    }
+  ]
+}

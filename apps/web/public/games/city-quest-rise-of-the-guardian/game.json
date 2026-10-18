@@ -84,7 +84,16 @@
       "rail yard",
       "skyline bridge",
       "underground vault",
-      "final trial"
+      "final trial",
+      "spaza streets",
+      "schools",
+      "community gardens",
+      "clinic district",
+      "recycling works",
+      "reservoirs",
+      "solar ridge",
+      "water tower",
+      "night market"
     ],
     "missionNPCs": true,
     "moreNPCs": true,
@@ -92,14 +101,17 @@
     "levelMap": true,
     "bossStages": true,
     "highQualityThumbnail": true,
-    "levels": 10,
+    "levels": 25,
     "multiTouch": true,
     "safeAreaViewport": true,
     "checkpoints": true,
     "bufferedJump": true,
     "animatedPoses": 60,
     "telegraphedEnemyFire": true,
-    "expandedLevels": 10
+    "expandedLevels": 25,
+    "uniqueTownshipBackgrounds": 15,
+    "doubledOriginalLevelLength": true,
+    "doubledOriginalEnemyCount": true
   },
-  "version": "2.1.0"
+  "version": "2.2.0"
 }

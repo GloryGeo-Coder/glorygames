@@ -81,7 +81,7 @@ async function boot({ bitmapSupport=false, width = 1280, height = 720, saved = n
   const images = new Map();
   if (nativeCanvas) { const draw = ctx.drawImage.bind(ctx); ctx.drawImage = (img,...args) => draw(images.get(img) || img,...args); }
   const context = vm.createContext(sandbox);
-  for(const file of ['city-campaign.js','city-animation-data.js','city-animation.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
+  for(const file of ['city-campaign.js','city-township.js','city-animation-data.js','city-animation.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
   let code=fs.readFileSync(path.join(root,'game.js'),'utf8');
   code=code.replace('  loadImages().then(() => {', `
     globalThis.__cityProbe={player,game,keys,levelDefs,startGame,loadLevel,jump,consumeJump,shoot,tryAction,canCompleteAtExit,update,applyPhysics,updateMovingPlatforms,updateEnemies,damageEnemy,updateBoss,updateProjectiles,loseLife,collectThings,completeLevel,nextLevel,openMap,closeMap,setPaused,resetInput,resizeCanvas,computeCamera,draw,loadBackground,setSkin,saveState,postScore,
