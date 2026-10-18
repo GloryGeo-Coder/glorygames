@@ -1,0 +1,255 @@
+{
+  "title": "Lost Jungle: The Sunlit Expedition",
+  "style": "Original jungle adventure instrumentals",
+  "provenance": "Composed and synthesized for WebGameArena; no third-party songs, recordings or samples.",
+  "renderer": "tools/build-jungle-soundtrack.py",
+  "sampleRate": 44100,
+  "channels": 2,
+  "bitrateKbps": 128,
+  "mastering": {
+    "integratedLufs": -18,
+    "truePeakDb": -2.5
+  },
+  "tracks": [
+    {
+      "id": 1,
+      "title": "The Emerald Trail",
+      "biome": "Jungle",
+      "bpm": 106,
+      "tonicMidi": 45,
+      "scale": "dorian",
+      "bars": 40,
+      "duration": 90.566,
+      "encodedDuration": 90.592653,
+      "url": "./assets/music/jungle-01.mp3",
+      "bytes": 1450043,
+      "sha256": "80f2d72eb14e82afb50a42487ccc060cf37590e57e6acbf5cdc1707b4f507f2a",
+      "sourceRms": 0.061392,
+      "score": {
+        "progression": [
+          0,
+          3,
+          5,
+          4
+        ],
+        "motif": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "River of First Light",
+      "biome": "River",
+      "bpm": 96,
+      "tonicMidi": 50,
+      "scale": "major",
+      "bars": 40,
+      "duration": 100.0,
+      "encodedDuration": 100.04898,
+      "url": "./assets/music/jungle-02.mp3",
+      "bytes": 1601347,
+      "sha256": "6aa52457d5aabbb7dd90f24ab3ada9abb0b84faf6be4cccf61ee805e43c88a67",
+      "sourceRms": 0.061844,
+      "score": {
+        "progression": [
+          0,
+          4,
+          5,
+          3
+        ],
+        "motif": 1
+      }
+    },
+    {
+      "id": 3,
+      "title": "Beyond the Waterfall",
+      "biome": "Waterfall",
+      "bpm": 102,
+      "tonicMidi": 47,
+      "scale": "minor",
+      "bars": 40,
+      "duration": 94.118,
+      "encodedDuration": 94.145306,
+      "url": "./assets/music/jungle-03.mp3",
+      "bytes": 1506888,
+      "sha256": "80ca8fca8c6531a8931d30987a0df9138fc7b27e95c793d2f0b7e0586ac722ca",
+      "sourceRms": 0.061093,
+      "score": {
+        "progression": [
+          0,
+          5,
+          3,
+          4
+        ],
+        "motif": 2
+      }
+    },
+    {
+      "id": 4,
+      "title": "Roots beneath the Moon",
+      "biome": "Cave",
+      "bpm": 88,
+      "tonicMidi": 48,
+      "scale": "minor",
+      "bars": 40,
+      "duration": 109.091,
+      "encodedDuration": 109.139592,
+      "url": "./assets/music/jungle-04.mp3",
+      "bytes": 1746799,
+      "sha256": "31b72e52542da4279c306bd96547e375928539775275dc78bd7d0501b8a77f58",
+      "sourceRms": 0.061791,
+      "score": {
+        "progression": [
+          0,
+          3,
+          5,
+          4
+        ],
+        "motif": 3
+      }
+    },
+    {
+      "id": 5,
+      "title": "The Canopy Road",
+      "biome": "Canopy",
+      "bpm": 112,
+      "tonicMidi": 43,
+      "scale": "dorian",
+      "bars": 40,
+      "duration": 85.714,
+      "encodedDuration": 85.76,
+      "url": "./assets/music/jungle-05.mp3",
+      "bytes": 1372719,
+      "sha256": "d5b0c7f43c2471e9ca0b1bf1bc11fab7e65b7659c67869d24ff0092ed4a8fa2f",
+      "sourceRms": 0.063184,
+      "score": {
+        "progression": [
+          0,
+          5,
+          3,
+          4
+        ],
+        "motif": 4
+      }
+    },
+    {
+      "id": 6,
+      "title": "The Stone Sundial",
+      "biome": "Ruins",
+      "bpm": 98,
+      "tonicMidi": 50,
+      "scale": "minor",
+      "bars": 40,
+      "duration": 97.959,
+      "encodedDuration": 97.985306,
+      "url": "./assets/music/jungle-06.mp3",
+      "bytes": 1568325,
+      "sha256": "f231618462a221fc57ff40c1714f98a262941ad9c32206813493466aab2a68fa",
+      "sourceRms": 0.06333,
+      "score": {
+        "progression": [
+          0,
+          3,
+          1,
+          4
+        ],
+        "motif": 5
+      }
+    },
+    {
+      "id": 7,
+      "title": "Echoes in Amber",
+      "biome": "Crystal",
+      "bpm": 92,
+      "tonicMidi": 47,
+      "scale": "minor",
+      "bars": 40,
+      "duration": 104.348,
+      "encodedDuration": 104.385306,
+      "url": "./assets/music/jungle-07.mp3",
+      "bytes": 1670723,
+      "sha256": "7c3341b7b35ef74c2b84793f09e2a0677ca8aa037d953786c91cc28ba3552e8e",
+      "sourceRms": 0.059482,
+      "score": {
+        "progression": [
+          0,
+          5,
+          2,
+          3
+        ],
+        "motif": 6
+      }
+    },
+    {
+      "id": 8,
+      "title": "Lanterns in the Leaves",
+      "biome": "Village",
+      "bpm": 100,
+      "tonicMidi": 41,
+      "scale": "major",
+      "bars": 40,
+      "duration": 96.0,
+      "encodedDuration": 96.026122,
+      "url": "./assets/music/jungle-08.mp3",
+      "bytes": 1536983,
+      "sha256": "bf6a7b5b227b2de0ed9998c79082b051a5b6a532df658f0692713dae11f82859",
+      "sourceRms": 0.063458,
+      "score": {
+        "progression": [
+          0,
+          3,
+          5,
+          4
+        ],
+        "motif": 7
+      }
+    },
+    {
+      "id": 9,
+      "title": "Embers of the Lost Valley",
+      "biome": "Volcano",
+      "bpm": 120,
+      "tonicMidi": 50,
+      "scale": "minor",
+      "bars": 40,
+      "duration": 80.0,
+      "encodedDuration": 80.039184,
+      "url": "./assets/music/jungle-09.mp3",
+      "bytes": 1281195,
+      "sha256": "2de10c0f6738f823b5c2affb146ae0358548f82b6f79dff6183b424ad1174112",
+      "sourceRms": 0.065198,
+      "score": {
+        "progression": [
+          0,
+          5,
+          3,
+          4
+        ],
+        "motif": 8
+      }
+    },
+    {
+      "id": 10,
+      "title": "Dawn at the Sun Temple",
+      "biome": "Sun Temple",
+      "bpm": 108,
+      "tonicMidi": 48,
+      "scale": "major",
+      "bars": 40,
+      "duration": 88.889,
+      "encodedDuration": 88.920816,
+      "url": "./assets/music/jungle-10.mp3",
+      "bytes": 1423299,
+      "sha256": "ef21a429cea9c62dbc44353b99217ea90a6a0a4a2cadb7ad2439a48bf87f92b7",
+      "sourceRms": 0.06676,
+      "score": {
+        "progression": [
+          0,
+          5,
+          3,
+          4
+        ],
+        "motif": 9
+      }
+    }
+  ]
+}
