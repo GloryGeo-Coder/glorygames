@@ -1,18 +1,20 @@
 {
   "meta": {
-    "name": "Level 1 \u2022 Warm-Up Rooftops",
-    "timeLimit": 128,
-    "parTime": 90
+    "name": "Level 1 • Warm-Up Rooftops",
+    "background": 1,
+    "district": "terrace",
+    "timeLimit": 355,
+    "parTime": 196
   },
   "tileSize": 32,
-  "w": 112,
+  "w": 280,
   "h": 18,
   "spawn": {
     "x": 2,
     "y": 13
   },
   "exit": {
-    "x": 107,
+    "x": 275,
     "y": 13,
     "w": 1,
     "h": 2
@@ -21,311 +23,753 @@
     {
       "x": 0,
       "y": 15,
-      "w": 17,
+      "w": 36,
       "h": 3
     },
     {
-      "x": 20,
-      "y": 15,
-      "w": 21,
-      "h": 3
-    },
-    {
-      "x": 45,
-      "y": 15,
-      "w": 18,
-      "h": 3
-    },
-    {
-      "x": 66,
-      "y": 15,
-      "w": 22,
-      "h": 3
-    },
-    {
-      "x": 93,
-      "y": 15,
-      "w": 19,
-      "h": 3
-    },
-    {
-      "x": 10,
+      "x": 6,
       "y": 12,
       "w": 5,
-      "h": 1
-    },
-    {
-      "x": 25,
-      "y": 10,
-      "w": 6,
       "h": 1
     },
     {
       "x": 40,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 50,
       "y": 12,
       "w": 5,
       "h": 1
     },
     {
-      "x": 56,
-      "y": 9,
-      "w": 6,
-      "h": 1
-    },
-    {
-      "x": 75,
-      "y": 11,
-      "w": 7,
-      "h": 1
-    },
-    {
-      "x": 95,
-      "y": 10,
-      "w": 6,
-      "h": 1
-    },
-    {
-      "x": 85,
+      "x": 63,
       "y": 12,
       "w": 6,
       "h": 1
+    },
+    {
+      "x": 80,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 90,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 98,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 105,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 120,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 130,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 138,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 145,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 160,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 170,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 178,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 185,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 200,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 210,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 223,
+      "y": 12,
+      "w": 6,
+      "h": 1
+    },
+    {
+      "x": 240,
+      "y": 15,
+      "w": 40,
+      "h": 3
     }
   ],
   "coins": [
     {
-      "x": 7,
-      "y": 10
-    },
-    {
-      "x": 13,
+      "x": 6,
       "y": 14
     },
     {
-      "x": 19,
+      "x": 10,
+      "y": 14
+    },
+    {
+      "x": 18,
+      "y": 14
+    },
+    {
+      "x": 24,
+      "y": 14
+    },
+    {
+      "x": 30,
+      "y": 14
+    },
+    {
+      "x": 34,
+      "y": 14
+    },
+    {
+      "x": 7,
+      "y": 11
+    },
+    {
+      "x": 9,
+      "y": 11
+    },
+    {
+      "x": 22,
       "y": 14
     },
     {
       "x": 25,
+      "y": 14
+    },
+    {
+      "x": 46,
+      "y": 14
+    },
+    {
+      "x": 50,
+      "y": 14
+    },
+    {
+      "x": 58,
+      "y": 14
+    },
+    {
+      "x": 64,
+      "y": 14
+    },
+    {
+      "x": 70,
+      "y": 14
+    },
+    {
+      "x": 74,
+      "y": 14
+    },
+    {
+      "x": 51,
       "y": 11
     },
     {
-      "x": 31,
-      "y": 14
+      "x": 53,
+      "y": 11
     },
     {
-      "x": 37,
-      "y": 14
-    },
-    {
-      "x": 43,
-      "y": 10
-    },
-    {
-      "x": 49,
-      "y": 14
-    },
-    {
-      "x": 55,
-      "y": 14
+      "x": 59,
+      "y": 11
     },
     {
       "x": 61,
       "y": 11
     },
     {
-      "x": 67,
+      "x": 86,
       "y": 14
     },
     {
-      "x": 73,
+      "x": 90,
       "y": 14
     },
     {
-      "x": 79,
-      "y": 10
+      "x": 98,
+      "y": 14
     },
     {
-      "x": 85,
+      "x": 104,
+      "y": 14
+    },
+    {
+      "x": 110,
+      "y": 14
+    },
+    {
+      "x": 114,
       "y": 14
     },
     {
       "x": 91,
-      "y": 14
-    },
-    {
-      "x": 97,
       "y": 11
     },
     {
-      "x": 103,
+      "x": 93,
+      "y": 11
+    },
+    {
+      "x": 99,
+      "y": 8
+    },
+    {
+      "x": 101,
+      "y": 8
+    },
+    {
+      "x": 126,
+      "y": 14
+    },
+    {
+      "x": 130,
+      "y": 14
+    },
+    {
+      "x": 138,
+      "y": 14
+    },
+    {
+      "x": 144,
+      "y": 14
+    },
+    {
+      "x": 150,
+      "y": 14
+    },
+    {
+      "x": 154,
+      "y": 14
+    },
+    {
+      "x": 131,
+      "y": 11
+    },
+    {
+      "x": 133,
+      "y": 11
+    },
+    {
+      "x": 139,
+      "y": 8
+    },
+    {
+      "x": 141,
+      "y": 8
+    },
+    {
+      "x": 166,
+      "y": 14
+    },
+    {
+      "x": 170,
+      "y": 14
+    },
+    {
+      "x": 178,
+      "y": 14
+    },
+    {
+      "x": 184,
+      "y": 14
+    },
+    {
+      "x": 190,
+      "y": 14
+    },
+    {
+      "x": 194,
+      "y": 14
+    },
+    {
+      "x": 171,
+      "y": 11
+    },
+    {
+      "x": 173,
+      "y": 11
+    },
+    {
+      "x": 179,
+      "y": 8
+    },
+    {
+      "x": 181,
+      "y": 8
+    },
+    {
+      "x": 206,
+      "y": 14
+    },
+    {
+      "x": 210,
+      "y": 14
+    },
+    {
+      "x": 218,
+      "y": 14
+    },
+    {
+      "x": 224,
+      "y": 14
+    },
+    {
+      "x": 230,
+      "y": 14
+    },
+    {
+      "x": 234,
+      "y": 14
+    },
+    {
+      "x": 211,
+      "y": 11
+    },
+    {
+      "x": 213,
+      "y": 11
+    },
+    {
+      "x": 219,
+      "y": 11
+    },
+    {
+      "x": 221,
+      "y": 11
+    },
+    {
+      "x": 248,
+      "y": 14
+    },
+    {
+      "x": 250,
       "y": 14
     }
   ],
   "collectibles": [
     {
-      "x": 14,
-      "y": 9,
+      "x": 8,
+      "y": 14,
       "type": "taxi"
     },
     {
-      "x": 29,
-      "y": 10,
+      "x": 33,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 48,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 73,
+      "y": 14,
       "type": "lunch"
     },
     {
-      "x": 44,
-      "y": 11,
+      "x": 88,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 113,
+      "y": 14,
       "type": "badge"
     },
     {
-      "x": 59,
-      "y": 12,
+      "x": 100,
+      "y": 8,
+      "type": "taxi"
+    },
+    {
+      "x": 128,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 153,
+      "y": 14,
       "type": "data"
     },
     {
-      "x": 74,
-      "y": 9,
+      "x": 140,
+      "y": 8,
+      "type": "taxi"
+    },
+    {
+      "x": 168,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 193,
+      "y": 14,
       "type": "airtime"
     },
     {
-      "x": 89,
-      "y": 10,
+      "x": 180,
+      "y": 8,
+      "type": "taxi"
+    },
+    {
+      "x": 208,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 233,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 247,
+      "y": 14,
       "type": "taxi"
     }
   ],
   "hazards": [
     {
-      "x": 22,
-      "y": 14,
-      "w": 2,
-      "h": 1
+      "x": 73,
+      "y": 14.5,
+      "w": 1,
+      "h": 0.5
     },
     {
-      "x": 50,
-      "y": 14,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "x": 78,
-      "y": 14,
-      "w": 2,
-      "h": 1
+      "x": 193,
+      "y": 14.5,
+      "w": 1,
+      "h": 0.5
     }
   ],
-  "powerups": [],
+  "powerups": [
+    {
+      "x": 45,
+      "y": 14,
+      "type": "shield"
+    },
+    {
+      "x": 125,
+      "y": 14,
+      "type": "life"
+    },
+    {
+      "x": 205,
+      "y": 14,
+      "type": "rapidfire"
+    },
+    {
+      "x": 246,
+      "y": 14,
+      "type": "shield"
+    }
+  ],
   "enemies": [
     {
       "type": "patrol",
-      "x": 18,
-      "y": 13,
-      "minX": 13,
-      "maxX": 23,
-      "speed": 86,
-      "hp": 1
-    },
-    {
-      "type": "chaser",
-      "x": 36,
-      "y": 13,
-      "minX": 31,
-      "maxX": 41,
-      "speed": 96,
-      "hp": 1
+      "x": 19,
+      "y": 13.8,
+      "minX": 18,
+      "maxX": 22,
+      "speed": 66,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.025
     },
     {
       "type": "shooter",
-      "x": 54,
-      "y": 13,
-      "minX": 49,
-      "maxX": 59,
-      "speed": 106,
-      "hp": 1
+      "x": 29,
+      "y": 13.8,
+      "minX": 27,
+      "maxX": 31,
+      "speed": 80,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1750000000000003
     },
     {
-      "type": "patrol",
-      "x": 72,
-      "y": 13,
+      "type": "shooter",
+      "x": 59,
+      "y": 13.8,
+      "minX": 58,
+      "maxX": 62,
+      "speed": 66,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.025
+    },
+    {
+      "type": "shooter",
+      "x": 69,
+      "y": 13.8,
       "minX": 67,
-      "maxX": 77,
-      "speed": 86,
-      "hp": 1
+      "maxX": 71,
+      "speed": 80,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1750000000000003
+    },
+    {
+      "type": "drone",
+      "x": 48,
+      "y": 11.1,
+      "minX": 45,
+      "maxX": 50,
+      "speed": 49,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.665
+    },
+    {
+      "type": "shooter",
+      "x": 99,
+      "y": 13.8,
+      "minX": 98,
+      "maxX": 102,
+      "speed": 66,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.025
+    },
+    {
+      "type": "chaser",
+      "x": 109,
+      "y": 13.8,
+      "minX": 107,
+      "maxX": 111,
+      "speed": 80,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1750000000000003
+    },
+    {
+      "type": "shooter",
+      "x": 139,
+      "y": 13.8,
+      "minX": 138,
+      "maxX": 142,
+      "speed": 66,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.025
+    },
+    {
+      "type": "shooter",
+      "x": 149,
+      "y": 13.8,
+      "minX": 147,
+      "maxX": 151,
+      "speed": 80,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1750000000000003
+    },
+    {
+      "type": "drone",
+      "x": 128,
+      "y": 11.1,
+      "minX": 125,
+      "maxX": 130,
+      "speed": 49,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.665
+    },
+    {
+      "type": "shooter",
+      "x": 179,
+      "y": 13.8,
+      "minX": 178,
+      "maxX": 182,
+      "speed": 66,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.025
+    },
+    {
+      "type": "shooter",
+      "x": 189,
+      "y": 13.8,
+      "minX": 187,
+      "maxX": 191,
+      "speed": 80,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1750000000000003
+    },
+    {
+      "type": "shooter",
+      "x": 219,
+      "y": 13.8,
+      "minX": 218,
+      "maxX": 222,
+      "speed": 66,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.025
+    },
+    {
+      "type": "chaser",
+      "x": 229,
+      "y": 13.8,
+      "minX": 227,
+      "maxX": 231,
+      "speed": 80,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1750000000000003
+    },
+    {
+      "type": "drone",
+      "x": 208,
+      "y": 11.1,
+      "minX": 205,
+      "maxX": 210,
+      "speed": 49,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.665
+    }
+  ],
+  "checkpoints": [
+    {
+      "x": 83,
+      "y": 13
+    },
+    {
+      "x": 163,
+      "y": 13
+    },
+    {
+      "x": 243,
+      "y": 13
     }
   ],
   "boss": {
     "name": "Spaza Guard",
     "type": "mini",
-    "x": 98,
+    "x": 263,
     "y": 12,
-    "minX": 92,
-    "maxX": 105,
+    "minX": 253,
+    "maxX": 272,
     "hp": 4,
-    "speed": 95
+    "speed": 88
   },
   "npcs": [
     {
       "name": "Lebo",
       "x": 4,
       "y": 13,
-      "message": "Collect coins for the spaza auntie, clear the first bots, then beat the mini-boss.",
-      "completeMessage": "Sharp! The mission is complete. Head to the open gate."
+      "message": "Help the spaza auntie recover supplies along the rooftops.",
+      "completeMessage": "Sharp! The route is clear. Head for the open gate."
     }
   ],
   "obstacles": [
     {
       "type": "taxi",
-      "x": 30,
+      "x": 24,
       "y": 14.05,
       "w": 2.5,
       "h": 0.9,
-      "minX": 27,
-      "maxX": 41,
-      "speed": 109
+      "minX": 19,
+      "maxX": 30,
+      "speed": 87
     },
     {
       "type": "trampoline",
-      "x": 46,
+      "x": 50,
       "y": 14.65,
       "w": 1.4,
       "h": 0.35
     },
     {
       "type": "crate",
-      "x": 67,
+      "x": 106,
       "y": 3,
       "w": 1,
       "h": 1,
-      "triggerRadius": 6,
-      "respawn": 4
+      "triggerRadius": 4,
+      "respawn": 5
     },
     {
       "type": "collapse",
-      "x": 80,
-      "y": 10,
-      "w": 5,
+      "x": 138,
+      "y": 11,
+      "w": 4,
       "h": 0.55,
       "delay": 0.65,
       "respawn": 3.3
     },
     {
       "type": "movingPlatform",
-      "x": 73,
-      "y": 11,
-      "w": 5,
+      "x": 184,
+      "y": 10.8,
+      "w": 4,
       "h": 0.55,
-      "minX": 69,
-      "maxX": 81,
-      "speed": 57
+      "minX": 182,
+      "maxX": 190,
+      "speed": 49
     }
   ],
   "doors": [],
   "switches": [],
   "objective": {
-    "coinsRequired": 14,
-    "collectiblesRequired": 3,
-    "enemiesRequired": 3,
+    "coinsRequired": 18,
+    "collectiblesRequired": 4,
+    "enemiesRequired": 5,
     "bossRequired": true,
     "switchesRequired": 0,
-    "message": "Collect coins for the spaza auntie, clear the first bots, then beat the mini-boss."
+    "message": "Help the spaza auntie recover supplies along the rooftops. Collect 18 coins and 4 kasi items, defeat 5 bots, then beat Spaza Guard."
   }
 }

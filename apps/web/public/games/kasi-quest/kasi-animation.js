@@ -99,10 +99,11 @@
     }
     async function load(loadImage) {
       await Promise.all(Object.entries(data?.atlases || {}).map(async ([kind, info]) => {
+        if (images[kind]) return;
         try {
           const image = await loadImage(info.url);
           if (image && image.width === info.width && image.height === info.height) images[kind] = image;
-        } catch (_) { /* The existing sprite is the per-actor fallback. */ }
+        } catch (_) { /* Game rendering provides a per-actor fallback; later starts can retry. */ }
       }));
     }
     return { load, play, cancel, update, snapshot, rect, draw, duration,

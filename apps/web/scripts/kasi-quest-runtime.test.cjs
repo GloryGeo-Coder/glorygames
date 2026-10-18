@@ -11,7 +11,7 @@ test('boot preserves campaign, economy, upgrade and star saves without new names
     ['wga_kasi_quest_v3_upgrades',JSON.stringify({ shield:1, doubleJump:1, fireRate:2, extraLife:1 })],['wga_kasi_quest_v3_stars','{"1":3,"8":2}']]);
   const r = await boot({ saved });
   assert.equal(r.state.wallet,48); assert.equal(r.state.upgrades.fireRate,2); assert.equal(r.state.stars['8'],2);
-  assert.equal(r.elements.get('levelGrid').children.length,8); assert.equal(r.player.lives,4);
+  assert.equal(r.elements.get('levelGrid').children.length,20); assert.equal(r.player.lives,4);
   assert.equal(r.elements.get('panel').hidden,false); assert.equal(r.elements.get('touch').hidden,true);
 });
 
@@ -96,13 +96,13 @@ for (const [width,height] of [[320,568],[360,640],[390,844],[430,932],[667,375],
   });
 }
 
-test('all eight campaign missions can open their gates and transition with saved stars and scores', async () => {
+test('all twenty campaign missions can open their gates and transition with saved stars and scores', async () => {
   const r=await boot(); await r.startOrRestart();
-  for(let n=1;n<=8;n++) {
+  for(let n=1;n<=20;n++) {
     assert.equal(r.state.currentLevel,n); assert.equal(r.objectiveComplete(),false);
     const taxi=r.state.obstacles.find(o=>o.type==='taxi');
     near(taxi.w/taxi.h,988/866); assert.ok(taxi.h>r.player.h && taxi.h<100);
-    const raw=JSON.parse(fs.readFileSync(path.join(root,`levels/level-0${n}.json`)));
+    const raw=JSON.parse(fs.readFileSync(path.join(root,`levels/level-${String(n).padStart(2,'0')}.json`)));
     near(taxi.y+taxi.h,(raw.obstacles[0].y+raw.obstacles[0].h)*32);
     while(r.state.level.coins.length) r.collectCoin(0);
     r.state.level.collectibles.forEach((_,i)=>r.collectCollectible(i));
@@ -117,7 +117,7 @@ test('all eight campaign missions can open their gates and transition with saved
 });
 
 test('shooting damages enemies, boss phases and doors still react to projectiles', async () => {
-  const r=await boot(); await r.startOrRestart();
+  const r=await boot({saved:new Map([['wga_kasi_quest_v3_campaign','{"unlocked":8}']])}); await r.loadLevel(1); await r.startOrRestart();
   const enemy=r.state.enemies[0]; Object.assign(enemy,{x:140,y:r.player.y,w:35,h:39,hp:1});
   r.shoot(); for(let i=0;i<10;i++) r.updateProjectiles(1/60); assert.equal(enemy.alive,false);
   const b=r.state.bosses[0]; r.hitBoss(b,Math.ceil(b.maxHp/2)); assert.equal(b.phase,2);

@@ -1,18 +1,20 @@
 {
   "meta": {
-    "name": "Level 2 \u2022 Taxi Rank Gaps",
-    "timeLimit": 141,
-    "parTime": 100
+    "name": "Level 2 • Taxi Rank Gaps",
+    "background": 2,
+    "district": "rank",
+    "timeLimit": 360,
+    "parTime": 199
   },
   "tileSize": 32,
-  "w": 124,
+  "w": 280,
   "h": 18,
   "spawn": {
     "x": 2,
     "y": 13
   },
   "exit": {
-    "x": 119,
+    "x": 275,
     "y": 13,
     "w": 1,
     "h": 2
@@ -21,53 +23,23 @@
     {
       "x": 0,
       "y": 15,
-      "w": 22,
+      "w": 36,
       "h": 3
     },
     {
-      "x": 25,
-      "y": 15,
-      "w": 19,
-      "h": 3
-    },
-    {
-      "x": 48,
-      "y": 15,
-      "w": 23,
-      "h": 3
-    },
-    {
-      "x": 74,
-      "y": 15,
-      "w": 20,
-      "h": 3
-    },
-    {
-      "x": 99,
-      "y": 15,
-      "w": 18,
-      "h": 3
-    },
-    {
-      "x": 121,
-      "y": 15,
-      "w": 3,
-      "h": 3
-    },
-    {
-      "x": 10,
+      "x": 6,
       "y": 12,
       "w": 5,
       "h": 1
     },
     {
-      "x": 26,
-      "y": 10,
-      "w": 6,
-      "h": 1
+      "x": 40,
+      "y": 15,
+      "w": 36,
+      "h": 3
     },
     {
-      "x": 42,
+      "x": 50,
       "y": 12,
       "w": 5,
       "h": 1
@@ -75,308 +47,740 @@
     {
       "x": 58,
       "y": 9,
-      "w": 6,
+      "w": 5,
       "h": 1
     },
     {
-      "x": 78,
+      "x": 65,
       "y": 11,
-      "w": 7,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 80,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 90,
+      "y": 12,
+      "w": 5,
       "h": 1
     },
     {
       "x": 98,
-      "y": 10,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 105,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 120,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 130,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 138,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 145,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 160,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 170,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 183,
+      "y": 12,
       "w": 6,
       "h": 1
     },
     {
-      "x": 97,
+      "x": 200,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 210,
       "y": 12,
-      "w": 6,
+      "w": 5,
       "h": 1
+    },
+    {
+      "x": 218,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 225,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 240,
+      "y": 15,
+      "w": 40,
+      "h": 3
     }
   ],
   "coins": [
     {
-      "x": 7,
-      "y": 10
-    },
-    {
-      "x": 13,
+      "x": 6,
       "y": 14
     },
     {
-      "x": 19,
+      "x": 10,
+      "y": 14
+    },
+    {
+      "x": 18,
+      "y": 14
+    },
+    {
+      "x": 24,
+      "y": 14
+    },
+    {
+      "x": 30,
+      "y": 14
+    },
+    {
+      "x": 34,
+      "y": 14
+    },
+    {
+      "x": 7,
+      "y": 11
+    },
+    {
+      "x": 9,
+      "y": 11
+    },
+    {
+      "x": 22,
       "y": 14
     },
     {
       "x": 25,
+      "y": 14
+    },
+    {
+      "x": 46,
+      "y": 14
+    },
+    {
+      "x": 50,
+      "y": 14
+    },
+    {
+      "x": 58,
+      "y": 14
+    },
+    {
+      "x": 64,
+      "y": 14
+    },
+    {
+      "x": 70,
+      "y": 14
+    },
+    {
+      "x": 74,
+      "y": 14
+    },
+    {
+      "x": 51,
       "y": 11
     },
     {
-      "x": 31,
-      "y": 14
+      "x": 53,
+      "y": 11
     },
     {
-      "x": 37,
-      "y": 14
-    },
-    {
-      "x": 43,
-      "y": 10
-    },
-    {
-      "x": 49,
-      "y": 14
-    },
-    {
-      "x": 55,
-      "y": 14
+      "x": 59,
+      "y": 8
     },
     {
       "x": 61,
-      "y": 11
+      "y": 8
     },
     {
-      "x": 67,
+      "x": 86,
       "y": 14
     },
     {
-      "x": 73,
+      "x": 90,
       "y": 14
     },
     {
-      "x": 79,
-      "y": 10
+      "x": 98,
+      "y": 14
     },
     {
-      "x": 85,
+      "x": 104,
+      "y": 14
+    },
+    {
+      "x": 110,
+      "y": 14
+    },
+    {
+      "x": 114,
       "y": 14
     },
     {
       "x": 91,
-      "y": 14
-    },
-    {
-      "x": 97,
       "y": 11
     },
     {
-      "x": 103,
+      "x": 93,
+      "y": 11
+    },
+    {
+      "x": 99,
+      "y": 8
+    },
+    {
+      "x": 101,
+      "y": 8
+    },
+    {
+      "x": 126,
       "y": 14
     },
     {
-      "x": 109,
+      "x": 130,
       "y": 14
     },
     {
-      "x": 115,
-      "y": 10
+      "x": 138,
+      "y": 14
+    },
+    {
+      "x": 144,
+      "y": 14
+    },
+    {
+      "x": 150,
+      "y": 14
+    },
+    {
+      "x": 154,
+      "y": 14
+    },
+    {
+      "x": 131,
+      "y": 11
+    },
+    {
+      "x": 133,
+      "y": 11
+    },
+    {
+      "x": 139,
+      "y": 8
+    },
+    {
+      "x": 141,
+      "y": 8
+    },
+    {
+      "x": 166,
+      "y": 14
+    },
+    {
+      "x": 170,
+      "y": 14
+    },
+    {
+      "x": 178,
+      "y": 14
+    },
+    {
+      "x": 184,
+      "y": 14
+    },
+    {
+      "x": 190,
+      "y": 14
+    },
+    {
+      "x": 194,
+      "y": 14
+    },
+    {
+      "x": 171,
+      "y": 11
+    },
+    {
+      "x": 173,
+      "y": 11
+    },
+    {
+      "x": 179,
+      "y": 11
+    },
+    {
+      "x": 181,
+      "y": 11
+    },
+    {
+      "x": 206,
+      "y": 14
+    },
+    {
+      "x": 210,
+      "y": 14
+    },
+    {
+      "x": 218,
+      "y": 14
+    },
+    {
+      "x": 224,
+      "y": 14
+    },
+    {
+      "x": 230,
+      "y": 14
+    },
+    {
+      "x": 234,
+      "y": 14
+    },
+    {
+      "x": 211,
+      "y": 11
+    },
+    {
+      "x": 213,
+      "y": 11
+    },
+    {
+      "x": 219,
+      "y": 8
+    },
+    {
+      "x": 221,
+      "y": 8
+    },
+    {
+      "x": 248,
+      "y": 14
+    },
+    {
+      "x": 250,
+      "y": 14
     }
   ],
   "collectibles": [
     {
-      "x": 14,
-      "y": 9,
-      "type": "lunch"
-    },
-    {
-      "x": 29,
-      "y": 10,
-      "type": "badge"
-    },
-    {
-      "x": 44,
-      "y": 11,
-      "type": "data"
-    },
-    {
-      "x": 59,
-      "y": 12,
-      "type": "airtime"
-    },
-    {
-      "x": 74,
-      "y": 9,
+      "x": 8,
+      "y": 14,
       "type": "taxi"
     },
     {
-      "x": 89,
-      "y": 10,
+      "x": 33,
+      "y": 14,
       "type": "lunch"
     },
     {
-      "x": 104,
-      "y": 11,
+      "x": 48,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 73,
+      "y": 14,
       "type": "badge"
+    },
+    {
+      "x": 60,
+      "y": 8,
+      "type": "taxi"
+    },
+    {
+      "x": 88,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 113,
+      "y": 14,
+      "type": "data"
+    },
+    {
+      "x": 100,
+      "y": 8,
+      "type": "taxi"
+    },
+    {
+      "x": 128,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 153,
+      "y": 14,
+      "type": "airtime"
+    },
+    {
+      "x": 140,
+      "y": 8,
+      "type": "taxi"
+    },
+    {
+      "x": 168,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 193,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 208,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 233,
+      "y": 14,
+      "type": "lunch"
+    },
+    {
+      "x": 220,
+      "y": 8,
+      "type": "taxi"
+    },
+    {
+      "x": 247,
+      "y": 14,
+      "type": "taxi"
     }
   ],
   "hazards": [
     {
-      "x": 23,
-      "y": 14,
-      "w": 2,
-      "h": 1
+      "x": 73,
+      "y": 14.5,
+      "w": 1,
+      "h": 0.5
     },
     {
-      "x": 51,
-      "y": 14,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "x": 79,
-      "y": 14,
-      "w": 2,
-      "h": 1
+      "x": 193,
+      "y": 14.5,
+      "w": 1,
+      "h": 0.5
     }
   ],
   "powerups": [
     {
-      "x": 20,
-      "y": 10,
+      "x": 45,
+      "y": 14,
+      "type": "shield"
+    },
+    {
+      "x": 125,
+      "y": 14,
+      "type": "life"
+    },
+    {
+      "x": 205,
+      "y": 14,
+      "type": "rapidfire"
+    },
+    {
+      "x": 246,
+      "y": 14,
       "type": "shield"
     }
   ],
   "enemies": [
     {
-      "type": "chaser",
-      "x": 18,
-      "y": 13,
-      "minX": 13,
-      "maxX": 23,
-      "speed": 92,
-      "hp": 1
+      "type": "shooter",
+      "x": 19,
+      "y": 13.8,
+      "minX": 18,
+      "maxX": 22,
+      "speed": 68,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9999999999999998
     },
     {
       "type": "shooter",
-      "x": 36,
-      "y": 13,
-      "minX": 31,
-      "maxX": 41,
-      "speed": 102,
-      "hp": 1
+      "x": 29,
+      "y": 13.8,
+      "minX": 27,
+      "maxX": 31,
+      "speed": 82,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1500000000000004
     },
     {
-      "type": "patrol",
-      "x": 54,
-      "y": 13,
-      "minX": 49,
-      "maxX": 59,
-      "speed": 112,
-      "hp": 1
+      "type": "drone",
+      "x": 8,
+      "y": 11.6,
+      "minX": 5,
+      "maxX": 10,
+      "speed": 50,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.6300000000000003
     },
     {
-      "type": "patrol",
-      "x": 72,
-      "y": 13,
-      "minX": 67,
-      "maxX": 77,
-      "speed": 92,
-      "hp": 1
+      "type": "shooter",
+      "x": 59,
+      "y": 13.8,
+      "minX": 58,
+      "maxX": 62,
+      "speed": 68,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9999999999999998
     },
     {
       "type": "chaser",
-      "x": 90,
-      "y": 13,
+      "x": 69,
+      "y": 13.8,
+      "minX": 67,
+      "maxX": 71,
+      "speed": 82,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1500000000000004
+    },
+    {
+      "type": "shooter",
+      "x": 99,
+      "y": 13.8,
+      "minX": 98,
+      "maxX": 102,
+      "speed": 68,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9999999999999998
+    },
+    {
+      "type": "shooter",
+      "x": 109,
+      "y": 13.8,
+      "minX": 107,
+      "maxX": 111,
+      "speed": 82,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1500000000000004
+    },
+    {
+      "type": "drone",
+      "x": 88,
+      "y": 11.6,
       "minX": 85,
-      "maxX": 95,
-      "speed": 102,
-      "hp": 1
+      "maxX": 90,
+      "speed": 50,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.6300000000000003
+    },
+    {
+      "type": "shooter",
+      "x": 139,
+      "y": 13.8,
+      "minX": 138,
+      "maxX": 142,
+      "speed": 68,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9999999999999998
+    },
+    {
+      "type": "shooter",
+      "x": 149,
+      "y": 13.8,
+      "minX": 147,
+      "maxX": 151,
+      "speed": 82,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1500000000000004
+    },
+    {
+      "type": "shooter",
+      "x": 179,
+      "y": 13.8,
+      "minX": 178,
+      "maxX": 182,
+      "speed": 68,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9999999999999998
+    },
+    {
+      "type": "chaser",
+      "x": 189,
+      "y": 13.8,
+      "minX": 187,
+      "maxX": 191,
+      "speed": 82,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1500000000000004
+    },
+    {
+      "type": "drone",
+      "x": 168,
+      "y": 11.6,
+      "minX": 165,
+      "maxX": 170,
+      "speed": 50,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.6300000000000003
+    },
+    {
+      "type": "shooter",
+      "x": 219,
+      "y": 13.8,
+      "minX": 218,
+      "maxX": 222,
+      "speed": 68,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9999999999999998
+    },
+    {
+      "type": "shooter",
+      "x": 229,
+      "y": 13.8,
+      "minX": 227,
+      "maxX": 231,
+      "speed": 82,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.1500000000000004
+    }
+  ],
+  "checkpoints": [
+    {
+      "x": 83,
+      "y": 13
+    },
+    {
+      "x": 163,
+      "y": 13
+    },
+    {
+      "x": 243,
+      "y": 13
     }
   ],
   "boss": {
-    "name": "Taxi Rank Captain",
+    "name": "Rank Marshal",
     "type": "mini",
-    "x": 110,
+    "x": 263,
     "y": 12,
-    "minX": 104,
-    "maxX": 117,
+    "minX": 253,
+    "maxX": 272,
     "hp": 5,
-    "speed": 100
+    "speed": 91
   },
   "npcs": [
     {
-      "name": "Thabo",
+      "name": "Sipho",
       "x": 4,
       "y": 13,
-      "message": "The taxi rank is blocked. Grab taxi tokens, hit the switch, and clear the alley bots.",
-      "completeMessage": "Sharp! The mission is complete. Head to the open gate."
+      "message": "Recover taxi tokens and clear the rank for the evening commuters.",
+      "completeMessage": "Sharp! The route is clear. Head for the open gate."
     }
   ],
   "obstacles": [
     {
       "type": "taxi",
-      "x": 32,
+      "x": 24,
       "y": 14.05,
       "w": 2.5,
       "h": 0.9,
-      "minX": 29,
-      "maxX": 43,
-      "speed": 113
+      "minX": 19,
+      "maxX": 30,
+      "speed": 89
     },
     {
       "type": "trampoline",
-      "x": 48,
+      "x": 50,
       "y": 14.65,
       "w": 1.4,
       "h": 0.35
     },
     {
       "type": "crate",
-      "x": 70,
+      "x": 106,
       "y": 3,
       "w": 1,
       "h": 1,
-      "triggerRadius": 6,
-      "respawn": 4
+      "triggerRadius": 4,
+      "respawn": 5
     },
     {
       "type": "collapse",
-      "x": 82,
-      "y": 10,
-      "w": 5,
+      "x": 138,
+      "y": 11,
+      "w": 4,
       "h": 0.55,
       "delay": 0.65,
       "respawn": 3.3
     },
     {
       "type": "movingPlatform",
-      "x": 85,
-      "y": 11,
-      "w": 5,
+      "x": 184,
+      "y": 10.8,
+      "w": 4,
       "h": 0.55,
-      "minX": 81,
-      "maxX": 93,
-      "speed": 59
+      "minX": 182,
+      "maxX": 190,
+      "speed": 50
     }
   ],
-  "doors": [
-    {
-      "id": "main",
-      "x": 94,
-      "y": 13,
-      "w": 1,
-      "h": 2,
-      "open": false
-    }
-  ],
-  "switches": [
-    {
-      "id": "main",
-      "x": 84,
-      "y": 14.55,
-      "w": 0.9,
-      "h": 0.35
-    }
-  ],
+  "doors": [],
+  "switches": [],
   "objective": {
-    "coinsRequired": 16,
+    "coinsRequired": 19,
     "collectiblesRequired": 4,
-    "enemiesRequired": 4,
+    "enemiesRequired": 6,
     "bossRequired": true,
-    "switchesRequired": 1,
-    "message": "The taxi rank is blocked. Grab taxi tokens, hit the switch, and clear the alley bots."
+    "switchesRequired": 0,
+    "message": "Recover taxi tokens and clear the rank for the evening commuters. Collect 19 coins and 4 kasi items, defeat 6 bots, then beat Rank Marshal."
   }
 }
