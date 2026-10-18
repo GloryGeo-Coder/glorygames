@@ -4,7 +4,8 @@
     "background": 8,
     "district": "alley",
     "timeLimit": 475,
-    "parTime": 265
+    "parTime": 265,
+    "encounterNote": "Rival patrol: Shield Warden, Spark Thrower, Rooftop Runner, Lookout Ranger. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 400,
@@ -765,12 +766,12 @@
   ],
   "enemies": [
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 19,
       "y": 13.8,
       "minX": 18,
       "maxX": 22,
-      "speed": 96,
+      "speed": 48,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
@@ -781,8 +782,8 @@
       "y": 13.8,
       "minX": 27,
       "maxX": 31,
-      "speed": 110,
-      "hp": 1,
+      "speed": 56,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -798,24 +799,24 @@
       "fireInterval": 2.14
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 59,
       "y": 13.8,
       "minX": 58,
       "maxX": 62,
-      "speed": 96,
+      "speed": 52,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 110,
-      "hp": 1,
+      "speed": 100,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -836,19 +837,19 @@
       "y": 13.8,
       "minX": 98,
       "maxX": 102,
-      "speed": 96,
+      "speed": 56,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
     },
     {
-      "type": "chaser",
+      "type": "ranger",
       "x": 109,
       "y": 13.8,
       "minX": 107,
       "maxX": 111,
-      "speed": 110,
-      "hp": 1,
+      "speed": 56,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -864,24 +865,24 @@
       "fireInterval": 2.14
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 139,
       "y": 13.8,
       "minX": 138,
       "maxX": 142,
-      "speed": 96,
+      "speed": 100,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 149,
       "y": 13.8,
       "minX": 147,
       "maxX": 151,
-      "speed": 110,
-      "hp": 1,
+      "speed": 52,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -897,12 +898,12 @@
       "fireInterval": 2.14
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 179,
       "y": 13.8,
       "minX": 178,
       "maxX": 182,
-      "speed": 96,
+      "speed": 48,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
@@ -913,8 +914,8 @@
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 110,
-      "hp": 1,
+      "speed": 56,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -930,24 +931,24 @@
       "fireInterval": 2.14
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 219,
       "y": 13.8,
       "minX": 218,
       "maxX": 222,
-      "speed": 96,
+      "speed": 52,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 229,
       "y": 13.8,
       "minX": 227,
       "maxX": 231,
-      "speed": 110,
-      "hp": 1,
+      "speed": 100,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -968,19 +969,19 @@
       "y": 13.8,
       "minX": 258,
       "maxX": 262,
-      "speed": 96,
+      "speed": 56,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
     },
     {
-      "type": "shooter",
+      "type": "ranger",
       "x": 269,
       "y": 13.8,
       "minX": 267,
       "maxX": 271,
-      "speed": 110,
-      "hp": 1,
+      "speed": 56,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -996,24 +997,24 @@
       "fireInterval": 2.14
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 299,
       "y": 13.8,
       "minX": 298,
       "maxX": 302,
-      "speed": 96,
+      "speed": 100,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 309,
       "y": 13.8,
       "minX": 307,
       "maxX": 311,
-      "speed": 110,
-      "hp": 1,
+      "speed": 52,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -1029,24 +1030,24 @@
       "fireInterval": 2.14
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 339,
       "y": 13.8,
       "minX": 338,
       "maxX": 342,
-      "speed": 96,
+      "speed": 48,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.65
     },
     {
-      "type": "chaser",
+      "type": "shooter",
       "x": 349,
       "y": 13.8,
       "minX": 347,
       "maxX": 351,
-      "speed": 110,
-      "hp": 1,
+      "speed": 56,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8000000000000003
     },
@@ -1202,6 +1203,6 @@
     "enemiesRequired": 13,
     "bossRequired": true,
     "switchesRequired": 3,
-    "message": "Push the bots out of the alley and reclaim its three gates. Collect 30 coins and 8 kasi items, defeat 13 bots, open 3 route locks, then beat Iron Lieutenant."
+    "message": "Push the bots out of the alley and reclaim its three gates. Collect 30 coins and 8 kasi items, defeat 13 opponents, open 3 route locks, then beat Iron Lieutenant."
   }
 }

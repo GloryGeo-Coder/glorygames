@@ -4,7 +4,8 @@
     "background": 8,
     "district": "alley",
     "timeLimit": 405,
-    "parTime": 225
+    "parTime": 225,
+    "encounterNote": "New rival: Spark Thrower. Watch the amber charge. Keep clear when it bursts."
   },
   "tileSize": 32,
   "w": 320,
@@ -640,24 +641,24 @@
       "fireInterval": 1.8499999999999999
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 94,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 99,
       "y": 13.8,
       "minX": 98,
       "maxX": 102,
-      "speed": 80,
-      "hp": 1,
+      "speed": 48,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8499999999999999
     },
@@ -684,13 +685,13 @@
       "fireInterval": 2.42
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 139,
       "y": 13.8,
       "minX": 138,
       "maxX": 142,
-      "speed": 80,
-      "hp": 1,
+      "speed": 52,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8499999999999999
     },
@@ -717,12 +718,12 @@
       "fireInterval": 1.8499999999999999
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 189,
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 94,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2
@@ -902,6 +903,6 @@
     "enemiesRequired": 9,
     "bossRequired": true,
     "switchesRequired": 1,
-    "message": "Break the alley blockade; a larger threat waits beyond the gate. Collect 24 coins and 6 kasi items, defeat 9 bots, open 1 route locks, then beat Alley Overlord."
+    "message": "Break the alley blockade; a larger threat waits beyond the gate. Collect 24 coins and 6 kasi items, defeat 9 opponents, open 1 route locks, then beat Alley Overlord."
   }
 }

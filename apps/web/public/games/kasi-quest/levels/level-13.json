@@ -4,7 +4,8 @@
     "background": 5,
     "district": "tower",
     "timeLimit": 460,
-    "parTime": 256
+    "parTime": 256,
+    "encounterNote": "Rival patrol: Rooftop Runner, Shield Warden, Spark Thrower, Lookout Ranger. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 400,
@@ -787,12 +788,12 @@
       "fireInterval": 1.7249999999999999
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 104,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 1.8750000000000002
@@ -809,12 +810,12 @@
       "fireInterval": 2.245
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 99,
       "y": 13.8,
       "minX": 98,
       "maxX": 102,
-      "speed": 90,
+      "speed": 48,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.7249999999999999
@@ -842,12 +843,12 @@
       "fireInterval": 2.245
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 139,
       "y": 13.8,
       "minX": 138,
       "maxX": 142,
-      "speed": 90,
+      "speed": 52,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.7249999999999999
@@ -886,13 +887,13 @@
       "fireInterval": 1.7249999999999999
     },
     {
-      "type": "shooter",
+      "type": "ranger",
       "x": 189,
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 104,
-      "hp": 1,
+      "speed": 56,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.8750000000000002
     },
@@ -985,12 +986,12 @@
       "fireInterval": 1.7249999999999999
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 309,
       "y": 13.8,
       "minX": 307,
       "maxX": 311,
-      "speed": 104,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 1.8750000000000002
@@ -1166,6 +1167,6 @@
     "enemiesRequired": 12,
     "bossRequired": true,
     "switchesRequired": 2,
-    "message": "Link the rooftop lookout posts and keep their runners safe. Collect 28 coins and 7 kasi items, defeat 12 bots, open 2 route locks, then beat Skyline Guardian."
+    "message": "Link the rooftop lookout posts and keep their runners safe. Collect 28 coins and 7 kasi items, defeat 12 opponents, open 2 route locks, then beat Skyline Guardian."
   }
 }

@@ -4,7 +4,8 @@
     "background": 4,
     "district": "market",
     "timeLimit": 370,
-    "parTime": 205
+    "parTime": 205,
+    "encounterNote": "Rival patrol: Rooftop Runner. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 280,
@@ -572,12 +573,12 @@
       "fireInterval": 1.9499999999999997
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 86,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2.1
@@ -649,12 +650,12 @@
       "fireInterval": 1.9499999999999997
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 189,
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 86,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2.1
@@ -797,6 +798,6 @@
     "enemiesRequired": 7,
     "bossRequired": true,
     "switchesRequired": 1,
-    "message": "Bring lunch packs through the market and reopen its shutters. Collect 21 coins and 5 kasi items, defeat 7 bots, open 1 route locks, then beat Market Enforcer."
+    "message": "Bring lunch packs through the market and reopen its shutters. Collect 21 coins and 5 kasi items, defeat 7 opponents, open 1 route locks, then beat Market Enforcer."
   }
 }

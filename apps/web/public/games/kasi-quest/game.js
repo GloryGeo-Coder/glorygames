@@ -1,4 +1,4 @@
-/* Kasi Quest — Twenty-Level Campaign v3.3
+/* Kasi Quest — Character Rivals v3.4
    WebGameArena standalone game
    Features:
    - Manual movement, shooting, moving enemies
@@ -63,6 +63,17 @@
   const missionProgress = $("missionProgress");
   const presentation = window.KasiPresentation;
   const animation = window.KasiAnimation?.create();
+  const enemyRoster = window.KasiEnemies;
+  const actorKind = en => enemyRoster?.isRole(en.type) ? en.type : "enemy";
+  let enemyTips = new Set();
+  let nextEnemyTipAt = 0;
+  async function loadEnemyArt() {
+    if (!animation) return;
+    const kinds = [...new Set((level?.enemies || []).map(en => en.type).filter(type => enemyRoster?.isRole(type)))];
+    animation.retain(["player", "enemy", "boss", ...kinds]);
+    for (const [kind, info] of Object.entries(window.KasiEnemyData?.atlases || {})) if (!kinds.includes(kind)) imageCache.delete(info.url);
+    await animation.load(url => loadImageSafe(url, 15000), kinds);
+  }
   const motionPreference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
   animation?.reduceMotion(!!motionPreference?.matches);
   motionPreference?.addEventListener?.("change", event => animation?.reduceMotion(event.matches));
@@ -565,12 +576,13 @@ const SCALE = {
       const speedRaw = Number(raw.speed) || 80;
       const speed = speedRaw > 20 ? speedRaw : speedRaw * tileSize;
       const drone = raw.type === "drone";
-      const baseW = Math.max(18, Number(raw.w || raw.width || (drone ? 1.12 : 0.85)) * tileSize);
-const baseH = Math.max(20, Number(raw.h || raw.height || (drone ? 0.6 : 0.95)) * tileSize);
+      const role = enemyRoster?.roles[raw.type];
+      const baseW = Math.max(18, Number(raw.w || raw.width || (drone ? 1.12 : role?.w || 0.85)) * tileSize);
+const baseH = Math.max(20, Number(raw.h || raw.height || (drone ? 0.6 : role?.h || 0.95)) * tileSize);
 const w = baseW * SCALE.enemy;
 const h = baseH * SCALE.enemy;
 const x = (Number(raw.x) || 0) * tileSize + tileSize * 0.08 - (w - baseW) / 2;
-const y = (Number(raw.y) || 0) * tileSize - (h - baseH);
+const y = (Number(raw.y) || 0) * tileSize - (h - baseH) - (role ? baseH - tileSize * .95 : 0);
       const minX = Number.isFinite(raw.minX) ? Number(raw.minX) : (Number(raw.x) || 0) - 4;
       const maxX = Number.isFinite(raw.maxX) ? Number(raw.maxX) : (Number(raw.x) || 0) + 4;
       enemies.push({
@@ -586,11 +598,13 @@ const y = (Number(raw.y) || 0) * tileSize - (h - baseH);
         maxX: Math.max(minX, maxX) * tileSize,
         speed,
         hp: Number(raw.hp || 1) || 1,
+        maxHp: Number(raw.hp || 1) || 1,
         alive: true,
         shootT: 0.65 + (i % 4) * 0.2,
         fireInterval: clamp(Number(raw.fireInterval) || 1.8, 1.2, 3),
         hoverY: y, hoverT: i * 1.7, windup: 0, aimX: 0, aimY: 0,
       });
+      if (role) enemyRoster.init(enemies[enemies.length - 1]);
     }
   }
 
@@ -700,6 +714,8 @@ const y = rawY - (h - baseH);
     if (elLevelNum) elLevelNum.textContent = String(n);
     if (elLevelLabel) elLevelLabel.textContent = String(n);
     if (elMissionText) elMissionText.textContent = level.objective.message;
+    if ($("enemyIntel")) $("enemyIntel").textContent = level.meta.encounterNote || "Watch each opponent’s attack and use the rooftops for space.";
+    await loadEnemyArt();
     bgImg = await loadImageSafe(ASSETS.bgForLevel(clamp(Number(level.meta.background) || ((n - 1) % 8 + 1), 1, 8)));
     buildEnemiesFromLevel();
     buildBossesFromLevel();
@@ -780,7 +796,10 @@ const y = rawY - (h - baseH);
     if (elLevelNum) elLevelNum.textContent = "D";
     if (elLevelLabel) elLevelLabel.textContent = "Daily";
     if (elMissionText) elMissionText.textContent = level.objective.message;
+    if ($("enemyIntel")) $("enemyIntel").textContent = level.meta.encounterNote || "Watch each opponent’s attack and use the rooftops for space.";
     bgImg = null;
+    await loadEnemyArt();
+    if ($("enemyIntel")) $("enemyIntel").textContent = "Daily challenge: bots and the daily guardian.";
     buildEnemiesFromLevel();
     buildBossesFromLevel();
     buildObstaclesFromLevel();
@@ -822,7 +841,7 @@ const y = rawY - (h - baseH);
     const parts = [];
     if (o.coinsRequired > 0) parts.push(`Coins ${Math.min(coinsCollected, o.coinsRequired)}/${o.coinsRequired}`);
     if (o.collectiblesRequired > 0) parts.push(`Items ${Math.min(collectiblesCollected, o.collectiblesRequired)}/${o.collectiblesRequired}`);
-    if (o.enemiesRequired > 0) parts.push(`Bots ${Math.min(enemiesDefeated, o.enemiesRequired)}/${o.enemiesRequired}`);
+    if (o.enemiesRequired > 0) parts.push(`Foes ${Math.min(enemiesDefeated, o.enemiesRequired)}/${o.enemiesRequired}`);
     if (o.bossRequired) parts.push(`Boss ${Math.min(bossesDefeated, bosses.length)}/${bosses.length}`);
     if (o.switchesRequired > 0) parts.push(`Switches ${Math.min(countPressedSwitches(), o.switchesRequired)}/${o.switchesRequired}`);
     return `${parts.join(" • ")} • Gate ${objectiveComplete() ? "open" : "locked"}`;
@@ -935,6 +954,8 @@ const y = rawY - (h - baseH);
     resetInput();
     defeatRemaining = 0;
     animation?.reset();
+    enemyTips.clear();
+    nextEnemyTipAt = 0;
     cameraState = null;
     checkpoint = null;
     timeGrace = 0;
@@ -1100,10 +1121,26 @@ projectiles.push({
   function defeatEnemy(en, x, y, byShot = false) {
     if (!en.alive) return;
     en.alive = false;
-    animation?.play(en, "enemy", "defeat");
+    animation?.play(en, actorKind(en), "defeat");
     enemiesDefeated += 1;
     addCombo(byShot ? 145 : 185, x, y, byShot ? "+145" : "+185");
     beep(byShot ? 300 : 220, 0.05, "square", 0.04);
+  }
+  function hitEnemy(en, shot, byShot = true) {
+    if (!en.alive) return;
+    if (byShot && enemyRoster?.hit(en, shot) === "blocked") {
+      addText(en.ai?.phase === "recover" ? "Shield staggered" : "Blocked", en.x, en.y - 15);
+      if (en.ai?.phase === "recover") animation?.play(en, actorKind(en), "hurt");
+      beep(330, 0.035, "triangle", 0.02);
+      return;
+    }
+    en.hp -= shot.damage || 1;
+    if (en.hp <= 0) defeatEnemy(en, en.x, en.y, byShot);
+    else {
+      enemyRoster?.recover(en, en.type === "warden" && !byShot ? 1.25 : .8);
+      animation?.play(en, actorKind(en), "hurt");
+      addText("Hit", en.x, en.y);
+    }
   }
   function hitBoss(boss, damage = 1, byStomp = false) {
     if (!boss.alive) return;
@@ -1283,6 +1320,18 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       const type = en.type === "runner" ? "patrol" : en.type;
       if (Math.abs(en.x - player.x) > tileSize * 26) continue;
       if (type === "drone") { updateDrone(en, dt); continue; }
+      let intent = null;
+      if (enemyRoster?.isRole(type)) {
+        const role = enemyRoster.roles[type];
+        if (!enemyTips.has(type) && Math.abs(en.x - player.x) < tileSize * 7 && levelTime >= nextEnemyTipAt) {
+          enemyTips.add(type); nextEnemyTipAt = levelTime + 4;
+          addText(`${role.name}: ${role.tip}`, en.x, en.y - 24, 3.8);
+        }
+        intent = enemyRoster.tick(en, { dt, player, tileSize, viewW,
+          fire: shot => { if (enemyProjectiles.length >= 40) return false; enemyProjectiles.push(shot); return true; },
+          play: (...args) => animation?.play(...args),
+        });
+      }
       if (type === "chaser") {
         const dist = Math.abs((player.x + player.w / 2) - (en.x + en.w / 2));
         if (dist < tileSize * 8) en.dir = player.x < en.x ? -1 : 1;
@@ -1301,9 +1350,9 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
         const footX = en.dir > 0 ? en.x + en.w + 5 : en.x - 5;
         let supported = false;
         iterSolidRects(s => { if (footX >= s.x && footX <= s.x + s.w && Math.abs(s.y - en.y - en.h) < 8) supported = true; });
-        if (!supported) en.dir *= -1;
+        if (!supported) { en.dir *= -1; if (intent !== null) { intent = 0; if (en.ai?.phase === "attack") enemyRoster.recover(en); } }
       }
-      en.vx = en.dir * en.speed;
+      en.vx = intent ?? en.dir * en.speed;
       en.x += en.vx * dt;
       if (en.x < en.minX) { en.x = en.minX; en.dir = 1; }
       if (en.x + en.w > en.maxX + tileSize) { en.x = en.maxX + tileSize - en.w; en.dir = -1; }
@@ -1460,9 +1509,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       for (const en of enemies) {
         if (remove || !en.alive) continue;
         if (rectsOverlap(pr, { x: en.x, y: en.y, w: en.w, h: en.h })) {
-          en.hp -= p.damage || 1;
-          if (en.hp <= 0) defeatEnemy(en, en.x, en.y, true);
-          else { animation?.play(en, "enemy", "hurt"); addText("Hit", en.x, en.y); }
+          hitEnemy(en, p, true);
           remove = true;
         }
       }
@@ -1476,14 +1523,30 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     const playerRect = { x: player.x, y: player.y, w: player.w, h: player.h };
     for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
       const p = enemyProjectiles[i];
-      p.x += p.vx * dt;
-      p.y += (p.vy || 0) * dt;
+      if (!p.burst) {
+        p.vy = (p.vy || 0) + (p.gravity || 0) * dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+      }
       p.life -= dt;
       const pr = { x: p.x, y: p.y, w: p.w, h: p.h };
-      let remove = p.life <= 0 || Math.abs(p.x - player.x) > viewW + tileSize * 8;
-      iterSolidRects((s) => { if (!remove && rectsOverlap(pr, s)) remove = true; });
-      if (!remove && rectsOverlap(pr, playerRect)) { damagePlayer("shot"); remove = true; }
-      if (remove) enemyProjectiles.splice(i, 1);
+      let solidHit = false;
+      if (!p.burst) iterSolidRects(s => { if (rectsOverlap(pr, s)) solidHit = true; });
+      const contact = rectsOverlap(pr, playerRect);
+      if (p.role === "spark" && !p.burst && (p.life <= 0 || solidHit || contact)) {
+        p.x += p.w / 2 - 48; p.y += p.h / 2 - 48;
+        p.w = p.h = 96; p.life = .18; p.burst = true; p.vx = p.vy = 0;
+        // Do not remove on impact: the short visible burst carries the area effect.
+      } else if (p.role !== "spark" && (solidHit || contact)) {
+        if (contact && !solidHit) damagePlayer("shot");
+        enemyProjectiles.splice(i, 1); continue;
+      }
+      if (p.burst && !p.hit) {
+        const cx = p.x + 48, cy = p.y + 48;
+        const nx = clamp(cx, player.x, player.x + player.w), ny = clamp(cy, player.y, player.y + player.h);
+        if (Math.hypot(cx - nx, cy - ny) < 48) { damagePlayer("shot"); p.hit = true; }
+      }
+      if (p.life <= 0 || Math.abs(p.x - player.x) > viewW + tileSize * 8) enemyProjectiles.splice(i, 1);
     }
   }
 
@@ -1497,7 +1560,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       const playerBottom = player.y + player.h;
       const enemyMid = en.y + en.h * 0.58;
       if (falling && playerBottom <= enemyMid) {
-        defeatEnemy(en, en.x, en.y, false);
+        hitEnemy(en, { damage: en.type === "warden" ? 1 : en.hp }, false);
         player.vy = -JUMP_V0 * 0.55;
         player.onGround = false;
       } else damagePlayer("enemy");
@@ -1572,8 +1635,8 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   function updateActorAnimations(dt) {
     if (!animation) return;
     animation.update(player, "player", dt);
-    for (const enemy of enemies) if (enemy.type !== "drone") animation.update(enemy, "enemy", dt, {
-      windup: enemy.type === "shooter" && enemy.shootT > 0 && enemy.shootT < 0.28 && Math.abs(player.x - enemy.x) < tileSize * 9,
+    for (const enemy of enemies) if (enemy.type !== "drone") animation.update(enemy, actorKind(enemy), dt, {
+      windup: enemy.ai?.phase === "windup" || (enemy.type === "shooter" && enemy.shootT > 0 && enemy.shootT < 0.28 && Math.abs(player.x - enemy.x) < tileSize * 9),
     });
     for (const boss of bosses) animation.update(boss, "boss", dt, {
       windup: boss.shootT > 0 && boss.shootT < 0.3,
@@ -1867,10 +1930,16 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   function drawEnemies(camX, camY) {
     for (const en of enemies) {
       if (en.type === "drone" && !en.alive) continue;
-      if (!en.alive && (!animation?.has("enemy") || animation.finished(en, "enemy"))) continue;
+      const kind = actorKind(en);
+      if (!en.alive && (!animation?.has(kind) || animation.finished(en, kind))) continue;
       const p = worldToScreen(en.x, en.y, camX, camY);
       if (p.x + en.w < -70 || p.x > viewW + 70 || p.y + en.h < -70 || p.y > viewH + 70) continue;
       if (en.type === "drone") { drawDrone(en, p); continue; }
+      if (enemyRoster?.isRole(en.type)) {
+        if (!animation?.draw(ctx, en, kind, { ...p, w: en.w, h: en.h })) enemyRoster.drawFallback(ctx, en, p, totalRunTime, motionPreference?.matches);
+        enemyRoster.drawCue(ctx, en, p, motionPreference?.matches);
+        continue;
+      }
       if (animation?.draw(ctx, en, "enemy", { ...p, w: en.w, h: en.h })) continue;
       if (imgEnemy) {
         presentation.drawSprite(ctx, imgEnemy, "enemy", { ...p, w: en.w, h: en.h }, en.dir);
@@ -1919,7 +1988,13 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     for (const b of projectiles) { const p = worldToScreen(b.x, b.y, camX, camY); ctx.fillRect(p.x, p.y, b.w, b.h); }
     ctx.shadowColor = "rgba(251,113,133,.65)";
     ctx.fillStyle = "rgba(251,113,133,.95)";
-    for (const b of enemyProjectiles) { const p = worldToScreen(b.x, b.y, camX, camY); ctx.fillRect(p.x, p.y, b.w, b.h); }
+    for (const b of enemyProjectiles) {
+      const p = worldToScreen(b.x, b.y, camX, camY);
+      if (b.role === "spark") {
+        ctx.save(); ctx.fillStyle = b.burst ? "rgba(251,146,60,.3)" : "#fbbf24"; ctx.strokeStyle = "#fde68a"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(p.x + b.w / 2, p.y + b.h / 2, b.burst ? 48 : 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
+      } else { ctx.fillStyle = b.role === "ranger" ? "#86efac" : "rgba(251,113,133,.95)"; ctx.fillRect(p.x, p.y, b.w, b.h); }
+    }
     ctx.shadowBlur = 0;
   }
   function drawPlayer(camX, camY) {

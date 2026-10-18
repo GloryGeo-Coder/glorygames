@@ -4,7 +4,8 @@
     "background": 6,
     "district": "relay",
     "timeLimit": 465,
-    "parTime": 259
+    "parTime": 259,
+    "encounterNote": "Rival patrol: Rooftop Runner, Shield Warden, Spark Thrower, Lookout Ranger. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 400,
@@ -809,13 +810,13 @@
       "fireInterval": 1.6999999999999997
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 106,
-      "hp": 1,
+      "speed": 100,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.85
     },
@@ -831,12 +832,12 @@
       "fireInterval": 2.21
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 99,
       "y": 13.8,
       "minX": 98,
       "maxX": 102,
-      "speed": 92,
+      "speed": 48,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.6999999999999997
@@ -864,12 +865,12 @@
       "fireInterval": 2.21
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 139,
       "y": 13.8,
       "minX": 138,
       "maxX": 142,
-      "speed": 92,
+      "speed": 52,
       "hp": 2,
       "dir": -1,
       "fireInterval": 1.6999999999999997
@@ -908,13 +909,13 @@
       "fireInterval": 1.6999999999999997
     },
     {
-      "type": "chaser",
+      "type": "ranger",
       "x": 189,
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 106,
-      "hp": 1,
+      "speed": 56,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.85
     },
@@ -1007,13 +1008,13 @@
       "fireInterval": 1.6999999999999997
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 309,
       "y": 13.8,
       "minX": 307,
       "maxX": 311,
-      "speed": 106,
-      "hp": 1,
+      "speed": 100,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.85
     },
@@ -1188,6 +1189,6 @@
     "enemiesRequired": 12,
     "bossRequired": true,
     "switchesRequired": 2,
-    "message": "Fight through the signal jammers with data for the repair crew. Collect 29 coins and 7 kasi items, defeat 12 bots, open 2 route locks, then beat Jammer Captain."
+    "message": "Fight through the signal jammers with data for the repair crew. Collect 29 coins and 7 kasi items, defeat 12 opponents, open 2 route locks, then beat Jammer Captain."
   }
 }

@@ -4,7 +4,8 @@
     "background": 6,
     "district": "relay",
     "timeLimit": 395,
-    "parTime": 219
+    "parTime": 219,
+    "encounterNote": "Rival patrol: Rooftop Runner, Shield Warden. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 320,
@@ -651,24 +652,24 @@
       "fireInterval": 1.9
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 90,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2.0500000000000003
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 99,
       "y": 13.8,
       "minX": 98,
       "maxX": 102,
-      "speed": 76,
-      "hp": 1,
+      "speed": 48,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.9
     },
@@ -728,12 +729,12 @@
       "fireInterval": 1.9
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 189,
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 90,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2.0500000000000003
@@ -913,6 +914,6 @@
     "enemiesRequired": 8,
     "bossRequired": true,
     "switchesRequired": 1,
-    "message": "Return stolen data bundles and reconnect the block. Collect 22 coins and 5 kasi items, defeat 8 bots, open 1 route locks, then beat Signal Breaker."
+    "message": "Return stolen data bundles and reconnect the block. Collect 22 coins and 5 kasi items, defeat 8 opponents, open 1 route locks, then beat Signal Breaker."
   }
 }

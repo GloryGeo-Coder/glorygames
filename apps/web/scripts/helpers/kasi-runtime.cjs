@@ -80,7 +80,9 @@ async function boot({ width = 1280, height = 720, saved = new Map(), failAssets 
   if (nativeCanvas) { const draw = ctx.drawImage.bind(ctx); ctx.drawImage = (img,...args) => draw(images.get(img) || img,...args); }
   const context = vm.createContext(sandbox);
   vm.runInContext(fs.readFileSync(path.join(root, 'kasi-presentation.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(root, 'kasi-enemies.js'), 'utf8'), context);
   if (!noAnimation) {
+    vm.runInContext(fs.readFileSync(path.join(root, 'kasi-enemy-data.js'), 'utf8'), context);
     vm.runInContext(fs.readFileSync(path.join(root, 'kasi-animation-data.js'), 'utf8'), context);
     vm.runInContext(fs.readFileSync(path.join(root, 'kasi-animation.js'), 'utf8'), context);
   }
@@ -90,7 +92,7 @@ async function boot({ width = 1280, height = 720, saved = new Map(), failAssets 
       startOrRestart, startDaily, setPaused, resetLevelState, updatePlayer, updateGameplay, updateObstacles,
       updateEnemies, updateBosses, updateProjectiles, handleEnemyPlayerCollisions, damagePlayer,
       collectCoin, collectCollectible, hitBoss, defeatEnemy, pressSwitch, objectiveComplete,
-      completeLevel, loadLevel, render, shoot, postScore, updateDrone,
+      completeLevel, loadLevel, render, shoot, postScore, updateDrone, hitEnemy, enemyRoster, actorKind, loadEnemyArt,
       updateLevelButtons,
       get state() { return { running, paused, loading, currentLevel, level, score, wallet, stars, upgrades,
         enemies, bosses, obstacles, switches, doors, projectiles, enemyProjectiles, levelTime, display, cameraInsets, defeatRemaining, unlockedLevel, checkpoint, timeGrace }; }

@@ -1,16 +1,16 @@
 /* Pose animation owns presentation only. Movement, collision, damage and rewards stay in game.js. */
 (function (root, factory) {
   "use strict";
-  if (typeof module === "object" && module.exports) module.exports = factory(require("./kasi-animation-data.js"));
-  else root.KasiAnimation = factory(root.KasiAnimationData);
-})(typeof window !== "undefined" ? window : globalThis, function (data) {
+  if (typeof module === "object" && module.exports) module.exports = factory(require("./kasi-animation-data.js"), require("./kasi-enemy-data.js"));
+  else root.KasiAnimation = factory(root.KasiAnimationData, root.KasiEnemyData);
+})(typeof window !== "undefined" ? window : globalThis, function (data, roster) {
   "use strict";
   const priority = { land: 10, shoot: 20, hurt: 30, defeat: 100 };
   function create() {
     let states = new WeakMap();
     const images = {};
     let reducedMotion = false;
-    const atlas = kind => data?.atlases?.[kind];
+    const atlas = kind => data?.atlases?.[kind] || roster?.atlases?.[kind];
     function ensure(actor, kind) {
       let state = states.get(actor);
       if (!state || state.kind !== kind) {
@@ -97,8 +97,10 @@
       ctx.restore();
       return true;
     }
-    async function load(loadImage) {
-      await Promise.all(Object.entries(data?.atlases || {}).map(async ([kind, info]) => {
+    async function load(loadImage, kinds = Object.keys(data?.atlases || {})) {
+      await Promise.all(kinds.map(async kind => {
+        const info = atlas(kind);
+        if (!info) return;
         if (images[kind]) return;
         try {
           const image = await loadImage(info.url);
@@ -109,8 +111,10 @@
     return { load, play, cancel, update, snapshot, rect, draw, duration,
       reset: actor => { if (actor) states.delete(actor); else states = new WeakMap(); },
       has: kind => Boolean(images[kind]),
+      retain: kinds => { const keep = new Set(kinds); for (const kind of Object.keys(images)) if (!keep.has(kind)) delete images[kind]; },
+      loadedKinds: () => Object.keys(images),
       finished: (actor, kind) => { const pose = snapshot(actor, kind); return pose?.clip === "defeat" && pose.complete; },
       reduceMotion: value => { reducedMotion = !!value; } };
   }
-  return Object.freeze({ create, data });
+  return Object.freeze({ create, data, roster });
 });
