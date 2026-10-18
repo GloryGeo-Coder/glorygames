@@ -1,6 +1,6 @@
 {
   "title": "Brick Blaster",
-  "description": "Steer your paddle from a dedicated touch strip, tap to launch, and ricochet through glowing bricks. Catch six power-ups, chain explosive combos and chase your best in Classic Arcade.",
+  "description": "Restore Neon Grid across five missions: breach barriers, reroute relays, rescue drones and defeat the Grid Warden. Or chase endless scores in Classic Arcade. Steer from the touch strip, tap to launch and catch six power-ups.",
   "tags": [
     "arcade",
     "mobile",
@@ -27,7 +27,7 @@
       "action": "Pause and open controls, leaderboard, chat or restart"
     }
   ],
-  "version": "2.1.0",
+  "version": "2.2.0",
   "orientation": "any",
   "features": {
     "mode": "classic-arcade",
@@ -37,6 +37,25 @@
       "direct"
     ],
     "safeRotation": true,
-    "pauseSafePowerUps": true
+    "pauseSafePowerUps": true,
+    "modes": [
+      "classic-arcade",
+      "neon-grid-campaign"
+    ],
+    "campaignMissions": 5,
+    "savedMissionProgress": true,
+    "backgrounds": 5,
+    "backgroundOption": true,
+    "interactiveBricks": [
+      "relay",
+      "core",
+      "pod",
+      "generator"
+    ],
+    "enemies": [
+      "sentinel",
+      "repair-drone",
+      "grid-warden"
+    ]
   }
 }

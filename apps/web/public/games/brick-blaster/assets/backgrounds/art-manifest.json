@@ -1,0 +1,75 @@
+{
+  "version": "2.2.0",
+  "assets": [
+    {
+      "file": "conduit-hall.png",
+      "bytes": 2403742,
+      "sha256": "a402a8f19ead85ad1494aab2bccd5caf79bd731b87aa368bf53d359f0e49fb8f",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "path": "apps/web/public/games/brick-blaster/assets/backgrounds/conduit-hall.png",
+      "title": "Circuit Reroute",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen background painting for Brick Blaster: Nexus Breakers, a polished mobile 2D neon paddle-and-ball adventure. Premium illustrated science-fiction environment, layered atmosphere, sleek cyan/violet architecture and restrained warm accents. Composition: full-bleed landscape 1536x864, central 65 percent quiet and low contrast for bright moving gameplay, essential environment also readable in a central portrait crop. Buildings and mechanical detail mainly along the edges and distant horizon. No text, letters, logos, watermark, borders, UI, paddles, balls, floating bricks, enemies or foreground targets. Scene: a grand power-conduit hall overlooking a futuristic city, cyan energy channels running up the side walls, violet industrial columns, warm amber electrical glow at the edges. The broad open central hall is dark indigo with soft volumetric haze, not a busy tunnel. Gorgeous controlled lighting and distant city depth.",
+      "mode": "built-in image generation",
+      "transparent_background": false
+    },
+    {
+      "file": "neon-canal.png",
+      "bytes": 2418807,
+      "sha256": "b64e99ba6ceedef2ff2c998be19cb801cd9f7e0bfc05817039faa133920f40a4",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "path": "apps/web/public/games/brick-blaster/assets/backgrounds/neon-canal.png",
+      "title": "Breach the Grid",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen background painting for Brick Blaster: Nexus Breakers, a polished mobile 2D neon paddle-and-ball adventure. Premium illustrated science-fiction environment, layered atmosphere, sleek cyan/violet architecture and restrained warm accents. Composition: full-bleed landscape 1536x864, central 65 percent quiet and low contrast for bright moving gameplay, essential environment also readable in a central portrait crop. Buildings and mechanical detail mainly along the edges and distant horizon. No text, letters, logos, watermark, borders, UI, paddles, balls, floating bricks, enemies or foreground targets. Scene: a futuristic canal city at blue hour, distant glass towers reflected in dark water, magenta street lights and small amber windows. Side terraces and railings frame a calm deep-blue central water and misty sky corridor. Cinematic but readable, beautiful atmospheric depth.",
+      "mode": "built-in image generation",
+      "transparent_background": false
+    },
+    {
+      "file": "sentinel-yard.png",
+      "bytes": 2724626,
+      "sha256": "a7e11370ae4200bfa418f9bb70657079fc26dbc681f42bb69ad1f518b2d62a4a",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "path": "apps/web/public/games/brick-blaster/assets/backgrounds/sentinel-yard.png",
+      "title": "Sentinel Sweep",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen background painting for Brick Blaster: Nexus Breakers, a polished mobile 2D neon paddle-and-ball adventure. Premium illustrated science-fiction environment, layered atmosphere, sleek cyan/violet architecture and restrained warm accents. Composition: full-bleed landscape 1536x864, central 65 percent quiet and low contrast for bright moving gameplay, essential environment also readable in a central portrait crop. Buildings and mechanical detail mainly along the edges and distant horizon. No text, letters, logos, watermark, borders, UI, paddles, balls, floating bricks, enemies or foreground targets. Scene: a futuristic security dockyard at night, giant maintenance cranes and industrial gantries at the sides, cyan edge lights and subdued amber hazard lighting, steam rising in layered dark-blue space across an open centre. Cinematic rainy atmosphere, strong depth, no central machinery or active combat.",
+      "mode": "built-in image generation",
+      "transparent_background": false
+    },
+    {
+      "file": "signal-spire.png",
+      "bytes": 2405028,
+      "sha256": "4fedade0d53b2ac1034f327cc445e25fb2654936a4fdc4e7a6e36b2f523b55ea",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "path": "apps/web/public/games/brick-blaster/assets/backgrounds/signal-spire.png",
+      "title": "The Grid Warden",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen background painting for Brick Blaster: Nexus Breakers, a polished mobile 2D neon paddle-and-ball adventure. Premium illustrated science-fiction environment, layered atmosphere, sleek cyan/violet architecture and restrained warm accents. Composition: full-bleed landscape 1536x864, central 65 percent quiet and low contrast for bright moving gameplay, essential environment also readable in a central portrait crop. Buildings and mechanical detail mainly along the edges and distant horizon. No text, letters, logos, watermark, borders, UI, paddles, balls, floating bricks, enemies or foreground targets. Scene: a vast command chamber at the top of a cybernetic signal spire, monumental violet circuitry pillars framing the edges, a panoramic dark city skyline beyond a large central opening, subtle magenta and cyan light reflected on polished surfaces. Ominous majestic atmosphere with a quiet dark central field reserved for a boss that will be drawn by the game. No glowing central orb or round portal.",
+      "mode": "built-in image generation",
+      "transparent_background": false
+    },
+    {
+      "file": "skybridge.png",
+      "bytes": 2718517,
+      "sha256": "c07241f7dbde917c25a8e4b5cb96ecc0ea6cadc8677da753ca3329257bae5dfe",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "path": "apps/web/public/games/brick-blaster/assets/backgrounds/skybridge.png",
+      "title": "Skybridge Evac",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen background painting for Brick Blaster: Nexus Breakers, a polished mobile 2D neon paddle-and-ball adventure. Premium illustrated science-fiction environment, layered atmosphere, sleek cyan/violet architecture and restrained warm accents. Composition: full-bleed landscape 1536x864, central 65 percent quiet and low contrast for bright moving gameplay, essential environment also readable in a central portrait crop. Buildings and mechanical detail mainly along the edges and distant horizon. No text, letters, logos, watermark, borders, UI, paddles, balls, floating bricks, enemies or foreground targets. Scene: high above a neon city on a rain-soaked skybridge at twilight, elegant towers along both edges, far-off elevated walkways and a deep teal horizon. Soft rose clouds and faint rain reflections add emotion and scale. Preserve a broad calm blue-green centre for gameplay; no people or vehicles.",
+      "mode": "built-in image generation",
+      "transparent_background": false
+    }
+  ]
+}
