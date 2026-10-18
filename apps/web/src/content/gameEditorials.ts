@@ -356,26 +356,26 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "fruit-slice": {
     "category": "Arcade",
-    "summary": "Slice flying fruit with quick swipes, avoid bombs and grow combinations during fast arcade sessions.",
+    "summary": "Slice animated fruit through 25 sunset trials, or chase your best in Endless Arcade. Avoid bombs, build combos and trigger frenzy.",
     "overview": [
       "Fruit Slice is a reflex-based browser arcade game in which pieces of fruit move through the play area waiting to be sliced. Your finger or mouse becomes the blade: a clean swipe cuts the target and adds to the pace of the round.",
-      "The key difference between an ordinary swipe and a strong run is control. You need to follow fast-moving fruit, connect safe targets into combos and resist the temptation to swing blindly when a bomb enters the same part of the screen. The game includes a frenzy mode that changes the intensity of play."
+      "The key difference between an ordinary swipe and a strong run is control. You need to follow fast-moving fruit, connect safe targets into combos and resist the temptation to swing blindly when a bomb enters the same part of the screen. Twenty-five campaign trials add score, fruit-type, combo, golden-fruit and frenzy goals, with later stages unlocked through play. Endless Arcade keeps the original three-life challenge."
     ],
     "story": [
       "Fruit flies through the arena in bursts, inviting you to draw quick, accurate slicing lines. Safe targets sometimes appear beside bombs, so the most tempting swipe is not always the best one. Every round balances speed with restraint."
     ],
     "howToPlay": [
-      "Start a round and watch the path of fruit flying into view.",
+      "Choose Campaign or Endless. In Campaign, reach every displayed target before the timer expires to unlock the next trial.",
       "Swipe through one fruit or several aligned pieces to slice them.",
       "Build successful sequences to pursue combos and higher scoring opportunities.",
       "Avoid bomb objects even when they appear close to fruit you want to cut.",
-      "React to the game's frenzy mode and use the pause or restart controls when needed."
+      "Use frenzy for bonus scoring. Pause opens music and effects volumes, the level map, restart and score controls."
     ],
     "desktop": [
       "Click and drag the mouse through fruit to perform a slicing motion."
     ],
     "mobile": [
-      "Swipe a finger across the play area to cut fruit.",
+      "Swipe one or two fingers across the full-screen play area. The arena adapts to portrait and landscape; rotate safely and resume when ready.",
       "Try a controlled short swipe when hazards are near a group of targets."
     ],
     "systems": [

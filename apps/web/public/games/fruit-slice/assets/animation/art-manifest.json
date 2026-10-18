@@ -1,0 +1,38 @@
+{
+  "release": "Fruit Slice 2.1",
+  "assets": [
+    {
+      "id": "whole-a",
+      "file": "assets/animation/whole-a.png",
+      "mode": "built-in",
+      "prompt": "Use case: stylized-concept. Asset type: production 2D game sprite animation atlas for Fruit Slice. Generate one landscape 1536 by 1024 transparent PNG with exactly FOUR equal columns and THREE equal rows, 12 isolated sprites. No text, no grid lines, no watermark, no backdrop, no cast ground shadow. Every cell has generous completely transparent gutters. All fruit are ripe, glossy, richly shaded polished hand-painted 3D-style arcade illustrations with clear silhouettes, appetising natural textures, warm highlights, restrained outlines. ROW 1 red APPLE with one small green leaf and brown stem, intact skin, no bite or cut. ROW 2 round ORANGE with small green leaf, intact dimpled peel. ROW 3 small round whole WATERMELON with dark green stripes, intact rind. Each row is a four-frame loop of the SAME fruit: frame 1 neutral round pose; frame 2 subtle squash and leaf leaning right; frame 3 gentle stretch with highlight shifted and leaf upright; frame 4 return toward neutral with leaf leaning left. Keep identity, body centre, scale, shape family and light direction consistent across each row, but show genuine distinct animation poses. No juice splashes or loose pieces around whole fruit. Each sprite stays well inside its own cell. Actual transparent alpha background, no checkerboard rendered into pixels.",
+      "transparent": true,
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2231206,
+      "sha256": "601ade093c7adfdaf02d37e3b604a34b73e5699144bf8334589a6b90cc0fa35b"
+    },
+    {
+      "id": "whole-b",
+      "file": "assets/animation/whole-b.png",
+      "mode": "built-in",
+      "prompt": "Use case: stylized-concept. Asset type: production 2D game sprite animation atlas for Fruit Slice. Generate one landscape 1536 by 1024 transparent PNG with exactly FOUR equal columns and THREE equal rows, 12 isolated sprites. No text, no grid lines, no watermark, no backdrop, no cast ground shadow. Each cell has generous transparent gutters. Polished glossy richly shaded hand-painted 3D-style arcade fruit with natural textures, warm highlights and restrained outlines. ROW 1 whole oval brown KIWI with fuzzy skin, intact, no cut face. ROW 2 ripe golden PINEAPPLE with a compact green crown, intact diamond textured rind. ROW 3 spherical charcoal-black cartoon BOMB with short curved fuse and bright orange spark, unmistakeably different from fruit. For kiwi and pineapple, four distinct looping poses of the same object: neutral; subtle squash and crown/skin detail lean right; gentle stretch; return with crown/skin detail lean left. For the bomb, keep its spherical silhouette consistent while the fuse curls and the small spark burns in four visibly different phases, with a tiny red warning glint. Maintain identical identity, body centre, scale and lighting across each row. All objects contained within their cells, no juice splashes or scattered pieces. Real transparent alpha background, no checkerboard rendered into pixels.",
+      "transparent": true,
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2432020,
+      "sha256": "98d2567e446109e85056e89939205e7a9e1c040c66713d4c3114872ba7486ee3"
+    },
+    {
+      "id": "cuts",
+      "file": "assets/animation/cuts.png",
+      "mode": "built-in",
+      "prompt": "Use case: stylized-concept. Asset type: production 2D cut-fruit sprite atlas for Fruit Slice. One landscape 1536 by 1024 PNG with exactly FIVE equal columns and TWO equal rows, TEN isolated half-fruit sprites on real transparent alpha. No text, grid lines, labels, backdrop, watermark or cast ground shadow. Glossy polished hand-painted 3D-style arcade fruit, detailed appetising interiors, clear rind and seed detail, warm highlights matching richly shaded whole-fruit game sprites. Columns left to right: APPLE, ORANGE, WATERMELON, KIWI, PINEAPPLE. Row 1: the left half of each fruit, with juicy flat exposed cut surface visibly facing the viewer. Row 2: the complementary right half of each fruit with its exposed cut surface visibly facing the viewer. Each cell contains ONE separate half-fruit, not a pair and not a whole fruit. Apple: pale ivory flesh, red peel, brown seeds. Orange: radial citrus segments and orange peel. Watermelon: rich pink-red flesh, black seeds, pale inner rind, striped green skin. Kiwi: vivid green radial flesh, cream core, tiny black seeds, brown fuzzy peel. Pineapple: golden fibrous flesh, textured rind, small crown portion. Give both halves believable three-quarter volume so cutting feels juicy; no knives, plates, hands or loose droplets. Consistent scale, central framing, generous transparent gutters, all ten pieces completely separate and contained in their cells. Do not draw an opaque checkerboard.",
+      "transparent": true,
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2588430,
+      "sha256": "b6eef649cbe08429b4fc6d4a720bcb75652d1188a206d751ed3c143f0d63bc35"
+    }
+  ]
+}
