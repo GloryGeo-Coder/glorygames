@@ -347,6 +347,8 @@
       started: false,
       paused: false,
       muted: false,
+      musicVolume: .55,
+      effectsVolume: .8,
       onMap: false
     };
   }
@@ -395,6 +397,7 @@
     out.lives=clamp(Math.floor(Number(out.lives)||3),1,5);
     if(!['hero_blue','hero_green','hero_shadow'].includes(out.skin)||out.skin==='hero_green'&&out.coins<25||out.skin==='hero_shadow'&&out.coins<60)out.skin='hero_blue';
     out.started=false;out.paused=false;out.onMap=false;out.muted=!!out.muted;
+    for(const key of ['musicVolume','effectsVolume'])out[key]=Number.isFinite(Number(out[key]))?clamp(Number(out[key]),0,1):defaultState()[key];
     return out;
   }
 
@@ -473,54 +476,15 @@
   }
 
 
-  // Audio
-  let AC = null, master = null, musicInt = null, musicStep = 0;
-  function ensureAudio() {
-    if (state.muted) return null;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return null;
-    if (!AC) {
-      AC = new Ctx();
-      master = AC.createGain();
-      master.gain.value = 0.12;
-      master.connect(AC.destination);
-    }
-    if (AC.state === 'suspended') AC.resume().catch(() => {});
-    return AC;
+  const sound=window.CityAudio.create();
+  function syncAudioSettings() {sound.configure(state);}
+  function ensureAudio() {syncAudioSettings();sound.unlock();}
+  function sfx(kind) {sound.effect(kind);}
+  function startMusic() {
+    syncAudioSettings();
+    if(state.started&&!state.paused&&!state.onMap&&!game.levelComplete&&!game.gameOver&&!document.hidden)sound.playLevel(state.levelIndex);
   }
-  function tone(freq, dur=0.08, type='sine', gain=0.04, delay=0) {
-    const ac = ensureAudio();
-    if (!ac) return;
-    const t0 = ac.currentTime + delay;
-    const osc = ac.createOscillator();
-    const g = ac.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t0);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(gain, t0+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
-    osc.connect(g); g.connect(master); osc.start(t0); osc.stop(t0+dur+0.03);
-  }
-  function sfx(kind) {
-    if (kind === 'coin') { tone(720,.05,'triangle',.05); tone(980,.06,'sine',.03,.04); }
-    if (kind === 'jump') tone(420,.05,'triangle',.045);
-    if (kind === 'shoot') tone(760,.05,'triangle',.035);
-    if (kind === 'enemyShoot') tone(300,.05,'square',.025);
-    if (kind === 'hit') tone(160,.14,'sawtooth',.05);
-    if (kind === 'boss') { tone(210,.08,'square',.05); tone(320,.08,'square',.04,.08); }
-    if (kind === 'power') { tone(520,.06,'triangle',.05); tone(820,.08,'sine',.035,.05); }
-    if (kind === 'level') { tone(392,.08,'triangle',.05); tone(554,.09,'triangle',.04,.06); tone(784,.12,'sine',.03,.14); }
-    if (kind === 'npc') { tone(520,.05,'triangle',.03); tone(640,.05,'triangle',.02,.05); }
-  }
-  function musicTick() {
-    if (!state.started || state.paused || game.levelComplete || game.gameOver || state.onMap || state.muted) return;
-    const mood = state.levelIndex < 4 ? [220,262,330,392,330,294] : state.levelIndex < 7 ? [196,247,294,370,294,247] : [175,220,262,330,262,220];
-    const n = mood[musicStep++ % mood.length];
-    tone(n,.09,'triangle',.009);
-    if (musicStep % 2 === 0) tone(n/2,.12,'sine',.006);
-  }
-  function startMusic() { if (!musicInt && !state.muted) musicInt = setInterval(musicTick, 270); }
-  function stopMusic() { if (musicInt) clearInterval(musicInt); musicInt = null; }
+  function stopMusic() {sound.pause();}
 
   function postScore(mode='live') {
     const clean = Math.max(0, Math.floor(state.score));
@@ -570,6 +534,13 @@
     ui.progressBar.style.width = `${Math.min(100, game.objectiveCount / lv.target * 100)}%`;
     ui.skinHint.textContent = `Green unlocks at 25 coins • Shadow unlocks at 60 coins • Current: ${state.skin.replace('hero_','').toUpperCase()}`;
     ui.muteBtn.textContent = state.muted ? 'Sound Off' : 'Sound On';
+    syncAudioSettings();
+    for(const key of ['musicVolume','effectsVolume']) {
+      const percent=Math.round(state[key]*100);
+      document.getElementById(key).value=percent;
+      document.getElementById(key+'Value').textContent=percent+'%';
+    }
+    document.getElementById('musicTrack').textContent=window.CityMusic[state.levelIndex].title;
     ui.pauseBtn.textContent = state.paused ? 'Resume' : 'Pause';
     ui.skinGreenBtn.classList.toggle('locked', state.coins < 25);
     ui.skinShadowBtn.classList.toggle('locked', state.coins < 60);
@@ -630,6 +601,7 @@
 
   function loadLevel(index, preserveLives=false) {
     state.levelIndex = clamp(Math.floor(Number(index)||0), 0, Math.min(state.unlockedLevels-1,levelDefs.length - 1));
+    sound.selectLevel(state.levelIndex);
     for(const id of ["pauseOverlay","levelOverlay","gameOverOverlay","mapOverlay"])document.getElementById(id).classList.remove("active");
     if (!preserveLives) state.lives = 3;
     state.paused = false;
@@ -775,11 +747,11 @@
     player.x=clamp(player.x,0,currentLevel().width-player.w);
     player.y+=player.vy*dt;player.onGround=false;riding=null;
     const landing=surfaces.filter(p=>player.x+player.w>p.x+1&&player.x<p.x+p.w-1&&player.vy>=0&&oldY+player.h<=p.y+Math.max(2,(p.y-(p.prevY??p.y)))&&player.y+player.h>=p.y).sort((a,b)=>a.y-b.y)[0];
-    if(landing){player.y=landing.y-player.h;player.vy=0;player.onGround=true;riding=landing.move||landing.moving?landing:null;}
+    if(landing){if(player.vy>180)sfx('land');player.y=landing.y-player.h;player.vy=0;player.onGround=true;riding=landing.move||landing.moving?landing:null;}
     if(player.vy<0)for(const p of surfaces)if(!p.move&&!p.ledge&&player.x+player.w>p.x&&player.x<p.x+p.w&&oldY>=p.y+p.h-1&&player.y<p.y+p.h){player.y=p.y+p.h;player.vy=0;}
     if(player.y>DESIGN_H+180){loseLife('You fell!');return;}
     const next=currentLevel().checkpoints.findLast((c,i)=>i>checkpoint.index&&player.x>=c.x&&player.x<c.x+110&&Math.abs(player.y-c.y)<260);
-    if(next){checkpoint={...next,index:currentLevel().checkpoints.indexOf(next)};game.speechText='Checkpoint reached';game.speechTimer=2;sfx('power');}
+    if(next){checkpoint={...next,index:currentLevel().checkpoints.indexOf(next)};game.speechText='Checkpoint reached';game.speechTimer=2;sfx('checkpoint');}
     if(player.onGround) {
       coyote=.11;
     }else coyote=Math.max(0,coyote-dt);
@@ -790,7 +762,7 @@
     const fell=reason==='You fell!';
     if(game.levelComplete||game.gameOver)return;
     if(!fell&&player.invuln>0)return;
-    if(!fell&&player.shield>0) {player.shield=0;player.invuln=1;game.speechText='Shield absorbed the hit';game.speechTimer=2;sfx('hit');return;}
+    if(!fell&&player.shield>0) {player.shield=0;player.invuln=1;game.speechText='Shield absorbed the hit';game.speechTimer=2;sfx('shield');return;}
     state.lives=Math.max(0,state.lives-1);state.score=Math.max(0,state.score-80);
     game.speechText=reason;game.speechTimer=2.5;sfx('hit');
     if(fell) {player.x=checkpoint.x;player.y=checkpoint.y;player.vx=0;player.vy=0;player.onGround=false;riding=null;game.enemyProjectiles=[];resetInput();}
@@ -811,11 +783,11 @@
     }
     for (const t of game.tokens) if (!t.taken && rectsIntersect(box,t)) {
       t.taken = true; state.score += 150; addObjective();
-      addParticles(t.x+20,t.y+20,'#78b4ff'); sfx('coin'); syncUI(); postScore('live');
+      addParticles(t.x+20,t.y+20,'#78b4ff'); sfx('token'); syncUI(); postScore('live');
     }
     for (const b of game.badges) if (!b.taken && rectsIntersect(box,b)) {
       b.taken = true; state.score += 200; addObjective();
-      addParticles(b.x+20,b.y+20,'#66ddb0'); sfx('coin'); syncUI(); postScore('live');
+      addParticles(b.x+20,b.y+20,'#66ddb0'); sfx('token'); syncUI(); postScore('live');
     }
     for (const p of game.powers) if (!p.taken && rectsIntersect(box,p)) {
       p.taken = true; activatePower(p.type);
@@ -875,6 +847,7 @@
     sfx('boss');
     if (e.hp <= 0) {
       e.dead = true;e.deadTime=0;
+      sfx('enemyDefeat');
       state.score += e.type === 'drone' ? 180 : 120;
     }
   }
@@ -945,7 +918,7 @@
           p.life = 0;
           e.hp -= p.power;e.hurt=.22;
           addParticles(e.x+e.w/2,e.y+e.h/2,'#78b4ff',18);
-          if (e.hp <= 0) { e.dead = true;e.deadTime=0; state.score += e.type==='drone'?180:120; sfx('boss'); }
+          if (e.hp <= 0) { e.dead = true;e.deadTime=0; state.score += e.type==='drone'?180:120; sfx('enemyDefeat'); }
           break;
         }
       }
@@ -1010,6 +983,7 @@
   function triggerGameOver(win=false) {
     game.gameOver = true;resetInput();
     stopMusic();
+    sfx(win?'victory':'gameOver');
     state.best = Math.max(state.best, state.score);
     saveState();
     ui.gameOverTitle.textContent = win ? 'Guardian Rises!' : 'Mission Failed';
@@ -1278,6 +1252,9 @@
     document.getElementById('submitScoreBtn').addEventListener('click',()=>postScore('manual_submit'));
     document.getElementById('resumeBtn').addEventListener('click',()=>setPaused(false));
     document.getElementById('pauseMapBtn').addEventListener('click',openMap);
+    for(const key of ['musicVolume','effectsVolume'])document.getElementById(key).addEventListener('input',e=>{
+      state[key]=clamp(Number(e.target.value)/100,0,1);syncUI();saveState();
+    });
     ui.muteBtn.addEventListener('click',()=>{state.muted=!state.muted;if(state.muted)stopMusic();else startMusic();syncUI();saveState();});
     ui.pauseBtn.addEventListener('click',()=>setPaused(!state.paused));
     window.addEventListener('keydown',e=>{
@@ -1293,7 +1270,7 @@
       if(e.code==='KeyM'&&!e.repeat)openMap();
     });
     window.addEventListener('keyup',e=>{delete keys[e.code];});
-    const interrupt=()=>{resetInput();setPaused(true);last=performance.now();};
+    const interrupt=()=>{resetInput();stopMusic();setPaused(true);last=performance.now();};
     window.addEventListener('blur',interrupt);
     document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt();});
     window.addEventListener('pagehide',()=>{interrupt();saveState();});
@@ -1312,7 +1289,7 @@
       if (type === 'GG_MUTE') {
         state.muted = !!(data.payload?.muted ?? data.muted);
         if (state.muted) stopMusic(); else if (!state.onMap) startMusic();
-        syncUI();
+        syncUI();saveState();
       }
     });
   }

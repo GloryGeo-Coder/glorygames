@@ -1,7 +1,7 @@
 /* Runs the shipped game logic; DOM/input adapters do not emulate browser CSS layout. */
 const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
 const root = path.resolve(__dirname, '../../public/games/city-quest-rise-of-the-guardian');
-async function boot({ bitmapSupport=false, width = 1280, height = 720, saved = new Map(), failAssets = false, failLevels = false, failAtlases = [], wrongAtlasSize = false, noAnimation = false, nativeCanvas } = {}) {
+async function boot({ audioEnv={}, bitmapSupport=false, width = 1280, height = 720, saved = new Map(), failAssets = false, failLevels = false, failAtlases = [], wrongAtlasSize = false, noAnimation = false, nativeCanvas } = {}) {
   let clock = 0;
   const frames = [];
   const calls = [], messages = [], requests = [], captures = new Set();
@@ -54,7 +54,7 @@ async function boot({ bitmapSupport=false, width = 1280, height = 720, saved = n
   doc = new Element(); doc.hidden = false; doc.documentElement = new Element('html'); doc.body = new Element('body');
   doc.getElementById = id => elements.get(id); doc.createElement = tag => new Element(tag);
   const win = new Element(); Object.assign(win, { innerWidth:width, innerHeight:height, devicePixelRatio:2, visualViewport:new Element(), location:{ origin:'https://webgamearena.com' }, setInterval:() => 1,
-    setTimeout, clearTimeout, matchMedia:() => ({matches:false,addEventListener(){}}) });
+    setTimeout, clearTimeout, matchMedia:() => ({matches:false,addEventListener(){}}), ...audioEnv });
   win.parent = win; win.postMessage = (message, origin) => messages.push({ message, origin });
   const sandbox = { window:win, document:doc, console, performance:{ now:() => clock },
     CanvasRenderingContext2D: Context, localStorage:{ getItem:k => {if(failLevels)throw Error('storage unavailable');return saved.get(k)??null;}, setItem:(k,v) => {if(failLevels)throw Error('storage unavailable');saved.set(k,String(v));} },
@@ -81,7 +81,7 @@ async function boot({ bitmapSupport=false, width = 1280, height = 720, saved = n
   const images = new Map();
   if (nativeCanvas) { const draw = ctx.drawImage.bind(ctx); ctx.drawImage = (img,...args) => draw(images.get(img) || img,...args); }
   const context = vm.createContext(sandbox);
-  for(const file of ['city-campaign.js','city-township.js','city-animation-data.js','city-animation.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
+  for(const file of ['city-campaign.js','city-township.js','city-animation-data.js','city-animation.js','city-music.js','city-audio.js'])vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),context);
   let code=fs.readFileSync(path.join(root,'game.js'),'utf8');
   code=code.replace('  loadImages().then(() => {', `
     globalThis.__cityProbe={player,game,keys,levelDefs,startGame,loadLevel,jump,consumeJump,shoot,tryAction,canCompleteAtExit,update,applyPhysics,updateMovingPlatforms,updateEnemies,damageEnemy,updateBoss,updateProjectiles,loseLife,collectThings,completeLevel,nextLevel,openMap,closeMap,setPaused,resetInput,resizeCanvas,computeCamera,draw,loadBackground,setSkin,saveState,postScore,

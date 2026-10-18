@@ -55,6 +55,9 @@
     "responsiveScaledCanvas": true,
     "sound": true,
     "backgroundMusic": true,
+    "uniqueLevelSongs": 25,
+    "musicStyle": "Original Amapiano-inspired instrumentals",
+    "separateAudioVolumes": true,
     "scoreEvents": [
       "GG_SCORE",
       "gg:score"
@@ -113,5 +116,5 @@
     "doubledOriginalLevelLength": true,
     "doubledOriginalEnemyCount": true
   },
-  "version": "2.2.0"
+  "version": "2.3.0"
 }
