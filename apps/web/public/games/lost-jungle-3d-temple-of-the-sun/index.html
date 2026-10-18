@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#12321f" />
   <title>Lost Jungle: Temple of the Sun</title>
-  <link rel="stylesheet" href="./styles.css?v=2.4" />
+  <link rel="stylesheet" href="./styles.css?v=2.5" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
@@ -73,6 +73,13 @@
         <div class="overlay" id="pauseOverlay" role="dialog" aria-modal="true" aria-label="Expedition paused">
           <div class="overlay-card"><h2>Expedition paused</h2><p>Take a moment to plan the next crossing. Your current checkpoint stays active during this mission.</p>
             <p>Best score: <b id="bestValue">0</b> · Sun Seals restored: <b id="sealCount">0 / 5</b></p>
+            <fieldset class="audio-settings"><legend>Expedition audio</legend>
+              <p>Soundtrack: <span id="musicTrack">The Emerald Trail</span></p>
+              <label for="musicVolume">Music <output id="musicVolumeValue" for="musicVolume">55%</output></label>
+              <input id="musicVolume" type="range" min="0" max="100" step="1" value="55" />
+              <label for="effectsVolume">Sound effects <output id="effectsVolumeValue" for="effectsVolume">80%</output></label>
+              <input id="effectsVolume" type="range" min="0" max="100" step="1" value="80" />
+            </fieldset>
             <div class="action-row"><button id="resumeBtn" class="primary">Resume Expedition</button><button id="pauseMapBtn">Expedition Map</button><button id="submitScoreBtn">Submit Score</button></div>
           </div>
         </div>
@@ -89,6 +96,7 @@
               <li>Dodge snakes, spiders, bats, stone monkeys, rolling boulders, spikes, and darts.</li>
               <li>Watch the glow before an enemy attack. Jump onto small enemies, dash through them or use relic shots.</li>
               <li>P / Escape pauses; M opens the map. Finish each route to unlock the next. Defeat guardians to restore the Sun Seals.</li>
+              <li>Adjust Music and Sound effects in Pause. Sound On / Off controls both.</li>
             </ul>
             <button class="primary" id="closeHelpBtn">Close</button>
           </div>
@@ -153,7 +161,9 @@
   <script src="./jungle-campaign.js?v=2.4"></script>
   <script src="./jungle-animation-data.js?v=2.4"></script>
   <script src="./jungle-animation.js?v=2.4"></script>
-  <script src="./game.js?v=2.4"></script>
+  <script src="./jungle-music.js?v=2.5"></script>
+  <script src="./jungle-audio.js?v=2.5"></script>
+  <script src="./game.js?v=2.5"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

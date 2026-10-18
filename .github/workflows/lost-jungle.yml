@@ -8,6 +8,7 @@ on:
       - 'apps/web/scripts/helpers/kasi-png.cjs'
       - 'apps/web/src/content/gameEditorials.ts'
       - 'tools/build-jungle-animation-data.py'
+      - 'tools/build-jungle-soundtrack.py'
       - '.github/workflows/lost-jungle.yml'
   push:
     branches: [main]
@@ -18,6 +19,7 @@ on:
       - 'apps/web/scripts/helpers/kasi-png.cjs'
       - 'apps/web/src/content/gameEditorials.ts'
       - 'tools/build-jungle-animation-data.py'
+      - 'tools/build-jungle-soundtrack.py'
       - '.github/workflows/lost-jungle.yml'
 permissions:
   contents: read
@@ -34,4 +36,6 @@ jobs:
       - run: node --check apps/web/public/games/lost-jungle-3d-temple-of-the-sun/jungle-campaign.js
       - run: node --check apps/web/public/games/lost-jungle-3d-temple-of-the-sun/jungle-animation.js
       - run: node --check apps/web/public/games/lost-jungle-3d-temple-of-the-sun/jungle-animation-data.js
+      - run: node --check apps/web/public/games/lost-jungle-3d-temple-of-the-sun/jungle-audio.js
+      - run: node --check apps/web/public/games/lost-jungle-3d-temple-of-the-sun/jungle-music.js
       - run: node --test apps/web/scripts/lost-jungle*.test.cjs

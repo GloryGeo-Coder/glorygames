@@ -136,6 +136,8 @@
     started: false,
     paused: false,
     muted: false,
+    musicVolume: .55,
+    effectsVolume: .8,
     gameOver: false,
     completed: false
   });
@@ -213,6 +215,7 @@
     out.levelIndex=clamp(Math.floor(Number(out.levelIndex)||0),0,out.unlockedLevel-1);
     out.completedLevels=clamp(Math.floor(Number(out.completedLevels)||out.unlockedLevel-1),0,LEVELS.length);
     out.lives=clamp(Math.floor(Number(out.lives)||3),1,5);out.muted=!!out.muted;
+    for(const key of ['musicVolume','effectsVolume'])out[key]=typeof raw[key]==='number'&&Number.isFinite(raw[key])?clamp(raw[key],0,1):stateDefaults()[key];
     out.started=false;out.paused=false;out.gameOver=false;out.completed=false;out.campaignVersion=24;
     return out;
   }
@@ -282,78 +285,13 @@
     return game.pattern;
   }
 
-  // Audio
-  let AC = null, master = null, musicInt = null, musicStep = 0;
-
-  function ensureAudio() {
-    if (state.muted) return null;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return null;
-    if (!AC) {
-      AC = new Ctx();
-      master = AC.createGain();
-      master.gain.value = 0.12;
-      master.connect(AC.destination);
-    }
-    if (AC.state === 'suspended') AC.resume().catch(()=>{});
-    return AC;
-  }
-
-  function tone(freq,dur=.08,type='sine',gain=.04,delay=0) {
-    const ac = ensureAudio();
-    if (!ac) return;
-    const t = ac.currentTime + delay;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq,t);
-    g.gain.setValueAtTime(.0001,t);
-    g.gain.exponentialRampToValueAtTime(gain,t+.012);
-    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
-    o.connect(g);
-    g.connect(master);
-    o.onended=()=>{o.disconnect();g.disconnect();};
-    o.start(t);
-    o.stop(t+dur+.04);
-  }
-
-  function sfx(kind) {
-    if (kind === 'jump') tone(420,.06,'triangle',.045);
-    if (kind === 'dash') { tone(780,.05,'triangle',.04); tone(520,.08,'sine',.025,.05); }
-    if (kind === 'coin') { tone(760,.05,'triangle',.045); tone(1040,.06,'sine',.03,.04); }
-    if (kind === 'relic') { tone(520,.07,'triangle',.05); tone(820,.08,'sine',.04,.06); tone(1200,.1,'sine',.025,.13); }
-    if (kind === 'key') { tone(660,.08,'triangle',.04); tone(990,.08,'triangle',.035,.06); }
-    if (kind === 'plate') { tone(310,.08,'square',.035); tone(620,.12,'triangle',.025,.08); }
-    if (kind === 'power') { tone(520,.06,'triangle',.04); tone(820,.08,'sine',.035,.05); }
-    if (kind === 'hit') tone(150,.14,'sawtooth',.05);
-    if (kind === 'boss') { tone(120,.12,'sawtooth',.055); tone(210,.1,'square',.03,.08); }
-    if (kind === 'gate') { tone(260,.08,'triangle',.04); tone(420,.09,'triangle',.03,.08); }
-    if (kind === 'win') { tone(392,.08,'triangle',.05); tone(554,.1,'triangle',.04,.08); tone(784,.12,'sine',.03,.18); }
-  }
-
-  function musicTick() {
-    if (!state.started || state.paused || state.completed || state.gameOver || state.muted) return;
-    const lv = currentLevel().themeId;
-    const themes = {
-      1:[196,247,294,370,392,370,294,247],
-      2:[185,233,277,349,415,349,277,233],
-      3:[220,277,330,415,494,415,330,277],
-      4:[147,185,220,294,349,294,220,185],
-      5:[174,220,261,349,392,349,261,220],
-      6:[196,247,311,392,466,392,311,247],
-      7:[233,294,349,440,523,440,349,294],
-      8:[165,220,247,330,370,330,247,220],
-      9:[147,196,247,294,392,294,247,196],
-      10:[262,330,392,523,659,523,392,330]
-    };
-    const notes = themes[lv] || themes[1];
-    const n = notes[musicStep++ % notes.length];
-    tone(n,.09,'triangle',.008);
-    if (musicStep % 2 === 0) tone(n/2,.12,'sine',.006);
-  }
-
-  function startMusic(){if(activePlay()&&!document.hidden&&!musicInt&&!state.muted){ensureAudio();musicInt=setInterval(musicTick,280);}}
-  function stopMusic(){ if (musicInt) clearInterval(musicInt); musicInt = null; }
+  // The soundtrack streams one biome at a time; effects keep their existing cues.
+  const audio=window.JungleAudio.create(window);
+  function applyAudioSettings(){audio.configure({muted:state.muted,musicVolume:state.musicVolume,effectsVolume:state.effectsVolume});}
+  function ensureAudio(){applyAudioSettings();return audio.unlock();}
+  function sfx(kind){audio.effect(kind);}
+  function startMusic(){applyAudioSettings();if(activePlay()&&!document.hidden)audio.playTheme(currentLevel().themeId);}
+  function stopMusic(){audio.pause();}
 
   function postScore(mode='live') {
     const clean = Math.max(0, Math.floor(state.score));
@@ -433,6 +371,7 @@
   function buildLevel(){
     state.levelIndex=clamp(state.levelIndex,0,state.unlockedLevel-1);
     const lv=currentLevel(),world=window.JungleCampaign.build(lv);
+    audio.selectTheme(lv.themeId);applyAudioSettings();
     Object.assign(game,world,{darts:[],bullets:[],fallingRocks:[],particles:[],relics:0,keys:0,plateActive:!lv.plateRequired,gateOpen:false,speech:lv.story,speechTimer:5,time:0,levelComplete:false,levelCompleteTimer:0,autoAdvanceQueued:false,challenge:null,challengeCooldown:4,checkpointIndex:0,storyOpen:false,onMap:false});
     Object.assign(player,{x:120,y:484,vx:0,vy:0,dir:1,onGround:false,invuln:0,dashTimer:0,dashCooldown:0,torchTimer:0,shootTimer:0,shootPowerTimer:0,magnetTimer:0,shield:0,ammo:14,canDoubleJump:false,jumpBootsTimer:0,hurt:0});
     resetInput();riding=null;camera.shake=0;computeCamera(true);
@@ -1435,6 +1374,12 @@
     ui.storyText.textContent = game.speech || lv.discovery;
     document.querySelector('.story-card').classList.toggle('speaking',game.speechTimer>0&&state.started&&!state.paused);
     ui.muteBtn.textContent = state.muted ? 'Sound Off' : 'Sound On';
+    ui.muteBtn.setAttribute('aria-pressed',String(state.muted));
+    document.getElementById('musicTrack').textContent=audio.track?.title||'Jungle Adventure';
+    for(const key of ['musicVolume','effectsVolume']){
+      document.getElementById(key).value=String(Math.round(state[key]*100));
+      document.getElementById(key+'Value').textContent=Math.round(state[key]*100)+'%';
+    }
     ui.pauseBtn.textContent = state.paused ? 'Resume' : 'Pause';
     updateChallengeUI();
   }
@@ -1490,17 +1435,21 @@
     document.getElementById('nextLevelBtn').addEventListener('click',()=>{if(game.levelComplete){game.autoAdvanceQueued=false;nextLevel();}});
     document.getElementById('retryBtn').addEventListener('click',()=>{ui.gameOverOverlay.classList.remove('active');state.gameOver=false;state.completed=false;state.lives=3;buildLevel();showCutscene();});
     document.getElementById('resetRunBtn').addEventListener('click',resetRun);document.getElementById('resumeBtn').addEventListener('click',()=>setPaused(false));
-    ui.muteBtn.addEventListener('click',()=>{state.muted=!state.muted;if(state.muted){stopMusic();if(master)master.gain.value=0;}else{if(master)master.gain.value=.12;startMusic();}saveState();syncUI();});
+    ui.muteBtn.addEventListener('click',()=>{state.muted=!state.muted;ensureAudio();if(state.muted)stopMusic();else startMusic();saveState();syncUI();});
+    for(const key of ['musicVolume','effectsVolume'])document.getElementById(key).addEventListener('input',e=>{
+      state[key]=clamp(Number(e.target.value)/100,0,1);applyAudioSettings();
+      if(activePlay())startMusic();saveState();syncUI();
+    });
     ui.pauseBtn.addEventListener('click',()=>setPaused(!state.paused));
     const refresh=()=>{touch.left=[...pointers.values()].includes('leftBtn');touch.right=[...pointers.values()].includes('rightBtn');shootHeld=[...pointers.values()].includes('shootBtn');for(const id of ['leftBtn','rightBtn','jumpBtn','dashBtn','shootBtn'])document.getElementById(id).classList.toggle('held',[...pointers.values()].includes(id));};
     for(const id of ['leftBtn','rightBtn','jumpBtn','dashBtn','shootBtn']){
-      const el=document.getElementById(id);el.addEventListener('pointerdown',e=>{if(e.button!==0||!activePlay())return;e.preventDefault();pointers.set(e.pointerId,id);el.setPointerCapture(e.pointerId);refresh();if(id==='jumpBtn')jump();if(id==='dashBtn')dash();if(id==='shootBtn')shoot();});
+      const el=document.getElementById(id);el.addEventListener('pointerdown',e=>{if(e.button!==0||!activePlay())return;e.preventDefault();startMusic();pointers.set(e.pointerId,id);el.setPointerCapture(e.pointerId);refresh();if(id==='jumpBtn')jump();if(id==='dashBtn')dash();if(id==='shootBtn')shoot();});
       const release=e=>{e.preventDefault();pointers.delete(e.pointerId);refresh();};for(const event of ['pointerup','pointercancel','lostpointercapture'])el.addEventListener(event,release);
     }
     window.addEventListener('keydown',e=>{
       if(e.target?.tagName==='INPUT'||e.target?.tagName==='TEXTAREA'||e.target?.isContentEditable)return;
       if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat){if(game.onMap)closeMap();else setPaused(!state.paused);}e.preventDefault();return;}
-      if(!activePlay())return;if(['ArrowLeft','ArrowRight','ArrowUp','Space'].includes(e.code))e.preventDefault();keys[e.code]=true;
+      if(!activePlay())return;startMusic();if(['ArrowLeft','ArrowRight','ArrowUp','Space'].includes(e.code))e.preventDefault();keys[e.code]=true;
       if(!e.repeat&&['Space','ArrowUp','KeyW'].includes(e.code))jump();if(!e.repeat&&['ShiftLeft','ShiftRight','KeyJ'].includes(e.code))dash();if(!e.repeat&&['KeyK','KeyF'].includes(e.code))shoot();if(!e.repeat&&e.code==='KeyM')openMap();
     });
     window.addEventListener('keyup',e=>{delete keys[e.code];});
@@ -1511,7 +1460,7 @@
       if(ev.source!==window.parent||ev.origin!==window.location.origin)return;const data=ev.data||{},type=data.type||data.event;
       if(type==='GG_PAUSE')setPaused(!!(data.payload?.paused??data.paused));
       if(type==='GG_RESTART'&&state.started)resetRun();
-      if(type==='GG_MUTE'){state.muted=!!(data.payload?.muted??data.muted);if(master)master.gain.value=state.muted?0:.12;if(state.muted)stopMusic();else startMusic();saveState();syncUI();}
+      if(type==='GG_MUTE'){state.muted=!!(data.payload?.muted??data.muted);applyAudioSettings();if(state.muted)stopMusic();else startMusic();saveState();syncUI();}
     });
   }
 

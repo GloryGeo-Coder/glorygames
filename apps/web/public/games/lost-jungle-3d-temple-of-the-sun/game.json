@@ -102,8 +102,10 @@
       "Sun Guardian"
     ],
     "audio": [
-      "sound effects",
-      "background music"
+      "10 original jungle adventure instrumentals",
+      "biome soundtrack selection",
+      "independent music and sound effects volume",
+      "master mute"
     ],
     "scoreEvents": [
       "GG_SCORE",
@@ -118,5 +120,5 @@
     "safeAreaViewport": true,
     "heldShooting": true
   },
-  "version": "2.4.0"
+  "version": "2.5.0"
 }
