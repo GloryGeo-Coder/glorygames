@@ -4,9 +4,9 @@
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "category": "Action",
-  "description": "Defend Fort Nova across 25 longer missions with animated robots, rescue objectives, orb defence, four command-core bosses and an original electronic track for every level.",
+  "description": "Defend Fort Nova through 25 escalating missions with mixed robot and drone formations, a boss in every mission, animated supplies and reserve lives.",
   "orientation": "any",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "features": {
     "levels": 25,
     "storyMode": true,
@@ -18,7 +18,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "bosses": 4,
+    "bosses": 25,
     "backgrounds": 25,
     "musicTracks": 25,
     "animatedSprites": true,
@@ -26,6 +26,10 @@
     "multiTouch": true,
     "optionalAutoFire": true,
     "separateAudioVolumes": true,
-    "pauseSafeTransitions": true
+    "pauseSafeTransitions": true,
+    "bossFamilies": 5,
+    "enemyTypes": 15,
+    "reserveLives": true,
+    "animatedPickupSprites": true
   }
 }

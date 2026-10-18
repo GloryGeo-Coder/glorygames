@@ -860,7 +860,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Waves and bosses",
-        "body": "Twenty-five missions have three waves each, four command-core bosses, saved unlocks and replay stars."
+        "body": "Twenty-five missions have three waves each, 25 boss encounters, saved unlocks and replay stars."
       }
     ],
     "progression": [
