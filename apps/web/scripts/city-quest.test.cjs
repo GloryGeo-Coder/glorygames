@@ -2,7 +2,7 @@ const {test}=require('node:test');const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {boot,root}=require('./helpers/city-runtime.cjs');
 const saveKey='gg_city_quest_guardian_save_v2',bestKey='gg_city_quest_guardian_best_v2';
-const savedAt=n=>new Map([[saveKey,JSON.stringify({unlockedLevels:10,levelIndex:n})]]);
+const savedAt=n=>new Map([[saveKey,JSON.stringify({unlockedLevels:25,levelIndex:n})]]);
 const wait=()=>new Promise(r=>setImmediate(r));
 
 for(const [width,height] of [[320,568],[390,844],[430,932],[568,320],[844,390],[1366,768]])test(`viewport ${width}x${height}: character remains readable, pixel budget and vertical safe region hold`,async()=>{
@@ -129,7 +129,7 @@ test('startup loads only one district background, shares two atlases, and failed
  const failed=await boot({failAssets:true});failed.startGame();failed.frame();assert.equal(failed.state.started,true);assert.equal(failed.elements.get('playBtn').disabled,false);
 });
 
-for(let n=0;n<10;n++)test(`mission ${n+1}: entire terrain route, lifts, crates, checkpoints and collectible quota are reachable`,async()=>{
+for(let n=0;n<25;n++)test(`mission ${n+1}: entire terrain route, lifts, crates, checkpoints and collectible quota are reachable`,async()=>{
  const r=await boot({width:n%2?844:390,height:n%2?390:844,saved:savedAt(n)});r.startGame();
  // Combat and damage hazards are isolated here; separate encounter tests exercise those systems.
  r.game.enemies=[];r.game.boss=null;r.game.obstacles=r.game.obstacles.filter(o=>o.type==='crate');
@@ -137,15 +137,15 @@ for(let n=0;n<10;n++)test(`mission ${n+1}: entire terrain route, lifts, crates, 
  for(let f=0;f<16000;f++){
   const p=r.player,right=p.x+p.w,feet=p.y+p.h;r.keys.ArrowRight=airTarget===null||p.x<airTarget-2;
   const floor=r.game.platforms.find(a=>p.x+p.w/2>=a.x&&p.x+p.w/2<=a.x+a.w&&Math.abs(feet-a.y)<2);
-  const gap=floor&&!floor.ledge&&floor.x+floor.w-right<70&&floor.x+floor.w<lv.width-5;
-  const wall=r.game.platforms.some(a=>!a.ledge&&a.x>=right-2&&a.x<right+80&&a.y<feet-3&&a.y>feet-130);
+  const gap=floor&&!floor.ledge&&!floor.optional&&floor.x+floor.w-right<70&&floor.x+floor.w<lv.width-5;
+  const wall=r.game.platforms.some(a=>!a.ledge&&!a.optional&&a.x>=right-2&&a.x<right+80&&a.y<feet-3&&a.y>feet-130);
   const box=r.game.obstacles.find(o=>o.type==='crate'&&o.x+o.w>right&&o.x<right+75);
   if(p.onGround){airTarget=null;if(gap||wall||box){const next=r.game.platforms.filter(a=>!a.move&&a.x>p.x+50&&a.x<right+330&&a.y<feet+120).sort((a,b)=>a.x-b.x)[0];airTarget=box?box.x+8:next?Math.max(p.x+12,next.x-p.w+20):p.x+200;r.jump();}}
   if(!r.game.missionAccepted)r.tryAction();r.update(1/120);
   if(r.game.levelComplete){reached=true;break;}if(r.state.lives<3)break;
  }
  assert.ok(reached,`blocked at ${r.player.x},${r.player.y}; items ${r.game.objectiveCount}/${lv.target}`);
- assert.equal(r.checkpoint.index,3);assert.ok(r.game.objectiveCount>=lv.target);assert.ok(lv.width>=lv.originalWidth*1.6);
+ assert.equal(r.checkpoint.index,lv.checkpoints.length-1);assert.ok(r.game.objectiveCount>=lv.target);assert.ok(lv.width>=lv.originalWidth*1.6);
 });
 
 test('all patrols, powers, checkpoints, exit gates and quotas fit the authored geometry',async()=>{

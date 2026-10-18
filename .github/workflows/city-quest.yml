@@ -30,6 +30,7 @@ jobs:
           node-version: '24'
       - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/game.js
       - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/city-campaign.js
+      - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/city-township.js
       - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/city-animation.js
       - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/city-animation-data.js
       - run: node --test apps/web/scripts/city-quest*.test.cjs
