@@ -1,6 +1,7 @@
 /* Authored route plans; emits the static JSON served by the game. No build step at runtime. */
 const fs = require('node:fs'), path = require('node:path');
 const root = path.resolve(__dirname, '../apps/web/public/games/kasi-quest/levels');
+const {roles}=require('../apps/web/public/games/kasi-quest/kasi-enemies.js');
 // Each district revisits the existing artwork with a new route, mission and guardian.
 const plans = [
  ['Warm-Up Rooftops',1,'Lebo','Spaza Guard','taxi','Help the spaza auntie recover supplies along the rooftops.','terrace'],
@@ -69,9 +70,30 @@ function build(n) {
   // The same pressure switch can also be shot. It is always before its door.
   d.switches.push({id,x,y:14.45,w:.9,h:.55});
  }
+ // Introduce one role at a time before mixing the full roster in the final act.
+ const chooseRole=(i,slot)=>{
+  if(n>=16)return slot===0?['warden','thrower','shooter','sprinter'][i%4]:['shooter','sprinter','ranger','thrower'][i%4];
+  if(n>=12&&i===4&&slot===1)return 'ranger';
+  if(n>=8&&i===3&&slot===0)return 'thrower';
+  if(n>=5&&i===2&&slot===0)return 'warden';
+  if(n>=2&&i%3===1&&slot===1)return 'sprinter';
+  return null;
+ };
+ const ground=d.enemies.filter(e=>e.type!=='drone');
+ for(let index=0;index<ground.length;index++){
+  const en=ground[index],type=chooseRole(Math.floor(index/2),index%2);if(!type)continue;
+  Object.assign(en,{type,hp:type==='sprinter'?(n>=14?2:1):type==='warden'?2:n>=17?3:2,
+   speed:type==='sprinter'?100:type==='warden'?48:type==='thrower'?52:56});
+ }
+ if(n>=2){
+  const introductions=Object.entries(roles).filter(([,r])=>r.firstLevel===n);
+  const present=[...new Set(d.enemies.filter(e=>roles[e.type]).map(e=>e.type))];
+  d.meta.encounterNote=introductions.length?introductions.map(([,r])=>`New rival: ${r.name}. ${r.tip}`).join(' '):
+   `Rival patrol: ${present.map(type=>roles[type].name).join(', ')}. Watch their signals before attacking.`;
+ }
  const coinsRequired=18+Math.floor(n*.8), collectiblesRequired=4+Math.floor(n/4),enemiesRequired=5+Math.floor(n*.55);
  d.objective={coinsRequired,collectiblesRequired,enemiesRequired,bossRequired:true,switchesRequired:locks,
- message:`${story} Collect ${coinsRequired} coins and ${collectiblesRequired} kasi items, defeat ${enemiesRequired} bots${locks?`, open ${locks} route locks`:''}, then beat ${guardian}.`};
+ message:`${story} Collect ${coinsRequired} coins and ${collectiblesRequired} kasi items, defeat ${enemiesRequired} ${n===1?'bots':'opponents'}${locks?`, open ${locks} route locks`:''}, then beat ${guardian}.`};
  return d;
 }
 if(require.main===module) for(let n=1;n<=plans.length;n++) fs.writeFileSync(path.join(root,`level-${String(n).padStart(2,'0')}.json`),JSON.stringify(build(n),null,2)+'\n');

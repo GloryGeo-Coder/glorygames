@@ -1,0 +1,61 @@
+{
+  "version": "3.4",
+  "assets": [
+    {
+      "kind": "sprinter",
+      "file": "sprinter-v3.4.png",
+      "rows": 5,
+      "columns": 4,
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: transparent animated character sprite atlas for Kasi Quest, a polished side-scrolling rooftop action game. Create ONE square 1024x1024 RGBA sprite sheet containing exactly 20 separated full-body poses of ONE consistent human Rooftop Runner, arranged in exactly 4 columns and 5 rows. Subject: adult athletic Black woman with short curly hair, orange cropped sports jacket, dark teal trousers, cyan sneakers, fingerless gloves and a small glowing wrist gadget. Human face clearly visible, no helmet, no robot body. Compact stylized 3D game rendering with readable chunky proportions, dark outlines, cool purple/cyan rim light matching a futuristic rooftop game. Every pose faces RIGHT, strict side-view/very slight three-quarter side, consistent clothing, scale and identity. Row 1: four quiet idle/breathing poses. Row 2: four distinctly different consecutive running gait poses, alternating feet and arm swing. Row 3: four anticipation poses preparing a forward dash, progressively crouching and leaning. Row 4: first two poses a forward dash/short palm strike with wrist gadget, last two poses recoiling from a hit. Row 5: four defeat poses progressing from buckled knees, crouch, falling sideways, lying down naturally shorter. Each cell 256x204, generous transparent gutters; entire character INCLUDING hair, hands, feet and gadget fits in its own cell. Normal standing characters approx 150 pixels tall, feet share a baseline in each row; collapsed poses naturally shorter. No objects disconnected from the body. GENUINE transparent empty background, no floor, no ground shadows, no gradient, no checkerboard pixels, no glowing beams or large effects. No text, no numbers, no borders, no labels, no watermark. This is production animation art, not a character poster.",
+      "width": 1254,
+      "height": 1254,
+      "frames": 20,
+      "decoded_bytes": 6290064,
+      "sha256": "0413475adbe8ff7f590a23c065e2c926d715247333b3eab80cf3e8f6bdac4df8",
+      "project_path": "apps/web/public/games/kasi-quest/assets/animation/sprinter-v3.4.png"
+    },
+    {
+      "kind": "warden",
+      "file": "warden-v3.4.png",
+      "rows": 5,
+      "columns": 4,
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: production animated sprite atlas for Kasi Quest side-scrolling rooftop action game. Create ONE SQUARE RGBA sheet with exactly 20 separated full-body sprites, in 4 columns and 5 rows. ONE consistent HUMAN Shield Warden: stocky adult man, warm brown skin, short beard, closely cropped hair, heavy navy jacket with brass shoulder armor, charcoal trousers, heavy boots, a large distinctive oval cyan energy shield attached to his forward/right forearm. Human head and face visible, no robot, no helmet. Polished compact stylized 3D game render, chunky readable silhouette, dark outlines, purple/cyan rim lighting. All face RIGHT, strict side-view with slight three-quarter side; same identity and body scale across all sprites. Row 1 four idle breathing poses with shield forward. Row 2 a FOUR-PHASE WALK CYCLE: left foot planted forward/right foot back; passing pose feet together; RIGHT foot planted forward/left foot back; opposite passing pose. Both left-leading and right-leading contact poses are essential, not four copies of one stance. Row 3 four poses of bracing and pulling shield back before a bash. Row 4 first two poses shield-bash extending forward, last two stagger/hit-reaction with shield lowered to expose torso. Row 5 four defeat poses: knees buckle, kneeling, falling onto side, lying on side with shield still attached. Every complete sprite including shield fits its own cell, ample EMPTY GUTTERS on all four sides, no overlap. Standing body approx 145-155 pixels high for a 1024 square sheet; feet share baseline per row, collapsed poses naturally shorter. Genuine transparent empty backdrop, no floor or ground shadows, no gradient or checkerboard, no beams, no detached special effects. No text, labels, borders or watermark.",
+      "width": 1254,
+      "height": 1254,
+      "frames": 20,
+      "decoded_bytes": 6290064,
+      "sha256": "65c1a66d4835f117e475c9a994ef27669140d4ff93b158c8aab3c6e1c795aca9",
+      "project_path": "apps/web/public/games/kasi-quest/assets/animation/warden-v3.4.png"
+    },
+    {
+      "kind": "thrower",
+      "file": "thrower-v3.4.png",
+      "rows": 5,
+      "columns": 4,
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: transparent animated character sprite atlas for Kasi Quest rooftop platformer. ONE SQUARE RGBA atlas, exactly 4 columns by 5 rows, exactly 20 full-body poses of ONE consistent HUMAN Spark Thrower. Adult woman with olive complexion, long auburn braid, purple hooded engineer jacket with hood down, round goggles pushed onto forehead, amber gloves, gray cargo trousers and sturdy orange boots. Small copper power pack on back and a warm amber SPARK ORB held against palm, visibly connected to fingers. Clearly human face and hands, no robot. Compact polished stylized 3D game character with chunky readable shapes and dark outlines, cool purple/cyan rim lights. All sprites face RIGHT in side view, same design and scale. Row 1 four idle breathing poses with orb held. Row 2 four walking cycle poses: left foot forward contact, passing feet, right foot forward contact, opposite passing feet; alternate both legs, not four identical running stances. Row 3 four increasingly clear windup poses: takes orb back, raises elbow, arm behind head, ready to throw. Row 4 first two overhead throwing/follow-through poses (keep orb IN HAND, no detached projectile), last two hurt/recoil poses with elbow lowered. Row 5 four defeat poses: knees give, kneels, falls sideways, lies on side with pack and braid attached. Each whole sprite inside a separate cell with generous transparent gutters and no overlap, standing pose about 150 px tall on 1024-square sheet; collapsed poses naturally shorter. Genuinely transparent empty background: no floor, no ground shadows, no backdrop or checkerboard, no beams, no loose objects, no explosions. No words, labels, numbers, borders or watermark.",
+      "width": 1254,
+      "height": 1254,
+      "frames": 20,
+      "decoded_bytes": 6290064,
+      "sha256": "f29c5345bc1a604c58e042ffec9eb9758663b258248899afdd28fc92f7a905f0",
+      "project_path": "apps/web/public/games/kasi-quest/assets/animation/thrower-v3.4.png"
+    },
+    {
+      "kind": "ranger",
+      "file": "ranger-v3.4.png",
+      "rows": 5,
+      "columns": 4,
+      "mode": "built-in image_gen",
+      "prompt": "Use case: stylized-concept. Asset type: production transparent animated sprite atlas for Kasi Quest side-scrolling action game. ONE SQUARE RGBA sheet, exactly 20 separated full-body poses in exactly 4 columns and 5 rows. ONE consistent HUMAN Lookout Ranger: lean adult man with deep brown skin, high tied dreadlock bun, visible expressive human face, forest-green long sleeveless coat, pale cream scarf, fitted dark trousers, green ankle boots, compact futuristic crossbow with a small turquoise glowing sight held in his hands. Clearly human, no robot, no mask. Polished stylized 3D game art, compact readable proportions and dark outlines, cool cyan/purple edge lighting. All poses face RIGHT in side view / very slight three-quarter side, same scale and clothing. Row 1 four idle breathing poses with weapon lowered. Row 2 four walking cycle poses: left foot forward contact; passing feet; right foot forward contact; opposite passing feet. Both alternating leg contact phases are essential, not copies of one stance. Row 3 four poses raising weapon and settling into a carefully aimed shot, torso leans forward, coat changes naturally. Row 4 first two recoil/firing follow-through poses (NO detached bolt or beam); last two hurt poses clutching torso, weapon down. Row 5 four defeat poses: buckled knees, kneeling, falling onto side, lying down naturally shorter with weapon still attached to hand. Generous EMPTY transparent gutters, every entire sprite with bun, scarf, coat, boots and crossbow inside its own cell, no overlaps. Standing pose about 150px high on 1024-square atlas; consistent foot baseline per row. Genuine transparent background: no scenery, floor, ground shadow, gradient or checkerboard, no beams, no loose objects. No text, numbers, borders, labels or watermark.",
+      "width": 1254,
+      "height": 1254,
+      "frames": 20,
+      "decoded_bytes": 6290064,
+      "sha256": "1bfdb9d124ac3d7d512813cddb79a18a820645229e827c70dfdd06b7d60dbb56",
+      "project_path": "apps/web/public/games/kasi-quest/assets/animation/ranger-v3.4.png"
+    }
+  ]
+}

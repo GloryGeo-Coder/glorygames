@@ -4,7 +4,8 @@
     "background": 3,
     "district": "terrace",
     "timeLimit": 435,
-    "parTime": 242
+    "parTime": 242,
+    "encounterNote": "Rival patrol: Rooftop Runner, Shield Warden, Spark Thrower. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 360,
@@ -719,7 +720,7 @@
       "fireInterval": 1.775
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
@@ -741,13 +742,13 @@
       "fireInterval": 2.3150000000000004
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 99,
       "y": 13.8,
       "minX": 98,
       "maxX": 102,
-      "speed": 86,
-      "hp": 1,
+      "speed": 48,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.775
     },
@@ -763,13 +764,13 @@
       "fireInterval": 1.9250000000000003
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 139,
       "y": 13.8,
       "minX": 138,
       "maxX": 142,
-      "speed": 86,
-      "hp": 1,
+      "speed": 52,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.775
     },
@@ -807,7 +808,7 @@
       "fireInterval": 1.775
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 189,
       "y": 13.8,
       "minX": 187,
@@ -884,7 +885,7 @@
       "fireInterval": 1.775
     },
     {
-      "type": "chaser",
+      "type": "sprinter",
       "x": 309,
       "y": 13.8,
       "minX": 307,
@@ -1028,6 +1029,6 @@
     "enemiesRequired": 11,
     "bossRequired": true,
     "switchesRequired": 2,
-    "message": "Bring the solar relay back online across the upper roofs. Collect 26 coins and 6 kasi items, defeat 11 bots, open 2 route locks, then beat Solar Sentinel."
+    "message": "Bring the solar relay back online across the upper roofs. Collect 26 coins and 6 kasi items, defeat 11 opponents, open 2 route locks, then beat Solar Sentinel."
   }
 }

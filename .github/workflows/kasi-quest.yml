@@ -4,18 +4,20 @@ on:
     paths:
       - 'apps/web/public/games/kasi-quest/**'
       - 'apps/web/scripts/kasi-quest*'
-      - 'apps/web/scripts/helpers/kasi-runtime.cjs'
+      - 'apps/web/scripts/helpers/kasi-*.cjs'
       - '.github/workflows/kasi-quest.yml'
       - 'tools/build-kasi-animation-data.py'
+      - 'tools/build-kasi-roster-data.py'
       - 'tools/build-kasi-campaign.cjs'
   push:
     branches: [main]
     paths:
       - 'apps/web/public/games/kasi-quest/**'
       - 'apps/web/scripts/kasi-quest*'
-      - 'apps/web/scripts/helpers/kasi-runtime.cjs'
+      - 'apps/web/scripts/helpers/kasi-*.cjs'
       - '.github/workflows/kasi-quest.yml'
       - 'tools/build-kasi-animation-data.py'
+      - 'tools/build-kasi-roster-data.py'
       - 'tools/build-kasi-campaign.cjs'
 permissions:
   contents: read
@@ -32,4 +34,6 @@ jobs:
       - run: node --check apps/web/public/games/kasi-quest/kasi-presentation.js
       - run: node --check apps/web/public/games/kasi-quest/kasi-animation-data.js
       - run: node --check apps/web/public/games/kasi-quest/kasi-animation.js
+      - run: node --check apps/web/public/games/kasi-quest/kasi-enemy-data.js
+      - run: node --check apps/web/public/games/kasi-quest/kasi-enemies.js
       - run: node --test apps/web/scripts/kasi-quest-*.test.cjs

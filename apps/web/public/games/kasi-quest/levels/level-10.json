@@ -4,7 +4,8 @@
     "background": 2,
     "district": "rank",
     "timeLimit": 430,
-    "parTime": 239
+    "parTime": 239,
+    "encounterNote": "Rival patrol: Rooftop Runner, Shield Warden, Spark Thrower. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 360,
@@ -741,24 +742,24 @@
       "fireInterval": 1.7999999999999998
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 98,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 1.9500000000000002
     },
     {
-      "type": "shooter",
+      "type": "warden",
       "x": 99,
       "y": 13.8,
       "minX": 98,
       "maxX": 102,
-      "speed": 84,
-      "hp": 1,
+      "speed": 48,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.7999999999999998
     },
@@ -785,13 +786,13 @@
       "fireInterval": 2.35
     },
     {
-      "type": "shooter",
+      "type": "thrower",
       "x": 139,
       "y": 13.8,
       "minX": 138,
       "maxX": 142,
-      "speed": 84,
-      "hp": 1,
+      "speed": 52,
+      "hp": 2,
       "dir": -1,
       "fireInterval": 1.7999999999999998
     },
@@ -818,12 +819,12 @@
       "fireInterval": 1.7999999999999998
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 189,
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 98,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 1.9500000000000002
@@ -906,12 +907,12 @@
       "fireInterval": 1.7999999999999998
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 309,
       "y": 13.8,
       "minX": 307,
       "maxX": 311,
-      "speed": 98,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 1.9500000000000002
@@ -1039,6 +1040,6 @@
     "enemiesRequired": 10,
     "bossRequired": true,
     "switchesRequired": 2,
-    "message": "Recover the night-shift tokens from the drone patrols. Collect 26 coins and 6 kasi items, defeat 10 bots, open 2 route locks, then beat Night Marshal."
+    "message": "Recover the night-shift tokens from the drone patrols. Collect 26 coins and 6 kasi items, defeat 10 opponents, open 2 route locks, then beat Night Marshal."
   }
 }

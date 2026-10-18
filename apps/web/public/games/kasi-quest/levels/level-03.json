@@ -4,7 +4,8 @@
     "background": 3,
     "district": "relay",
     "timeLimit": 365,
-    "parTime": 202
+    "parTime": 202,
+    "encounterNote": "Rival patrol: Rooftop Runner. Watch their signals before attacking."
   },
   "tileSize": 32,
   "w": 280,
@@ -561,12 +562,12 @@
       "fireInterval": 1.9749999999999999
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 69,
       "y": 13.8,
       "minX": 67,
       "maxX": 71,
-      "speed": 84,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2.125
@@ -649,12 +650,12 @@
       "fireInterval": 1.9749999999999999
     },
     {
-      "type": "shooter",
+      "type": "sprinter",
       "x": 189,
       "y": 13.8,
       "minX": 187,
       "maxX": 191,
-      "speed": 84,
+      "speed": 100,
       "hp": 1,
       "dir": -1,
       "fireInterval": 2.125
@@ -781,6 +782,6 @@
     "enemiesRequired": 6,
     "bossRequired": true,
     "switchesRequired": 0,
-    "message": "Restore the neighbourhood airtime relay above the streets. Collect 20 coins and 4 kasi items, defeat 6 bots, then beat Roof Sentry."
+    "message": "Restore the neighbourhood airtime relay above the streets. Collect 20 coins and 4 kasi items, defeat 6 opponents, then beat Roof Sentry."
   }
 }
