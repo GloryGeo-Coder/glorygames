@@ -3,12 +3,12 @@
 
   /*
     Lost Jungle 2D: Temple of the Sun
-    Version 2.3 — reviewed folder package: fixed enemy spawning, integrated generated item images, validated assets, and cleaned 2D folder structure.
+    Version 2.4 — long-form story expedition, animated actors and mobile viewport controls.
     Keeps the existing assets, textures, backgrounds, sprites, items, effects,
     mobile controls, sounds, levels, score bridge, cutscenes, and map system.
   */
 
-  const GAME_SLUG = 'lost-jungle-2d-temple-of-the-sun';
+  const GAME_SLUG = 'lost-jungle-3d-temple-of-the-sun';
   const SAVE_KEY = 'wga_lost_jungle_2d_save_v1';
   const BEST_KEY = 'wga_lost_jungle_2d_best_v1';
 
@@ -113,34 +113,22 @@
     }
   };
 
-  const LEVELS = [
-    {id:1,title:'Jungle Entrance',length:3600,relicTarget:4,keyTarget:1,plateRequired:false,boss:null,theme:'#74f2a8',hazards:['spikes','spikePit','fallingRock'],enemies:['snake','bat','frog','boar'],story:'The explorer enters the jungle path. Collect relics, find the key, and reach the first temple gate.'},
-    {id:2,title:'River Crossing',length:4100,relicTarget:5,keyTarget:1,plateRequired:false,boss:null,theme:'#57d9ff',hazards:['spikes','water','spikePit','fallingRock'],enemies:['snake','bat','frog','boar'],story:'The path crosses rivers and broken stones. Jump over water gaps and keep moving.'},
-    {id:3,title:'Waterfall Ruins',length:4550,relicTarget:5,keyTarget:1,plateRequired:true,boss:null,theme:'#6ee6ff',hazards:['spikes','water','dart','spikePit','swingBlade','fallingRock'],enemies:['snake','spider','bat','frog','boar'],story:'Behind the waterfall, pressure plates unlock old ruins and dart traps guard the relics.'},
-    {id:4,title:'Spider Cave',length:5050,relicTarget:6,keyTarget:2,plateRequired:true,boss:null,theme:'#be6eff',hazards:['spikes','dart','pit','spikePit','swingBlade','fallingRock'],enemies:['spider','bat','crawler','frog'],story:'The cave is dark. Torch power reveals the route and helps you fight cave creatures.'},
-    {id:5,title:'Monkey Bridge',length:5600,relicTarget:6,keyTarget:1,plateRequired:false,boss:'Monkey King',theme:'#ffd66f',hazards:['spikes','pit','bridge','spikePit','swingBlade','rollingBoulder'],enemies:['monkey','bat','snake','boar','frog'],story:'A rope bridge cuts through the canopy. The Monkey King guards the next temple seal.'},
-    {id:6,title:'Stone Puzzle Temple',length:6100,relicTarget:7,keyTarget:2,plateRequired:true,boss:null,theme:'#ffb347',hazards:['spikes','dart','pit','spikePit','swingBlade','fallingRock'],enemies:['monkey','spider','snake','crawler','boar'],story:'The old temple demands a key and pressure plate before the gate will open.'},
-    {id:7,title:'Underground Crystal Cave',length:6600,relicTarget:7,keyTarget:2,plateRequired:true,boss:null,theme:'#66e7ff',hazards:['spikes','water','dart','pit','spikePit','swingBlade','fallingRock'],enemies:['bat','spider','snake','crawler','frog'],story:'Crystals glow below the jungle. Dash across gaps and avoid crystal darts.'},
-    {id:8,title:'Lost Village',length:7200,relicTarget:8,keyTarget:2,plateRequired:true,boss:'Spider Queen',theme:'#ffb347',hazards:['spikes','dart','pit','bridge','spikePit','swingBlade','fallingRock'],enemies:['spider','monkey','bat','boar','crawler'],story:'A forgotten village lies under vines. Defeat the Spider Queen to awaken the exit portal.'},
-    {id:9,title:'Volcano Path',length:7900,relicTarget:8,keyTarget:2,plateRequired:false,boss:null,theme:'#ff6f47',hazards:['spikes','lava','dart','pit','spikePit','swingBlade','fallingRock','rollingBoulder'],enemies:['bat','monkey','snake','boar','frog'],story:'The jungle turns into volcanic cliffs. Lava, rolling rocks, and fast enemies block the way.'},
-    {id:10,title:'Sun Temple Boss Arena',length:8800,relicTarget:10,keyTarget:3,plateRequired:true,boss:'Sun Guardian',theme:'#ffd66f',hazards:['spikes','water','dart','lava','pit','spikePit','swingBlade','fallingRock','rollingBoulder'],enemies:['snake','spider','bat','monkey','boar','frog','crawler'],story:'The Sun Temple opens. Recover the final relics and defeat the Sun Guardian.'}
-  ];
+  const LEVELS=window.JungleCampaign.levels;
+  const art=window.JungleAnimation;
+  for(const lv of LEVELS){ASSETS.backgrounds[lv.id]=lv.bg;ASSETS.textures[lv.id]=lv.texture;}
+  ASSETS.sprites.wasp=ASSETS.sprites.bat;ASSETS.sprites.sentry=ASSETS.sprites.crawler;
 
   const assetImages = {};
-  const assetSources = [
-    ...Object.values(ASSETS.backgrounds),
-    ...Object.values(ASSETS.textures),
-    ...Object.values(ASSETS.sprites),
-    ...Object.values(ASSETS.items),
-    ...Object.values(ASSETS.effects)
-  ];
+  let assetEpoch=0,viewScale=1,pixelRatio=1,cssWidth=1280,cssHeight=720;
+  let jumpBuffer=0,coyote=0,riding=null,shootHeld=false,mapReturn='play',accumulator=0;
+  const pointers=new Map();
 
   const keys = {};
   const touch = { left:false, right:false, forward:false, back:false };
 
   const stateDefaults = () => ({
     score: 0,
-    best: Number(localStorage.getItem(BEST_KEY) || '0') || 0,
+    best: readBest(),
     coins: 0,
     lives: 3,
     levelIndex: 0,
@@ -160,12 +148,12 @@
   const camera = { x:0, y:0, shake:0 };
 
   const player = {
-    x:120, y:0, w:76, h:118,
+    x:120, y:0, w:54, h:86,
     vx:0, vy:0,
     dir:1,
-    speed:390,
-    jump:1020,
-    airJump:820,
+    speed:300,
+    jump:650,
+    airJump:580,
     canDoubleJump:false,
     onGround:false,
     invuln:0,
@@ -177,7 +165,7 @@
     magnetTimer:0,
     shield:0,
     ammo:14,
-    anim:0
+    anim:0, jumpBootsTimer:0, hurt:0
   };
 
   const game = {
@@ -205,7 +193,7 @@
     autoAdvanceQueued: false,
     challenge: null,
     challengeCooldown: 2,
-    challengeHistory: []
+    challengeHistory: [], checkpoints:[],checkpointIndex:0,storyMarks:[],storyOpen:false,onMap:false,loading:null
   };
 
   function currentLevel(){ return LEVELS[state.levelIndex] || LEVELS[0]; }
@@ -215,75 +203,83 @@
   function rects(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
   function centerRect(x,y,w,h){ return {x:x-w/2,y:y-h/2,w,h}; }
 
-  function loadState() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
-      return raw ? {...stateDefaults(), ...raw, started:false, paused:false, gameOver:false, completed:false} : stateDefaults();
-    } catch { return stateDefaults(); }
+  function readBest(){try{return Math.max(0,Number(localStorage.getItem(BEST_KEY))||0);}catch{return 0;}}
+  function loadState(){
+    let raw={};try{const value=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(value&&typeof value==='object'&&!Array.isArray(value))raw=value;}catch{}
+    const out={...stateDefaults(),...raw};
+    for(const key of ['score','coins','best'])out[key]=clamp(Math.floor(Number(out[key])||0),0,1e9);
+    out.best=Math.max(out.best,out.score,readBest());
+    out.unlockedLevel=clamp(Math.floor(Number(out.unlockedLevel)||1),1,LEVELS.length);
+    out.levelIndex=clamp(Math.floor(Number(out.levelIndex)||0),0,out.unlockedLevel-1);
+    out.completedLevels=clamp(Math.floor(Number(out.completedLevels)||out.unlockedLevel-1),0,LEVELS.length);
+    out.lives=clamp(Math.floor(Number(out.lives)||3),1,5);out.muted=!!out.muted;
+    out.started=false;out.paused=false;out.gameOver=false;out.completed=false;out.campaignVersion=24;
+    return out;
   }
 
-  function saveState() {
-    state.best = Math.max(state.best, state.score);
-    localStorage.setItem(BEST_KEY, String(Math.floor(state.best)));
-    localStorage.setItem(SAVE_KEY, JSON.stringify({
-      ...state, started:false, paused:false, gameOver:false, completed:false
-    }));
+  function saveState(){
+    state.best=Math.max(state.best,state.score);
+    try{localStorage.setItem(BEST_KEY,String(Math.floor(state.best)));localStorage.setItem(SAVE_KEY,JSON.stringify({...state,started:false,paused:false,gameOver:false,completed:false}));}catch{}
   }
 
-  function loadAssets() {
-    return Promise.all(assetSources.map(src => new Promise(resolve => {
-      const img = new Image();
-      assetImages[src] = img;
-      img.onload = resolve;
-      img.onerror = resolve;
-      img.src = src;
-    })));
+  async function loadAssets(){
+    const epoch=++assetEpoch,lv=currentLevel(),kinds=['player',...lv.enemies,...(lv.boss?[lv.boss]:[])];
+    const atlases=new Set(kinds.map(k=>art.source(k)).filter(Boolean));
+    const needed=new Set([lv.bg,lv.texture,...Object.values(ASSETS.items),...Object.values(ASSETS.effects),...kinds.map(k=>ASSETS.sprites[k]).filter(Boolean),...atlases]);
+    for(const url of Object.keys(assetImages))if(!needed.has(url))delete assetImages[url];
+    art.retain(atlases);
+    const queue=[...needed].filter(url=>!assetImages[url]);
+    async function loadOne(url){return new Promise(resolve=>{
+      const img=new Image();
+      img.onload=()=>{
+        if(epoch===assetEpoch){
+          if(atlases.has(url)){art.prepare(img,url,document);assetImages[url]={width:1,height:1,atlas:true};}
+          else{
+            const crop=art.original(url)||[0,0,img.naturalWidth||img.width,img.naturalHeight||img.height];
+            const bound=url.includes('/backgrounds/')?1920:url.includes('/textures/')?256:192;
+            const scale=Math.min(1,bound/Math.max(crop[2],crop[3]));
+            const cached=document.createElement('canvas');cached.width=Math.max(1,Math.round(crop[2]*scale));cached.height=Math.max(1,Math.round(crop[3]*scale));
+            const painter=cached.getContext?.('2d');
+            if(painter){painter.drawImage(img,...crop,0,0,cached.width,cached.height);assetImages[url]=cached;}else assetImages[url]=img;
+          }
+        }
+        img.onload=null;img.onerror=null;if(assetImages[url]!==img)img.src='';resolve();
+      };
+      img.onerror=()=>{if(epoch===assetEpoch)assetImages[url]=null;resolve();};img.src=url;
+    });}
+    await Promise.all(Array.from({length:3},async()=>{while(queue.length&&epoch===assetEpoch)await loadOne(queue.shift());}));
+    if(epoch===assetEpoch){document.getElementById('continueCutsceneBtn').disabled=false;}
   }
 
-  function hasAsset(src) {
-    const img = assetImages[src];
-    return !!(img && img.complete && img.naturalWidth);
+  function hasAsset(src){const image=assetImages[src];return !!(image&&(image.naturalWidth||image.width));}
+
+  function fitCanvasToViewport(){
+    cssWidth=Math.max(240,window.innerWidth||1280);cssHeight=Math.max(240,window.visualViewport?.height||window.innerHeight||720);
+    document.documentElement.style.setProperty('--viewport-height',cssHeight+'px');
+    viewScale=cssWidth<cssHeight?clamp(cssWidth/620,.55,.8):clamp(cssHeight/720,.55,1.15);
   }
 
-  function fitCanvasToViewport() {
-    const shell = canvas.closest('.canvas-shell');
-    const topbar = document.querySelector('.topbar');
-    const controls = document.querySelector('.controls');
-    if (!shell) return;
-    const vw = Math.max(320, window.innerWidth || 960);
-    const vh = Math.max(360, window.innerHeight || 720);
-    const topH = topbar ? topbar.getBoundingClientRect().height : 0;
-    const controlsH = controls ? controls.getBoundingClientRect().height : 0;
-    const available = Math.max(310, vh - topH - controlsH - 34);
-    if (vw <= 980) shell.style.height = `${Math.max(330, Math.min(available, Math.round(vh * 0.68)))}px`;
-    else shell.style.height = '';
-    canvas.style.touchAction = 'none';
+  function resizeCanvas(){
+    fitCanvasToViewport();pixelRatio=Math.min(window.devicePixelRatio||1,2,Math.sqrt(3000000/(cssWidth*cssHeight)));
+    canvas.width=Math.round(cssWidth*pixelRatio);canvas.height=Math.round(cssHeight*pixelRatio);
+    ctx.setTransform(pixelRatio*viewScale,0,0,pixelRatio*viewScale,0,0);computeCamera(true);
   }
 
-  function resizeCanvas() {
-    fitCanvasToViewport();
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.max(1, Math.round(rect.width * dpr));
-    canvas.height = Math.max(1, Math.round(rect.height * dpr));
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-  }
+  function getW(){return cssWidth/viewScale;}
+  function getH(){return cssHeight/viewScale;}
 
-  function getW(){ return canvas.getBoundingClientRect().width || 960; }
-  function getH(){ return canvas.getBoundingClientRect().height || 540; }
-
-  function worldToScreen(x,y) {
-    const sx = x - camera.x + getW()*0.36 + (camera.shake ? rand(-camera.shake,camera.shake) : 0);
-    const sy = y - camera.y + (camera.shake ? rand(-camera.shake,camera.shake) : 0);
-    return {x:sx,y:sy};
+  function worldToScreen(x,y){return {x:x-camera.x+(camera.shakeX||0),y:y-camera.y+(camera.shakeY||0)};}
+  function computeCamera(snap=false,dt=1/120){
+    const lv=currentLevel(),targetX=clamp(player.x-getW()*.28,0,Math.max(0,lv.length+400-getW()));
+    const safeTop=(cssHeight<500?95:150)/viewScale,groundCamera=570-getH()*.74;
+    const targetY=Math.min(groundCamera,player.y-safeTop);
+    const blend=snap?1:Math.min(1,dt*10);camera.x+=(targetX-camera.x)*blend;camera.y+=(targetY-camera.y)*blend;
   }
 
   function createPatternForLevel() {
-    const lv = currentLevel();
-    const src = ASSETS.textures[lv.id];
-    const img = assetImages[src];
-    if (!img || !img.naturalWidth) return null;
-    try { return ctx.createPattern(img, 'repeat'); } catch { return null; }
+    const img=assetImages[currentLevel().texture];if(!img)return null;
+    if(game.patternImage!==img){game.patternImage=img;try{game.pattern=ctx.createPattern(img,'repeat');}catch{game.pattern=null;}}
+    return game.pattern;
   }
 
   // Audio
@@ -316,6 +312,7 @@
     g.gain.exponentialRampToValueAtTime(.0001,t+dur);
     o.connect(g);
     g.connect(master);
+    o.onended=()=>{o.disconnect();g.disconnect();};
     o.start(t);
     o.stop(t+dur+.04);
   }
@@ -336,7 +333,7 @@
 
   function musicTick() {
     if (!state.started || state.paused || state.completed || state.gameOver || state.muted) return;
-    const lv = currentLevel().id;
+    const lv = currentLevel().themeId;
     const themes = {
       1:[196,247,294,370,392,370,294,247],
       2:[185,233,277,349,415,349,277,233],
@@ -355,7 +352,7 @@
     if (musicStep % 2 === 0) tone(n/2,.12,'sine',.006);
   }
 
-  function startMusic(){ if (!musicInt && !state.muted) musicInt = setInterval(musicTick,280); }
+  function startMusic(){if(activePlay()&&!document.hidden&&!musicInt&&!state.muted){ensureAudio();musicInt=setInterval(musicTick,280);}}
   function stopMusic(){ if (musicInt) clearInterval(musicInt); musicInt = null; }
 
   function postScore(mode='live') {
@@ -376,38 +373,20 @@
     try { window.parent?.postMessage?.({type:'gg:score', ...payload, payload}, '*'); } catch {}
   }
 
-  function startGame() {
-    state = loadState();
-    state.started = true;
-    state.paused = false;
-    state.completed = false;
-    state.gameOver = false;
-    state.score = 0;
-    state.lives = 3;
-    ui.startOverlay.classList.remove('active');
-    ui.completeOverlay.classList.remove('active');
-    ui.gameOverOverlay.classList.remove('active');
-    state.levelIndex = clamp(state.levelIndex || 0, 0, LEVELS.length-1);
-    buildLevel();
-    showCutscene();
-    startMusic();
-    saveState();
+  function startGame(){
+    state=loadState();state.started=true;state.paused=false;state.completed=false;state.gameOver=false;state.lives=Math.max(3,state.lives);
+    for(const id of ['startOverlay','completeOverlay','gameOverOverlay','mapOverlay','pauseOverlay'])document.getElementById(id).classList.remove('active');
+    ensureAudio();buildLevel();showCutscene();saveState();
   }
 
-  function showCutscene() {
-    const lv = currentLevel();
-    state.paused = true;
-    stopMusic();
-    ui.cutsceneLabel.textContent = `LEVEL ${lv.id}`;
-    ui.cutsceneTitle.textContent = lv.title;
-    ui.cutsceneText.textContent = lv.story;
-    ui.cutsceneOverlay.classList.add('active');
+  function showCutscene(){
+    const lv=currentLevel();resetInput();state.paused=true;game.storyOpen=true;stopMusic();
+    ui.cutsceneLabel.textContent='CHAPTER '+Math.ceil(lv.id/5)+' · '+lv.chapter+' · LEVEL '+lv.id+'/25';
+    ui.cutsceneTitle.textContent=lv.title;ui.cutsceneText.textContent=lv.story;ui.cutsceneOverlay.classList.add('active');
   }
 
-  function continueCutscene() {
-    ui.cutsceneOverlay.classList.remove('active');
-    state.paused = false;
-    startMusic();
+  function continueCutscene(){
+    ui.cutsceneOverlay.classList.remove('active');game.storyOpen=false;state.paused=false;resetInput();startMusic();canvas.focus();
   }
 
   function addPlatform(x,y,w,h,type='solid', props={}) {
@@ -451,177 +430,14 @@
     });
   }
 
-  function buildLevel() {
-    const lv = currentLevel();
-    game.platforms = [];
-    game.hazards = [];
-    game.items = [];
-    game.enemies = [];
-    game.darts = [];
-    game.bullets = [];
-    game.fallingRocks = [];
-    game.particles = [];
-    game.boss = null;
-    game.exit = null;
-    game.boulder = null;
-    game.relics = 0;
-    game.keys = 0;
-    game.plateActive = !lv.plateRequired;
-    game.gateOpen = false;
-    game.gate = null;
-    game.speech = lv.story;
-    game.speechTimer = 4;
-    game.time = 0;
-    game.levelComplete = false;
-    game.levelCompleteTimer = 0;
-    game.autoAdvanceQueued = false;
-    game.challenge = null;
-    game.challengeCooldown = 2;
-
-    player.x = 120;
-    player.y = 420;
-    player.vx = 0;
-    player.vy = 0;
-    player.dir = 1;
-    player.onGround = false;
-    player.invuln = 0;
-    player.dashTimer = 0;
-    player.dashCooldown = 0;
-    player.torchTimer = 0;
-    player.shootTimer = 0;
-    player.shootPowerTimer = 0;
-    player.magnetTimer = 0;
-    player.shield = 0;
-    player.ammo = 14;
-    player.canDoubleJump = false;
-
-    camera.x = 0;
-    camera.y = 0;
-    camera.shake = 0;
-
-    const groundY = 565;
-    const segment = 360;
-    for (let x=0; x<lv.length+900; x+=segment) {
-      const gap = x > 900 && x < lv.length-900 && ((x/segment + lv.id) % 7 === 0);
-      if (!gap) addPlatform(x, groundY, segment+12, 190, 'ground');
-      else {
-        const pitType = lv.hazards.includes('lava') ? 'lava' : lv.hazards.includes('water') ? 'water' : 'pit';
-        addHazard(pitType, x+40, groundY+18, segment-80, 170);
-      }
-    }
-
-    // Elevated platforms / stepping stones
-    for (let i=0; i<14 + lv.id; i++) {
-      const x = 520 + i * 330 + (i%2)*70;
-      if (x > lv.length - 540) break;
-      const y = 410 - (i%3)*40 + Math.sin(i*.8)*18;
-      const w = 170 + (i%3)*45;
-      const moving = i%3===0 || (lv.id >= 4 && i%4===1);
-      addPlatform(x, y, w, 42, moving ? 'moving' : 'stone', moving ? {
-        moveAxis: i%2===0 ? 'x' : 'y',
-        moveRange: 70 + lv.id * 8,
-        moveSpeed: 1.0 + (i%4)*0.18 + lv.id*0.025,
-        phase: i*.75
-      } : {});
-      if (i%3===0) addItem('coin', x+w*.25, y-58);
-      if (i%4===0) addItem('gold', x+w*.50, y-72, {value:120,w:48,h:48});
-      if (i%5===0) addItem('relic', x+w*.62, y-70);
-      if (i%6===0) addItem('emerald', x+w*.78, y-84, {value:240,w:50,h:50});
-      if (i%7===0 && game.items.filter(o=>o.type==='key').length < lv.keyTarget) addItem('key', x+w*.42, y-76);
-    }
-
-    // Required items are guaranteed.
-    while (game.items.filter(o => o.type === 'relic').length < lv.relicTarget) {
-      const x = rand(700, lv.length-760);
-      addItem('relic', x, rand(300, 470));
-    }
-    while (game.items.filter(o => o.type === 'key').length < lv.keyTarget) {
-      const x = rand(850, lv.length-900);
-      addItem('key', x, rand(295, 455));
-    }
-
-    // Ground item trails, hazards and enemies.
-    // IMPORTANT: this uses routeIndex instead of x / 260. The previous decimal modulo
-    // checks almost never equalled 0, which prevented enemies from spawning in levels.
-    for (let x=620, routeIndex=0; x<lv.length-760; x+=260, routeIndex++) {
-      const roll = (routeIndex + lv.id) % 6;
-      if (roll === 0) addHazard('spikes', x, groundY-35, 92, 40);
-      if (roll === 1 && lv.hazards.includes('dart')) addHazard('dartTrap', x, groundY-145, 58, 58, {timer:rand(.5,1.5)});
-      if (roll === 2) {
-        if (lv.hazards.includes('spikePit')) addHazard('spikePit', x, groundY+18, 170, 170);
-        else if (lv.hazards.includes('bridge')) addHazard('pit', x, groundY+18, 150, 170);
-      }
-      if (roll === 3 && lv.hazards.includes('lava')) addHazard('lava', x, groundY+18, 170, 170);
-      if (roll === 4) addItem('power', x+30, groundY-95, {power:choose(lv.id>=4 ? ['dash','torch','shield','heart','blaster','doubleJump','magnet','ammo'] : ['dash','shield','heart','blaster','doubleJump','ammo'])});
-      if (roll === 5) {
-        addItem('coin', x+40, groundY-78);
-        if (routeIndex % 2 === 0) addItem('emerald', x+105, groundY-118, {value:240,w:50,h:50});
-      }
-
-      if (lv.hazards.includes('swingBlade') && (routeIndex + lv.id) % 8 === 2) {
-        addHazard('swingBlade', x+95, groundY-250, 70, 150, {phase: routeIndex*.9});
-      }
-      if (lv.hazards.includes('fallingRock') && (routeIndex + lv.id) % 9 === 3) {
-        addHazard('fallingRock', x+120, groundY-330, 72, 72, {timer: rand(.3, 1.4), baseY: groundY-330});
-      }
-      if (lv.hazards.includes('rollingBoulder') && (routeIndex + lv.id) % 10 === 4) {
-        addHazard('rollingBoulder', x+160, groundY-118, 98, 98, {vx: -150 - lv.id*12, baseX: x+160});
-      }
-
-      if (routeIndex < 2 || (routeIndex + lv.id) % 2 === 0) {
-        const enemyType = choose(lv.enemies);
-        const enemyY = enemyType === 'bat' ? groundY-220 :
-          enemyType === 'frog' ? groundY-74 :
-          enemyType === 'crawler' ? groundY-62 :
-          enemyType === 'boar' ? groundY-92 :
-          groundY-92;
-        addEnemy(enemyType, x+80, enemyY, {range: 170 + lv.id * 8});
-      }
-    }
-
-    // Extra guaranteed enemy cluster. This ensures every level has several enemies
-    // even if the route layout changes later.
-    while (game.enemies.length < Math.min(10, 5 + lv.id)) {
-      const enemyType = choose(lv.enemies);
-      const ex = rand(780, Math.max(980, lv.length - 900));
-      const ey = enemyType === 'bat' ? groundY - rand(185, 250) :
-        enemyType === 'frog' ? groundY - 74 :
-        enemyType === 'crawler' ? groundY - 62 :
-        groundY - 92;
-      addEnemy(enemyType, ex, ey, {range: 190 + lv.id * 10});
-    }
-
-    // Extra treasure trails: gold and emeralds make the 2D version feel more rewarding.
-    for (let x=760; x<lv.length-840; x+=430) {
-      addItem('gold', x + 40, groundY - 118, {value:120,w:48,h:48});
-      if ((x/430 + lv.id) % 2 === 0) addItem('emerald', x + 130, groundY - 155, {value:240,w:50,h:50});
-      if ((x/430 + lv.id) % 5 === 0) addItem('power', x + 210, groundY - 145, {power: choose(['blaster','doubleJump','magnet','ammo','shield'])});
-    }
-
-    if (lv.plateRequired) {
-      addItem('plate', lv.length-1120, groundY-56, {w:90,h:42});
-    }
-
-    game.gate = {x:lv.length-610,y:groundY-180,w:150,h:180,locked:true};
-    if (lv.boss) {
-      const bossHp = lv.boss === 'Sun Guardian' ? 26 : 18;
-      game.boss = {name:lv.boss,x:lv.length-360,y:groundY-230,w:190,h:230,hp:bossHp,maxHp:bossHp,dir:-1,alive:true,shootTimer:1.2};
-    }
-
-    game.exit = {x:lv.length+120,y:groundY-190,w:140,h:190};
-
-    if (lv.hazards.includes('lava') || lv.id === 10) {
-      game.boulder = {x:-520,y:groundY-135,w:135,h:135,vx:145+lv.id*8,active:true};
-    }
-
-    if (typeof console !== 'undefined') {
-      console.info(`[Lost Jungle] Level ${lv.id} enemy count:`, game.enemies.length);
-    }
-
-    syncUI();
-    renderMap();
+  function buildLevel(){
+    state.levelIndex=clamp(state.levelIndex,0,state.unlockedLevel-1);
+    const lv=currentLevel(),world=window.JungleCampaign.build(lv);
+    Object.assign(game,world,{darts:[],bullets:[],fallingRocks:[],particles:[],relics:0,keys:0,plateActive:!lv.plateRequired,gateOpen:false,speech:lv.story,speechTimer:5,time:0,levelComplete:false,levelCompleteTimer:0,autoAdvanceQueued:false,challenge:null,challengeCooldown:4,checkpointIndex:0,storyOpen:false,onMap:false});
+    Object.assign(player,{x:120,y:484,vx:0,vy:0,dir:1,onGround:false,invuln:0,dashTimer:0,dashCooldown:0,torchTimer:0,shootTimer:0,shootPowerTimer:0,magnetTimer:0,shield:0,ammo:14,canDoubleJump:false,jumpBootsTimer:0,hurt:0});
+    resetInput();riding=null;camera.shake=0;computeCamera(true);
+    document.getElementById('continueCutsceneBtn').disabled=true;game.loading=loadAssets();syncUI();renderMap();
   }
-
 
   function updateMovingPlatforms(dt) {
     for (const p of game.platforms) {
@@ -675,22 +491,13 @@
   }
 
 
-  function jump() {
-    if (!state.started || state.paused || state.gameOver || state.completed || game.levelComplete) return;
-    if (player.onGround) {
-      player.vy = -player.jump;
-      player.onGround = false;
-      player.canDoubleJump = player.shootPowerTimer > 0 || player.magnetTimer > 0 || player.canDoubleJump;
-      addChallengeProgress('jump',1);
-      sfx('jump');
-    } else if (player.canDoubleJump) {
-      player.vy = -player.airJump;
-      player.canDoubleJump = false;
-      addParticles(player.x + player.w/2, player.y + player.h, '#74f2a8', 18);
-      addChallengeProgress('jump',1);
-      sfx('jump');
-    }
+  function jump(){
+    if(!activePlay())return;
+    if(player.onGround||coyote>0){player.vy=-player.jump;player.onGround=false;player.canDoubleJump=player.jumpBootsTimer>0||player.shootPowerTimer>0||player.magnetTimer>0;coyote=0;jumpBuffer=0;riding=null;addChallengeProgress('jump',1);sfx('jump');}
+    else if(player.canDoubleJump){player.vy=-player.airJump;player.canDoubleJump=false;jumpBuffer=0;addChallengeProgress('jump',1);sfx('jump');}
+    else jumpBuffer=.13;
   }
+  function activePlay(){return state.started&&!state.paused&&!state.gameOver&&!state.completed&&!game.levelComplete&&!game.onMap&&!game.storyOpen;}
 
   function dash() {
     if (!state.started || state.paused || state.gameOver || state.completed || game.levelComplete) return;
@@ -703,256 +510,109 @@
     sfx('dash');
   }
 
-  function updatePlayer(dt) {
-    const left = keys['ArrowLeft'] || keys['KeyA'] || touch.left || touch.back;
-    const right = keys['ArrowRight'] || keys['KeyD'] || touch.right || touch.forward;
-
-    const accel = player.onGround ? 3600 : 2200;
-    const maxSpeed = player.speed * (player.dashTimer > 0 ? 1.55 : 1) * (player.torchTimer > 0 ? 1.06 : 1);
-    if (left) {
-      player.vx -= accel * dt;
-      player.dir = -1;
-    }
-    if (right) {
-      player.vx += accel * dt;
-      player.dir = 1;
-    }
-    if (!left && !right && player.onGround) player.vx *= Math.pow(.08, dt);
-    if (!left && !right && !player.onGround) player.vx *= Math.pow(.62, dt);
-
-    player.vx = clamp(player.vx, -maxSpeed, maxSpeed);
-    player.vy += GRAVITY * dt;
-    player.x += player.vx * dt;
-    player.y += player.vy * dt;
-    player.onGround = false;
-
-    for (const p of game.platforms) {
-      const playerBox = {x:player.x,y:player.y,w:player.w,h:player.h};
-      if (!rects(playerBox,p)) continue;
-
-      const prevBottom = player.y - player.vy*dt + player.h;
-      const prevTop = player.y - player.vy*dt;
-      const prevRight = player.x - player.vx*dt + player.w;
-      const prevLeft = player.x - player.vx*dt;
-
-      if (prevBottom <= p.y && player.vy >= 0) {
-        player.y = p.y - player.h;
-        player.vy = 0;
-        player.onGround = true;
-        player.canDoubleJump = player.shootPowerTimer > 0 || player.magnetTimer > 0;
-        if (p.type === 'moving') {
-          player.x += p.x - p.prevX;
-          player.y += p.y - p.prevY;
-        }
-      } else if (prevTop >= p.y + p.h && player.vy < 0) {
-        player.y = p.y + p.h;
-        player.vy = 0;
-      } else if (prevRight <= p.x && player.vx > 0) {
-        player.x = p.x - player.w;
-        player.vx = 0;
-      } else if (prevLeft >= p.x + p.w && player.vx < 0) {
-        player.x = p.x + p.w;
-        player.vx = 0;
+  function updatePlayer(dt){
+    jumpBuffer=Math.max(0,jumpBuffer-dt);coyote=Math.max(0,coyote-dt);
+    const left=keys.ArrowLeft||keys.KeyA||touch.left||touch.back,right=keys.ArrowRight||keys.KeyD||touch.right||touch.forward;
+    const dir=(right?1:0)-(left?1:0),accel=player.onGround?3000:2100;
+    if(dir){player.vx+=dir*accel*dt;player.dir=dir;}else player.vx*=Math.pow(player.onGround?.015:.2,dt);
+    const speed=player.dashTimer>0?720:player.speed*(player.torchTimer>0?1.06:1);
+    if(player.dashTimer>0)player.vx=player.dir*speed;else player.vx=clamp(player.vx,-speed,speed);
+    if(riding){player.x+=riding.x-riding.prevX;player.y+=riding.y-riding.prevY;}
+    const oldX=player.x,oldY=player.y;player.vy+=GRAVITY*dt;player.x+=player.vx*dt;player.y+=player.vy*dt;player.onGround=false;riding=null;
+    for(const p of game.platforms){
+      if(!rects(player,p))continue;
+      if(oldY+player.h<=p.prevY+3&&player.vy>=0){player.y=p.y-player.h;player.vy=0;player.onGround=true;riding=p.type==='moving'?p:null;player.canDoubleJump=player.jumpBootsTimer>0||player.shootPowerTimer>0||player.magnetTimer>0;}
+      else if(p.type==='ground'){
+        if(oldX+player.w<=p.x+2&&player.vx>0){player.x=p.x-player.w;player.vx=0;}
+        else if(oldX>=p.x+p.w-2&&player.vx<0){player.x=p.x+p.w;player.vx=0;}
       }
     }
-
-    const lv = currentLevel();
-    player.x = clamp(player.x, 0, lv.length + 260);
-    if (player.y > 900) loseLife('You fell into the jungle depths.');
-
-    if (player.invuln > 0) player.invuln -= dt;
-    if (player.dashTimer > 0) player.dashTimer -= dt;
-    if (player.dashCooldown > 0) player.dashCooldown -= dt;
-    if (player.torchTimer > 0) player.torchTimer -= dt;
-    if (player.shootTimer > 0) player.shootTimer -= dt;
-    if (player.shootPowerTimer > 0) player.shootPowerTimer -= dt;
-    if (player.magnetTimer > 0) player.magnetTimer -= dt;
-    player.anim += dt * (Math.abs(player.vx) > 20 ? 9 : 3);
-
-    const targetCamX = player.x - getW()*0.36;
-    camera.x += (targetCamX - camera.x) * Math.min(1, dt*6);
-    camera.x = clamp(camera.x, 0, lv.length - getW()*.62 + 520);
-    camera.y += ((currentLevel().id >= 4 ? -8 : 0) - camera.y) * Math.min(1, dt*3);
-    camera.shake = Math.max(0, camera.shake - dt*28);
+    if(player.onGround){coyote=.10;if(jumpBuffer>0)jump();}
+    player.x=clamp(player.x,0,currentLevel().length+300);
+    if(player.y>900){loseLife('You fell into the jungle depths.',true);return;}
+    for(const key of ['invuln','dashTimer','dashCooldown','torchTimer','shootTimer','shootPowerTimer','magnetTimer','jumpBootsTimer','hurt'])player[key]=Math.max(0,player[key]-dt);
+    player.anim+=dt*(Math.abs(player.vx)>20?10:2);
+    for(let i=game.checkpointIndex+1;i<game.checkpoints.length;i++){
+      const c=game.checkpoints[i];if(player.x>=c.x&&Math.abs(player.y-c.y)<155){game.checkpointIndex=i;game.speech='Checkpoint reached';game.speechTimer=2;saveState();sfx('power');}
+    }
+    for(const note of game.storyMarks)if(!note.read&&player.x>=note.x){note.read=true;game.speech=note.text;game.speechTimer=5;}
+    computeCamera(false,dt);camera.shake=Math.max(0,camera.shake-dt*28);
+    if(shootHeld)shoot();
   }
 
-  function updateWorld(dt) {
-    const lv = currentLevel();
-
-    updateMovingPlatforms(dt);
-    updateBullets(dt);
-    updateMagnet(dt);
-
-    for (const h of game.hazards) {
-      if (!h.active) continue;
-      if (h.type === 'dartTrap') {
-        h.timer -= dt;
-        if (h.timer <= 0) {
-          h.timer = rand(1.1, 2.0);
-          game.darts.push({x:h.x,y:h.y+14,w:46,h:14,vx:-520,life:2.2});
-          sfx('boss');
-        }
+  function updateWorld(dt){
+    const lv=currentLevel();updateBullets(dt);updateMagnet(dt);
+    const near=x=>Math.abs(x-player.x)<getW()+550;
+    for(const h of game.hazards){
+      if(!h.active||!near(h.x))continue;
+      if(h.type==='dartTrap'){
+        if(h.windup>0){h.windup-=dt;if(h.windup<=0){game.darts.push({x:h.x-12,y:h.y+22,w:28,h:12,vx:-360-Math.min(100,lv.id*3),vy:0,life:2.6});h.timer=Math.max(1.8,3-lv.id*.035);}}
+        else{h.timer-=dt;if(h.timer<=0&&Math.abs(h.x-player.x)<520)h.windup=.65;}
       }
-      if (h.type === 'fallingRock') {
-        h.timer -= dt;
-        if (h.timer <= 0) {
-          h.y += (260 + lv.id*12) * dt;
-          if (h.y > 650) {
-            h.y = h.baseY || 220;
-            h.timer = rand(1.0, 2.2);
+      if(h.type==='fallingRock'){
+        if(h.falling){h.y+=(330+lv.id*4)*dt;if(h.y>630){h.y=h.baseY;h.falling=false;h.timer=2.5;}}
+        else{h.timer-=dt;h.windup=h.timer<.65?.65-h.timer:0;if(h.timer<=0){h.falling=true;h.windup=0;}}
+      }
+      if(h.type==='rollingBoulder'){h.x+=h.vx*dt;if(h.x<h.minX||h.x>h.maxX){h.x=clamp(h.x,h.minX,h.maxX);h.vx*=-1;}}
+    }
+    for(const d of game.darts){d.x+=d.vx*dt;d.y+=(d.vy||0)*dt;d.vy=(d.vy||0)+(d.gravity||0)*dt;d.life-=dt;
+      if(game.platforms.some(p=>p.type==='ground'&&rects(d,p)))d.life=0;
+      if(d.life>0&&rects(d,player)&&player.invuln<=0){d.life=0;loseLife('A guardian shot hit you.');}}
+    game.darts=game.darts.filter(d=>d.life>0&&Math.abs(d.x-player.x)<getW()+600).slice(-80);
+    for(const e of game.enemies){
+      e.hurt=Math.max(0,e.hurt-dt);if(e.dead){e.deadTime+=dt;continue;}if(!near(e.x))continue;
+      const dx=player.x-e.x,dy=player.y+player.h*.45-(e.y+e.h*.5);e.bob+=dt;
+      let movement=e.vx*e.dir;
+      if(e.windup>0){e.windup-=dt;movement=0;
+        if(e.windup<=0){e.attackTimer=e.type==='boar'?.6:.48;
+          if(['monkey','wasp','sentry'].includes(e.type)||e.type==='snake'&&lv.id>=9){
+            const speed=290+Math.min(110,lv.id*4),distance=Math.max(1,Math.hypot(e.aimX,e.aimY));
+            game.darts.push({x:e.x+e.w/2,y:e.y+e.h*.45,w:22,h:12,vx:e.aimX/distance*speed,vy:e.aimY/distance*speed,life:2.8});
+            if(e.type==='sentry'&&lv.id>=20)game.darts.push({x:e.x+e.w/2,y:e.y+e.h*.45,w:22,h:12,vx:e.aimX/distance*speed,vy:e.aimY/distance*speed-70,life:2.8});
           }
         }
-      }
-      if (h.type === 'rollingBoulder') {
-        h.x += h.vx * dt;
-        if (Math.abs(h.x - h.baseX) > 460) h.vx *= -1;
-      }
-    }
-
-    for (const d of game.darts) {
-      d.x += d.vx * dt;
-      d.life -= dt;
-      if (rects(d, player) && player.invuln <= 0) {
-        d.life = 0;
-        loseLife('Temple dart hit you.');
-      }
-    }
-    game.darts = game.darts.filter(d => d.life > 0);
-
-    for (const e of game.enemies) {
-      if (e.dead) continue;
-      e.bob += dt;
-      if (e.type === 'bat') {
-        e.x += e.vx * e.dir * dt;
-        e.y = e.baseY + Math.sin(e.bob*3) * 30;
-        if (Math.abs(e.x - e.baseX) > e.range) e.dir *= -1;
-      } else if (e.type === 'snake') {
-        e.x += e.vx * e.dir * dt;
-        if (Math.abs(e.x - e.baseX) > e.range) e.dir *= -1;
-      } else if (e.type === 'spider') {
-        const dx = (player.x - e.x);
-        if (Math.abs(dx) < 460) e.x += Math.sign(dx) * (90 + lv.id*5) * dt;
-        else {
-          e.x += e.vx * e.dir * dt;
-          if (Math.abs(e.x - e.baseX) > e.range) e.dir *= -1;
+      }else if(e.attackTimer>0){e.attackTimer=Math.max(0,e.attackTimer-dt);if(e.type==='boar')movement=e.attackDir*370;if(e.type==='spider')movement=e.attackDir*230;}
+      else{e.shootTimer-=dt;const threat=Math.abs(dx)<(e.type==='boar'?400:510)&&Math.abs(dy)<200;
+        if(e.shootTimer<=0&&threat&&['boar','spider','bat','monkey','wasp','sentry','snake'].includes(e.type)){
+          e.windup=e.type==='boar'?.7:.55;e.attackDir=Math.sign(dx)||-1;e.dir=e.attackDir;e.aimX=dx;e.aimY=dy;e.shootTimer=Math.max(1.8,3.8-lv.id*.045);
         }
-      } else if (e.type === 'monkey') {
-        const dx = player.x - e.x;
-        if (Math.abs(dx) < 520) e.x += Math.sign(dx) * (100 + lv.id*6) * dt;
-        else {
-          e.x += e.vx * e.dir * dt;
-          if (Math.abs(e.x - e.baseX) > e.range) e.dir *= -1;
-        }
-        e.shootTimer -= dt;
-        if (e.shootTimer <= 0 && Math.abs(dx) < 720) {
-          e.shootTimer = rand(1.3, 2.0);
-          game.darts.push({x:e.x + (dx>0?e.w:-30), y:e.y+30, w:36, h:18, vx:Math.sign(dx)*430, life:2});
-        }
-      } else if (e.type === 'frog') {
-        e.x += e.vx * e.dir * dt;
-        e.y = e.baseY + Math.sin(e.bob * 4) * 22;
-        if (Math.abs(e.x - e.baseX) > e.range) e.dir *= -1;
-      } else if (e.type === 'boar') {
-        const dx = player.x - e.x;
-        if (Math.abs(dx) < 620) e.x += Math.sign(dx) * (155 + lv.id*7) * dt;
-        else {
-          e.x += e.vx * e.dir * dt;
-          if (Math.abs(e.x - e.baseX) > e.range) e.dir *= -1;
-        }
-      } else if (e.type === 'crawler') {
-        e.x += e.vx * e.dir * dt;
-        if (Math.abs(e.x - e.baseX) > e.range) e.dir *= -1;
       }
-
-      if (rects(player,e) && player.invuln <= 0) {
-        if (player.dashTimer > 0 || player.torchTimer > 0) defeatEnemy(e);
-        else loseLife(`${enemyLabel(e.type)} hit you.`);
+      if(e.type==='sentry')movement=0;
+      e.x=clamp(e.x+movement*dt,e.minX,e.maxX);if(e.x<=e.minX)e.dir=1;if(e.x>=e.maxX)e.dir=-1;
+      if(e.type==='bat'||e.type==='wasp')e.y=e.baseY+Math.sin(e.bob*3)*22+(e.type==='bat'&&e.attackTimer>0?Math.sin(e.attackTimer/.48*Math.PI)*95:0);
+      else if(e.type==='frog')e.y=e.baseY-Math.max(0,Math.sin(e.bob*3.2))*48;
+      else if(e.type==='spider')e.y=e.baseY-(e.attackTimer>0?Math.sin(e.attackTimer/.48*Math.PI)*55:0);
+      if(rects(player,e)){
+        if(player.dashTimer>0||player.torchTimer>0)defeatEnemy(e);
+        else if(player.vy>150&&player.y+player.h<e.y+24){defeatEnemy(e,2);player.vy=-410;}
+        else if(player.invuln<=0)loseLife(enemyLabel(e.type)+' hit you.');
       }
     }
-
-    if (game.boss?.alive) {
-      const b = game.boss;
-      b.x += Math.sin(game.time*1.2) * 70 * dt;
-      b.shootTimer -= dt;
-      if (b.shootTimer <= 0) {
-        b.shootTimer = Math.max(.75, 1.4 - lv.id*.05);
-        const dir = player.x < b.x ? -1 : 1;
-        game.darts.push({x:b.x + b.w/2, y:b.y + b.h*.44, w:56, h:20, vx:dir*(460+lv.id*10), life:2.2, boss:true});
-        sfx('boss');
-      }
-      if (rects(player,b) && player.invuln <= 0) {
-        if (player.dashTimer > 0 || player.torchTimer > 0) damageBoss();
-        else loseLife(`${b.name} slammed you.`);
-      }
+    game.enemies=game.enemies.filter(e=>!e.dead||e.deadTime<.55);
+    const b=game.boss;
+    if(b?.alive&&near(b.x)){
+      b.hurt=Math.max(0,b.hurt-dt);b.x=b.baseX+Math.sin(game.time*.9)*65;b.dir=player.x<b.x?-1:1;
+      if(b.windup>0){b.windup-=dt;if(b.windup<=0){b.attackCount++;const dx=player.x-b.x,dy=player.y+player.h*.5-(b.y+b.h*.45),len=Math.max(1,Math.hypot(dx,dy)),speed=330+lv.id*3;
+        for(const spread of b.hp<b.maxHp*.5?[-.14,0,.14]:[0]){const a=Math.atan2(dy,dx)+spread;game.darts.push({x:b.x+b.w/2,y:b.y+b.h*.45,w:30,h:15,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:3,boss:true});}
+        b.shootTimer=Math.max(1.2,2.4-lv.id*.025);
+      }}else{b.shootTimer-=dt;if(b.shootTimer<=0&&Math.abs(player.x-b.x)<700)b.windup=.8;}
+      if(rects(player,b)){if(player.dashTimer>0||player.torchTimer>0)damageBoss();else if(player.invuln<=0)loseLife(b.name+' slammed you.');}
     }
-
-    if (game.boulder?.active) {
-      const b = game.boulder;
-      if (b.x < player.x - 760) b.x += b.vx * dt;
-      else b.x += b.vx * .32 * dt;
-      if (rects(player,b) && player.invuln <= 0) loseLife('Rolling boulder!');
+    if(game.boulder?.active){const b=game.boulder;b.x+=b.vx*(b.x<player.x-760?1:.32)*dt;if(rects(player,b)&&player.invuln<=0)loseLife('Rolling boulder!');}
+    for(const h of game.hazards){if(!h.active||h.type==='dartTrap'||h.type==='fallingRock'&&!h.falling)continue;
+      const hit=h.type==='swingBlade'?{x:h.baseX+Math.sin(game.time*2.1+h.phase)*64,y:h.y+h.h*.45-12,w:h.w,h:26}:h;
+      if(rects(player,hit)&&player.invuln<=0)loseLife(h.type==='water'?'River pit.':h.type==='lava'?'Lava pit.':h.type==='pit'?'Temple gap.':'Jungle trap.');
     }
-
-    for (const h of game.hazards) {
-      if (!h.active || h.type === 'dartTrap') continue;
-      if (rects(player,h) && player.invuln <= 0) {
-        if (h.type === 'spikes') loseLife('Spike trap.');
-        if (h.type === 'spikePit') loseLife('Spike pit.');
-        if (h.type === 'swingBlade') loseLife('Swinging blade.');
-        if (h.type === 'fallingRock') loseLife('Falling rock.');
-        if (h.type === 'rollingBoulder') loseLife('Rolling boulder.');
-        if (h.type === 'water') loseLife('River pit.');
-        if (h.type === 'lava') loseLife('Lava pit.');
-        if (h.type === 'pit') loseLife('Temple gap.');
-      }
-    }
-
-    collectItems();
-    checkGateAndExit();
+    collectItems();checkGateAndExit();
   }
 
-
-  function updateBullets(dt) {
-    for (const b of game.bullets) {
-      b.x += b.vx * dt;
-      b.life -= dt;
-
-      for (const e of game.enemies) {
-        if (e.dead) continue;
-        if (rects(b, e)) {
-          e.hp -= b.power;
-          b.life = 0;
-          addChallengeProgress('shoot', 1);
-          addParticles(e.x + e.w/2, e.y + e.h/2, b.color, 12);
-          if (e.hp <= 0) {
-            e.dead = true;
-            state.score += e.type === 'monkey' ? 260 : e.type === 'spider' ? 220 : e.type === 'boar' ? 300 : e.type === 'crawler' ? 230 : 170;
-            addChallengeProgress('dash',1);
-            sfx('hit');
-          } else {
-            sfx('boss');
-          }
-          break;
-        }
-      }
-
-      if (game.boss?.alive && rects(b, game.boss)) {
-        game.boss.hp -= b.power;
-        b.life = 0;
-        addChallengeProgress('shoot', 1);
-        addParticles(game.boss.x + game.boss.w/2, game.boss.y + game.boss.h/2, b.color, 16);
-        if (game.boss.hp <= 0) {
-          game.boss.alive = false;
-          state.score += 1500;
-          game.speech = `${game.boss.name} defeated. The exit portal awakens.`;
-          game.speechTimer = 3.5;
-          sfx('win');
-        } else {
-          sfx('boss');
-        }
-      }
+  function updateBullets(dt){
+    for(const b of game.bullets){b.x+=b.vx*dt;b.life-=dt;if(game.platforms.some(p=>p.type==='ground'&&rects(b,p)))b.life=0;
+      if(b.life<=0)continue;
+      for(const e of game.enemies)if(!e.dead&&rects(b,e)){e.hp-=b.power;e.hurt=.2;b.life=0;addChallengeProgress('shoot',1);addParticles(e.x+e.w/2,e.y+e.h/2,b.color,8);if(e.hp<=0){e.dead=true;e.deadTime=0;state.score+=e.type==='boar'?300:200;addChallengeProgress('dash',1);sfx('hit');}break;}
+      if(b.life>0&&game.boss?.alive&&rects(b,game.boss)){b.life=0;game.boss.hp-=b.power;game.boss.hurt=.2;addChallengeProgress('shoot',1);if(game.boss.hp<=0)bossDefeated();else sfx('boss');}
     }
-    game.bullets = game.bullets.filter(b => b.life > 0 && b.x > camera.x - 260 && b.x < camera.x + getW() + 520);
+    game.bullets=game.bullets.filter(b=>b.life>0&&Math.abs(b.x-player.x)<getW()+400);
   }
 
   function updateMagnet(dt) {
@@ -1069,7 +729,7 @@
       game.speech = 'Relic blaster powered up. Press Shoot / K to fire.';
     }
     if (it.power === 'doubleJump') {
-      player.canDoubleJump = true;
+      player.canDoubleJump = true;player.jumpBootsTimer=14;
       player.shootPowerTimer = Math.max(player.shootPowerTimer, 5);
       game.speech = 'Double jump power active.';
     }
@@ -1098,38 +758,17 @@
     sfx('plate');
   }
 
-  function defeatEnemy(e) {
-    e.hp--;
-    player.invuln = .18;
-    addParticles(e.x+e.w/2,e.y+e.h/2,'#ffb347',14);
-    if (e.hp <= 0) {
-      e.dead = true;
-      state.score += e.type === 'monkey' ? 260 : e.type === 'spider' ? 220 : 170;
-      addChallengeProgress('dash',1);
-      sfx('hit');
-      postScore('live');
-    }
+  function defeatEnemy(e,amount=player.dashTimer>0?2:1){
+    if(e.dead||e.hurt>0)return;e.hp-=amount;e.hurt=.25;addParticles(e.x+e.w/2,e.y+e.h/2,'#ffb347',10);
+    if(e.hp<=0){e.dead=true;e.deadTime=0;state.score+=200;addChallengeProgress('dash',1);sfx('hit');postScore('live');}
   }
 
-  function damageBoss() {
-    if (!game.boss?.alive || player.invuln > 0) return;
-    const b = game.boss;
-    b.hp -= player.dashTimer > 0 ? 2 : 1;
-    player.invuln = .25;
-    camera.shake = 12;
-    state.score += 90;
-    addChallengeProgress('dash',1);
-    addParticles(b.x+b.w/2,b.y+b.h/2,'#ffd66f',25);
-    if (b.hp <= 0) {
-      b.alive = false;
-      state.score += 1500;
-      game.speech = `${b.name} defeated. The exit portal awakens.`;
-      game.speechTimer = 3.5;
-      sfx('win');
-      postScore('live');
-    } else {
-      sfx('boss');
-    }
+  function damageBoss(){
+    const b=game.boss;if(!b?.alive||b.hurt>0)return;b.hp-=player.dashTimer>0?2:1;b.hurt=.35;player.invuln=Math.max(player.invuln,.4);camera.shake=6;state.score+=90;addChallengeProgress('dash',1);
+    if(b.hp<=0)bossDefeated();else sfx('boss');
+  }
+  function bossDefeated(){
+    const b=game.boss;if(!b?.alive)return;b.alive=false;state.score+=1500;game.darts=[];game.speech=b.name+' is freed from the broken signal. The portal awakens.';game.speechTimer=4;sfx('win');postScore('live');
   }
 
   function enemyLabel(t) {
@@ -1139,7 +778,9 @@
     if (t === 'monkey') return 'Monkey';
     if (t === 'frog') return 'Frog';
     if (t === 'boar') return 'Boar';
-    if (t === 'crawler') return 'Crawler';
+    if (t === 'crawler') return 'Plated crawler';
+    if (t === 'wasp') return 'Sun wasp';
+    if (t === 'sentry') return 'Stone sentry';
     return 'Enemy';
   }
 
@@ -1177,37 +818,14 @@
     }
   }
 
-  function loseLife(message) {
-    if (player.invuln > 0 || state.gameOver || state.completed || game.levelComplete) return;
-    if (player.shield > 0) {
-      player.shield = 0;
-      player.invuln = 1.0;
-      game.speech = 'Shield blocked the danger.';
-      game.speechTimer = 1.7;
-      addParticles(player.x+player.w/2,player.y+player.h/2,'#74f2a8',18);
-      sfx('power');
-      return;
-    }
-
-    if (game.challenge && game.challenge.type === 'survive') {
-      failChallenge('Survival challenge failed. You took damage.');
-    }
-
-    state.lives--;
-    state.score = Math.max(0, state.score - 120);
-    player.invuln = 1.3;
-    player.vx = 0;
-    player.vy = 0;
-    player.x = Math.max(80, player.x - 230);
-    player.y = 420;
-    camera.shake = 15;
-    game.speech = message;
-    game.speechTimer = 2;
-    sfx('hit');
-
-    if (state.lives <= 0) triggerGameOver(false);
-    syncUI();
-    postScore('live');
+  function loseLife(message,fall=false){
+    if(state.gameOver||state.completed||game.levelComplete||!fall&&player.invuln>0)return;
+    if(!fall&&player.shield>0){player.shield=0;player.invuln=1;game.speech='Shield blocked the danger.';game.speechTimer=2;sfx('power');return;}
+    if(game.challenge?.type==='survive')failChallenge('Survival challenge ended. Regroup at the beacon.');
+    state.lives=Math.max(0,state.lives-1);state.score=Math.max(0,state.score-120);
+    const c=game.checkpoints[game.checkpointIndex];Object.assign(player,{x:c.x,y:c.y,vx:0,vy:0,onGround:false,invuln:1.6,hurt:.4,dashTimer:0});riding=null;game.darts=[];resetInput();computeCamera(true);
+    game.speech=message+' Return to the last checkpoint.';game.speechTimer=3;camera.shake=7;sfx('hit');
+    if(state.lives<=0)triggerGameOver(false);syncUI();saveState();postScore('live');
   }
 
   function addParticles(x,y,color,n=16) {
@@ -1230,7 +848,7 @@
       p.y += p.vy*dt;
       p.vy += 550*dt;
     }
-    game.particles = game.particles.filter(p=>p.life>0);
+    game.particles = game.particles.filter(p=>p.life>0).slice(-180);
   }
 
   // Continuous challenge system
@@ -1267,7 +885,7 @@
       card.style.display = 'none';
       return;
     }
-    card.style.display = 'block';
+    card.style.display = state.paused||game.levelComplete?'none':'block';
     if (!game.challenge) {
       text.textContent = 'Next jungle challenge incoming...';
       bar.style.width = '0%';
@@ -1288,7 +906,7 @@
       {type:'distance', label:'Run 700 metres through the jungle.', target:700, reward:460},
       {type:'jump', label:'Jump 3 times to clear danger.', target:3, reward:430},
       {type:'dash', label:'Dash through or defeat 2 enemies.', target:2, reward:520},
-      {type:'shoot', label:'Hit 3 enemies with relic shots.', target:3, reward:620},
+      {type:'shoot', label:'Land 3 relic shots before the timer ends.', target:3, reward:620},
       {type:'survive', label:'Survive without taking damage.', target:1, reward:560}
     ];
     let ch = choose(pool);
@@ -1352,34 +970,28 @@
     updateChallengeUI();
   }
 
-  function update(dt) {
-    if (game.levelComplete && game.autoAdvanceQueued) updateAutoAdvance(dt);
-    if (!state.started || state.paused || state.completed || state.gameOver || game.levelComplete) return;
-    game.time += dt;
-    if (game.speechTimer > 0) {
-      game.speechTimer -= dt;
-      if (game.speechTimer <= 0) game.speech = '';
-    }
-    updatePlayer(dt);
-    updateWorld(dt);
-    updateChallenge(dt);
-    updateParticles(dt);
-    syncUI();
+  function update(dt){
+    if(game.levelComplete&&game.autoAdvanceQueued&&!state.paused&&!game.onMap&&!document.hidden)updateAutoAdvance(dt);
+    if(!activePlay())return;game.time+=dt;
+    if(game.speechTimer>0){game.speechTimer-=dt;if(game.speechTimer<=0)game.speech='';}
+    updateMovingPlatforms(dt);updatePlayer(dt);if(!activePlay())return;updateWorld(dt);updateChallenge(dt);updateParticles(dt);
+    game.uiTimer=(game.uiTimer||0)+dt;if(game.uiTimer>=.08){game.uiTimer=0;syncUI();}
   }
 
   function completeLevel() {
     if (game.levelComplete) return;
-    game.levelComplete = true;
+    game.levelComplete = true;resetInput();
     stopMusic();
     const stars = state.lives >= 3 ? 3 : state.lives === 2 ? 2 : 1;
     const bonus = 900 + stars*280 + game.relics*100 + game.keys*120;
     state.score += bonus;
     state.best = Math.max(state.best, state.score);
-    state.unlockedLevel = Math.max(state.unlockedLevel, currentLevel().id + 1);
+    state.completedLevels=Math.max(state.completedLevels,currentLevel().id);
+    state.unlockedLevel=Math.min(LEVELS.length,Math.max(state.unlockedLevel,currentLevel().id+1));
     saveState();
 
     ui.completeTitle.textContent = currentLevel().id === LEVELS.length ? 'Temple of the Sun Cleared!' : `${currentLevel().title} Complete`;
-    ui.completeSummary.textContent = currentLevel().id === LEVELS.length ? 'You recovered the Sun Relics and defeated the final guardian.' : 'The next jungle route is open.';
+    ui.completeSummary.textContent = currentLevel().id === LEVELS.length ? 'The five Sun Seals reunite. Mara and Ari watch the valley welcome its first true dawn.' : "Mara's trail continues. The next jungle route is open.";
     ui.rewardText.textContent = `Bonus +${bonus} • Score ${Math.floor(state.score)}`;
     ui.starRow.textContent = '★ '.repeat(stars).trim();
     ui.completeOverlay.classList.add('active');
@@ -1405,6 +1017,7 @@
   }
 
   function nextLevel() {
+    if(!game.levelComplete||game.onMap)return;
     const nextBtn = document.getElementById('nextLevelBtn');
     if (nextBtn) nextBtn.textContent = 'Next Level';
     ui.completeOverlay.classList.remove('active');
@@ -1420,6 +1033,7 @@
   }
 
   function triggerGameOver(win=false) {
+    resetInput();game.autoAdvanceQueued=false;
     state.gameOver = !win;
     state.completed = win;
     stopMusic();
@@ -1431,6 +1045,7 @@
   }
 
   function resetRun() {
+    for(const id of ['mapOverlay','completeOverlay','pauseOverlay','cutsceneOverlay'])document.getElementById(id).classList.remove('active');
     state.levelIndex = 0;
     state.score = 0;
     state.lives = 3;
@@ -1446,6 +1061,8 @@
 
   // Drawing
   function draw() {
+    const reduce=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    camera.shakeX=reduce?0:rand(-camera.shake,camera.shake);camera.shakeY=reduce?0:rand(-camera.shake,camera.shake);
     drawBackground();
     drawPlatforms();
     drawItems();
@@ -1459,38 +1076,14 @@
     drawBoulder();
     drawParticles();
     drawForeground();
-    drawHudStrip();
+    drawCheckpoints();
   }
 
-  function drawBackground() {
-    const w = getW(), h = getH(), lv = currentLevel();
-    const src = ASSETS.backgrounds[lv.id];
-    if (hasAsset(src)) {
-      const img = assetImages[src];
-      const ratio = Math.max(w/img.naturalWidth, h/img.naturalHeight);
-      const dw = img.naturalWidth * ratio;
-      const dh = img.naturalHeight * ratio;
-      const px = -(camera.x*.18 % Math.max(1,dw-w));
-      ctx.drawImage(img, px, (h-dh)/2, dw, dh);
-      if (px > -8) ctx.drawImage(img, px+dw, (h-dh)/2, dw, dh);
-    } else {
-      const g = ctx.createLinearGradient(0,0,0,h);
-      g.addColorStop(0,'#12351f');
-      g.addColorStop(.55,'#2a783e');
-      g.addColorStop(1,'#d6a653');
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,w,h);
-    }
-    const sun = ctx.createRadialGradient(w*.78,h*.18,10,w*.78,h*.18,h*.55);
-    sun.addColorStop(0,'rgba(255,214,111,.40)');
-    sun.addColorStop(.55,'rgba(255,179,71,.12)');
-    sun.addColorStop(1,'rgba(255,179,71,0)');
-    ctx.fillStyle = sun;
-    ctx.fillRect(0,0,w,h);
-    if (lv.id === 4 || lv.id === 7) {
-      ctx.fillStyle = player.torchTimer > 0 ? 'rgba(5,8,12,.22)' : 'rgba(5,8,12,.42)';
-      ctx.fillRect(0,0,w,h);
-    }
+  function drawBackground(){
+    const w=getW(),h=getH(),lv=currentLevel(),img=assetImages[lv.bg];
+    if(hasAsset(lv.bg)){const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height,ratio=Math.max(w/iw,h/ih),dw=iw*ratio,dh=ih*ratio;ctx.drawImage(img,(w-dw)/2,(h-dh)/2,dw,dh);}
+    else{const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#12351f');g.addColorStop(1,'#335d37');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+    if(lv.dark){ctx.fillStyle=player.torchTimer>0?'#05080c15':'#05080c35';ctx.fillRect(0,0,w,h);}
   }
 
   function drawPlatforms() {
@@ -1558,7 +1151,7 @@
           ctx.fill();
         }
       } else if (h.type === 'swingBlade') {
-        const bladeX = s.x + Math.sin(game.time*2.4 + (h.phase||0)) * 80;
+        const bladeX = s.x + Math.sin(game.time*2.1 + (h.phase||0)) * 64;
         ctx.strokeStyle = 'rgba(255,214,111,.65)';
         ctx.lineWidth = 4;
         ctx.beginPath();
@@ -1567,9 +1160,17 @@
         ctx.stroke();
         ctx.fillStyle = 'rgba(230,230,230,.95)';
         ctx.beginPath();
-        ctx.ellipse(bladeX + h.w/2, s.y + h.h*.45, 44, 16, 0, 0, Math.PI*2);
+        ctx.ellipse(bladeX + h.w/2, s.y + h.h*.45, h.w/2, 13, 0, 0, Math.PI*2);
         ctx.fill();
       } else if (h.type === 'fallingRock' || h.type === 'rollingBoulder') {
+        if (h.type === 'fallingRock' && h.windup > 0) {
+          const landing = worldToScreen(h.x, h.baseY + 300);
+          ctx.strokeStyle = '#ffd66f';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.ellipse(landing.x+h.w/2, landing.y-3, h.w*.7, 8, 0, 0, Math.PI*2);
+          ctx.stroke();
+        }
         ctx.fillStyle = '#594d3d';
         ctx.shadowColor = '#000';
         ctx.shadowBlur = 8;
@@ -1580,7 +1181,7 @@
         ctx.strokeStyle = 'rgba(255,214,111,.35)';
         ctx.stroke();
       } else if (h.type === 'dartTrap') {
-        ctx.fillStyle = 'rgba(95,63,28,.92)';
+        ctx.fillStyle = h.windup>0?'#ffb347':'rgba(95,63,28,.92)';
         roundRect(s.x,s.y,h.w,h.h,12);
         ctx.fill();
         ctx.strokeStyle = '#ffd66f';
@@ -1625,44 +1226,23 @@
   }
 
 
-  function drawEnemies() {
-    for (const e of game.enemies) {
-      if (e.dead || e.x+e.w < camera.x-180 || e.x > camera.x+getW()+260) continue;
-
-      const src = enemySpriteFor(e.type);
-      const tint = enemyTint(e.type);
-      drawImageOrOrb(src, e.x, e.y, e.w, e.h, tint, false, e.dir);
-
-      const s = worldToScreen(e.x, e.y);
-      ctx.save();
-      ctx.globalAlpha = .92;
-      ctx.fillStyle = 'rgba(7,23,14,.72)';
-      roundRect(s.x + e.w*.18, s.y - 16, e.w*.64, 16, 8);
-      ctx.fill();
-      ctx.fillStyle = '#fff8d8';
-      ctx.font = '900 9px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText(enemyLabel(e.type).toUpperCase(), s.x + e.w/2, s.y - 5);
+  function drawEnemies(){
+    for(const e of game.enemies){if(e.x+e.w<camera.x-140||e.x>camera.x+getW()+180)continue;
+      const s=worldToScreen(e.x,e.y),clip=e.hurt>0?'hurt':e.windup>0?'windup':e.attackTimer>0?'attack':'run';
+      ctx.save();if(e.dead){ctx.globalAlpha=Math.max(0,1-e.deadTime/.55);ctx.translate(0,e.deadTime*30);}
+      if(!art.draw(ctx,e.type,clip,s.x,s.y,e.w,e.h,e.dir,game.time))drawImageOrOrb(enemySpriteFor(e.type),e.x,e.y,e.w,e.h,enemyTint(e.type),false,e.dir);
       ctx.restore();
+      if(e.windup>0){ctx.fillStyle='#ffb347';ctx.beginPath();ctx.arc(s.x+e.w/2,s.y-12,7+Math.sin(game.time*20)*2,0,Math.PI*2);ctx.fill();}
     }
   }
 
-  function drawBoss() {
-    const b = game.boss;
-    if (!b || !b.alive) return;
-    const src = ASSETS.sprites[b.name] || ASSETS.sprites['Sun Guardian'];
-    drawImageOrOrb(src,b.x,b.y,b.w,b.h,currentLevel().theme,false,b.dir);
-    const s = worldToScreen(b.x,b.y-28);
-    ctx.fillStyle = 'rgba(0,0,0,.55)';
-    roundRect(s.x,s.y,b.w,14,7);
-    ctx.fill();
-    ctx.fillStyle = '#ff6b6b';
-    roundRect(s.x,s.y,b.w*(b.hp/b.maxHp),14,7);
-    ctx.fill();
-    ctx.fillStyle = '#fff8d8';
-    ctx.font = '900 14px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(b.name, s.x+b.w/2, s.y-8);
+  function drawBoss(){
+    const b=game.boss;if(!b?.alive||b.x>camera.x+getW()+300||b.x+b.w<camera.x-200)return;
+    const s=worldToScreen(b.x,b.y),clip=b.hurt>0?'hurt':b.windup>0?'windup':b.shootTimer>1?'attack':'run';
+    if(!art.draw(ctx,b.name,clip,s.x,s.y,b.w,b.h,b.dir,game.time))drawImageOrOrb(ASSETS.sprites[b.name],b.x,b.y,b.w,b.h,currentLevel().theme,false,b.dir);
+    ctx.fillStyle='#06130cbb';ctx.fillRect(s.x,s.y-26,b.w,10);ctx.fillStyle=b.windup>0?'#ffd66f':'#ff6b6b';ctx.fillRect(s.x,s.y-26,b.w*Math.max(0,b.hp/b.maxHp),10);
+    ctx.fillStyle='#fff8d8';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText(b.name,s.x+b.w/2,s.y-34);
+    if(b.windup>0){ctx.strokeStyle='#ffd66f';ctx.lineWidth=3;ctx.strokeRect(s.x-5,s.y-5,b.w+10,b.h+10);}
   }
 
   function drawExitAndGate() {
@@ -1690,42 +1270,12 @@
     }
   }
 
-  function drawPlayer() {
-    const flash = player.invuln > 0 && Math.floor(game.time*18)%2===0;
-    const scaleX = player.dir < 0 ? -1 : 1;
-    const s = worldToScreen(player.x,player.y);
-    const src = ASSETS.sprites.player;
-    ctx.save();
-    if (flash) ctx.globalAlpha = .45;
-    if (hasAsset(src)) {
-      ctx.translate(s.x + player.w/2, s.y + player.h/2);
-      ctx.scale(scaleX,1);
-      ctx.shadowColor = player.torchTimer > 0 ? '#ffb347' : 'rgba(0,0,0,.35)';
-      ctx.shadowBlur = player.torchTimer > 0 ? 22 : 8;
-      ctx.drawImage(assetImages[src], -player.w*.58, -player.h*.66, player.w*1.16, player.h*1.32);
-    } else {
-      ctx.fillStyle = '#1f8b54';
-      ctx.fillRect(s.x,s.y,player.w,player.h);
-    }
-    ctx.restore();
-
-    if (player.shield > 0) {
-      ctx.strokeStyle = 'rgba(116,242,168,.88)';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.ellipse(s.x+player.w/2,s.y+player.h/2,player.w*.72,player.h*.62,0,0,Math.PI*2);
-      ctx.stroke();
-    }
-    if (player.torchTimer > 0) {
-      const flame = ctx.createRadialGradient(s.x+player.w*.8,s.y+player.h*.35,5,s.x+player.w*.8,s.y+player.h*.35,95);
-      flame.addColorStop(0,'rgba(255,235,160,.95)');
-      flame.addColorStop(.45,'rgba(255,130,40,.38)');
-      flame.addColorStop(1,'rgba(255,130,40,0)');
-      ctx.fillStyle = flame;
-      ctx.beginPath();
-      ctx.arc(s.x+player.w*.8,s.y+player.h*.35,95,0,Math.PI*2);
-      ctx.fill();
-    }
+  function drawPlayer(){
+    const s=worldToScreen(player.x,player.y),clip=player.hurt>0?'hurt':player.shootTimer>.12||player.dashTimer>0?'shoot':!player.onGround?(player.vy<0?'rise':'fall'):Math.abs(player.vx)>25?'run':'idle';
+    ctx.save();if(player.invuln>0&&Math.floor(game.time*18)%2===0)ctx.globalAlpha=.5;
+    if(!art.draw(ctx,'player',clip,s.x,s.y,player.w,player.h,player.dir,game.time))drawImageOrOrb(ASSETS.sprites.player,player.x,player.y,player.w,player.h,'#74f2a8',false,player.dir);ctx.restore();
+    if(player.shield>0){ctx.strokeStyle='#74f2a8cc';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(s.x+player.w/2,s.y+player.h/2,player.w*.8,player.h*.65,0,0,Math.PI*2);ctx.stroke();}
+    if(player.torchTimer>0){const flame=ctx.createRadialGradient(s.x+player.w/2,s.y+player.h*.4,4,s.x+player.w/2,s.y+player.h*.4,100);flame.addColorStop(0,'#ffe79988');flame.addColorStop(1,'#ff8b2900');ctx.fillStyle=flame;ctx.fillRect(s.x-80,s.y-70,220,230);}
   }
 
 
@@ -1821,17 +1371,14 @@
   function drawForeground() {
     const w = getW(), h = getH();
     ctx.save();
-    for (let i=0;i<12;i++) {
-      const x = ((i*190 - camera.x*.45) % (w+240)) - 120;
-      const y = 30 + (i%5)*95 + Math.sin(game.time+i)*10;
-      ctx.globalAlpha = .35;
-      ctx.fillStyle = currentLevel().id === 9 ? '#3a221a' : '#0f4d2a';
-      ctx.beginPath();
-      ctx.ellipse(x,y,70,20,Math.sin(i),0,Math.PI*2);
-      ctx.fill();
+    const reduce=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    for(let i=0;i<12;i++){
+      const drift=reduce?0:game.time*5;
+      const x=(i*137+drift)%(w+20),y=(i*89+Math.sin(reduce?0:game.time*.4+i)*8)%h;
+      ctx.fillStyle=currentLevel().dark?'#ffd88775':'#fff7bd45';ctx.beginPath();ctx.arc(x,y,1+i%2,0,Math.PI*2);ctx.fill();
     }
     ctx.restore();
-    if (currentLevel().id === 4 || currentLevel().id === 7) {
+    if (currentLevel().dark) {
       const s = worldToScreen(player.x+player.w/2, player.y+player.h/2);
       const radius = player.torchTimer > 0 ? 330 : 210;
       const vignette = ctx.createRadialGradient(s.x,s.y,radius*.25,s.x,s.y,radius);
@@ -1843,22 +1390,8 @@
     }
   }
 
-  function drawHudStrip() {
-    const w = getW();
-    ctx.save();
-    ctx.fillStyle = 'rgba(7,23,14,.48)';
-    roundRect(16,16,w-32,50,15);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.14)';
-    ctx.stroke();
-    ctx.fillStyle = '#fff8d8';
-    ctx.font = '900 18px system-ui';
-    ctx.textAlign = 'left';
-    ctx.fillText(`${currentLevel().id}. ${currentLevel().title}`,30,47);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#ffd66f';
-    ctx.fillText(`Best ${Math.floor(Math.max(state.best,state.score))}`,w-30,47);
-    ctx.restore();
+  function drawCheckpoints(){
+    for(let i=1;i<game.checkpoints.length;i++){const c=game.checkpoints[i];if(c.x<camera.x-100||c.x>camera.x+getW()+100)continue;const s=worldToScreen(c.x,c.y);ctx.fillStyle=i<=game.checkpointIndex?'#74f2a8':'#ffd66f';ctx.fillRect(s.x,s.y+18,4,68);ctx.beginPath();ctx.moveTo(s.x+4,s.y+18);ctx.lineTo(s.x+30,s.y+30);ctx.lineTo(s.x+4,s.y+42);ctx.closePath();ctx.fill();}
   }
 
   function roundRect(x,y,w,h,r) {
@@ -1878,7 +1411,9 @@
     ui.relicValue.textContent = `${game.relics}/${lv.relicTarget}`;
     ui.keysValue.textContent = `${game.keys}/${lv.keyTarget}`;
     ui.livesValue.textContent = state.lives;
-    ui.levelValue.textContent = lv.id;
+    ui.levelValue.textContent = lv.id+'/25';
+    document.getElementById('bestValue').textContent=Math.floor(state.best);
+    document.getElementById('sealCount').textContent=[5,10,15,20,25].filter(id=>id<=state.completedLevels).length+' / 5';
     ui.progressBar.style.width = `${Math.min(100, game.relics/lv.relicTarget*100)}%`;
 
     let tools = [];
@@ -1897,7 +1432,8 @@
     else if (game.boss?.alive) mission = `Defeat ${game.boss.name}.`;
     else mission = 'Reach the glowing exit portal.';
     ui.missionText.textContent = mission;
-    ui.storyText.textContent = game.speech || lv.story;
+    ui.storyText.textContent = game.speech || lv.discovery;
+    document.querySelector('.story-card').classList.toggle('speaking',game.speechTimer>0&&state.started&&!state.paused);
     ui.muteBtn.textContent = state.muted ? 'Sound Off' : 'Sound On';
     ui.pauseBtn.textContent = state.paused ? 'Resume' : 'Pause';
     updateChallengeUI();
@@ -1910,8 +1446,9 @@
       const btn = document.createElement('button');
       btn.className = `map-node ${unlocked ? 'unlocked' : 'locked'}`;
       btn.disabled = !unlocked;
-      btn.innerHTML = `<strong>${lv.id}. ${lv.title}</strong><small>${lv.boss ? `Boss: ${lv.boss}` : 'Jungle route'}<br>${lv.relicTarget} relics • ${lv.keyTarget} key(s)</small>`;
+      btn.innerHTML = `<strong>${lv.id}. ${lv.title}</strong><small>${lv.chapter}<br>${lv.relicTarget} relics • ${lv.keyTarget} key(s)${lv.boss?' • '+lv.boss:''}</small>`;
       btn.addEventListener('click',()=>{
+        if(lv.id>state.unlockedLevel)return;state.started=true;game.onMap=false;
         state.levelIndex = lv.id - 1;
         ui.mapOverlay.classList.remove('active');
         state.paused = false;
@@ -1923,128 +1460,70 @@
     }
   }
 
-  function openMap() {
-    state.paused = true;
-    stopMusic();
-    renderMap();
-    ui.mapOverlay.classList.add('active');
+
+  function resetInput(){for(const key of Object.keys(keys))delete keys[key];for(const key of Object.keys(touch))touch[key]=false;shootHeld=false;pointers.clear();jumpBuffer=0;coyote=0;for(const id of ['leftBtn','rightBtn','jumpBtn','dashBtn','shootBtn'])document.getElementById(id)?.classList.remove('held');}
+  function setPaused(value){
+    if(!state.started||game.storyOpen||game.onMap||state.gameOver||state.completed||game.levelComplete)return;
+    state.paused=!!value;resetInput();document.getElementById('pauseOverlay').classList.toggle('active',state.paused);
+    if(state.paused){stopMusic();document.getElementById('resumeBtn').focus();}else{startMusic();canvas.focus();}syncUI();
   }
-
-  function closeMap() {
-    ui.mapOverlay.classList.remove('active');
-    state.paused = false;
-    if (state.started && !game.levelComplete && !state.gameOver) startMusic();
+  function openMap(){
+    if(game.onMap)return;mapReturn=game.storyOpen?'story':game.levelComplete?'complete':state.gameOver||state.completed?'over':state.paused?'pause':'play';
+    resetInput();state.paused=true;game.onMap=true;stopMusic();
+    for(const id of ['cutsceneOverlay','completeOverlay','gameOverOverlay','pauseOverlay'])document.getElementById(id).classList.remove('active');
+    renderMap();ui.mapOverlay.classList.add('active');document.getElementById('closeMapBtn').focus();
   }
-
-  function bindHold(id, prop) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const on = e => { e.preventDefault(); touch[prop] = true; };
-    const off = e => { e.preventDefault(); touch[prop] = false; };
-    el.addEventListener('pointerdown',on);
-    el.addEventListener('pointerup',off);
-    el.addEventListener('pointerleave',off);
-    el.addEventListener('pointercancel',off);
+  function closeMap(){
+    game.onMap=false;ui.mapOverlay.classList.remove('active');resetInput();
+    state.paused=['story','pause'].includes(mapReturn);
+    const overlay={story:'cutsceneOverlay',complete:'completeOverlay',over:'gameOverOverlay',pause:'pauseOverlay'}[mapReturn];
+    if(overlay)document.getElementById(overlay).classList.add('active');else if(activePlay())startMusic();
   }
-
-
-  function ensureShootButton() {
-    if (document.getElementById('shootBtn')) return;
-    const controls = document.querySelector('.controls');
-    if (!controls) return;
-    const btn = document.createElement('button');
-    btn.id = 'shootBtn';
-    btn.textContent = 'Shoot';
-    btn.title = 'Shoot relic power';
-    btn.addEventListener('click', shoot);
-    controls.appendChild(btn);
-  }
-
-
-  function bindEvents() {
+  function bindEvents(){
     document.getElementById('playBtn').addEventListener('click',startGame);
     document.getElementById('howBtn').addEventListener('click',()=>ui.helpOverlay.classList.add('active'));
     document.getElementById('closeHelpBtn').addEventListener('click',()=>ui.helpOverlay.classList.remove('active'));
     document.getElementById('continueCutsceneBtn').addEventListener('click',continueCutscene);
     document.getElementById('submitScoreBtn').addEventListener('click',()=>postScore('manual_submit'));
-    document.getElementById('mapBtn').addEventListener('click',openMap);
-    document.getElementById('mapAfterBtn').addEventListener('click',openMap);
-    document.getElementById('closeMapBtn').addEventListener('click',closeMap);
-    document.getElementById('nextLevelBtn').addEventListener('click',()=>{game.autoAdvanceQueued=false;nextLevel();});
+    document.getElementById('mapBtn').addEventListener('click',openMap);document.getElementById('pauseMapBtn').addEventListener('click',openMap);
+    document.getElementById('mapAfterBtn').addEventListener('click',openMap);document.getElementById('closeMapBtn').addEventListener('click',closeMap);
+    document.getElementById('nextLevelBtn').addEventListener('click',()=>{if(game.levelComplete){game.autoAdvanceQueued=false;nextLevel();}});
     document.getElementById('retryBtn').addEventListener('click',()=>{ui.gameOverOverlay.classList.remove('active');state.gameOver=false;state.completed=false;state.lives=3;buildLevel();showCutscene();});
-    document.getElementById('resetRunBtn').addEventListener('click',resetRun);
-
-    ui.muteBtn.addEventListener('click',()=>{
-      state.muted = !state.muted;
-      if (state.muted) stopMusic(); else startMusic();
-      saveState();
-      syncUI();
-    });
-    ui.pauseBtn.addEventListener('click',()=>{
-      state.paused = !state.paused;
-      if (state.paused) stopMusic(); else startMusic();
-      syncUI();
-    });
-
-    bindHold('leftBtn','left');
-    bindHold('rightBtn','right');
-    bindHold('forwardBtn','forward');
-    bindHold('backBtn','back');
-    document.getElementById('jumpBtn').addEventListener('click',jump);
-    document.getElementById('dashBtn').addEventListener('click',dash);
-    ensureShootButton();
-
-    window.addEventListener('keydown',e=>{
-      keys[e.code] = true;
-      if (e.code === 'Space') { e.preventDefault(); jump(); }
-      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyJ') dash();
-      if (e.code === 'KeyK' || e.code === 'KeyF') shoot();
-      if (e.code === 'KeyM') openMap();
-    });
-    window.addEventListener('keyup',e=>{ keys[e.code] = false; });
-
-    window.addEventListener('resize',resizeCanvas);
-    window.addEventListener('orientationchange',()=>setTimeout(resizeCanvas,120));
-    if (window.ResizeObserver) {
-      const ro = new ResizeObserver(()=>resizeCanvas());
-      ro.observe(document.body);
-      const shell = canvas.closest('.canvas-shell');
-      if (shell) ro.observe(shell);
+    document.getElementById('resetRunBtn').addEventListener('click',resetRun);document.getElementById('resumeBtn').addEventListener('click',()=>setPaused(false));
+    ui.muteBtn.addEventListener('click',()=>{state.muted=!state.muted;if(state.muted){stopMusic();if(master)master.gain.value=0;}else{if(master)master.gain.value=.12;startMusic();}saveState();syncUI();});
+    ui.pauseBtn.addEventListener('click',()=>setPaused(!state.paused));
+    const refresh=()=>{touch.left=[...pointers.values()].includes('leftBtn');touch.right=[...pointers.values()].includes('rightBtn');shootHeld=[...pointers.values()].includes('shootBtn');for(const id of ['leftBtn','rightBtn','jumpBtn','dashBtn','shootBtn'])document.getElementById(id).classList.toggle('held',[...pointers.values()].includes(id));};
+    for(const id of ['leftBtn','rightBtn','jumpBtn','dashBtn','shootBtn']){
+      const el=document.getElementById(id);el.addEventListener('pointerdown',e=>{if(e.button!==0||!activePlay())return;e.preventDefault();pointers.set(e.pointerId,id);el.setPointerCapture(e.pointerId);refresh();if(id==='jumpBtn')jump();if(id==='dashBtn')dash();if(id==='shootBtn')shoot();});
+      const release=e=>{e.preventDefault();pointers.delete(e.pointerId);refresh();};for(const event of ['pointerup','pointercancel','lostpointercapture'])el.addEventListener(event,release);
     }
-
+    window.addEventListener('keydown',e=>{
+      if(e.target?.tagName==='INPUT'||e.target?.tagName==='TEXTAREA'||e.target?.isContentEditable)return;
+      if(e.code==='Escape'||e.code==='KeyP'){if(!e.repeat){if(game.onMap)closeMap();else setPaused(!state.paused);}e.preventDefault();return;}
+      if(!activePlay())return;if(['ArrowLeft','ArrowRight','ArrowUp','Space'].includes(e.code))e.preventDefault();keys[e.code]=true;
+      if(!e.repeat&&['Space','ArrowUp','KeyW'].includes(e.code))jump();if(!e.repeat&&['ShiftLeft','ShiftRight','KeyJ'].includes(e.code))dash();if(!e.repeat&&['KeyK','KeyF'].includes(e.code))shoot();if(!e.repeat&&e.code==='KeyM')openMap();
+    });
+    window.addEventListener('keyup',e=>{delete keys[e.code];});
+    const interrupt=()=>{resetInput();stopMusic();setPaused(true);last=performance.now();accumulator=0;};
+    window.addEventListener('blur',interrupt);document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt();});window.addEventListener('pagehide',()=>{interrupt();saveState();});
+    window.addEventListener('resize',resizeCanvas);window.visualViewport?.addEventListener('resize',resizeCanvas);
     window.addEventListener('message',ev=>{
-      const data = ev.data || {};
-      const type = data.type || data.event;
-      if (type === 'GG_PAUSE') {
-        state.paused = !!(data.payload?.paused ?? data.paused);
-        if (state.paused) stopMusic(); else startMusic();
-        syncUI();
-      }
-      if (type === 'GG_RESTART') resetRun();
-      if (type === 'GG_MUTE') {
-        state.muted = !!(data.payload?.muted ?? data.muted);
-        if (state.muted) stopMusic(); else startMusic();
-        syncUI();
-      }
+      if(ev.source!==window.parent||ev.origin!==window.location.origin)return;const data=ev.data||{},type=data.type||data.event;
+      if(type==='GG_PAUSE')setPaused(!!(data.payload?.paused??data.paused));
+      if(type==='GG_RESTART'&&state.started)resetRun();
+      if(type==='GG_MUTE'){state.muted=!!(data.payload?.muted??data.muted);if(master)master.gain.value=state.muted?0:.12;if(state.muted)stopMusic();else startMusic();saveState();syncUI();}
     });
   }
 
-  function loop(now) {
-    const dt = Math.min(.05, Math.max(.001, (now-last)/1000));
-    last = now;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
+  function loop(now){
+    accumulator+=Math.min(.05,Math.max(0,(now-last)/1000));last=now;
+    while(accumulator>=1/120){update(1/120);accumulator-=1/120;}draw();requestAnimationFrame(loop);
   }
 
-  bindEvents();
-  ensureChallengeUI();
-  resizeCanvas();
-  buildLevel();
-  renderMap();
-  syncUI();
-  loadAssets().then(()=>{
-    resizeCanvas();
-    requestAnimationFrame(loop);
+  bindEvents();resizeCanvas();buildLevel();
+  game.loading.then(()=>{
+    document.getElementById('playBtn').disabled=false;
+    document.getElementById('playBtn').textContent=state.levelIndex>0?'Continue Expedition':'Start Expedition';
+    resizeCanvas();requestAnimationFrame(loop);
   });
 })();

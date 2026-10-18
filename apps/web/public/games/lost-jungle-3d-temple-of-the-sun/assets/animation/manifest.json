@@ -1,0 +1,40 @@
+{
+  "assets": [
+    {
+      "file": "explorer.png",
+      "width": 1536,
+      "height": 1024,
+      "frames": 12,
+      "sha256": "8dad654fbfb3f9d0c77286f2309774f80247f93348ec92457ea606b0def05ddf"
+    },
+    {
+      "file": "wildlife-a.png",
+      "width": 1536,
+      "height": 1024,
+      "frames": 12,
+      "sha256": "c041e47b5b8c172e243ac76bc8adacabb91e45de58cfc155404aece6cb3673ba"
+    },
+    {
+      "file": "wildlife-b.png",
+      "width": 1536,
+      "height": 1024,
+      "frames": 12,
+      "sha256": "84fea4ff32d61b8ade71c481d2f3a9ea7ba479fa416322828b0338d4a6b65fd2"
+    },
+    {
+      "file": "temple.png",
+      "width": 1536,
+      "height": 1024,
+      "frames": 12,
+      "sha256": "92f1d661895293b255f9ce197fde701b5c9753b5f03b5b307f230edf49c65391"
+    },
+    {
+      "file": "guardians.png",
+      "width": 1536,
+      "height": 1024,
+      "frames": 12,
+      "sha256": "3d1d6598cefa4e5d301994e23b47da3c93c4e176e18d81878b7a78ee4daf6f49"
+    }
+  ],
+  "poses": 60
+}
