@@ -1,14 +1,14 @@
 {
   "title": "Neon Orb: Base Defence",
-  "slug": "neon-orb-base-defence",
+  "slug": "neon-orb-defender",
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "category": "Action",
-  "description": "A futuristic military-base arcade shooter where the player protects the Neon Orb, rescues friendly AI units, collects powerups and defeats rogue AI robots and drones.",
-  "orientation": "landscape",
-  "version": "1.0.0",
+  "description": "Defend Fort Nova across 25 longer missions with animated robots, rescue objectives, orb defence, four command-core bosses and an original electronic track for every level.",
+  "orientation": "any",
+  "version": "2.1.0",
   "features": {
-    "levels": 9,
+    "levels": 25,
     "storyMode": true,
     "bossFight": true,
     "mobileControls": true,
@@ -17,6 +17,15 @@
     "scoreBridge": [
       "GG_SCORE",
       "gg:score"
-    ]
+    ],
+    "bosses": 4,
+    "backgrounds": 25,
+    "musicTracks": 25,
+    "animatedSprites": true,
+    "savedProgress": true,
+    "multiTouch": true,
+    "optionalAutoFire": true,
+    "separateAudioVolumes": true,
+    "pauseSafeTransitions": true
   }
 }
