@@ -1,18 +1,20 @@
 {
   "meta": {
-    "name": "Level 3 \u2022 Rooftop Boosts",
-    "timeLimit": 154,
-    "parTime": 110
+    "name": "Level 3 • Rooftop Boosts",
+    "background": 3,
+    "district": "relay",
+    "timeLimit": 365,
+    "parTime": 202
   },
   "tileSize": 32,
-  "w": 136,
+  "w": 280,
   "h": 18,
   "spawn": {
     "x": 2,
     "y": 13
   },
   "exit": {
-    "x": 131,
+    "x": 275,
     "y": 13,
     "w": 1,
     "h": 2
@@ -21,325 +23,719 @@
     {
       "x": 0,
       "y": 15,
-      "w": 17,
+      "w": 36,
       "h": 3
     },
     {
-      "x": 20,
-      "y": 15,
-      "w": 21,
-      "h": 3
-    },
-    {
-      "x": 45,
-      "y": 15,
-      "w": 18,
-      "h": 3
-    },
-    {
-      "x": 66,
-      "y": 15,
-      "w": 16,
-      "h": 3
-    },
-    {
-      "x": 87,
-      "y": 15,
-      "w": 20,
-      "h": 3
-    },
-    {
-      "x": 111,
-      "y": 15,
-      "w": 17,
-      "h": 3
-    },
-    {
-      "x": 131,
-      "y": 15,
-      "w": 5,
-      "h": 3
-    },
-    {
-      "x": 10,
+      "x": 6,
       "y": 12,
       "w": 5,
       "h": 1
     },
     {
-      "x": 27,
-      "y": 10,
-      "w": 6,
-      "h": 1
+      "x": 40,
+      "y": 15,
+      "w": 36,
+      "h": 3
     },
     {
-      "x": 44,
+      "x": 50,
       "y": 12,
       "w": 5,
       "h": 1
     },
     {
-      "x": 60,
+      "x": 58,
       "y": 9,
-      "w": 6,
+      "w": 5,
       "h": 1
     },
     {
-      "x": 81,
+      "x": 65,
       "y": 11,
-      "w": 7,
+      "w": 5,
       "h": 1
     },
     {
-      "x": 101,
-      "y": 10,
-      "w": 6,
+      "x": 80,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 90,
+      "y": 12,
+      "w": 5,
       "h": 1
     },
     {
-      "x": 109,
+      "x": 98,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 105,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 120,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 130,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 143,
       "y": 12,
       "w": 6,
       "h": 1
+    },
+    {
+      "x": 160,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 170,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 178,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 185,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 200,
+      "y": 15,
+      "w": 36,
+      "h": 3
+    },
+    {
+      "x": 210,
+      "y": 12,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 218,
+      "y": 9,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 225,
+      "y": 11,
+      "w": 5,
+      "h": 1
+    },
+    {
+      "x": 240,
+      "y": 15,
+      "w": 40,
+      "h": 3
     }
   ],
   "coins": [
     {
-      "x": 7,
-      "y": 10
-    },
-    {
-      "x": 13,
+      "x": 6,
       "y": 14
     },
     {
-      "x": 19,
+      "x": 10,
+      "y": 14
+    },
+    {
+      "x": 18,
+      "y": 14
+    },
+    {
+      "x": 24,
+      "y": 14
+    },
+    {
+      "x": 30,
+      "y": 14
+    },
+    {
+      "x": 34,
+      "y": 14
+    },
+    {
+      "x": 7,
+      "y": 11
+    },
+    {
+      "x": 9,
+      "y": 11
+    },
+    {
+      "x": 22,
       "y": 14
     },
     {
       "x": 25,
+      "y": 14
+    },
+    {
+      "x": 46,
+      "y": 14
+    },
+    {
+      "x": 50,
+      "y": 14
+    },
+    {
+      "x": 58,
+      "y": 14
+    },
+    {
+      "x": 64,
+      "y": 14
+    },
+    {
+      "x": 70,
+      "y": 14
+    },
+    {
+      "x": 74,
+      "y": 14
+    },
+    {
+      "x": 51,
       "y": 11
     },
     {
-      "x": 31,
-      "y": 14
+      "x": 53,
+      "y": 11
     },
     {
-      "x": 37,
-      "y": 14
-    },
-    {
-      "x": 43,
-      "y": 10
-    },
-    {
-      "x": 49,
-      "y": 14
-    },
-    {
-      "x": 55,
-      "y": 14
+      "x": 59,
+      "y": 8
     },
     {
       "x": 61,
-      "y": 11
+      "y": 8
     },
     {
-      "x": 67,
+      "x": 86,
       "y": 14
     },
     {
-      "x": 73,
+      "x": 90,
       "y": 14
     },
     {
-      "x": 79,
-      "y": 10
+      "x": 98,
+      "y": 14
     },
     {
-      "x": 85,
+      "x": 104,
+      "y": 14
+    },
+    {
+      "x": 110,
+      "y": 14
+    },
+    {
+      "x": 114,
       "y": 14
     },
     {
       "x": 91,
-      "y": 14
-    },
-    {
-      "x": 97,
       "y": 11
     },
     {
-      "x": 103,
+      "x": 93,
+      "y": 11
+    },
+    {
+      "x": 99,
+      "y": 8
+    },
+    {
+      "x": 101,
+      "y": 8
+    },
+    {
+      "x": 126,
       "y": 14
     },
     {
-      "x": 109,
+      "x": 130,
       "y": 14
     },
     {
-      "x": 115,
-      "y": 10
-    },
-    {
-      "x": 121,
+      "x": 138,
       "y": 14
     },
     {
-      "x": 127,
+      "x": 144,
+      "y": 14
+    },
+    {
+      "x": 150,
+      "y": 14
+    },
+    {
+      "x": 154,
+      "y": 14
+    },
+    {
+      "x": 131,
+      "y": 11
+    },
+    {
+      "x": 133,
+      "y": 11
+    },
+    {
+      "x": 139,
+      "y": 11
+    },
+    {
+      "x": 141,
+      "y": 11
+    },
+    {
+      "x": 166,
+      "y": 14
+    },
+    {
+      "x": 170,
+      "y": 14
+    },
+    {
+      "x": 178,
+      "y": 14
+    },
+    {
+      "x": 184,
+      "y": 14
+    },
+    {
+      "x": 190,
+      "y": 14
+    },
+    {
+      "x": 194,
+      "y": 14
+    },
+    {
+      "x": 171,
+      "y": 11
+    },
+    {
+      "x": 173,
+      "y": 11
+    },
+    {
+      "x": 179,
+      "y": 8
+    },
+    {
+      "x": 181,
+      "y": 8
+    },
+    {
+      "x": 206,
+      "y": 14
+    },
+    {
+      "x": 210,
+      "y": 14
+    },
+    {
+      "x": 218,
+      "y": 14
+    },
+    {
+      "x": 224,
+      "y": 14
+    },
+    {
+      "x": 230,
+      "y": 14
+    },
+    {
+      "x": 234,
+      "y": 14
+    },
+    {
+      "x": 211,
+      "y": 11
+    },
+    {
+      "x": 213,
+      "y": 11
+    },
+    {
+      "x": 219,
+      "y": 8
+    },
+    {
+      "x": 221,
+      "y": 8
+    },
+    {
+      "x": 248,
+      "y": 14
+    },
+    {
+      "x": 250,
       "y": 14
     }
   ],
   "collectibles": [
     {
-      "x": 14,
-      "y": 9,
-      "type": "badge"
-    },
-    {
-      "x": 29,
-      "y": 10,
-      "type": "data"
-    },
-    {
-      "x": 44,
-      "y": 11,
+      "x": 8,
+      "y": 14,
       "type": "airtime"
     },
     {
-      "x": 59,
-      "y": 12,
-      "type": "taxi"
-    },
-    {
-      "x": 74,
-      "y": 9,
-      "type": "lunch"
-    },
-    {
-      "x": 89,
-      "y": 10,
+      "x": 33,
+      "y": 14,
       "type": "badge"
     },
     {
-      "x": 104,
-      "y": 11,
+      "x": 48,
+      "y": 14,
+      "type": "airtime"
+    },
+    {
+      "x": 73,
+      "y": 14,
       "type": "data"
     },
     {
-      "x": 119,
-      "y": 12,
+      "x": 60,
+      "y": 8,
+      "type": "airtime"
+    },
+    {
+      "x": 88,
+      "y": 14,
+      "type": "airtime"
+    },
+    {
+      "x": 113,
+      "y": 14,
+      "type": "airtime"
+    },
+    {
+      "x": 100,
+      "y": 8,
+      "type": "airtime"
+    },
+    {
+      "x": 128,
+      "y": 14,
+      "type": "airtime"
+    },
+    {
+      "x": 153,
+      "y": 14,
+      "type": "taxi"
+    },
+    {
+      "x": 168,
+      "y": 14,
+      "type": "airtime"
+    },
+    {
+      "x": 193,
+      "y": 14,
+      "type": "lunch"
+    },
+    {
+      "x": 180,
+      "y": 8,
+      "type": "airtime"
+    },
+    {
+      "x": 208,
+      "y": 14,
+      "type": "airtime"
+    },
+    {
+      "x": 233,
+      "y": 14,
+      "type": "badge"
+    },
+    {
+      "x": 220,
+      "y": 8,
+      "type": "airtime"
+    },
+    {
+      "x": 247,
+      "y": 14,
       "type": "airtime"
     }
   ],
   "hazards": [
     {
-      "x": 24,
-      "y": 14,
-      "w": 2,
-      "h": 1
+      "x": 73,
+      "y": 14.5,
+      "w": 1,
+      "h": 0.5
     },
     {
-      "x": 52,
-      "y": 14,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "x": 80,
-      "y": 14,
-      "w": 2,
-      "h": 1
-    },
-    {
-      "x": 108,
-      "y": 14,
-      "w": 2,
-      "h": 1
+      "x": 193,
+      "y": 14.5,
+      "w": 1,
+      "h": 0.5
     }
   ],
   "powerups": [
     {
-      "x": 61,
-      "y": 8,
-      "type": "jump"
+      "x": 45,
+      "y": 14,
+      "type": "shield"
+    },
+    {
+      "x": 125,
+      "y": 14,
+      "type": "life"
+    },
+    {
+      "x": 205,
+      "y": 14,
+      "type": "rapidfire"
+    },
+    {
+      "x": 246,
+      "y": 14,
+      "type": "shield"
     }
   ],
   "enemies": [
     {
       "type": "shooter",
-      "x": 18,
-      "y": 13,
-      "minX": 13,
-      "maxX": 23,
-      "speed": 98,
-      "hp": 1
-    },
-    {
-      "type": "patrol",
-      "x": 36,
-      "y": 13,
-      "minX": 31,
-      "maxX": 41,
-      "speed": 108,
-      "hp": 1
-    },
-    {
-      "type": "patrol",
-      "x": 54,
-      "y": 13,
-      "minX": 49,
-      "maxX": 59,
-      "speed": 118,
-      "hp": 1
+      "x": 19,
+      "y": 13.8,
+      "minX": 18,
+      "maxX": 22,
+      "speed": 70,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9749999999999999
     },
     {
       "type": "chaser",
-      "x": 72,
-      "y": 13,
-      "minX": 67,
-      "maxX": 77,
-      "speed": 98,
-      "hp": 1
+      "x": 29,
+      "y": 13.8,
+      "minX": 27,
+      "maxX": 31,
+      "speed": 84,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.125
     },
     {
       "type": "shooter",
-      "x": 90,
-      "y": 13,
-      "minX": 85,
-      "maxX": 95,
-      "speed": 108,
-      "hp": 1
+      "x": 59,
+      "y": 13.8,
+      "minX": 58,
+      "maxX": 62,
+      "speed": 70,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9749999999999999
+    },
+    {
+      "type": "shooter",
+      "x": 69,
+      "y": 13.8,
+      "minX": 67,
+      "maxX": 71,
+      "speed": 84,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.125
+    },
+    {
+      "type": "drone",
+      "x": 48,
+      "y": 11.1,
+      "minX": 45,
+      "maxX": 50,
+      "speed": 51,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.595
+    },
+    {
+      "type": "shooter",
+      "x": 99,
+      "y": 13.8,
+      "minX": 98,
+      "maxX": 102,
+      "speed": 70,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9749999999999999
+    },
+    {
+      "type": "shooter",
+      "x": 109,
+      "y": 13.8,
+      "minX": 107,
+      "maxX": 111,
+      "speed": 84,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.125
+    },
+    {
+      "type": "shooter",
+      "x": 139,
+      "y": 13.8,
+      "minX": 138,
+      "maxX": 142,
+      "speed": 70,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9749999999999999
+    },
+    {
+      "type": "chaser",
+      "x": 149,
+      "y": 13.8,
+      "minX": 147,
+      "maxX": 151,
+      "speed": 84,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.125
+    },
+    {
+      "type": "drone",
+      "x": 128,
+      "y": 11.1,
+      "minX": 125,
+      "maxX": 130,
+      "speed": 51,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.595
+    },
+    {
+      "type": "shooter",
+      "x": 179,
+      "y": 13.8,
+      "minX": 178,
+      "maxX": 182,
+      "speed": 70,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9749999999999999
+    },
+    {
+      "type": "shooter",
+      "x": 189,
+      "y": 13.8,
+      "minX": 187,
+      "maxX": 191,
+      "speed": 84,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.125
+    },
+    {
+      "type": "shooter",
+      "x": 219,
+      "y": 13.8,
+      "minX": 218,
+      "maxX": 222,
+      "speed": 70,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 1.9749999999999999
+    },
+    {
+      "type": "shooter",
+      "x": 229,
+      "y": 13.8,
+      "minX": 227,
+      "maxX": 231,
+      "speed": 84,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.125
+    },
+    {
+      "type": "drone",
+      "x": 208,
+      "y": 11.1,
+      "minX": 205,
+      "maxX": 210,
+      "speed": 51,
+      "hp": 1,
+      "dir": -1,
+      "fireInterval": 2.595
+    }
+  ],
+  "checkpoints": [
+    {
+      "x": 83,
+      "y": 13
+    },
+    {
+      "x": 163,
+      "y": 13
+    },
+    {
+      "x": 243,
+      "y": 13
     }
   ],
   "boss": {
-    "name": "Rooftop Bruiser",
+    "name": "Roof Sentry",
     "type": "mini",
-    "x": 122,
+    "x": 263,
     "y": 12,
-    "minX": 116,
-    "maxX": 129,
-    "hp": 6,
-    "speed": 105
+    "minX": 253,
+    "maxX": 272,
+    "hp": 5,
+    "speed": 94
   },
   "npcs": [
     {
-      "name": "Zee",
+      "name": "Zinhle",
       "x": 4,
       "y": 13,
-      "message": "Find airtime and lunch packs for the crew, then stop the rooftop boss.",
-      "completeMessage": "Sharp! The mission is complete. Head to the open gate."
+      "message": "Restore the neighbourhood airtime relay above the streets.",
+      "completeMessage": "Sharp! The route is clear. Head for the open gate."
     }
   ],
   "obstacles": [
     {
       "type": "taxi",
-      "x": 34,
+      "x": 24,
       "y": 14.05,
       "w": 2.5,
       "h": 0.9,
-      "minX": 31,
-      "maxX": 45,
-      "speed": 117
+      "minX": 19,
+      "maxX": 30,
+      "speed": 91
     },
     {
       "type": "trampoline",
@@ -350,58 +746,41 @@
     },
     {
       "type": "crate",
-      "x": 73,
+      "x": 106,
       "y": 3,
       "w": 1,
       "h": 1,
-      "triggerRadius": 6,
-      "respawn": 4
+      "triggerRadius": 4,
+      "respawn": 5
     },
     {
       "type": "collapse",
-      "x": 84,
-      "y": 10,
-      "w": 5,
+      "x": 138,
+      "y": 11,
+      "w": 4,
       "h": 0.55,
       "delay": 0.65,
       "respawn": 3.3
     },
     {
       "type": "movingPlatform",
-      "x": 97,
-      "y": 11,
-      "w": 5,
+      "x": 184,
+      "y": 10.8,
+      "w": 4,
       "h": 0.55,
-      "minX": 93,
-      "maxX": 105,
-      "speed": 61
+      "minX": 182,
+      "maxX": 190,
+      "speed": 51
     }
   ],
-  "doors": [
-    {
-      "id": "main",
-      "x": 106,
-      "y": 13,
-      "w": 1,
-      "h": 2,
-      "open": false
-    }
-  ],
-  "switches": [
-    {
-      "id": "main",
-      "x": 96,
-      "y": 14.55,
-      "w": 0.9,
-      "h": 0.35
-    }
-  ],
+  "doors": [],
+  "switches": [],
   "objective": {
-    "coinsRequired": 18,
+    "coinsRequired": 20,
     "collectiblesRequired": 4,
-    "enemiesRequired": 5,
+    "enemiesRequired": 6,
     "bossRequired": true,
-    "switchesRequired": 1,
-    "message": "Find airtime and lunch packs for the crew, then stop the rooftop boss."
+    "switchesRequired": 0,
+    "message": "Restore the neighbourhood airtime relay above the streets. Collect 20 coins and 4 kasi items, defeat 6 bots, then beat Roof Sentry."
   }
 }

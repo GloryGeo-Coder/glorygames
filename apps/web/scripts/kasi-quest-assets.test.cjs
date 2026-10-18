@@ -23,22 +23,22 @@ test('sprite crop metadata fits the original PNGs and trims transparent margins'
   }
 });
 
-test('campaign definitions retain attainable objective counts and eight distinct backgrounds', () => {
+test('campaign definitions retain attainable objective counts across twenty routes using the eight preserved backgrounds', () => {
   const backgrounds=new Set();
-  for(let n=1;n<=8;n++) {
+  for(let n=1;n<=20;n++) {
     const suffix=String(n).padStart(2,'0'),d=JSON.parse(fs.readFileSync(path.join(root,`levels/level-${suffix}.json`)));
     assert.ok(d.w>d.exit.x && d.spawn.x<d.exit.x); assert.ok(d.meta.timeLimit>d.meta.parTime);
     assert.ok(d.objective.coinsRequired<=d.coins.length); assert.ok(d.objective.collectiblesRequired<=d.collectibles.length);
     assert.ok(d.objective.enemiesRequired<=d.enemies.length); assert.ok(d.boss && d.npcs.length);
-    backgrounds.add(fs.readFileSync(path.join(root,`assets/backgrounds/level-${suffix}.png`)).subarray(0,64).toString('base64')+fs.statSync(path.join(root,`assets/backgrounds/level-${suffix}.png`)).size);
+    backgrounds.add(fs.readFileSync(path.join(root,`assets/backgrounds/level-${String(d.meta.background).padStart(2,'0')}.png`)).subarray(0,64).toString('base64')+fs.statSync(path.join(root,`assets/backgrounds/level-${String(d.meta.background).padStart(2,'0')}.png`)).size);
   }
   assert.equal(backgrounds.size,8);
 });
 
 test('actual draw calls keep each background covering portrait, landscape and desktop canvases', async () => {
   for(const[width,height]of[[390,844],[844,390],[1280,720]]) {
-    const r=await boot({width,height});
-    for(let n=1;n<=8;n++) {
+    const r=await boot({width,height,saved:new Map([['wga_kasi_quest_v3_campaign','{"unlocked":20}']])});
+    for(let n=1;n<=20;n++) {
       await r.loadLevel(n); r.resetLevelState(); r.calls.length=0; r.render();
       const draws=r.calls.filter(c=>c[0]==='drawImage' && c[1].url.includes('/backgrounds/'));
       const v=r.state.display; assert.ok(draws.length>0);
@@ -53,8 +53,8 @@ test('actual draw calls keep each background covering portrait, landscape and de
 });
 
 test('resized taxis can be cleared with the actual jump physics in every campaign configuration', async () => {
-  const r=await boot(); await r.startOrRestart();
-  for(let n=1;n<=8;n++) {
+  const r=await boot({saved:new Map([['wga_kasi_quest_v3_campaign','{"unlocked":20}']])}); await r.startOrRestart();
+  for(let n=1;n<=20;n++) {
     await r.loadLevel(n); r.resetLevelState();
     const state=r.state,taxi=state.obstacles.find(o=>o.type==='taxi');
     // A flat test lane isolates vehicle clearance from the authored pits and encounters.

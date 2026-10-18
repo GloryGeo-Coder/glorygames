@@ -1,4 +1,4 @@
-/* Kasi Quest — Character & Enemy Animation v3.2
+/* Kasi Quest — Twenty-Level Campaign v3.3
    WebGameArena standalone game
    Features:
    - Manual movement, shooting, moving enemies
@@ -15,7 +15,7 @@
   "use strict";
 
   const GAME_SLUG = "kasi-quest";
-  const LEVEL_COUNT = 8;
+  const LEVEL_COUNT = 20;
   const TILE_DEFAULT = 32;
   const STORE_PREFIX = "wga_kasi_quest_v3";
   const BEST_KEY = `${STORE_PREFIX}_best`;
@@ -23,6 +23,7 @@
   const UPGRADES_KEY = `${STORE_PREFIX}_upgrades`;
   const STARS_KEY = `${STORE_PREFIX}_stars`;
   const DAILY_KEY = `${STORE_PREFIX}_daily_best`;
+  const PROGRESS_KEY = `${STORE_PREFIX}_campaign`;
 
   const $ = (id) => document.getElementById(id);
   const canvas = $("c");
@@ -208,7 +209,6 @@
     playerIdle: "./assets/sprites/player_idle.png",
     playerRun: "./assets/sprites/player_run.png",
     enemy: "./assets/sprites/enemy.png",
-    boss: "./assets/sprites/boss.png",
     taxi: "./assets/obstacles/taxi.png",
     coin: "./assets/items/coin_spin.png",
     bgForLevel: (n) => `./assets/backgrounds/level-${String(n).padStart(2, "0")}.png`,
@@ -222,7 +222,9 @@
       const finish = (value) => {
         if (settled) return;
         settled = true; if (timer !== null) window.clearTimeout(timer);
-        imageCache.set(url, value); resolve(value);
+        if (value) imageCache.set(url, value);
+        else imageCache.delete(url);
+        resolve(value);
       };
       const timer = timeoutMs > 0 ? window.setTimeout(() => finish(null), timeoutMs) : null;
       img.onload = () => finish(img);
@@ -238,18 +240,16 @@
   let imgPlayerIdle = null,
   imgPlayerRun = null,
   imgEnemy = null,
-  imgBoss = null,
   imgTaxi = null,
   imgCoin = null,
   bgImg = null;
 
   async function loadAssetsOptional() {
   if (animation) await animation.load(url => loadImageSafe(url, 15000));
-  [imgPlayerIdle, imgPlayerRun, imgEnemy, imgBoss, imgTaxi, imgCoin] = await Promise.all([
+  [imgPlayerIdle, imgPlayerRun, imgEnemy, imgTaxi, imgCoin] = await Promise.all([
     animation?.has("player") ? null : loadImageSafe(ASSETS.playerIdle),
     animation?.has("player") ? null : loadImageSafe(ASSETS.playerRun),
     animation?.has("enemy") ? null : loadImageSafe(ASSETS.enemy),
-    animation?.has("boss") ? null : loadImageSafe(ASSETS.boss),
     loadImageSafe(ASSETS.taxi),
     loadImageSafe(ASSETS.coin),
   ]);
@@ -260,7 +260,19 @@
   // ----------------------------
   let best = Number(safeGet(BEST_KEY, "0")) || 0;
   let wallet = Number(safeGet(WALLET_KEY, "0")) || 0;
-  let stars = safeJsonGet(STARS_KEY, {});
+  const savedStars = safeJsonGet(STARS_KEY, {});
+  let stars = {};
+  for (let n = 1; n <= LEVEL_COUNT; n++) {
+    const value = savedStars?.[n];
+    if (Number.isInteger(value) && value >= 1 && value <= 3) stars[n] = value;
+  }
+  // Migrate actual completions from the eight-stage campaign without touching its economy.
+  const legacyUnlocked = Math.min(LEVEL_COUNT, Math.max(0, ...Object.keys(stars).map(Number)) + 1);
+  const progress = safeJsonGet(PROGRESS_KEY, {});
+  let unlockedLevel = Math.max(legacyUnlocked,
+    Number.isInteger(progress?.unlocked) ? clamp(progress.unlocked, 1, LEVEL_COUNT) : 1);
+  let checkpoint = null;
+  let timeGrace = 0;
   let dailyBestStore = safeJsonGet(DAILY_KEY, {});
   let upgrades = Object.assign({ fireRate: 0, shield: 0, doubleJump: 0, extraLife: 0 }, safeJsonGet(UPGRADES_KEY, {}));
   const SHOP = [
@@ -273,6 +285,7 @@
     safeSet(WALLET_KEY, wallet);
     safeJsonSet(UPGRADES_KEY, upgrades);
     safeJsonSet(STARS_KEY, stars);
+    safeJsonSet(PROGRESS_KEY, { unlocked: unlockedLevel });
     safeJsonSet(DAILY_KEY, dailyBestStore);
   }
 
@@ -498,6 +511,7 @@ const SCALE = {
       obstacles: Array.isArray(raw.obstacles) ? raw.obstacles : [],
       doors: Array.isArray(raw.doors) ? raw.doors : [],
       switches: Array.isArray(raw.switches) ? raw.switches : [],
+      checkpoints: (Array.isArray(raw.checkpoints) ? raw.checkpoints : []).map(c => ({ ...c, reached: false })),
     };
     if (raw.boss) out.bosses.push(raw.boss);
     if (Array.isArray(raw.bosses)) out.bosses.push(...raw.bosses);
@@ -550,8 +564,9 @@ const SCALE = {
     for (const raw of level.enemies || []) {
       const speedRaw = Number(raw.speed) || 80;
       const speed = speedRaw > 20 ? speedRaw : speedRaw * tileSize;
-      const baseW = Math.max(18, Number(raw.w || raw.width || 0.85) * tileSize);
-const baseH = Math.max(20, Number(raw.h || raw.height || 0.95) * tileSize);
+      const drone = raw.type === "drone";
+      const baseW = Math.max(18, Number(raw.w || raw.width || (drone ? 1.12 : 0.85)) * tileSize);
+const baseH = Math.max(20, Number(raw.h || raw.height || (drone ? 0.6 : 0.95)) * tileSize);
 const w = baseW * SCALE.enemy;
 const h = baseH * SCALE.enemy;
 const x = (Number(raw.x) || 0) * tileSize + tileSize * 0.08 - (w - baseW) / 2;
@@ -572,7 +587,9 @@ const y = (Number(raw.y) || 0) * tileSize - (h - baseH);
         speed,
         hp: Number(raw.hp || 1) || 1,
         alive: true,
-        shootT: 0,
+        shootT: 0.65 + (i % 4) * 0.2,
+        fireInterval: clamp(Number(raw.fireInterval) || 1.8, 1.2, 3),
+        hoverY: y, hoverT: i * 1.7, windup: 0, aimX: 0, aimY: 0,
       });
     }
   }
@@ -675,6 +692,7 @@ const y = rawY - (h - baseH);
   }
 
   async function loadLevel(n) {
+    if (!Number.isInteger(n) || n < 1 || n > unlockedLevel) throw new Error("Complete the previous level to unlock this stage.");
     mode = "campaign";
     const raw = await loadJson(levelUrl(n));
     level = normalizeLevel(raw);
@@ -682,7 +700,7 @@ const y = rawY - (h - baseH);
     if (elLevelNum) elLevelNum.textContent = String(n);
     if (elLevelLabel) elLevelLabel.textContent = String(n);
     if (elMissionText) elMissionText.textContent = level.objective.message;
-    bgImg = await loadImageSafe(ASSETS.bgForLevel(n));
+    bgImg = await loadImageSafe(ASSETS.bgForLevel(clamp(Number(level.meta.background) || ((n - 1) % 8 + 1), 1, 8)));
     buildEnemiesFromLevel();
     buildBossesFromLevel();
     buildObstaclesFromLevel();
@@ -918,6 +936,9 @@ const y = rawY - (h - baseH);
     defeatRemaining = 0;
     animation?.reset();
     cameraState = null;
+    checkpoint = null;
+    timeGrace = 0;
+    for (const c of level?.checkpoints || []) c.reached = false;
     resetPlayer();
     coinsCollected = 0;
     collectiblesCollected = 0;
@@ -977,12 +998,14 @@ const y = rawY - (h - baseH);
       addText("Quest failed", player.x, player.y);
       return;
     }
-    const s = level?.spawn || { x: 2, y: 13 };
+    const s = checkpoint || level?.spawn || { x: 2, y: 13 };
     player.x = s.x * tileSize + tileSize * 0.15;
     player.y = s.y * tileSize;
     player.vx = 0;
     player.vy = 0;
-    player.invuln = 1.4;
+    player.invuln = 2.0;
+    // Clear only shots near the recovery point; kills, pickups and switches stay completed.
+    enemyProjectiles = enemyProjectiles.filter(p => Math.abs(p.x - player.x) > tileSize * 12);
     player.coyoteT = 0;
     player.jumpBufferT = 0;
     player.jumpHeld = false;
@@ -1135,7 +1158,7 @@ projectiles.push({
         player.jumpHoldT += dt;
       } else player.jumpHeld = false;
     }
-    if (pressedEdges.action || (input.action && !prevInput.action)) shoot();
+    if (pressedEdges.action || input.action) shoot();
     pressedEdges.action = false;
 
     player.vy += GRAVITY * dt;
@@ -1230,6 +1253,16 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       if (!sw.pressed && rectsOverlap(py, sr)) pressSwitch(sw);
     }
 
+    for (const c of level.checkpoints) {
+      if (!c.reached && player.onGround && player.x >= (c.x - 1.5) * tileSize && player.x <= (c.x + 8) * tileSize && Math.abs(player.y - c.y * tileSize) < tileSize * 3) {
+        c.reached = true;
+        if (!checkpoint || c.x > checkpoint.x) {
+          checkpoint = { x: c.x, y: c.y };
+          addText("Checkpoint reached", player.x, player.y - 28, 2);
+          beep(740, 0.07, "triangle", 0.03);
+        }
+      }
+    }
     const ex = exitRect();
     if (ex && rectsOverlap(py, ex)) {
       if (objectiveComplete()) completeLevel();
@@ -1248,18 +1281,27 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     for (const en of enemies) {
       if (!en.alive) continue;
       const type = en.type === "runner" ? "patrol" : en.type;
+      if (Math.abs(en.x - player.x) > tileSize * 26) continue;
+      if (type === "drone") { updateDrone(en, dt); continue; }
       if (type === "chaser") {
         const dist = Math.abs((player.x + player.w / 2) - (en.x + en.w / 2));
         if (dist < tileSize * 8) en.dir = player.x < en.x ? -1 : 1;
       }
       if (type === "shooter") {
         en.shootT -= dt;
-        if (en.shootT <= 0 && Math.abs(player.x - en.x) < tileSize * 9) {
-          en.shootT = 1.8;
+        if (en.shootT <= 0 && Math.abs(player.x - en.x) < tileSize * 9 && enemyProjectiles.length < 40) {
+          en.shootT = en.fireInterval;
           const dir = player.x < en.x ? -1 : 1;
           animation?.play(en, "enemy", "shoot", dir);
           enemyProjectiles.push({ x: en.x + en.w / 2, y: en.y + en.h * 0.4, w: 12, h: 7, vx: dir * 360, vy: 0, life: 2.2 });
         }
+      }
+      // Turn before a ledge so mission targets cannot fall out of the level.
+      if (en.vy === 0) {
+        const footX = en.dir > 0 ? en.x + en.w + 5 : en.x - 5;
+        let supported = false;
+        iterSolidRects(s => { if (footX >= s.x && footX <= s.x + s.w && Math.abs(s.y - en.y - en.h) < 8) supported = true; });
+        if (!supported) en.dir *= -1;
       }
       en.vx = en.dir * en.speed;
       en.x += en.vx * dt;
@@ -1288,9 +1330,38 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     }
   }
 
+  function updateDrone(en, dt) {
+    en.hoverT += dt;
+    en.x += en.dir * en.speed * dt;
+    if (en.x < en.minX) { en.x = en.minX; en.dir = 1; }
+    if (en.x + en.w > en.maxX + tileSize) { en.x = en.maxX + tileSize - en.w; en.dir = -1; }
+    en.y = en.hoverY + Math.sin(en.hoverT * 2.1) * (motionPreference?.matches ? 2 : 8);
+    const inRange = Math.abs(player.x - en.x) < Math.min(tileSize * 10, viewW * 0.75);
+    if (!inRange) { en.windup = 0; en.shootT = Math.max(en.shootT, 0.6); return; }
+    if (en.windup > 0) {
+      en.windup -= dt;
+      if (en.windup <= 0) {
+        if (enemyProjectiles.length < 40) enemyProjectiles.push({
+          x: en.x + en.w / 2, y: en.y + en.h / 2, w: 10, h: 10,
+          vx: en.aimX * 280, vy: en.aimY * 280, life: 2.6, drone: true,
+        });
+        en.shootT = en.fireInterval;
+      }
+    } else {
+      en.shootT -= dt;
+      if (en.shootT <= 0) {
+        const dx = player.x + player.w / 2 - en.x - en.w / 2;
+        const dy = player.y + player.h / 2 - en.y - en.h / 2;
+        const distance = Math.hypot(dx, dy) || 1;
+        en.aimX = dx / distance; en.aimY = dy / distance;
+        en.windup = 0.4; // Lock aim before firing, giving the player time to dodge.
+      }
+    }
+  }
+
   function updateBosses(dt) {
     for (const b of bosses) {
-      if (!b.alive) continue;
+      if (!b.alive || Math.abs(b.x - player.x) > tileSize * 24) continue;
       const dirToPlayer = player.x < b.x ? -1 : 1;
       b.shootT -= dt;
       b.jumpT -= dt;
@@ -1309,7 +1380,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
         b.jumpT = b.phase >= 2 ? 1.4 : 2.1;
         b.vy = -680;
       }
-      if (b.shootT <= 0) {
+      if (b.shootT <= 0 && enemyProjectiles.length < 38) {
         b.shootT = b.phase >= 2 ? 1.15 : 1.75;
         const dir = player.x < b.x ? -1 : 1;
         animation?.play(b, "boss", "shoot", dir);
@@ -1383,7 +1454,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       p.y += (p.vy || 0) * dt;
       p.life -= dt;
       const pr = { x: p.x, y: p.y, w: p.w, h: p.h };
-      let remove = p.life <= 0;
+      let remove = p.life <= 0 || Math.abs(p.x - player.x) > viewW + tileSize * 8;
       iterSolidRects((s) => { if (!remove && rectsOverlap(pr, s)) remove = true; });
       for (const sw of switches) if (!sw.pressed && rectsOverlap(pr, { x: sw.x, y: sw.y, w: sw.w, h: sw.h })) { pressSwitch(sw); remove = true; }
       for (const en of enemies) {
@@ -1409,7 +1480,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       p.y += (p.vy || 0) * dt;
       p.life -= dt;
       const pr = { x: p.x, y: p.y, w: p.w, h: p.h };
-      let remove = p.life <= 0;
+      let remove = p.life <= 0 || Math.abs(p.x - player.x) > viewW + tileSize * 8;
       iterSolidRects((s) => { if (!remove && rectsOverlap(pr, s)) remove = true; });
       if (!remove && rectsOverlap(pr, playerRect)) { damagePlayer("shot"); remove = true; }
       if (remove) enemyProjectiles.splice(i, 1);
@@ -1487,7 +1558,10 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     updateFloatingText(dt);
     updateActorAnimations(dt);
 
-    if (level?.meta?.timeLimit && levelTime > Number(level.meta.timeLimit)) damagePlayer("time");
+    if (level?.meta?.timeLimit && levelTime > Number(level.meta.timeLimit) + timeGrace && player.invuln <= 0) {
+      timeGrace += 30;
+      damagePlayer("time");
+    }
     if (now() - lastLiveScoreAt > 350) { lastLiveScoreAt = now(); postScore("live"); }
 
     prevInput.jump = input.jump;
@@ -1498,7 +1572,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   function updateActorAnimations(dt) {
     if (!animation) return;
     animation.update(player, "player", dt);
-    for (const enemy of enemies) animation.update(enemy, "enemy", dt, {
+    for (const enemy of enemies) if (enemy.type !== "drone") animation.update(enemy, "enemy", dt, {
       windup: enemy.type === "shooter" && enemy.shootT > 0 && enemy.shootT < 0.28 && Math.abs(player.x - enemy.x) < tileSize * 9,
     });
     for (const boss of bosses) animation.update(boss, "boss", dt, {
@@ -1507,13 +1581,14 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
   }
 
   async function completeLevel() {
-    if (paused) return;
+    if (paused || !running || !objectiveComplete()) return;
     paused = true;
     resetInput();
     const starCount = calcStars();
     const levelKey = mode === "daily" ? dailyDateKey : String(currentLevel);
     if (mode === "campaign") {
       stars[levelKey] = Math.max(Number(stars[levelKey] || 0), starCount);
+      unlockedLevel = Math.max(unlockedLevel, Math.min(LEVEL_COUNT, currentLevel + 1));
     } else {
       dailyBestStore[dailyDateKey] = Math.max(Number(dailyBestStore[dailyDateKey] || 0), Math.floor(score));
     }
@@ -1620,6 +1695,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     drawHazards(camX, camY);
     drawItems(camX, camY);
     drawNpcs(camX, camY);
+    drawCheckpoints(camX, camY);
     drawExit(camX, camY);
   }
   function drawHazards(camX, camY) {
@@ -1752,11 +1828,49 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     ctx.textAlign = "center";
     ctx.fillText(open ? "OPEN" : "LOCKED", p.x + ex.w / 2, p.y - 8);
   }
+  function drawCheckpoints(camX, camY) {
+    for (const c of level.checkpoints) {
+      const p = worldToScreen(c.x * tileSize, 15 * tileSize, camX, camY);
+      if (p.x < -80 || p.x > viewW + 80) continue;
+      ctx.strokeStyle = c.reached ? "#86efac" : "#7dd3fc"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x, p.y - 64); ctx.stroke();
+      ctx.fillStyle = c.reached ? "#166534" : "#075985";
+      ctx.fillRect(p.x + 2, p.y - 63, 30, 22);
+      ctx.fillStyle = "#e0f2fe"; ctx.font = "bold 10px system-ui"; ctx.textAlign = "center";
+      ctx.fillText(c.reached ? "✓" : "CP", p.x + 17, p.y - 48);
+    }
+  }
+  function drawDrone(en, p) {
+    const glow = en.windup > 0 ? "#fbbf24" : "#67e8f9";
+    ctx.save(); ctx.translate(p.x, p.y);
+    ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(-3, 5); ctx.lineTo(en.w + 3, 5); ctx.stroke();
+    for (const x of [0, en.w]) {
+      ctx.fillStyle = "#263750"; ctx.beginPath(); ctx.ellipse(x, 4, 13, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = glow; ctx.lineWidth = 2;
+      const sweep = motionPreference?.matches ? 10 : 7 + Math.abs(Math.sin(en.hoverT * 35)) * 7;
+      ctx.beginPath(); ctx.moveTo(x - sweep, 0); ctx.lineTo(x + sweep, 0); ctx.stroke();
+      ctx.fillStyle = "rgba(56,189,248,.45)";
+      ctx.beginPath(); ctx.moveTo(x - 5, 8); ctx.lineTo(x, 18 + Math.sin(en.hoverT * 24) * 2); ctx.lineTo(x + 5, 8); ctx.fill();
+    }
+    ctx.fillStyle = "#172b46"; ctx.strokeStyle = "#a5b4fc"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(5, 3, en.w - 10, en.h - 3, 7); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(en.w / 2, en.h * 0.52, 5, 0, Math.PI * 2); ctx.fill();
+    if (en.windup > 0) {
+      ctx.strokeStyle = "rgba(251,191,36,.65)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(en.w / 2, en.h / 2, 19 + en.windup * 12, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(en.w / 2, en.h / 2);
+      ctx.lineTo(en.w / 2 + en.aimX * 100, en.h / 2 + en.aimY * 100); ctx.stroke();
+    }
+    ctx.restore();
+  }
   function drawEnemies(camX, camY) {
     for (const en of enemies) {
+      if (en.type === "drone" && !en.alive) continue;
       if (!en.alive && (!animation?.has("enemy") || animation.finished(en, "enemy"))) continue;
       const p = worldToScreen(en.x, en.y, camX, camY);
       if (p.x + en.w < -70 || p.x > viewW + 70 || p.y + en.h < -70 || p.y > viewH + 70) continue;
+      if (en.type === "drone") { drawDrone(en, p); continue; }
       if (animation?.draw(ctx, en, "enemy", { ...p, w: en.w, h: en.h })) continue;
       if (imgEnemy) {
         presentation.drawSprite(ctx, imgEnemy, "enemy", { ...p, w: en.w, h: en.h }, en.dir);
@@ -1775,15 +1889,24 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     for (const b of bosses) {
       if (!b.alive && (!animation?.has("boss") || animation.finished(b, "boss"))) continue;
       const p = worldToScreen(b.x, b.y, camX, camY);
-      if (!animation?.draw(ctx, b, "boss", { ...p, w: b.w, h: b.h }) && !presentation.drawSprite(ctx, imgBoss, "boss", { ...p, w: b.w, h: b.h }, b.dir)) {
-        ctx.fillStyle = b.phase >= 2 ? "rgba(251,113,133,.36)" : "rgba(250,204,21,.26)";
-        ctx.strokeStyle = b.phase >= 2 ? "rgba(251,113,133,.95)" : "rgba(250,204,21,.9)";
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.roundRect(p.x, p.y, b.w, b.h, 10); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#fff"; ctx.font = "900 11px system-ui"; ctx.textAlign = "center";
-        ctx.fillText("BOSS", p.x + b.w / 2, p.y + b.h * 0.48);
+      if (!animation?.draw(ctx, b, "boss", { ...p, w: b.w, h: b.h })) {
+        ctx.save(); ctx.translate(p.x, p.y);
+        const armor = b.phase >= 2 ? "#ef4444" : "#d97706";
+        const stride = Math.sin(totalRunTime * 10) * 3;
+        ctx.fillStyle = "#273449";
+        ctx.fillRect(8, b.h * .68, 18, b.h * .32 + stride);
+        ctx.fillRect(b.w - 26, b.h * .68, 18, b.h * .32 - stride);
+        ctx.fillStyle = armor; ctx.strokeStyle = "#fcd34d"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(4, b.h * .24, b.w - 8, b.h * .48, 8); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#475569"; ctx.fillRect(-6, b.h * .32, 17, 27); ctx.fillRect(b.w - 11, b.h * .32, 17, 27);
+        ctx.fillStyle = "#1e293b"; ctx.beginPath(); ctx.roundRect(b.w * .23, 0, b.w * .54, b.h * .3, 6); ctx.fill();
+        ctx.fillStyle = "#fef08a"; ctx.fillRect(b.w * .3, b.h * .1, b.w * .4, 5);
+        ctx.fillStyle = "#fef3c7"; ctx.beginPath(); ctx.arc(b.w / 2, b.h * .44, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
       }
       if (!b.alive) continue;
+      ctx.fillStyle = "#fef3c7"; ctx.font = "bold 10px system-ui"; ctx.textAlign = "center";
+      ctx.fillText(b.name, p.x + b.w / 2, p.y - 20);
       const barW = Math.max(42, b.w);
       ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(p.x, p.y - 12, barW, 6);
       ctx.fillStyle = "rgba(34,197,94,.9)"; ctx.fillRect(p.x, p.y - 12, barW * clamp(b.hp / b.maxHp, 0, 1), 6);
@@ -1906,10 +2029,16 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     [...elLevelGrid.children].forEach((button, index) => {
       const levelNo = index + 1;
       button.classList.toggle("active", mode === "campaign" && levelNo === currentLevel);
+      const locked = levelNo > unlockedLevel;
+      button.disabled = loading || locked;
+      button.classList.toggle("locked", locked);
+      button.setAttribute("aria-label", `Level ${levelNo}${locked ? ", locked. Complete level " + (levelNo - 1) : ", unlocked"}`);
       const star = Number(stars[String(levelNo)] || 0);
       const s = button.querySelector(".stars");
-      if (s) s.textContent = star > 0 ? "★".repeat(star) : "—";
+      if (s) s.textContent = locked ? "Locked" : star > 0 ? "★".repeat(star) : "—";
     });
+    const progressLabel = $("campaignProgress");
+    if (progressLabel) progressLabel.textContent = `Campaign · ${unlockedLevel}/${LEVEL_COUNT} levels unlocked`;
     updateStarSummary();
   }
   function buildLevelGrid() {
@@ -1920,7 +2049,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       b.type = "button";
       b.innerHTML = `<span>${i}</span><span class="stars">${stars[String(i)] ? "★".repeat(stars[String(i)]) : "—"}</span>`;
       b.addEventListener("click", async () => {
-        if (loading) return;
+        if (loading || i > unlockedLevel) return;
         setLoading(true);
         running = false;
         setPaused(false);
@@ -1936,6 +2065,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       });
       elLevelGrid.appendChild(b);
     }
+    updateLevelButtons();
   }
   function syncPlayUI() {
     const playing = running && !paused;
@@ -1956,6 +2086,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     const buttons = [btnStart, btnDaily, btnPause, btnHudPause, ...elLevelGrid.children];
     for (const button of buttons) if (button) button.disabled = value;
     panel.setAttribute("aria-busy", String(value));
+    updateLevelButtons();
   }
   function setPaused(v, message = "") {
     paused = !!v;
@@ -1973,6 +2104,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     resetInput();
     interrupted = false;
     try {
+      if (animation && ["player", "enemy", "boss"].some(kind => !animation.has(kind))) await animation.load(url => loadImageSafe(url, 15000));
       if (mode !== "daily") await loadLevel(Number.isFinite(Number(currentLevel)) ? Number(currentLevel) : 1);
       else await loadDailyLevel();
       resetLevelState({ resetScore: true });
@@ -2047,7 +2179,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     best = Number(safeGet(BEST_KEY, "0")) || 0;
     wallet = Number(safeGet(WALLET_KEY, "0")) || 0;
     await loadAssetsOptional();
-    try { await loadLevel(1); resetLevelState({ resetScore: true }); } catch (e) { console.warn(e); }
+    try { await loadLevel(unlockedLevel); resetLevelState({ resetScore: true }); } catch (e) { console.warn(e); }
     buildLevelGrid();
     setLoading(false);
     syncPlayUI();

@@ -90,9 +90,10 @@ async function boot({ width = 1280, height = 720, saved = new Map(), failAssets 
       startOrRestart, startDaily, setPaused, resetLevelState, updatePlayer, updateGameplay, updateObstacles,
       updateEnemies, updateBosses, updateProjectiles, handleEnemyPlayerCollisions, damagePlayer,
       collectCoin, collectCollectible, hitBoss, defeatEnemy, pressSwitch, objectiveComplete,
-      completeLevel, loadLevel, render, shoot, postScore,
+      completeLevel, loadLevel, render, shoot, postScore, updateDrone,
+      updateLevelButtons,
       get state() { return { running, paused, loading, currentLevel, level, score, wallet, stars, upgrades,
-        enemies, bosses, obstacles, switches, doors, projectiles, enemyProjectiles, levelTime, display, cameraInsets, defeatRemaining }; }
+        enemies, bosses, obstacles, switches, doors, projectiles, enemyProjectiles, levelTime, display, cameraInsets, defeatRemaining, unlockedLevel, checkpoint, timeGrace }; }
     }; globalThis.__kasiReady = boot();`);
   vm.runInContext(code, context, { filename:'kasi-quest/game.js' });
   await context.__kasiReady;

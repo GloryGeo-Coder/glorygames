@@ -114,7 +114,7 @@ test('shooter animation faces its actual projectile direction without changing p
 });
 
 test('boss windup, attack, phase and defeat retain damage/reward behavior',async()=>{
- const r=await boot();await r.startOrRestart();const b=r.state.bosses[0];b.vy=0;b.shootT=.2;r.updateActorAnimations(.03);
+ const r=await boot();await r.startOrRestart();const b=r.state.bosses[0];r.player.x=b.x-200;b.vy=0;b.shootT=.2;r.updateActorAnimations(.03);
  assert.equal(r.animation.snapshot(b,'boss').clip,'windup');b.shootT=0;r.updateBosses(1/60);r.updateActorAnimations(1/60);
  assert.equal(r.animation.snapshot(b,'boss').clip,'shoot');assert.ok(r.state.enemyProjectiles.length>0);
  r.hitBoss(b,Math.ceil(b.maxHp/2));assert.equal(b.phase,2);assert.equal(r.animation.snapshot(b,'boss').clip,'hurt');
@@ -153,7 +153,8 @@ test('interruption or falling during defeat leaves the retry menu usable',async(
 for(const kind of ['player','enemy','boss'])test(`${kind} atlas failure falls back independently while other actors stay animated`,async()=>{
  const r=await boot({failAtlases:[kind]});await r.startOrRestart();r.player.invuln=0;r.render();
  assert.equal(r.animation.has(kind),false);for(const other of ['player','enemy','boss'].filter(k=>k!==kind))assert.equal(r.animation.has(other),true);
- const old=kind==='player'?'player_idle.png':kind+'.png';assert.ok(r.calls.some(c=>c[0]==='drawImage'&&c[1].url.endsWith(old)));
+ if(kind==='boss') { assert.ok(!r.requests.some(url=>url.endsWith('/sprites/boss.png'))); assert.ok(r.calls.some(c=>c[0]==='fillRect'));  }
+ else { const old=kind==='player'?'player_idle.png':kind+'.png';assert.ok(r.calls.some(c=>c[0]==='drawImage'&&c[1].url.endsWith(old))); }
  assert.equal(r.state.running,true);
 });
 
