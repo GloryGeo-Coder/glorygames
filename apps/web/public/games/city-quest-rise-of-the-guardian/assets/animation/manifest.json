@@ -1,0 +1,23 @@
+{
+  "mode": "built-in image_gen",
+  "assets": [
+    {
+      "file": "guardian-v21.png",
+      "prompt": "Use case: stylized-concept. Production sprite animation atlas for City Quest: Rise of the Guardian, transparent RGBA background. Square image, exactly 6 columns by 6 rows of 36 separate full-body poses, even generous clear transparent gutters. Stylized polished 3D chibi young Black male township guardian, warm brown skin, short upward dreadlocks, athletic gold-trimmed jacket, dark trousers, sneakers, headband with gold diamond, gold wrist guards. All poses side/three-quarter view facing RIGHT, fixed character proportions and lighting. Rows 1-2 BLUE jacket/headband/sneakers; rows 3-4 GREEN jacket/headband/sneakers; rows 5-6 SHADOW purple-black jacket/headband/sneakers, same person. EACH two-row skin block follows identical 12-pose sequence reading left-to-right: row A: two relaxed idle breathing poses then first four distinct running cycle poses with clearly changing leg/arm positions; row B: two more running cycle poses (opposite foot contact and recovery), jump rising knees up, falling legs extending, energy shooting arm outstretched with small cyan wrist flash, recoiling from hit. Feet and hair entirely within each cell, no overlapping sprites, no cell borders, no text, no scenery, no floor/shadows. Actual transparent background, isolated body per cell. Intended render height 96 pixels, bold readable silhouettes, preserve brown complexion, short dreadlocks, gold trims, blue/green/shadow identities.",
+      "width": 1254,
+      "height": 1254,
+      "frames": 36,
+      "decoded_bytes": 6290064,
+      "sha256": "92ab9d229db49bd9dda0ece7960de26300175a2f09c8c56e456700a597b94c7e"
+    },
+    {
+      "file": "enemies-v21.png",
+      "prompt": "Use case: stylized-concept. Transparent production sprite animation atlas for City Quest: Rise of the Guardian. Exactly 4 columns and 6 rows of 24 separate full-body stylized 3D cartoon enemy poses. Square sheet, even transparent gutters, all bodies isolated and wholly within cells, feet at consistent row baseline, no text, no grid lines, no scenery, no ground or shadows. All face RIGHT in side/three-quarter view for side-scrolling platform game. Upper three rows: stocky charcoal steel patrol ROBOT, square helmet face, two glowing red circular eyes, glowing red chest core, chunky armored boots and red wrist energy cannon, mechanical limbs. Row1: two idle poses and two walking poses. Row2: four more distinct alternating walking gait poses, legs swing opposite, visible step changes. Row3: charging cannon, firing cannon, flinching hit, collapsing defeat. Lower three rows: much bigger yellow-and-black TAXI MECH BOSS with taxi cab hood for chest, TAXI light on its armored head, steel robot legs, yellow shoulder armor, red energy cannon. Row4: two idle poses and two walking poses. Row5: four additional distinct heavy walking poses, alternating foot contacts. Row6: cannon charge, cannon firing, flinching, collapsing defeat. Same identity and proportions throughout each 12-pose block. Both are readable shiny playful 3D game characters with bold silhouette, modest energy glow tightly beside arm. High detail but clear small-scale readability. Real alpha transparency.",
+      "width": 1254,
+      "height": 1254,
+      "frames": 24,
+      "decoded_bytes": 6290064,
+      "sha256": "110f2b0cdeb07dc5379963120fd51e13ebd219092d1c865d81fa824d83385aaf"
+    }
+  ]
+}

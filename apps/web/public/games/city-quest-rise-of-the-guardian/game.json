@@ -3,7 +3,7 @@
   "slug": "city-quest-rise-of-the-guardian",
   "entry": "index.html",
   "thumbnail": "thumb.png",
-  "orientation": "landscape",
+  "orientation": "any",
   "category": "Adventure Platformer",
   "description": "Township adventure platformer with story mode, NPC missions, platform jumping, player shooting, shooting drones, moving platforms, enemies, obstacles, power-ups, unlockable skins, boss stages, map progression, sounds, and score bridge support.",
   "tags": [
@@ -92,7 +92,14 @@
     "levelMap": true,
     "bossStages": true,
     "highQualityThumbnail": true,
-    "levels": 10
+    "levels": 10,
+    "multiTouch": true,
+    "safeAreaViewport": true,
+    "checkpoints": true,
+    "bufferedJump": true,
+    "animatedPoses": 60,
+    "telegraphedEnemyFire": true,
+    "expandedLevels": 10
   },
-  "version": "2.0.0"
+  "version": "2.1.0"
 }
