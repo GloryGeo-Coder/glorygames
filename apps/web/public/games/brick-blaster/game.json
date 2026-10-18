@@ -1,10 +1,42 @@
 {
   "title": "Brick Blaster",
-  "description": "Drag to move the paddle, tap to launch, and smash bricks for high scores. Collect power-ups and submit your best run to the GloryGames leaderboard.",
-  "tags": ["arcade", "mobile", "touch", "brick-breaker", "2d", "score-attack"],
+  "description": "Steer your paddle from a dedicated touch strip, tap to launch, and ricochet through glowing bricks. Catch six power-ups, chain explosive combos and chase your best in Classic Arcade.",
+  "tags": [
+    "arcade",
+    "mobile",
+    "touch",
+    "brick-breaker",
+    "2d",
+    "score-attack"
+  ],
   "controls": [
-    { "key": "Touch drag", "action": "Move paddle" },
-    { "key": "Tap", "action": "Launch ball / continue" },
-    { "key": "On-screen buttons", "action": "Pause / Submit score / Restart / Overlay" }
-  ]
+    {
+      "key": "Touch strip / Arena drag",
+      "action": "Move paddle with relative or direct touch steering"
+    },
+    {
+      "key": "Tap / Launch Ball / Space",
+      "action": "Launch a waiting ball"
+    },
+    {
+      "key": "Arrow keys / A / D",
+      "action": "Move paddle"
+    },
+    {
+      "key": "Pause / Menu / P",
+      "action": "Pause and open controls, leaderboard, chat or restart"
+    }
+  ],
+  "version": "2.1.0",
+  "orientation": "any",
+  "features": {
+    "mode": "classic-arcade",
+    "touchControlStrip": true,
+    "steeringModes": [
+      "relative",
+      "direct"
+    ],
+    "safeRotation": true,
+    "pauseSafePowerUps": true
+  }
 }

@@ -1,76 +1,35 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#060a16" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Brick Blaster</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="/sdk/gg-sdk.css" />
-  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#060a16" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<title>Brick Blaster</title>
+<link rel="stylesheet" href="./styles.css?v=2.1" />
+<link rel="stylesheet" href="/sdk/gg-sdk.css" />
+<link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
-  <header class="hud">
-    <div class="hudLeft">
-      <div class="brand" id="ggTitle">Brick Blaster</div>
-      <div class="sub" id="ggSub">Drag paddle • Tap to launch • Catch power-ups</div>
-    </div>
-
-    <div class="hudRight">
-      <div class="stat">
-        <div class="label">Score</div>
-        <div class="value" id="score">0</div>
-      </div>
-      <div class="stat">
-        <div class="label">Lives</div>
-        <div class="value" id="lives">3</div>
-      </div>
-      <div class="stat">
-        <div class="label">Level</div>
-        <div class="value" id="level">1</div>
-      </div>
-    </div>
-  </header>
-
-  <main class="stage">
-    <canvas id="c" tabindex="0" aria-label="Brick Blaster game canvas"></canvas>
-
-    <div class="panel" id="panel">
-      <div class="panelInner">
-        <div class="panelEyebrow">WebGameArena</div>
-        <div class="panelTitle" id="panelTitle">Brick Blaster</div>
-        <div class="panelText" id="panelText">
-          Drag anywhere to move the paddle. Tap to launch. Break glowing bricks, chain combos, grab power-ups, and submit your best score.
-        </div>
-
-        <div class="panelButtons">
-          <button class="btn primary" id="btnStart">Start</button>
-          <button class="btn" id="btnOverlay">Leaderboard</button>
-        </div>
-
-        <div class="panelHint">
-          <span class="pill">Mobile-first</span>
-          <span class="pill">Combo scoring</span>
-          <span class="pill">Multi-ball</span>
-          <span class="pill">Power-ups</span>
-        </div>
-      </div>
-    </div>
-
-    <nav class="actions" aria-label="Game actions">
-      <button class="chip" id="btnPause" aria-label="Pause or resume">⏸ Pause</button>
-      <button class="chip primaryChip" id="btnLaunch" aria-label="Launch Ball">🚀 Launch</button>
-      <button class="chip" id="btnSubmit" aria-label="Submit Score">🏆 Submit</button>
-      <button class="chip" id="btnRestart" aria-label="Restart">↻ Restart</button>
-      <button class="chip" id="btnChat" aria-label="Overlay or Chat">💬</button>
-    </nav>
-  </main>
-
-  <script src="/sdk/gg-sdk.js"></script>
-  <script src="/games/_shared/gg-sdk.js"></script>
-  <script src="./game.js"></script>
-  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
+<div class="gameShell">
+<header class="hud">
+  <div class="hudLeft"><div class="brand" id="ggTitle">Brick Blaster</div><div class="sub" id="ggSub">Classic Arcade · Aim, ricochet and chain your hits</div></div>
+  <div class="hudRight" aria-label="Game statistics"><div class="stat"><span class="label">Score</span><strong class="value" id="score">0</strong></div><div class="stat"><span class="label">Lives</span><strong class="value" id="lives">3</strong></div><div class="stat"><span class="label">Level</span><strong class="value" id="level">1</strong></div></div>
+</header>
+<main class="stage"><canvas id="c" tabindex="0" aria-label="Brick Blaster arena. Drag to steer; tap or press Space to launch. Use arrow keys or A and D to move."></canvas></main>
+<div class="controlDock">
+  <div id="controlZone" class="controlZone" role="group" tabindex="0" aria-label="Paddle control strip. Drag left or right to steer without covering the arena; tap to launch."><span id="controlStatus" aria-hidden="true">Drag here to steer ↔</span><span class="controlHint" aria-hidden="true">Tap to launch · Pause for controls</span><span class="controlLine" aria-hidden="true"></span></div>
+  <nav class="actions" aria-label="Game actions"><button class="chip primaryChip" id="btnLaunch" type="button">Launch Ball</button><button class="chip" id="btnPause" type="button">Pause / Menu</button></nav>
+</div>
+</div>
+<div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+<section class="panelInner"><div class="panelGrid">
+  <div><div class="panelEyebrow">Classic Arcade</div><h1 class="panelTitle" id="panelTitle">Brick Blaster</h1><p class="panelText" id="panelText">Steer from the strip below the arena, tap to launch, and ricochet through glowing bricks. Catch power-ups and build your combo.</p><div class="panelButtons"><button class="btn primary" id="btnStart" type="button">Play</button><button class="btn" id="btnOverlay" type="button">Leaderboard</button></div><p class="panelHint">Six power-ups · Explosive chains · Multiball<br />Keyboard: ← → or A / D · Space to launch · P to pause</p></div>
+  <fieldset class="settings"><legend>Controls &amp; sound</legend><label for="controlMode">Touch steering</label><select id="controlMode"><option value="relative">Relative — follow finger movement</option><option value="direct">Direct — follow finger position</option></select><p id="controlHelp">Touch anywhere on the strip, then slide. The paddle keeps its starting position.</p><button class="btn" id="btnSound" type="button" aria-pressed="false">Sound On</button><div class="secondaryActions"><button class="btn" id="btnRestart" type="button">Restart</button><button class="btn" id="btnSubmit" type="button">Submit Score</button><button class="btn" id="btnChat" type="button">Chat</button></div></fieldset>
+</div></section>
+</div>
+<script src="/sdk/gg-sdk.js"></script><script src="/games/_shared/gg-sdk.js"></script>
+<script src="./brick-layout.js?v=2.1"></script><script src="./game.js?v=2.1"></script><script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

@@ -1,0 +1,8 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const {root}=require('./helpers/brick-runtime.cjs');
+
+test('original Brick Blaster thumbnail remains unchanged',()=>{assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'thumb.svg'))).digest('hex'),'5b07bbfc685cc9c5cd1186aca24979133b368a0d07789c68d84c6d34507464ea');});
+
+test('game entry references, unique control IDs and standalone launch/fullscreen integration are valid',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length);for(const id of ['c','controlZone','controlMode','btnStart','btnLaunch','btnPause','btnSubmit','btnChat','btnOverlay','btnRestart','btnSound'])assert.ok(ids.includes(id));for(const m of html.matchAll(/(?:src|href)="(\.\/[^"?]+)(?:\?[^"]*)?"/g))assert.ok(fs.existsSync(path.join(root,m[1])),m[1]);assert.match(html,/game-tab\.mjs/);assert.match(html,/label for="controlMode"/);assert.doesNotMatch(html,/user-scalable=no|maximum-scale|<iframe/i);});
+
+test('metadata retains classic mode, original tags and describes both steering options',()=>{const m=JSON.parse(fs.readFileSync(path.join(root,'game.json')));assert.equal(m.version,'2.1.0');assert.equal(m.orientation,'any');assert.equal(m.features.mode,'classic-arcade');assert.deepEqual(m.features.steeringModes,['relative','direct']);for(const tag of ['arcade','mobile','touch','brick-breaker','2d','score-attack'])assert.ok(m.tags.includes(tag));});

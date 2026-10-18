@@ -1,0 +1,28 @@
+name: Brick Blaster
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/brick-blaster/**'
+      - 'apps/web/scripts/brick-blaster*'
+      - 'apps/web/scripts/helpers/brick-*.cjs'
+      - '.github/workflows/brick-blaster.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/brick-blaster/**'
+      - 'apps/web/scripts/brick-blaster*'
+      - 'apps/web/scripts/helpers/brick-*.cjs'
+      - '.github/workflows/brick-blaster.yml'
+permissions:
+  contents: read
+jobs:
+  brick-blaster:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: for file in apps/web/public/games/brick-blaster/*.js; do node --check "$file"; done
+      - run: node --test apps/web/scripts/brick-blaster*.test.cjs
