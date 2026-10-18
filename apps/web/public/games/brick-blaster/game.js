@@ -23,6 +23,23 @@
   const btnSubmit = $("btnSubmit");
   const btnRestart = $("btnRestart");
   const btnChat = $("btnChat");
+  const controlZone = $("controlZone"), controlMode = $("controlMode"), btnSound = $("btnSound");
+  const { grid, cell, physicsScale } = window.BrickLayout;
+  const PREFS_KEY = "gg_brick_blaster_controls_v1";
+  const prefs = { controlMode: "relative", muted: false };
+  try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)); if (saved && typeof saved === "object") { if (["relative", "direct"].includes(saved.controlMode)) prefs.controlMode = saved.controlMode; prefs.muted = saved.muted === true; } } catch (_) {}
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || false;
+  let playTime = 0;
+  const playNow = () => playTime;
+  function savePrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_) {} }
+  function syncSettings() {
+    controlMode.value = prefs.controlMode;
+    $("controlHelp").textContent = prefs.controlMode === "relative" ? "Touch anywhere on the strip, then slide. The paddle keeps its starting position." : "The paddle follows your finger position. Use the strip to keep the ball in view.";
+    btnSound.textContent = (prefs.muted || GG_MUTED) ? "Sound Off" : "Sound On";
+    btnSound.setAttribute("aria-pressed", String(prefs.muted || GG_MUTED));
+    btnSound.disabled = GG_MUTED;
+    applyMute();
+  }
 
   if (!CanvasRenderingContext2D.prototype.roundRect) {
     CanvasRenderingContext2D.prototype.roundRect = function roundRect(x, y, w, h, r) {
@@ -97,11 +114,12 @@
     const { type, payload } = data;
     if (type === "GG_PAUSE") {
       GG_PAUSED = !!payload?.paused;
-      lastTick = now();
+      if (GG_PAUSED) setPaused(true, "The game is paused. Continue when you are ready.");
+      resetInput(); accumulator = 0; lastTick = now();
     }
     if (type === "GG_MUTE") {
       GG_MUTED = !!payload?.muted;
-      applyMute();
+      syncSettings();
     }
     if (type === "GG_RESTART") {
       resetGame();
@@ -111,9 +129,11 @@
   });
 
   document.addEventListener("visibilitychange", () => {
-    GG_PAUSED = document.hidden;
-    lastTick = now();
+    if (document.hidden) { setPaused(true, "Welcome back. Continue when you are ready."); resetInput(); stopSounds(); }
+    accumulator = 0; lastTick = now();
   });
+  window.addEventListener("blur", () => { setPaused(true); resetInput(); stopSounds(); });
+  window.addEventListener("pagehide", () => { setPaused(true); resetInput(); stopSounds(); });
 
   // ----------------------------
   // Audio: generated SFX, no external files
@@ -121,39 +141,30 @@
   let audioCtx = null;
   let masterGain = null;
 
+  const voices = new Set();
+  function stopSounds() { for (const voice of [...voices]) voice.stop(); }
   function ensureAudio() {
-    if (GG_MUTED) return null;
+    if (GG_MUTED || prefs.muted) return null;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
-    if (!audioCtx) {
-      audioCtx = new AC();
-      masterGain = audioCtx.createGain();
-      masterGain.gain.value = 0.11;
-      masterGain.connect(audioCtx.destination);
-    }
-    if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
-    return audioCtx;
+    try {
+      if (!audioCtx) { audioCtx = new AC(); masterGain = audioCtx.createGain(); masterGain.gain.value = .11; masterGain.connect(audioCtx.destination); }
+      if (audioCtx.state === "suspended" || audioCtx.state === "interrupted") audioCtx.resume()?.catch(() => {});
+      return audioCtx;
+    } catch (_) { return null; }
   }
-
-  function applyMute() {
-    if (masterGain) masterGain.gain.value = GG_MUTED ? 0 : 0.11;
-  }
-
-  function tone(freq = 440, dur = 0.05, type = "sine", vol = 0.6, delay = 0) {
-    const ac = ensureAudio();
-    if (!ac || GG_MUTED) return;
-    const t0 = ac.currentTime + delay;
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t0);
-    gain.gain.setValueAtTime(0.0001, t0);
-    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.12 * vol), t0 + 0.006);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(gain);
-    gain.connect(masterGain || ac.destination);
-    osc.start(t0);
-    osc.stop(t0 + dur + 0.02);
+  function applyMute() { if (masterGain) masterGain.gain.value = (GG_MUTED || prefs.muted) ? 0 : .11; if (GG_MUTED || prefs.muted) stopSounds(); }
+  function tone(freq = 440, dur = .05, type = "sine", vol = .6, delay = 0) {
+    const ac = ensureAudio(); if (!ac || GG_MUTED || prefs.muted || ac.state !== "running") return;
+    try {
+      const t0 = ac.currentTime + delay, osc = ac.createOscillator(), gain = ac.createGain();
+      osc.type = type; osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(.0001, t0); gain.gain.exponentialRampToValueAtTime(Math.max(.0002, .12 * vol), t0 + .006); gain.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+      osc.connect(gain); gain.connect(masterGain); let cleaned = false;
+      const voice = { stop() { if (cleaned) return; cleaned = true; try { osc.stop(); } catch (_) {} osc.disconnect(); gain.disconnect(); voices.delete(voice); } };
+      osc.onended = () => voice.stop(); voices.add(voice); while (voices.size > 24) voices.values().next().value.stop();
+      osc.start(t0); osc.stop(t0 + dur + .02);
+    } catch (_) { stopSounds(); }
   }
 
   function sfx(name) {
@@ -180,8 +191,8 @@
       document.title = title;
       if (elTitle) elTitle.textContent = title;
       if (panelTitle) panelTitle.textContent = title;
-      if (panelText) panelText.textContent = META.description || panelText.textContent;
-      if (elSub) elSub.textContent = "Drag • Launch • Combo • Multi-ball";
+      if (panelText && !running && !gameOver && level === 1) panelText.textContent = META.description || panelText.textContent;
+      if (elSub) elSub.textContent = "Classic Arcade · Aim, ricochet and chain your hits";
       try { window.GG?.setSlug?.(GAME_SLUG); window.GG?.setTitle?.(title); window.GG?.init?.({ title }); } catch (_) {}
     } catch (_) {}
   }
@@ -195,25 +206,30 @@
   let resizeQueued = false;
 
   function resize() {
-    DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    const r = canvas.getBoundingClientRect();
-    viewW = Math.max(1, Math.floor(r.width || window.innerWidth || 360));
-    viewH = Math.max(1, Math.floor(r.height || window.innerHeight || 640));
-    canvas.width = Math.floor(viewW * DPR);
-    canvas.height = Math.floor(viewH * DPR);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    layoutObjects();
+    const r = canvas.getBoundingClientRect(), w = Math.max(1, Math.floor(r.width || window.innerWidth || 360)), h = Math.max(1, Math.floor(r.height || window.innerHeight || 640));
+    const changed = w !== viewW || h !== viewH, oldW = viewW, oldH = viewH;
+    if (changed && running) setPaused(true, "Screen changed. Your bricks and power-ups are safe. Continue when you are ready.");
+    if (changed) resetInput();
+    viewW = w; viewH = h;
+    DPR = Math.max(.5, Math.min(2, window.devicePixelRatio || 1, Math.sqrt(3000000 / (w * h))));
+    canvas.width = Math.max(1, Math.floor(w * DPR)); canvas.height = Math.max(1, Math.floor(h * DPR)); ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (changed) {
+      const speedRatio = physicsScale(h) / physicsScale(oldH);
+      paddle.x *= w / oldW; paddle.targetX *= w / oldW;
+      const g = grid(w, h, boardRows, boardCols);
+      for (const b of bricks) Object.assign(b, cell(g, b.row, b.col));
+      for (const b of balls) { b.x = clamp(b.x * w / oldW, ballRadius(), w - ballRadius()); b.y = clamp(b.y * h / oldH, ballRadius(), h + ballRadius()); b.r = ballRadius(); b.vx *= speedRatio; b.vy *= speedRatio; b.trail = []; b.touching.clear();
+        if (!b.stuck && bricks.some(br => circleRectHit(b.x, b.y, b.r, br.x, br.y, br.w, br.h))) { b.y = g.bottom + b.r + 3; b.vy = Math.abs(b.vy); }
+      }
+      for (const d of drops) { d.x = clamp(d.x * w / oldW, d.r, w - d.r); d.y *= h / oldH; d.vy = clamp(h * .22, 65, 205); }
+      particles = [];
+    }
+    layoutObjects(); accumulator = 0; lastTick = now();
   }
-
-  function queueResize() {
-    if (resizeQueued) return;
-    resizeQueued = true;
-    requestAnimationFrame(() => { resizeQueued = false; resize(); });
-  }
+  function queueResize() { if (resizeQueued) return; resizeQueued = true; requestAnimationFrame(() => { resizeQueued = false; resize(); }); }
   window.addEventListener("resize", queueResize, { passive: true });
   window.addEventListener("orientationchange", queueResize, { passive: true });
-
-  document.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+  window.visualViewport?.addEventListener("resize", queueResize, { passive: true });
 
   // ----------------------------
   // Game state
@@ -231,6 +247,7 @@
   let shake = 0;
   let fireballUntil = 0;
   let stickyUntil = 0;
+  let boardRows = 4, boardCols = 6, accumulator = 0;
 
   const paddle = { x: 0, y: 0, w: 112, h: 16, baseW: 112, targetX: 0, widenUntil: 0 };
   const pointer = { id: null, down: false, x: 0, y: 0, startX: 0, startY: 0, tDown: 0, dragging: false };
@@ -246,38 +263,37 @@
   function cw() { return viewW; }
   function ch() { return viewH; }
 
-  function baseBallSpeed() {
-    return Math.min(650, 390 + level * 22);
-  }
-
+  function baseBallSpeed() { return Math.min(650, 390 + level * 22) * physicsScale(ch()); }
+  function ballRadius() { return clamp(Math.min(cw() * .018, ch() * .026), 5, 9.5); }
   function makeBall(stuck = true, x = paddle.x, y = paddle.y - 22) {
-    return { x, y, r: Math.max(6.5, Math.min(9.5, cw() * 0.018)), vx: 0, vy: 0, speed: baseBallSpeed(), stuck, fire: false, trail: [] };
+    return { x, y, r: ballRadius(), vx: 0, vy: 0, speed: baseBallSpeed(), stuck, fire: fireballUntil > playNow(), trail: [], touching: new Set() };
   }
-
   function layoutObjects() {
-    paddle.baseW = clamp(cw() * 0.27, 94, 152);
-    if (!paddle.widenUntil) paddle.w = paddle.baseW;
-    paddle.h = clamp(ch() * 0.024, 14, 20);
-    paddle.y = ch() - clamp(ch() * 0.105, 48, 78);
+    paddle.baseW = clamp(cw() * .27, 84, 152); paddle.w = paddle.baseW * (paddle.widenUntil > playNow() ? 1.48 : 1);
+    paddle.h = clamp(ch() * .024, 10, 20); paddle.y = ch() - clamp(ch() * .055, 14, 40);
     paddle.x = clamp(paddle.x || cw() / 2, paddle.w / 2 + 8, cw() - paddle.w / 2 - 8);
-    paddle.targetX = paddle.x;
+    paddle.targetX = clamp(paddle.targetX || paddle.x, paddle.w / 2 + 8, cw() - paddle.w / 2 - 8);
     for (const b of balls) if (b.stuck) attachBallToPaddle(b);
   }
 
   function updateHud() {
-    if (elScore) elScore.textContent = String(score | 0);
-    if (elLives) elLives.textContent = String(lives | 0);
-    if (elLevel) elLevel.textContent = String(level | 0);
+    const text = (el, value) => { if (el && el.textContent !== value) el.textContent = value; };
+    text(elScore, String(Math.floor(score))); text(elLives, String(lives)); text(elLevel, String(level));
+    text($("controlStatus"), toasts[toasts.length - 1]?.msg || (comboCount > 1 ? `Combo x${comboCount}` : "Drag here to steer ↔"));
+    text(btnPause, paused ? "Paused / Menu" : "Pause / Menu");
+    const disabled = !isPlaying() || !balls.some(b => b.stuck); if (btnLaunch.disabled !== disabled) btnLaunch.disabled = disabled;
   }
 
   function showPanel(title, text, buttonText = "Start") {
     if (panelTitle) panelTitle.textContent = title;
     if (panelText) panelText.textContent = text;
     if (btnStart) btnStart.textContent = buttonText;
-    if (panel) panel.style.display = "flex";
+    if (panel) panel.hidden = false;
+    syncSettings(); btnRestart.hidden = !running && !gameOver; btnSubmit.hidden = score === 0;
+    btnStart.focus?.({ preventScroll: true });
   }
-  function hidePanel() { if (panel) panel.style.display = "none"; }
-  function toast(msg) { toasts.push({ msg, t: 1.55, life: 1.55 }); }
+  function hidePanel() { if (panel) panel.hidden = true; canvas.focus?.({ preventScroll: true }); }
+  function toast(msg, life = 1.55) { if (toasts.length >= 24) toasts.shift(); toasts.push({ msg, t: life, life }); }
 
   function attachBallToPaddle(ball) {
     ball.stuck = true;
@@ -288,6 +304,7 @@
   }
 
   function resetGame() {
+    resetInput(); stopSounds(); accumulator = 0; playTime = 0;
     score = 0;
     lives = 3;
     level = 1;
@@ -311,23 +328,22 @@
     showPanel(META.title || "Brick Blaster", META.description || "Drag to move the paddle. Tap to launch. Break bricks and grab power-ups.", "Start");
   }
 
+  function isPlaying() { return running && !paused && !gameOver && !GG_PAUSED && !document.hidden; }
   function startGame() {
-    ensureAudio();
-    running = true;
-    paused = false;
-    gameOver = false;
-    hidePanel();
-    lastTick = now();
+    if (GG_PAUSED || document.hidden) return;
+    ensureAudio(); resetInput(); running = true; paused = false; gameOver = false; hidePanel(); accumulator = 0; lastTick = now(); updateHud();
   }
-
-  function togglePause() {
+  function setPaused(value, message = "Your round and power-ups are paused. Continue when you are ready.") {
     if (!running || gameOver) return;
-    paused = !paused;
-    if (paused) showPanel("Paused", "Take a breath. Tap Start to continue blasting.", "Resume");
-    else hidePanel();
+    if (!value && (GG_PAUSED || document.hidden)) return;
+    paused = value; resetInput(); accumulator = 0; lastTick = now();
+    if (paused) { stopSounds(); showPanel("Paused", message, "Continue"); } else { hidePanel(); ensureAudio(); }
+    updateHud();
   }
+  function togglePause() { setPaused(!paused); }
 
   function endGame() {
+    resetInput(); stopSounds();
     gameOver = true;
     running = false;
     paused = false;
@@ -341,14 +357,9 @@
   // ----------------------------
   function buildLevel(n) {
     const w = cw();
-    const top = clamp(ch() * 0.05, 18, 42);
-    const marginX = clamp(w * 0.035, 12, 28);
-    const cols = clamp(Math.floor(w / 56), 6, 12);
-    const rows = clamp(4 + Math.floor(n * 0.62), 4, 9);
-    const gap = clamp(w * 0.014, 6, 10);
-    const usableW = w - marginX * 2;
-    const brickW = Math.floor((usableW - gap * (cols - 1)) / cols);
-    const brickH = clamp(ch() * 0.033, 17, 25);
+    const cols = boardCols = clamp(Math.floor(w / 56), 6, 12);
+    const rows = boardRows = clamp(4 + Math.floor(n * .62), 4, 9);
+    const g = grid(w, ch(), rows, cols);
 
     const palettes = [
       ["#38bdf8", "#60a5fa", "#818cf8", "#a78bfa"],
@@ -363,8 +374,7 @@
       for (let c = 0; c < cols; c++) {
         const holeChance = Math.min(0.14, 0.025 + n * 0.006);
         if (Math.random() < holeChance && r > 0 && r < rows - 1) continue;
-        const x = marginX + c * (brickW + gap);
-        const y = top + r * (brickH + gap);
+        const rect = cell(g, r, c);
         let type = "normal";
         let hp = 1;
         if (n >= 3 && Math.random() < 0.14) { type = "heavy"; hp = 2; }
@@ -372,7 +382,7 @@
         if (Math.random() < 0.07 + Math.min(0.04, n * 0.006)) { type = "bonus"; hp = 1; }
         if (n >= 2 && Math.random() < 0.06) { type = "explode"; hp = 1; }
         if (n % 5 === 0 && r === 0 && c >= Math.floor(cols / 2) - 1 && c <= Math.floor(cols / 2) + 1) { type = "boss"; hp = 4 + Math.floor(n / 5); }
-        bricks.push({ x, y, w: brickW, h: brickH, hp, maxHp: hp, type, color: pal[(r + c + n) % pal.length], pulse: Math.random() * 10 });
+        bricks.push({ ...rect, row: r, col: c, hp, maxHp: hp, type, color: pal[(r + c + n) % pal.length], pulse: Math.random() * 10 });
       }
     }
 
@@ -388,6 +398,7 @@
   }
 
   function nextLevel() {
+    resetInput();
     level += 1;
     lives = Math.min(6, lives + 1);
     score += 200 + level * 35;
@@ -401,87 +412,61 @@
   // ----------------------------
   // Input
   // ----------------------------
-  function canvasPoint(e) {
-    const r = canvas.getBoundingClientRect();
-    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  function canvasPoint(e, target = canvas) {
+    const r = target.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * cw() / Math.max(1, r.width), y: target === canvas ? (e.clientY - r.top) * ch() / Math.max(1, r.height) : 0 };
   }
-
+  function resetInput(stopPaddle = true) {
+    const id = pointer.id, target = pointer.target; pointer.id = null; pointer.down = false; pointer.dragging = false; pointer.target = null; keys.clear();
+    if (id !== null) try { if (target?.hasPointerCapture?.(id)) target.releasePointerCapture(id); } catch (_) {}
+    if (stopPaddle) paddle.targetX = paddle.x;
+  }
   function launchBall() {
-    if (!running || paused || gameOver) return;
+    if (!isPlaying()) return;
     let launched = false;
     for (const ball of balls) {
       if (!ball.stuck) continue;
-      const aim = clamp((pointer.down ? pointer.x : paddle.x) - paddle.x, -paddle.w / 2, paddle.w / 2) / (paddle.w / 2 || 1);
-      const sp = baseBallSpeed();
-      const angle = aim * (Math.PI * 0.28) + rand(-0.12, 0.12);
-      ball.vx = Math.sin(angle) * sp;
-      ball.vy = -Math.cos(angle) * sp;
-      ball.stuck = false;
-      launched = true;
+      const aim = clamp((pointer.down ? pointer.x : paddle.x) - paddle.x, -paddle.w / 2, paddle.w / 2) / (paddle.w / 2 || 1), sp = baseBallSpeed(), angle = aim * (Math.PI * .28) + rand(-.12, .12);
+      ball.vx = Math.sin(angle) * sp; ball.vy = -Math.cos(angle) * sp; ball.stuck = false; launched = true;
     }
-    if (launched) { toast("Blast!"); sfx("launch"); }
+    if (launched) { toast("Blast!"); sfx("launch"); updateHud(); }
   }
-
-  canvas.addEventListener("pointerdown", (e) => {
-    ensureAudio();
-    canvas.setPointerCapture?.(e.pointerId);
-    const p = canvasPoint(e);
-    pointer.id = e.pointerId;
-    pointer.down = true;
-    pointer.startX = p.x;
-    pointer.startY = p.y;
-    pointer.x = p.x;
-    pointer.y = p.y;
-    pointer.tDown = now();
-    pointer.dragging = true;
-    paddle.targetX = p.x;
-    if (!running && !gameOver) startGame();
-    if (gameOver) { resetGame(); startGame(); }
-  }, { passive: true });
-
-  canvas.addEventListener("pointermove", (e) => {
-    if (!pointer.down || pointer.id !== e.pointerId) return;
-    const p = canvasPoint(e);
-    pointer.x = p.x;
-    pointer.y = p.y;
-    pointer.dragging = true;
-    paddle.targetX = p.x;
-  }, { passive: true });
-
-  canvas.addEventListener("pointerup", (e) => {
-    if (!pointer.down || pointer.id !== e.pointerId) return;
-    const p = canvasPoint(e);
-    const dt = now() - pointer.tDown;
-    const dx = p.x - pointer.startX;
-    const dy = p.y - pointer.startY;
-    const dist2 = dx * dx + dy * dy;
-    if (dt < 240 && dist2 < 18 * 18) launchBall();
-    pointer.down = false;
-    pointer.dragging = false;
-    pointer.id = null;
-  }, { passive: true });
-
-  window.addEventListener("keydown", (e) => {
-    keys.add(e.key);
-    if (["ArrowLeft", "ArrowRight", " ", "Enter"].includes(e.key)) e.preventDefault();
-    if (e.key === "p" || e.key === "P") togglePause();
-    if (e.key === " " || e.key === "Enter") launchBall();
-    if (e.key === "r" || e.key === "R") { resetGame(); startGame(); }
+  for (const target of [canvas, controlZone]) {
+    target.addEventListener("pointerdown", e => {
+      if (!isPlaying() || pointer.id !== null || e.button !== 0) return;
+      e.preventDefault(); ensureAudio(); const p = canvasPoint(e, target);
+      pointer.id = e.pointerId; pointer.target = target; pointer.down = true; pointer.dragging = true; pointer.startX = p.x; pointer.startClientX = e.clientX; pointer.startClientY = e.clientY; pointer.tDown = now(); pointer.moved = false; pointer.startPaddle = paddle.x;
+      pointer.relative = e.pointerType !== "mouse" && prefs.controlMode === "relative";
+      pointer.x = pointer.relative ? paddle.x : p.x; pointer.y = p.y; paddle.targetX = pointer.x;
+      try { target.setPointerCapture(e.pointerId); } catch (_) {}
+    }, { passive: false });
+    const move = e => {
+      if (!pointer.down || e.pointerId !== pointer.id || pointer.target !== target || !isPlaying()) return;
+      const p = canvasPoint(e, target); pointer.x = clamp(pointer.relative ? pointer.startPaddle + p.x - pointer.startX : p.x, paddle.w / 2 + 8, cw() - paddle.w / 2 - 8); pointer.y = p.y; paddle.targetX = pointer.x;
+      if (Math.hypot(e.clientX - pointer.startClientX, e.clientY - pointer.startClientY) >= 12) pointer.moved = true;
+    };
+    target.addEventListener("pointermove", e => { if (pointer.id !== e.pointerId) return; e.preventDefault(); for (const sample of e.getCoalescedEvents?.() || []) move({ ...sample, pointerId: e.pointerId, clientX: sample.clientX, clientY: sample.clientY }); move(e); }, { passive: false });
+    target.addEventListener("pointerup", e => { if (pointer.id !== e.pointerId || pointer.target !== target) return; move(e); const tap = !pointer.moved && now() - pointer.tDown < 240; if (tap) launchBall(); resetInput(false); });
+    for (const name of ["pointercancel", "lostpointercapture"]) target.addEventListener(name, e => { if (pointer.id === e.pointerId && pointer.target === target) resetInput(); });
+  }
+  window.addEventListener("keydown", e => {
+    if (e.altKey || e.ctrlKey || e.metaKey || ["INPUT", "SELECT", "TEXTAREA"].includes(e.target?.tagName) || e.target?.isContentEditable) return;
+    const key = e.key.toLowerCase(); if (e.target?.tagName === "BUTTON" && [" ", "enter"].includes(key)) return; if (["arrowleft", "arrowright", "a", "d", " ", "enter", "p", "escape"].includes(key)) e.preventDefault();
+    if (["arrowleft", "arrowright", "a", "d"].includes(key) && isPlaying()) keys.add(key);
+    if (e.repeat) return;
+    if (key === "p" || key === "escape") { if (key === "escape") setPaused(true); else togglePause(); }
+    if (key === " " || key === "enter") { if (!running && !gameOver) startGame(); else if (!paused) launchBall(); }
+    if (key === "r" && isPlaying()) { resetGame(); startGame(); }
   });
-  window.addEventListener("keyup", (e) => keys.delete(e.key));
-
-  btnStart?.addEventListener("click", () => {
-    if (gameOver) resetGame();
-    if (!running) startGame();
-    else if (paused) togglePause();
-    else startGame();
-  });
-  btnOverlay?.addEventListener("click", () => window.GG?.openOverlay?.());
-  btnChat?.addEventListener("click", () => window.GG?.openOverlay?.());
-  btnPause?.addEventListener("click", () => togglePause());
-  btnLaunch?.addEventListener("click", () => { ensureAudio(); launchBall(); });
+  window.addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
+  btnStart?.addEventListener("click", () => { if (gameOver) resetGame(); if (!running) startGame(); else if (paused) setPaused(false); });
+  function openOverlay() { if (running) setPaused(true); try { window.GG?.openOverlay?.(); } catch (_) {} }
+  btnOverlay?.addEventListener("click", openOverlay); btnChat?.addEventListener("click", openOverlay);
+  btnPause?.addEventListener("click", togglePause); btnLaunch?.addEventListener("click", launchBall);
   btnRestart?.addEventListener("click", () => { resetGame(); startGame(); });
-  btnSubmit?.addEventListener("click", () => { submitScore(); window.GG?.openOverlay?.(); });
+  btnSubmit?.addEventListener("click", () => { if (running) setPaused(true); submitScore(); openOverlay(); });
+  controlMode.addEventListener("change", () => { if (["relative", "direct"].includes(controlMode.value)) prefs.controlMode = controlMode.value; resetInput(); savePrefs(); syncSettings(); });
+  btnSound.addEventListener("click", () => { prefs.muted = !prefs.muted; savePrefs(); syncSettings(); });
 
   // ----------------------------
   // Power-ups
@@ -491,12 +476,12 @@
     if (!force && Math.random() > 0.18) return;
     const bag = ["W", "S", "M", "F", "K", "L"];
     const type = bag[Math.floor(Math.random() * bag.length)];
-    drops.push({ x, y, r: clamp(cw() * 0.025, 11, 15), vy: clamp(ch() * 0.22, 135, 205), type, spin: rand(0, Math.PI * 2) });
+    drops.push({ x, y, r: clamp(Math.min(cw() * .025, ch() * .045), 8, 15), vy: clamp(ch() * .22, 65, 205), type, spin: rand(0, Math.PI * 2) });
   }
 
   function applyPowerUp(type) {
     if (type === "W") {
-      paddle.widenUntil = now() + 10500;
+      paddle.widenUntil = playNow() + 10500;
       paddle.w = paddle.baseW * 1.48;
       toast("Wide paddle");
     } else if (type === "S") {
@@ -509,11 +494,11 @@
       spawnMultiBall();
       toast("Multi-ball");
     } else if (type === "F") {
-      fireballUntil = now() + 8500;
+      fireballUntil = playNow() + 8500;
       for (const b of balls) b.fire = true;
       toast("Fire ball");
     } else if (type === "K") {
-      stickyUntil = now() + 8000;
+      stickyUntil = playNow() + 8000;
       toast("Sticky paddle");
     }
     score += 75;
@@ -525,7 +510,7 @@
     const active = balls.find((b) => !b.stuck) || balls[0] || makeBall(true);
     while (balls.length < 3) {
       const nb = makeBall(false, active.x, active.y);
-      const sp = Math.max(360, Math.hypot(active.vx, active.vy) || baseBallSpeed());
+      const sp = Math.max(360 * physicsScale(ch()), Math.hypot(active.vx, active.vy) || baseBallSpeed());
       const angle = rand(-0.95, -0.25) * Math.PI;
       nb.vx = Math.cos(angle) * sp;
       nb.vy = Math.sin(angle) * sp;
@@ -545,28 +530,30 @@
   }
 
   function reflectBall(ball, prevX, prevY, rect) {
-    const wasLeft = prevX < rect.x;
-    const wasRight = prevX > rect.x + rect.w;
-    const wasAbove = prevY < rect.y;
-    const wasBelow = prevY > rect.y + rect.h;
-    if ((wasLeft && ball.vx > 0) || (wasRight && ball.vx < 0)) { ball.vx *= -1; ball.x += ball.vx > 0 ? 1 : -1; return; }
-    if ((wasAbove && ball.vy > 0) || (wasBelow && ball.vy < 0)) { ball.vy *= -1; ball.y += ball.vy > 0 ? 1 : -1; return; }
-    if (Math.abs(ball.vx) > Math.abs(ball.vy)) ball.vx *= -1;
-    else ball.vy *= -1;
+    if (prevY + ball.r <= rect.y && ball.vy > 0) { ball.vy = -Math.abs(ball.vy); ball.y = rect.y - ball.r - .01; }
+    else if (prevY - ball.r >= rect.y + rect.h && ball.vy < 0) { ball.vy = Math.abs(ball.vy); ball.y = rect.y + rect.h + ball.r + .01; }
+    else if (prevX + ball.r <= rect.x && ball.vx > 0) { ball.vx = -Math.abs(ball.vx); ball.x = rect.x - ball.r - .01; }
+    else if (prevX - ball.r >= rect.x + rect.w && ball.vx < 0) { ball.vx = Math.abs(ball.vx); ball.x = rect.x + rect.w + ball.r + .01; }
+    else {
+      const sides = [{d:Math.abs(ball.y + ball.r - rect.y),axis:'y',pos:rect.y - ball.r - .01,sign:-1},{d:Math.abs(rect.y + rect.h - ball.y + ball.r),axis:'y',pos:rect.y + rect.h + ball.r + .01,sign:1},{d:Math.abs(ball.x + ball.r - rect.x),axis:'x',pos:rect.x - ball.r - .01,sign:-1},{d:Math.abs(rect.x + rect.w - ball.x + ball.r),axis:'x',pos:rect.x + rect.w + ball.r + .01,sign:1}];
+      sides.sort((a,b)=>a.d-b.d); const hit=sides[0]; ball[hit.axis]=hit.pos; ball['v'+hit.axis]=Math.abs(ball['v'+hit.axis])*hit.sign;
+    }
   }
 
   function normalizeBallSpeed(ball) {
     if (ball.stuck) return;
-    const minSp = 310;
-    const maxSp = Math.min(760, baseBallSpeed() + 150);
+    const minSp = 310 * physicsScale(ch());
+    const maxSp = Math.min(760 * physicsScale(ch()), baseBallSpeed() + 150 * physicsScale(ch()));
     const len = Math.hypot(ball.vx, ball.vy) || 1;
     const sp = clamp(len, minSp, maxSp);
     ball.vx = (ball.vx / len) * sp;
     ball.vy = (ball.vy / len) * sp;
+    if (Math.abs(ball.vy) < sp * .18) { ball.vy = (ball.vy < 0 ? -1 : 1) * sp * .18; ball.vx = (ball.vx < 0 ? -1 : 1) * Math.sqrt(sp * sp - ball.vy * ball.vy); }
   }
 
   function addParticles(x, y, color, count = 8, power = 130) {
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < (reducedMotion ? Math.min(3, count) : count); i++) {
+      if (particles.length >= 220) particles.shift();
       particles.push({ x, y, vx: rand(-power, power), vy: rand(-power * .9, power * .55), r: rand(1.5, 4), t: rand(.35, .75), color });
     }
   }
@@ -578,11 +565,12 @@
     const mult = 1 + Math.min(2.2, (comboCount - 1) * 0.12);
     const award = Math.floor(points * mult);
     score += award;
-    if (label) toasts.push({ msg: comboCount > 1 ? `${label} x${comboCount}` : label, t: 1.1, life: 1.1 });
+    if (label) toast(comboCount > 1 ? `${label} x${comboCount}` : label, 1.1);
     floatingScore(x, y, `+${award}`);
   }
 
   function floatingScore(x, y, text) {
+    if (particles.length >= 220) particles.shift();
     particles.push({ x, y, vx: 0, vy: -36, r: 0, t: .85, text, color: "rgba(255,255,255,.95)" });
   }
 
@@ -622,38 +610,26 @@
   // Loop
   // ----------------------------
   function loop(t) {
-    if (GG_PAUSED) {
-      lastTick = t;
-      draw(0);
-      requestAnimationFrame(loop);
-      return;
-    }
-    const dt = Math.min(0.033, (t - lastTick) / 1000 || 0);
-    lastTick = t;
-    step(dt);
-    draw(dt);
-    requestAnimationFrame(loop);
+    const dt = clamp((t - lastTick) / 1000 || 0, 0, .1); lastTick = t;
+    if (isPlaying()) { accumulator += dt; while (accumulator >= 1 / 120) { accumulator -= 1 / 120; step(1 / 120); if (!isPlaying()) { accumulator = 0; break; } } } else accumulator = 0;
+    draw(); requestAnimationFrame(loop);
   }
 
   function step(dt) {
+    if (!isPlaying()) return;
+    playTime += dt * 1000;
     if (shake > 0) shake = Math.max(0, shake - 34 * dt);
     if (comboTimer > 0) comboTimer = Math.max(0, comboTimer - dt);
     else comboCount = 0;
 
-    if (paddle.widenUntil && now() > paddle.widenUntil) { paddle.widenUntil = 0; paddle.w = paddle.baseW; toast("Normal paddle"); }
-    if (fireballUntil && now() > fireballUntil) { fireballUntil = 0; for (const b of balls) b.fire = false; toast("Fire ended"); }
-    if (stickyUntil && now() > stickyUntil) stickyUntil = 0;
+    if (paddle.widenUntil && playNow() >= paddle.widenUntil) { paddle.widenUntil = 0; paddle.w = paddle.baseW; toast("Normal paddle"); }
+    if (fireballUntil && playNow() >= fireballUntil) { fireballUntil = 0; for (const b of balls) b.fire = false; toast("Fire ended"); }
+    if (stickyUntil && playNow() >= stickyUntil) stickyUntil = 0;
 
     movePaddle(dt);
     updateDrops(dt);
     updateParticles(dt);
     updateToasts(dt);
-
-    if (!running || paused || gameOver) {
-      for (const b of balls) if (b.stuck) attachBallToPaddle(b);
-      updateHud();
-      return;
-    }
 
     for (let i = balls.length - 1; i >= 0; i--) updateBall(balls[i], i, dt);
 
@@ -676,16 +652,18 @@
   function movePaddle(dt) {
     if (pointer.dragging) paddle.targetX = pointer.x;
     let ax = 0;
-    if (keys.has("ArrowLeft") || keys.has("a") || keys.has("A")) ax -= 1;
-    if (keys.has("ArrowRight") || keys.has("d") || keys.has("D")) ax += 1;
-    if (ax) paddle.targetX = paddle.x + ax * 620 * dt;
-    paddle.x += (paddle.targetX - paddle.x) * clamp(18 * dt, 0, 1);
+    if (keys.has("arrowleft") || keys.has("a")) ax -= 1;
+    if (keys.has("arrowright") || keys.has("d")) ax += 1;
+    if (ax) { paddle.x += ax * clamp(cw() * 1.6, 460, 900) * dt; paddle.targetX = paddle.x; }
+    else paddle.x += (paddle.targetX - paddle.x) * (1 - Math.exp(-26 * dt));
     paddle.x = clamp(paddle.x, paddle.w / 2 + 8, cw() - paddle.w / 2 - 8);
+    paddle.targetX = clamp(paddle.targetX, paddle.w / 2 + 8, cw() - paddle.w / 2 - 8);
     for (const b of balls) if (b.stuck) attachBallToPaddle(b);
   }
 
   function updateBall(ball, ballIndex, dt) {
     if (ball.stuck) return;
+    for (const br of ball.touching) if (!bricks.includes(br) || !circleRectHit(ball.x, ball.y, ball.r, br.x, br.y, br.w, br.h)) ball.touching.delete(br);
     ball.trail.push({ x: ball.x, y: ball.y, r: ball.r, t: .22 });
     if (ball.trail.length > 10) ball.trail.shift();
 
@@ -701,9 +679,9 @@
 
     const pr = { x: paddle.x - paddle.w / 2, y: paddle.y - paddle.h / 2, w: paddle.w, h: paddle.h };
     if (circleRectHit(ball.x, ball.y, ball.r, pr.x, pr.y, pr.w, pr.h) && ball.vy > 0) {
-      if (stickyUntil > now()) { attachBallToPaddle(ball); sfx("paddle"); return; }
+      if (stickyUntil > playNow()) { attachBallToPaddle(ball); sfx("paddle"); return; }
       const hit = clamp((ball.x - paddle.x) / (paddle.w / 2), -1, 1);
-      const sp = Math.max(330, Math.hypot(ball.vx, ball.vy));
+      const sp = Math.max(330 * physicsScale(ch()), Math.hypot(ball.vx, ball.vy));
       const angle = hit * (Math.PI * 0.39);
       ball.vx = Math.sin(angle) * sp;
       ball.vy = -Math.cos(angle) * sp;
@@ -713,7 +691,8 @@
 
     for (let i = 0; i < bricks.length; i++) {
       const b = bricks[i];
-      if (!circleRectHit(ball.x, ball.y, ball.r, b.x, b.y, b.w, b.h)) continue;
+      if (!circleRectHit(ball.x, ball.y, ball.r, b.x, b.y, b.w, b.h) || ball.touching.has(b)) continue;
+      ball.touching.add(b);
       if (!ball.fire) reflectBall(ball, prevX, prevY, b);
       b.hp -= ball.fire ? 2 : 1;
       b.pulse = 0;
@@ -764,7 +743,7 @@
     ctx.clearRect(0, 0, w, h);
 
     ctx.save();
-    if (shake > 0) ctx.translate(rand(-shake, shake), rand(-shake, shake));
+    if (!reducedMotion && shake > 0) ctx.translate(rand(-shake, shake), rand(-shake, shake));
 
     drawBackground(w, h);
     drawBricks();
@@ -772,9 +751,6 @@
     drawPaddle();
     drawBalls();
     drawParticles();
-    drawCombo();
-    drawToasts();
-    drawStuckHint();
     ctx.restore();
 
     if (paused || GG_PAUSED) drawPauseVeil(w, h);
@@ -788,7 +764,7 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
 
-    const t = now() / 1000;
+    const t = reducedMotion ? 0 : playNow() / 1000;
     ctx.save();
     ctx.globalAlpha = .28;
     for (let i = 0; i < 24; i++) {
@@ -838,9 +814,9 @@
       ctx.shadowBlur = 0;
       ctx.globalAlpha = .22;
       ctx.fillStyle = "rgba(255,255,255,.95)";
-      ctx.beginPath(); ctx.roundRect(b.x + 3, b.y + 3, b.w - 6, Math.max(4, b.h * .35), r * .7); ctx.fill();
+      ctx.beginPath(); ctx.roundRect(b.x + 2, b.y + Math.min(2, b.h * .15), b.w - 4, Math.max(1, b.h * .25), r * .7); ctx.fill();
       ctx.globalAlpha = 1;
-      if (b.hp > 1) {
+      if (b.hp > 1 && b.h >= 14 && b.w >= 30) {
         ctx.fillStyle = "rgba(0,0,0,.52)";
         ctx.beginPath(); ctx.roundRect(b.x + b.w - 22, b.y + 4, 16, 12, 6); ctx.fill();
         ctx.fillStyle = "rgba(255,255,255,.9)";
@@ -849,14 +825,15 @@
         ctx.textBaseline = "middle";
         ctx.fillText(String(b.hp), b.x + b.w - 14, b.y + 10.5);
       }
-      if (b.type === "explode") {
+      if (b.hp > 1 && b.h < 14) { ctx.fillStyle = "#fff"; for (let i = 0; i < Math.min(5, b.hp); i++) ctx.fillRect(b.x + 3 + i * 4, b.y + b.h / 2 - 1, 2, 2); }
+      if (b.type === "explode" && b.h >= 12) {
         ctx.fillStyle = "rgba(255,255,255,.78)";
         ctx.font = "900 13px system-ui";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("✦", b.x + b.w / 2, b.y + b.h / 2 + 1);
       }
-      if (b.type === "bonus") {
+      if (b.type === "bonus" && b.h >= 12) {
         ctx.fillStyle = "rgba(0,0,0,.55)";
         ctx.font = "900 12px system-ui";
         ctx.textAlign = "center";
@@ -883,7 +860,7 @@
     ctx.globalAlpha = .38;
     ctx.fillStyle = "rgba(255,255,255,.95)";
     ctx.beginPath(); ctx.roundRect(x + 5, y + 3, paddle.w - 10, Math.max(4, paddle.h * .3), 999); ctx.fill();
-    if (stickyUntil > now()) {
+    if (stickyUntil > playNow()) {
       ctx.globalAlpha = .9;
       ctx.strokeStyle = "rgba(250,204,21,.95)";
       ctx.lineWidth = 2;
@@ -959,49 +936,6 @@
     }
   }
 
-  function drawCombo() {
-    if (comboCount <= 1) return;
-    ctx.save();
-    ctx.globalAlpha = .92;
-    ctx.fillStyle = "rgba(0,0,0,.34)";
-    ctx.beginPath(); ctx.roundRect(cw() / 2 - 58, 10, 116, 28, 14); ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,.96)";
-    ctx.font = "1000 14px system-ui";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(`COMBO x${comboCount}`, cw() / 2, 24);
-    ctx.restore();
-  }
-
-  function drawToasts() {
-    if (!toasts.length) return;
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.font = "900 14px system-ui";
-    let y = 46;
-    for (const t0 of toasts.slice(-4)) {
-      const a = clamp(t0.t / t0.life, 0, 1);
-      ctx.globalAlpha = .25 + a * .75;
-      ctx.fillStyle = "rgba(255,255,255,.94)";
-      ctx.fillText(t0.msg, cw() / 2, y);
-      y += 19;
-    }
-    ctx.restore();
-  }
-
-  function drawStuckHint() {
-    if (!balls.some((b) => b.stuck) || !running || paused || gameOver) return;
-    ctx.save();
-    ctx.globalAlpha = .76;
-    ctx.fillStyle = "rgba(255,255,255,.9)";
-    ctx.font = "900 13px system-ui";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Tap to launch • Drag anywhere to move", cw() / 2, ch() * .64);
-    ctx.restore();
-  }
-
   function drawPauseVeil(w, h) {
     ctx.save();
     ctx.fillStyle = "rgba(0,0,0,.20)";
@@ -1015,5 +949,6 @@
   loadMeta();
   resize();
   resetGame();
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(queueResize).observe(canvas.parentElement);
   requestAnimationFrame(loop);
 })();
