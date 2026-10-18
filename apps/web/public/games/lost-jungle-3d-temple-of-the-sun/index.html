@@ -2,17 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#12321f" />
-  <title>Lost Jungle 2D: Temple of the Sun</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <title>Lost Jungle: Temple of the Sun</title>
+  <link rel="stylesheet" href="./styles.css?v=2.4" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
   <div class="game-shell">
+
+
+    <main class="play-wrap">
+      <section class="canvas-shell">
+        <canvas id="gameCanvas" width="1280" height="720" tabindex="0" aria-label="Lost Jungle game canvas"></canvas>
     <header class="topbar">
       <div>
-        <div class="brand">Lost Jungle 2D</div>
+        <div class="brand">Lost Jungle</div>
         <div class="tagline">Temple of the Sun</div>
       </div>
 
@@ -26,13 +31,7 @@
       </div>
     </header>
 
-    <main class="play-wrap">
-      <section class="canvas-shell">
-        <canvas id="gameCanvas" width="1280" height="720" aria-label="Lost Jungle 2D game canvas"></canvas>
-
         <div class="floating-actions">
-          <button id="submitScoreBtn">Submit</button>
-          <button id="mapBtn">Map</button>
           <button id="muteBtn">Sound On</button>
           <button id="pauseBtn">Pause</button>
         </div>
@@ -51,36 +50,45 @@
 
         <div class="overlay active" id="startOverlay">
           <div class="overlay-card hero-card">
-            <h1>Lost Jungle 2D</h1>
+            <h1>Lost Jungle</h1>
             <h2>Temple of the Sun</h2>
-            <p>Explore jungle ruins, cross rivers, dodge traps, unlock gates, collect sun relics, and defeat ancient guardians in a 2D side-scrolling browser adventure.</p>
+            <p>Follow Ari into a fading jungle to find their missing mentor. Recover five Sun Seals across 25 long routes, survive ancient trials, and return the light to the valley.</p>
             <div class="feature-row">
-              <span>10 Levels</span>
+              <span>25 Story Levels</span>
               <span>Jungle Ruins</span>
               <span>Keys + Gates</span>
               <span>Pressure Plates</span>
               <span>Boulder Chase</span>
               <span>Bosses</span>
               <span>Mobile Controls</span>
-              <span>Score Bridge</span>
+              <span>Checkpoint Beacons</span>
             </div>
             <div class="action-row">
-              <button class="primary" id="playBtn">Start Expedition</button>
+              <button class="primary" id="playBtn" disabled>Loading expedition…</button>
               <button id="howBtn">How to Play</button>
             </div>
           </div>
         </div>
 
+        <div class="overlay" id="pauseOverlay" role="dialog" aria-modal="true" aria-label="Expedition paused">
+          <div class="overlay-card"><h2>Expedition paused</h2><p>Take a moment to plan the next crossing. Your current checkpoint stays active during this mission.</p>
+            <p>Best score: <b id="bestValue">0</b> · Sun Seals restored: <b id="sealCount">0 / 5</b></p>
+            <div class="action-row"><button id="resumeBtn" class="primary">Resume Expedition</button><button id="pauseMapBtn">Expedition Map</button><button id="submitScoreBtn">Submit Score</button></div>
+          </div>
+        </div>
+        <div class="challenge-card-v2" id="challengeCard"><strong>Expedition Challenge</strong><p id="challengeText"></p><div class="bar"><span id="challengeBar"></span></div><small id="challengeMeta"></small></div>
         <div class="overlay" id="helpOverlay">
           <div class="overlay-card">
             <h2>How to Play</h2>
             <ul>
-              <li>Move forward through the jungle path and collect Sun Relics.</li>
+              <li>Move with A/D or the arrow keys. On phones, hold either direction while using Jump, Dash or Shoot.</li>
               <li>Collect keys to open locked gates.</li>
               <li>Step on glowing pressure plates to unlock hidden bridges.</li>
-              <li>Use Jump, Dash, and Torch powers to survive traps and enemies.</li>
+              <li>Space / Up / W jumps, Shift / J dashes, and K / F shoots. Hold Shoot on phones for repeated shots while ammo lasts.</li>
+              <li>Checkpoint flags offer safe recovery after a hit or fall. Supplies and optional ledges reward exploration.</li>
               <li>Dodge snakes, spiders, bats, stone monkeys, rolling boulders, spikes, and darts.</li>
-              <li>Defeat boss guardians at key temple stages.</li>
+              <li>Watch the glow before an enemy attack. Jump onto small enemies, dash through them or use relic shots.</li>
+              <li>P / Escape pauses; M opens the map. Finish each route to unlock the next. Defeat guardians to restore the Sun Seals.</li>
             </ul>
             <button class="primary" id="closeHelpBtn">Close</button>
           </div>
@@ -131,20 +139,21 @@
             </div>
           </div>
         </div>
+        <nav class="controls" aria-label="Touch controls">
+          <div class="move-pad"><button id="leftBtn" aria-label="Move back">◀</button><button id="rightBtn" aria-label="Move forward">▶</button></div>
+          <div class="utility-pad"><button id="mapBtn">Map</button></div>
+          <div class="action-pad"><button id="shootBtn">Shoot</button><button id="dashBtn">Dash</button><button id="jumpBtn">Jump</button></div>
+        </nav>
       </section>
 
-      <nav class="controls">
-        <button id="leftBtn">Left</button>
-        <button id="forwardBtn">Forward</button>
-        <button id="jumpBtn">Jump</button>
-        <button id="dashBtn">Dash</button>
-        <button id="backBtn">Back</button>
-        <button id="rightBtn">Right</button>
-      </nav>
+
     </main>
   </div>
 
-  <script src="./game.js"></script>
+  <script src="./jungle-campaign.js?v=2.4"></script>
+  <script src="./jungle-animation-data.js?v=2.4"></script>
+  <script src="./jungle-animation.js?v=2.4"></script>
+  <script src="./game.js?v=2.4"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

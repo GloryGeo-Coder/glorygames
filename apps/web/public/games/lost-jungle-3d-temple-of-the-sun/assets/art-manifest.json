@@ -1,0 +1,261 @@
+{
+  "assets": [
+    {
+      "id": "explorer",
+      "prompt": "Use case: identity-preserve. Edit/derive an animation sprite atlas from the supplied explorer reference, preserving EXACT character identity: friendly block-shaped head with two green square eyes, tan safari hat with green band and gold sun badge, green explorer outfit, yellow scarf, brown boots and small brown backpack, sun-tipped walking staff. Make a production 2D side-scroller sprite sheet on actual transparent background, 1536 by 1024 landscape, EXACTLY 12 separate complete full-body figures in a strict 4-column by 3-row evenly spaced grid. Every figure faces RIGHT in readable near-side profile, same camera and body proportions, consistent hat and clothes. Row 1: idle relaxed, idle breathing, run contact left leg forward, run passing. Row 2: run airborne stride, run right contact, run passing opposite, run airborne opposite. Row 3: jumping up knees bent, falling arms lifted, casting a small relic shot with staff extended, recoiling from a hit. Real changes in arm and leg poses, not copied figures. Feet baselines consistent within each row. Each figure including hat/staff completely inside its own cell with at least 25 pixels transparent gutter on every cell edge. Staff remains connected to the hand. High quality stylized toy-like fantasy game rendering matching reference, clean crisp contours and warm materials, consistent lighting. No floor, shadows detached from feet, text, labels, borders, numbers, checkerboard or scenery.",
+      "transparent": true,
+      "mode": "built-in",
+      "references": [
+        "player-explorer.png"
+      ],
+      "file": "assets/animation/explorer.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2271049,
+      "sha256": "8dad654fbfb3f9d0c77286f2309774f80247f93348ec92457ea606b0def05ddf"
+    },
+    {
+      "id": "bg11",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen 2D jungle platformer background, cinematic detailed painted game environment, 16:9 opaque wide image. A mist-covered ancient jungle aqueduct at dawn, long moss-covered carved stone water channels crossing a lush fern ravine, small cascades and turquoise pools, vines, warm gold sun emblems, distant forest canopy. Keep the same rich emerald foliage, ancient fictional sun-temple stonework, soft golden volumetric sunlight, atmospheric depth and polished adventure-game illustration as Lost Jungle: Temple of the Sun. View is from the side of the valley, scenery fills every edge; foreground is decorative, playable platforms will be drawn separately. Avoid central square panels, any border, lettering, logos, watermark, characters, creatures, HUD or arrows. Detailed yet calm lower middle area behind the player; retain depth across a wide vista.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-11-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3431396,
+      "sha256": "b911f8398a520ac53c932a183a3a1eb84c01ce6d0b9caa5e59f54bcafc917494"
+    },
+    {
+      "id": "bg12",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen opaque wide 16:9 background for a 2D jungle platformer. The Orchid Gorge: a deep verdant jungle canyon covered in purple and white orchids, giant roots, ferns and tangled hanging vines. Ancient mossy stone sun shrines embedded in canyon walls, turquoise river far below, distant rope crossings, warm sunlight cutting through humid golden mist. Rich emerald jungle, detailed carved fictional sun-temple ruins, painterly cinematic adventure-game rendering, appealing high quality textures and atmospheric layers. Side-on wide vista fills all edges with no border or square inset. Scenery only, playable platforms are separate. Avoid text, characters, enemies, HUD, arrows, logos or watermarks. Maintain readable uncluttered lower middle space.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-12-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3409573,
+      "sha256": "03e60edc508edf78c99dda242dbc9a85a3915f3eb23f8dad36cf16429cb9e2c1"
+    },
+    {
+      "id": "wildlife-a",
+      "prompt": "Use case: stylized-concept. Production animated enemy sprite atlas for Lost Jungle, actual transparent background (alpha), 1536x1024 landscape, EXACTLY FOUR COLUMNS and THREE ROWS of evenly spaced separate figures. Each cell contains exactly one COMPLETE creature facing RIGHT in a readable side profile, same proportions and lighting across its row. Keep all body parts and effects INSIDE each cell, at least 25px fully transparent gutter on every edge. No background, floor, detached ground shadows, glow haze, text, labels, borders or checkerboard. Polished colorful toy-like stylized fantasy rendering, chunky readable silhouettes, emerald/gold/stone jewel palette matching a block-shaped safari explorer. Four distinct ANIMATED POSES in each row: neutral/patrol contact, opposite patrol contact with limbs changed, visibly braced attack wind-up, fully extended attack. Avoid repeating the same pose. Row 1 all FOUR emerald-and-gold cobra snakes: compact coiled base, moving neck/tail changes during slither, coiling back to warn, lunging forward with open fangs. Row 2 all FOUR green golden-eyed rainforest frogs: squat resting, higher hopping with legs tucked, crouch warning, extended spring leap. Row 3 all FOUR small purple/teal cave bats: wings fully raised, wings fully lowered, wings folded bracing, wings swept back in a dive. All wings and tails connected to the body.",
+      "transparent": true,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/animation/wildlife-a.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2275796,
+      "sha256": "c041e47b5b8c172e243ac76bc8adacabb91e45de58cfc155404aece6cb3673ba"
+    },
+    {
+      "id": "wildlife-b",
+      "prompt": "Use case: stylized-concept. Production animated enemy sprite atlas for Lost Jungle, actual transparent background (alpha), 1536x1024 landscape, EXACTLY FOUR COLUMNS and THREE ROWS of evenly spaced separate figures. Each cell contains exactly one COMPLETE creature facing RIGHT in a readable side profile, same proportions and lighting across its row. Keep all body parts and effects INSIDE each cell, at least 25px fully transparent gutter on every edge. No background, floor, detached ground shadows, glow haze, text, labels, borders or checkerboard. Polished colorful toy-like stylized fantasy rendering, chunky readable silhouettes, emerald/gold/stone jewel palette matching a block-shaped safari explorer. Four distinct ANIMATED POSES in each row: neutral/patrol contact, opposite patrol contact with limbs changed, visibly braced attack wind-up, fully extended attack. Avoid repeating the same pose. Row 1 all FOUR violet and jade jungle spiders, 8 legs connected to a compact body: alternating leg positions, lifted legs, crouched preparation, stretched forward leap. Row 2 all FOUR stocky brown jungle boars with small gold tusks and leaf-green shoulder markings: left foreleg forward, right foreleg forward, braced head down, charging with legs stretched. Row 3 all FOUR small carved stone monkeys with moss patches and gold sun amulets: walking left-arm forward, opposite gait, drawing arm back with one attached stone, throwing with that arm extended. Consistent individual identity within each row.",
+      "transparent": true,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/animation/wildlife-b.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2413844,
+      "sha256": "84fea4ff32d61b8ade71c481d2f3a9ea7ba479fa416322828b0338d4a6b65fd2"
+    },
+    {
+      "id": "bg13",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, emerald jungle foliage, moss-covered ancient fictional sun-temple stonework with gold sun motifs, turquoise water, atmospheric depth and warm directional light. Side-on wide environmental vista fills all image edges; calm readable lower middle area, playable platforms drawn separately. No characters, creatures, text, numbers, HUD, borders, inset panels, logos, signatures or watermarks. Canopy Settlement: abandoned tree houses built into colossal rainforest trees, vine-lashed wooden walkways high above fern valleys, small mossy sun shrines, hanging amber lanterns, soft late-afternoon sunlight through layered leaves. Ancient wooden settlement integrated into lush greenery, distant waterfall, cozy but mysterious.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-13-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3520577,
+      "sha256": "8864ed27a10fc3316f769e16b484dbf98a24ca39ed28142eece1f37b1f346902"
+    },
+    {
+      "id": "bg14",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, emerald jungle foliage, moss-covered ancient fictional sun-temple stonework with gold sun motifs, turquoise water, atmospheric depth and warm directional light. Side-on wide environmental vista fills all image edges; calm readable lower middle area, playable platforms drawn separately. No characters, creatures, text, numbers, HUD, borders, inset panels, logos, signatures or watermarks. Moonlit Rootways: enormous tangled tree roots forming arches over ancient carved jungle ruins, blue moonlight and subtle bioluminescent turquoise mushrooms, emerald moss and scattered fireflies, distant hidden observatory silhouette above a misty canopy. Lush mysterious blue-green night scene with soft golden sun relic motifs in the stone. Keep shapes readable despite night.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-14-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3317204,
+      "sha256": "e510c7acfdd80e64a3bae062cd80ee0ce7e2850fd3562b5ce3b523b4b9c439d0"
+    },
+    {
+      "id": "bg15",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, emerald jungle foliage, moss-covered ancient fictional sun-temple stonework with gold sun motifs, turquoise water, atmospheric depth and warm directional light. Side-on wide environmental vista fills all image edges; calm readable lower middle area, playable platforms drawn separately. No characters, creatures, text, numbers, HUD, borders, inset panels, logos, signatures or watermarks. Canopy Observatory: ancient circular stone astronomical observatory and golden sun lens among huge jungle trees, concentric carved terraces with jade inlays, rope bridges over distant cloud forest, magnificent golden-hour sky beyond, shafts of sunlight illuminating suspended stone rings, lush ferns and orchids.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-15-expedition.png",
+      "width": 1672,
+      "height": 940,
+      "bytes": 3640655,
+      "sha256": "a29a69c405f7ee65cbe6f18b0cbf0a413a1c508314922e5333f1bd9ea98f2905"
+    },
+    {
+      "id": "temple",
+      "prompt": "Use case: stylized-concept. Production animation atlas, true transparent background (alpha), 1536x1024 landscape. EXACTLY 12 full figures in a strict FOUR-column THREE-row grid; each row contains the same character in FOUR distinct poses. Every character faces RIGHT in a clear near-side profile. Keep ALL body parts fully inside each cell with at least 25px transparent gutter on every side. Four poses per row: relaxed patrol, opposite limb/wing patrol phase, braced charging warning, fully extended attacking pose. Clean bold contours and polished chunky toy-like fantasy materials, gold/jade/moss/stone colors matching Lost Jungle's block-shaped safari explorer. No text, labels, frame borders, floor, background, checkerboard, detached shadows or haze. Row 1: four low-slung armored jade-and-gold beetle crawlers, 6 legs, heavy segmented stone carapace, alternating feet, hunched warning, surging forward. Row 2: four golden/emerald jungle sun wasps, wing positions visibly up/down, wings flaring in warning, body pointed forward for firing; wings attached to bodies. Row 3: four stout carved stone temple sentries, simple blocky humanoid bodies, glowing turquoise eye slit and circular golden sun chest, short heavy arms: idle standing, stepping with other arm raised, chest/arms drawn inward charging, both arms thrust forward. Same identity within each row.",
+      "transparent": true,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/animation/temple.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2437335,
+      "sha256": "92f1d661895293b255f9ce197fde701b5c9753b5f03b5b307f230edf49c65391"
+    },
+    {
+      "id": "guardians",
+      "prompt": "Use case: stylized-concept. Production animation atlas, true transparent background (alpha), 1536x1024 landscape. EXACTLY 12 full figures in a strict FOUR-column THREE-row grid; each row contains the same character in FOUR distinct poses. Every character faces RIGHT in a clear near-side profile. Keep ALL body parts fully inside each cell with at least 25px transparent gutter on every side. Four poses per row: relaxed patrol, opposite limb/wing patrol phase, braced charging warning, fully extended attacking pose. Clean bold contours and polished chunky toy-like fantasy materials, gold/jade/moss/stone colors matching Lost Jungle's block-shaped safari explorer. No text, labels, frame borders, floor, background, checkerboard, detached shadows or haze. Row 1: four Monkey King guardians, powerful moss-covered carved stone ape with gold sun crown, jade eyes and short staff: walking, opposite foot forward, staff pulled back warning, staff thrust forward attack. Row 2: four Spider Queen guardians, large royal violet/jade spider with gold crown and turquoise abdomen, 8 connected legs: alternating leg poses, body raised in warning, legs thrust forward attacking. Row 3: four Sun Guardian golems, broad carved sandstone humanoid with golden sun disk torso and jade eyes, blocky fists and emerald moss: relaxed, opposite walking stance, arms drawn back charging sun power, arms extended forward attack. Clear changes of limbs, stable readable silhouettes.",
+      "transparent": true,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/animation/guardians.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2668456,
+      "sha256": "3d1d6598cefa4e5d301994e23b47da3c93c4e176e18d81878b7a78ee4daf6f49"
+    },
+    {
+      "id": "bg16",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, emerald jungle foliage, mossy ancient fictional sun-temple stonework with gold sun motifs and jade inlays, atmospheric depth and directional light. Side-on environmental vista fills all edges, with calm readable lower middle area; playable platforms drawn separately. No characters, creatures, text, labels, HUD, border, inset panel, signature, logo or watermark. Mossbound Archives: a forgotten open-sided jungle library of monumental stone tablets and carved sun columns, shelves of weathered stone records overtaken by emerald ferns and thick tree roots, jade light in cracks, dusty golden shafts from a roof opening, a small still turquoise reflecting pool, deep layered halls receding into the rainforest. Mysterious but readable.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-16-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3547975,
+      "sha256": "d8f97a3bbacba29f14da53a2a9d2c8c41115165fa77779ff8247bf9ccba94b0d"
+    },
+    {
+      "id": "bg17",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, emerald jungle foliage, mossy ancient fictional sun-temple stonework with gold sun motifs and jade inlays, atmospheric depth and directional light. Side-on environmental vista fills all edges, with calm readable lower middle area; playable platforms drawn separately. No characters, creatures, text, labels, HUD, border, inset panel, signature, logo or watermark. Thunderfall Ravine: a vast tropical waterfall canyon during a dramatic rainstorm, silver rain threads and thunderclouds, distant lightning behind ruined golden sun shrines, powerful turquoise waterfalls, mossy broken aqueduct arches and windblown jungle leaves, blue-green wet rock and small warm amber lights. Spectacular side-on panorama, not a top-down or first-person road.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-17-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3293464,
+      "sha256": "376958a7e5174553fdc0cc415dd58c0262afab382f46cb184da5d24a4b45a424"
+    },
+    {
+      "id": "bg18",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, emerald jungle foliage, mossy ancient fictional sun-temple stonework with gold sun motifs and jade inlays, atmospheric depth and directional light. Side-on environmental vista fills all edges, with calm readable lower middle area; playable platforms drawn separately. No characters, creatures, text, labels, HUD, border, inset panel, signature, logo or watermark. Amber Caverns: subterranean jungle grotto lined with giant translucent honey-amber crystal formations, old carved stone sun arches, twisted ancient roots descending from openings above, glowing turquoise mineral pools, soft golden internal crystal light with cool teal shadows, ancient magical ecology. Detailed luminous cave vista, keep central lower area calm.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-18-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3224192,
+      "sha256": "ea856d4f163d0663388c5f131ac94c7a1c18edf7e1d678821992c4cae683ccf6"
+    },
+    {
+      "id": "bg19",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, lush emerald foliage, ancient fictional sun-temple stone carvings with gold and jade details, atmospheric depth. Side-on wide environmental vista fills every edge, calm readable lower middle area, playable foreground platforms drawn separately. No characters, creatures, HUD, text, labels, borders, inset panels, logos, signatures or watermarks. Flooded Sanctuary: a beautiful ancient jungle sanctuary half submerged in luminous turquoise water, massive mossy arches and weathered sun columns rising from still pools, floating lotus leaves, cascades through broken stone channels, humid sunbeams through emerald canopy and distant ruined terraces. The storm has passed; hopeful cool greens and warm gold.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-19-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3486238,
+      "sha256": "01ba4c5fe1a4fe459e5386e3f492be49cc4b0dbadc42e331e1c702bfb31cb06b"
+    },
+    {
+      "id": "bg20",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, lush emerald foliage, ancient fictional sun-temple stone carvings with gold and jade details, atmospheric depth. Side-on wide environmental vista fills every edge, calm readable lower middle area, playable foreground platforms drawn separately. No characters, creatures, HUD, text, labels, borders, inset panels, logos, signatures or watermarks. Heartwood Shrine: a colossal ancient rainforest tree encircles a carved circular sun shrine in its roots, thick moss-covered roots arch like a cathedral, emerald ferns and orchids, warm amber lantern-like sun stones, a turquoise spring glows at the shrine's base, soft golden light pours through a high opening in the canopy. Welcoming sacred jungle refuge, no characters.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-20-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3606870,
+      "sha256": "8fe77c2ec19ef59c2383fa0c7e663c24fdbc6f83703b579c3745e120a7216d37"
+    },
+    {
+      "id": "bg21",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, lush emerald foliage, ancient fictional sun-temple stone carvings with gold and jade details, atmospheric depth. Side-on wide environmental vista fills every edge, calm readable lower middle area, playable foreground platforms drawn separately. No characters, creatures, HUD, text, labels, borders, inset panels, logos, signatures or watermarks. Ashen Causeway: ancient moss-edged basalt stone causeways crossing a volcanic jungle gorge, glowing orange lava far below, dense emerald forest still clinging to distant cliffs, gold sun reliefs on broken pillars, distant volcanic peak and amber smoke under a dusky blue sky. Epic readable adventure landscape, not apocalyptic wasteland; keep the jungle identity.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-21-expedition.png",
+      "width": 1672,
+      "height": 940,
+      "bytes": 3208560,
+      "sha256": "77fb40656c3b436a80b76942eab8d62bc4b093eca19fae9773510407ffff74e3"
+    },
+    {
+      "id": "bg22",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, lush emerald foliage, ancient fictional sun-temple stone carvings with gold and jade details, atmospheric depth. Side-on wide environmental vista fills every edge, calm readable lower middle area, playable foreground platforms drawn separately. No characters, creatures, HUD, text, labels, borders, inset panels, logos, signatures or watermarks. Sunken Sun Gardens: terraced ancient jungle gardens with tall carved sun obelisks, lush giant water lilies and ferns, flooded jade reflecting pools and golden morning sunlight, small waterfalls over mossy stone steps, orchids and bright new leaves reclaiming the terraces, distant sun temple on a high forested ridge. Hopeful and richly detailed.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-22-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3503846,
+      "sha256": "2c34f51e600162cd5693c13ed180632dd580214132b0da1f36a5daf65f6ce716"
+    },
+    {
+      "id": "bg23",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, lush emerald foliage, ancient fictional sun-temple stone carvings with gold and jade details, atmospheric depth. Side-on wide environmental vista fills every edge, calm readable lower middle area, playable foreground platforms drawn separately. No characters, creatures, HUD, text, labels, borders, inset panels, logos, signatures or watermarks. Serpent Crown Pass: high jungle canyon lined with enormous fictional carved stone serpent towers wearing gold sun crowns, moss and jungle vines, ancient narrow stone aqueduct bridges spanning misty ravines, emerald canopy below, turquoise distant falls, afternoon shafts of golden light beneath gathering indigo clouds. Spectacular wide adventure panorama with clear silhouettes.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-23-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3453049,
+      "sha256": "fb16bfec692da2d9c2e4c29f49605c6fd0e7d94a18dcfcf8ba4f2990fd4eda95"
+    },
+    {
+      "id": "bg24",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, lush emerald foliage and ancient fictional sun-temple stone carvings with gold/jade details, atmospheric depth. Side-on wide environmental vista fills all edges; calm readable lower middle area; playable platforms drawn separately. No characters, creatures, HUD, text, labels, borders, inset panels, logos, signatures or watermarks. Eclipse Stair: monumental carved jungle temple stairways on the side of a lush mountain, a dark solar eclipse surrounded by a brilliant golden corona above the distant sun temple, emerald vines and waterfalls, turquoise shadowed valleys, warm golden sun carvings and torch bowls along ancient stone terraces. Epic final ascent with readable dusk lighting, side view, not first-person gameplay.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-24-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3068668,
+      "sha256": "ea4d40d1958695be2c959844ef77259cdd646dd81909c7d16f2d3cf2f6c9263b"
+    },
+    {
+      "id": "bg25",
+      "prompt": "Use case: stylized-concept. Production opaque full-screen 16:9 wide background for a 2D jungle platformer. Rich detailed cinematic painted fantasy adventure, lush emerald foliage and ancient fictional sun-temple stone carvings with gold/jade details, atmospheric depth. Side-on wide environmental vista fills all edges; calm readable lower middle area; playable platforms drawn separately. No characters, creatures, HUD, text, labels, borders, inset panels, logos, signatures or watermarks. Temple of the Returning Sun: the inner courtyard of a magnificent sun temple opening toward a vast emerald jungle valley at sunrise, colossal gold sun disk at the centre of ancient jade-inlaid sandstone arches, five small sun medallions in the surrounding stonework, turquoise reflecting channels, waterfalls and lush vines, spectacular warm returning daylight. Sacred luminous final chamber with rich atmospheric painted detail.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [],
+      "file": "assets/backgrounds/level-25-expedition.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 3437354,
+      "sha256": "fbd2ef17e69fa2abbfba350e4d7ca81d80ec55badfe8b4823f52a289e702f211"
+    },
+    {
+      "id": "thumb",
+      "prompt": "Use case: precise-object-edit. Edit target: supplied Lost Jungle cover. Supporting reference: the supplied block-shaped safari explorer character. Create the UPDATED production 16:9 game thumbnail that accurately represents the game's TWO-DIMENSIONAL SIDE-SCROLLING PLATFORM gameplay. Retain rich lush emerald jungle, spectacular golden sun temple, waterfalls, vines and carved mossy sun ruins from the cover. Replace the realistic human explorer with the EXACT game character: friendly tan block-shaped head and square green eyes, tan safari hat with green band and sun badge, green outfit, yellow scarf, brown backpack/boots and gold sun-tipped staff. Show that character mid-jump from a mossy stone platform toward another side-view platform, with small floating gold sun relics, one emerald gold-trimmed snake and one small carved stone monkey on the path. Remove the jaguar, remove every '3D' label, do not imply first-person or 3D movement. Composition must read like a polished illustrated platform-adventure cover with a foreground side-scrolling path; character and enemies same toy-like stylized look as actual game sprites, environment richly painted. Exact title text: 'LOST JUNGLE' in large beautiful readable moss-green and gold carved lettering; exact subtitle: 'TEMPLE OF THE SUN'. No other words, numbers, UI, borders, logos, signatures or watermark. Preserve warm dramatic sunlight and premium detail. All figures entirely visible, strong mobile thumbnail readability.",
+      "transparent": false,
+      "mode": "built-in",
+      "references": [
+        "thumb (1)(3).png",
+        "player-explorer.png"
+      ],
+      "file": "thumb.png",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2982221,
+      "sha256": "878ec61c61ef40104ce687f12819da502d661861ae82e61aea7aae6fe826f7e8"
+    }
+  ]
+}

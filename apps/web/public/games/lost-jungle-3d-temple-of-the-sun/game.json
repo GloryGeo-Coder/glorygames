@@ -1,11 +1,11 @@
 {
-  "title": "Lost Jungle 2D: Temple of the Sun",
-  "slug": "lost-jungle-2d-temple-of-the-sun",
+  "title": "Lost Jungle: Temple of the Sun",
+  "slug": "lost-jungle-3d-temple-of-the-sun",
   "entry": "index.html",
   "thumbnail": "thumb.png",
-  "orientation": "landscape",
+  "orientation": "any",
   "category": "2D Adventure",
-  "description": "A mobile-first 2D jungle side-scrolling adventure converted from the 3D version while keeping the same assets, textures, backgrounds, items, sprites, bosses, sound effects, levels, challenges, and score bridge support.",
+  "description": "Follow Ari through 25 long jungle routes to find their missing mentor, recover the five Sun Seals and restore the Temple of the Sun. Animated enemies, checkpoint beacons, relic blasters, ancient traps and guardian battles reward careful exploration.",
   "tags": [
     "2d",
     "adventure",
@@ -24,23 +24,11 @@
   ],
   "controls": [
     {
-      "key": "A / Arrow Left",
-      "action": "Move left"
+      "key": "A / D / Left / Right",
+      "action": "Move back and forward"
     },
     {
-      "key": "D / Arrow Right",
-      "action": "Move right"
-    },
-    {
-      "key": "Forward mobile button",
-      "action": "Move right"
-    },
-    {
-      "key": "Back mobile button",
-      "action": "Move left"
-    },
-    {
-      "key": "Space",
+      "key": "Space / Up / W",
       "action": "Jump"
     },
     {
@@ -48,19 +36,27 @@
       "action": "Dash attack"
     },
     {
+      "key": "K / F",
+      "action": "Shoot relic bolts"
+    },
+    {
+      "key": "P / Escape",
+      "action": "Pause or resume"
+    },
+    {
       "key": "M",
       "action": "Open expedition map"
     },
     {
-      "key": "Mobile buttons",
-      "action": "Move / Jump / Dash"
+      "key": "Touch controls",
+      "action": "Hold movement and Shoot while tapping Jump or Dash"
     }
   ],
   "features": {
     "mobileFirst": true,
     "gameplay": "2D side-scrolling platform adventure",
-    "levels": 10,
-    "backgrounds": 10,
+    "levels": 25,
+    "backgrounds": 25,
     "platformTextures": 10,
     "storyCutscenes": true,
     "expeditionMap": true,
@@ -91,9 +87,14 @@
     ],
     "enemies": [
       "snake",
-      "spider",
+      "frog",
       "bat",
-      "stone monkey"
+      "spider",
+      "monkey",
+      "boar",
+      "crawler",
+      "wasp",
+      "sentry"
     ],
     "bosses": [
       "Monkey King",
@@ -108,8 +109,14 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "versionNotes": "Converted to a grounded 2D platformer while preserving the generated art assets and textures."
+    "animatedPoses": 60,
+    "animatedActors": 13,
+    "checkpointBeacons": true,
+    "progressiveDifficulty": true,
+    "fiveStoryChapters": true,
+    "multiTouch": true,
+    "safeAreaViewport": true,
+    "heldShooting": true
   },
-  "version": "2.3.0-reviewed",
-  "versionNotes": "Reviewed and cleaned package: folder renamed to 2D slug, missing enemy sprites present, generated item images integrated, lava logic corrected, and game.js validated."
+  "version": "2.4.0"
 }

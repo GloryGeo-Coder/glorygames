@@ -555,12 +555,12 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "category": "Adventure",
     "summary": "Cross a dangerous jungle, gather Sun Relics and keys, solve temple puzzles and face legendary guardians.",
     "overview": [
-      "Lost Jungle: Temple of the Sun is a side-scrolling jungle expedition presented with richly themed backgrounds and platform challenges. Players travel through ten stages, searching for Sun Relics, coins and keys while navigating gaps, water and lava hazards, traps and enemies.",
+      "Lost Jungle: Temple of the Sun is a side-scrolling jungle expedition presented with richly themed backgrounds and platform challenges. Players travel through 25 long stages, searching for Sun Relics, coins and keys while navigating gaps, water and lava hazards, traps and enemies.",
       "The exploration is more involved than a straight race to an exit. Locked gates and pressure-plate puzzles make collected items and observation important, while special powers such as dash, shield, torch and healing fruit offer different ways to approach difficult sections."
     ],
     "story": [
-      "The central premise is an expedition into a forgotten temple whose treasures are protected by hostile wildlife, ancient mechanisms and powerful guardians. The explorer follows a path through changing jungle environments toward the temple's deepest challenge.",
-      "Among the threats are snakes, spiders, bats and stone monkeys. Boss encounters include the Monkey King, Spider Queen and Sun Guardian, giving the adventure a clear sense of escalation as the player pushes toward the Sun Relics."
+      "Ari, an apprentice cartographer, follows the trail of their missing mentor Mara. Relic hunter Voss has broken the Sun Lattice, and five chapters take Ari across the jungle to recover its Sun Seals and return daylight to the valley.",
+      "Among the threats are snakes, frogs, spiders, bats, stone monkeys, boars, armored crawlers, sun wasps and stone sentries. Boss encounters include the Monkey King, Spider Queen and Sun Guardian, giving the adventure a clear sense of escalation as the player pushes toward the Sun Relics."
     ],
     "howToPlay": [
       "Move through the level while watching the ground, platforms and upcoming traps.",
@@ -572,10 +572,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "desktop": [
       "Use A/Left Arrow to move left and D/Right Arrow to move right.",
-      "Press Space to jump, Shift or J for a dash attack, and M to open the expedition map."
+      "Press Space/Up/W to jump, Shift or J for a dash attack, K/F to shoot, P/Escape to pause and M to open the expedition map."
     ],
     "mobile": [
-      "Use Back and Forward controls to move, with dedicated Jump and Dash buttons.",
+      "Hold either direction while tapping Jump or Dash. Hold Shoot for repeated relic bolts while ammunition lasts.",
       "Refer to the on-screen Map button when available."
     ],
     "systems": [
@@ -593,7 +593,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Explore ten jungle stages with distinctive backgrounds, expedition maps, story scenes and new challenges. Collect the items needed to open gates and continue toward the temple guardians.",
+      "Explore 25 long jungle stages across five story chapters, with distinctive backgrounds, expedition maps and new challenges. Checkpoint beacons offer safe recovery as you collect the items needed to open gates and restore the five Sun Seals.",
       "The side-scrolling adventure is built around careful platforming, relic collection, puzzles and timed encounters. Each cleared section opens the way to another part of the expedition."
     ],
     "tips": [
