@@ -1,0 +1,35 @@
+name: City Quest
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/city-quest-rise-of-the-guardian/**'
+      - 'apps/web/scripts/city-quest*'
+      - 'apps/web/scripts/helpers/city-*.cjs'
+      - 'apps/web/scripts/helpers/kasi-png.cjs'
+      - '.github/workflows/city-quest.yml'
+      - 'tools/build-city-animation-data.py'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/city-quest-rise-of-the-guardian/**'
+      - 'apps/web/scripts/city-quest*'
+      - 'apps/web/scripts/helpers/city-*.cjs'
+      - 'apps/web/scripts/helpers/kasi-png.cjs'
+      - '.github/workflows/city-quest.yml'
+      - 'tools/build-city-animation-data.py'
+permissions:
+  contents: read
+jobs:
+  city-quest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/game.js
+      - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/city-campaign.js
+      - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/city-animation.js
+      - run: node --check apps/web/public/games/city-quest-rise-of-the-guardian/city-animation-data.js
+      - run: node --test apps/web/scripts/city-quest*.test.cjs

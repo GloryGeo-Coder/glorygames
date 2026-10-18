@@ -2,14 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#1b1f36" />
   <title>City Quest: Rise of the Guardian</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=2.1" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
   <div class="app-shell">
+    <main class="main-wrap no-sidebar">
+      <section class="game-column">
+        <div class="canvas-shell">
+          <canvas id="gameCanvas" width="1280" height="720" tabindex="0" aria-label="City Quest game canvas"></canvas>
+
     <header class="topbar">
       <div>
         <div class="brand">City Quest: Rise of the Guardian</div>
@@ -23,37 +28,22 @@
       </div>
     </header>
 
-    <main class="main-wrap no-sidebar">
-      <section class="game-column">
-        <div class="canvas-shell">
-          <canvas id="gameCanvas" width="1280" height="720" aria-label="City Quest game canvas"></canvas>
-
           <div class="floating-actions">
-            <button id="submitScoreBtn">Submit Score</button>
-            <button id="muteBtn">Sound On</button>
-            <button id="pauseBtn">Pause</button>
+
+            <button id="muteBtn" aria-label="Toggle sound">Sound On</button>
+            <button id="pauseBtn" aria-label="Pause and settings">Pause</button>
           </div>
 
           <div class="floating-info mission-window" id="missionWindow">
-            <div class="floating-title">Mission</div>
+            <div class="floating-title">Mission <span id="routeText"></span></div>
             <p id="missionText">Talk to the mentor and recover the city tokens.</p>
             <div class="meter"><div id="progressBar"></div></div>
             <div class="small" id="objectiveText">0 / 0</div>
           </div>
 
-          <div class="floating-info story-window" id="storyWindow">
+          <div class="floating-info story-window" id="storyWindow" role="status" aria-live="polite">
             <div class="floating-title">Story</div>
             <p id="storyText">The city needs a new guardian. Restore order across the township and defeat the rogue taxi boss.</p>
-          </div>
-
-          <div class="floating-skins" id="skinWindow">
-            <div class="floating-title">Skins</div>
-            <div class="pill-list">
-              <button class="pill" id="skinBlueBtn">Blue</button>
-              <button class="pill" id="skinGreenBtn">Green</button>
-              <button class="pill" id="skinShadowBtn">Shadow</button>
-            </div>
-            <p class="small" id="skinHint">Unlock skins by collecting coins.</p>
           </div>
 
           <div class="overlay active" id="startOverlay">
@@ -68,23 +58,39 @@
                 <span>Unlockable skins</span>
               </div>
               <div class="action-row">
-                <button class="primary" id="playBtn">Start Story</button>
+                <button class="primary" id="playBtn" disabled>Loading guardian…</button>
                 <button id="howBtn">How to Play</button>
               </div>
             </div>
           </div>
 
+          <div class="overlay" id="pauseOverlay" role="dialog" aria-modal="true" aria-label="Paused">
+            <div class="overlay-card"><h2>Guardian paused</h2><p>Choose your outfit, open the map, or return to your mission.</p>
+          <div class="floating-skins" id="skinWindow">
+            <div class="floating-title">Skins</div>
+            <div class="pill-list">
+              <button class="pill" id="skinBlueBtn">Blue</button>
+              <button class="pill" id="skinGreenBtn">Green</button>
+              <button class="pill" id="skinShadowBtn">Shadow</button>
+            </div>
+            <p class="small" id="skinHint">Unlock skins by collecting coins.</p>
+          </div>
+
+<div class="action-row"><button id="resumeBtn" class="primary">Resume Mission</button><button id="submitScoreBtn">Submit Score</button><button id="pauseMapBtn">City Map</button></div></div>
+          </div>
           <div class="overlay" id="helpOverlay">
             <div class="overlay-card">
               <h2>How to Play</h2>
               <ul>
                 <li>Reach the mentor or guide character to receive your mission.</li>
                 <li>Collect coins, taxi tokens, and badges while avoiding enemies and obstacles.</li>
-                <li>Use jump to clear gaps, taxis, crates, spikes, and moving platforms.</li>
+                <li>Use Jump to cross gaps, crates, and spikes. Land on taxi roofs or ride moving lifts.</li>
                 <li>Use Shoot to fire guardian energy at walkers, drones, and bosses.</li>
                 <li>Flying drones can fire back, so dodge their energy bolts.</li>
                 <li>Collect shield, heart, and blaster power-ups to survive harder stages.</li>
-                <li>Finish a level to unlock the map and continue the story.</li>
+                <li>Checkpoint beacons save your position during a mission. Falling returns you to the latest beacon and costs one life.</li>
+                <li>Hold Shoot while moving or jumping. Walkers charge their shots: use cover or jump over their bolts.</li>
+                <li>Finish a level to unlock the next mission. Press P or Escape to pause; choose unlocked outfits in Pause.</li>
               </ul>
               <button class="primary" id="closeHelpBtn">Close</button>
             </div>
@@ -124,20 +130,19 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="controls-bar">
-          <button id="leftBtn">Left</button>
-          <button id="jumpBtn">Jump</button>
-          <button id="shootBtn">Shoot</button>
-          <button id="actionBtn">Action</button>
-          <button id="mapOpenBtn">Map</button>
-          <button id="rightBtn">Right</button>
+          <div class="controls-bar" aria-label="Touch controls">
+            <div class="move-pad"><button id="leftBtn" aria-label="Move left">◀</button><button id="rightBtn" aria-label="Move right">▶</button></div>
+            <div class="utility-pad"><button id="actionBtn">Action</button><button id="mapOpenBtn">Map</button></div>
+            <div class="action-pad"><button id="shootBtn">Shoot</button><button id="jumpBtn">Jump</button></div>
+          </div>
         </div>
       </section>
     </main>
   </div>
-  <script src="./game.js"></script>
+  <script src="./city-campaign.js?v=2.1"></script>
+  <script src="./city-animation-data.js?v=2.1"></script>
+  <script src="./city-animation.js?v=2.1"></script>
+  <script src="./game.js?v=2.1"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
