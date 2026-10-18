@@ -1,0 +1,101 @@
+{
+  "version": "2.2.0",
+  "generated": [
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/reinforcements/robots-atlas.png",
+      "name": "robots",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D action-game sprite atlas for Neon Orb Base Defence. Polished hand-painted sci-fi metal, navy armor, bright cyan edges and hostile coral/magenta cores; crisp silhouettes legible at 48 pixels. Square 1536 x 1536 canvas, exactly FOUR equal columns and FOUR equal rows, 16 cells without grid lines. True transparent background, no scenery, no floor, no cast floor shadows, no words, no labels, no borders. Each complete subject centered inside its own cell, 15% transparent padding on all sides, nothing crosses cell boundaries. Orthographic side view, faces LEFT. Each row is one distinct design, four consecutive animated frames left to right, consistent size and baseline within each row. Row 1: slim bipedal blade-runner robot, orange energy forearm blades, four running frames. Row 2: bulky siege walker with shoulder cannon and chunky legs, four heavy walking frames. Row 3: rocket trooper with two raised missile pods, four walking/ready frames. Row 4: purple phase stalker with pointed helmet and long articulated limbs, four stalking/dashing frames. All four silhouettes must be distinct.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 2052314,
+      "sha256": "61eea7752cec7873cc1a7322a365b49479847ec7c2231015cad7aebfc6381bb9",
+      "transparentFraction": 0.6350301046221469,
+      "columns": 4,
+      "rows": 4
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/reinforcements/drones-atlas.png",
+      "name": "drones",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D action-game sprite atlas for Neon Orb Base Defence. Polished hand-painted sci-fi metal, navy armor, bright cyan edges and hostile coral/magenta cores; crisp silhouettes legible at 48 pixels. Square 1536 x 1536 canvas, exactly FOUR equal columns and FOUR equal rows, 16 cells without grid lines. True transparent background, no scenery, no floor, no cast floor shadows, no words, no labels, no borders. Each complete subject centered inside its own cell, 15% transparent padding on all sides, nothing crosses cell boundaries. Orthographic side view, faces LEFT. Each row is one distinct design, four consecutive animated frames left to right, consistent size and baseline within each row. Row 1: small wasp drone, swept wings and pointed stinger, four wing/thruster flight frames. Row 2: wide manta bomber with twin bomb pods, four hovering frames. Row 3: arc drone shaped like a three-pronged electric claw with cyan arcs, four charging flight frames. Row 4: narrow interceptor with two long forward blades and twin engines, four high-speed flight frames. These are flying machines with NO legs and visibly distinct silhouettes.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1676510,
+      "sha256": "8d53ecbb0fa35d9691f3a7a477d29bb7e603408dd4e9b8fb141b2156d98b03c3",
+      "transparentFraction": 0.7233929575279361,
+      "columns": 4,
+      "rows": 4
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/reinforcements/bosses-atlas.png",
+      "name": "bosses",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D action-game sprite atlas for Neon Orb Base Defence. Polished hand-painted sci-fi metal, navy armor, bright cyan edges and hostile coral/magenta cores; crisp silhouettes legible at 48 pixels. Square 1536 x 1536 canvas, exactly FOUR equal columns and FOUR equal rows, 16 cells without grid lines. True transparent background, no scenery, no floor, no cast floor shadows, no words, no labels, no borders. Each complete subject centered inside its own cell, 15% transparent padding on all sides, nothing crosses cell boundaries. Orthographic side view, faces LEFT. Each row is one distinct design, four consecutive animated frames left to right, consistent size and baseline within each row. Four powerful distinct boss machines. Row 1: Goliath, enormous heavily armored biped mech, hammer arms and orange chest reactor, four walking/charge frames. Row 2: Manta carrier, enormous airborne broad-winged gunship with red weapon pods, four hover/attack frames. Row 3: Weaver, angular spider tank on four articulated legs, purple cannon, four walking/fire frames. Row 4: Crown, floating black command machine with crown spires and bright magenta central eye, four pulsing attack frames. Strong readable designs, full bodies, equal framing per row.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 2378304,
+      "sha256": "7ceb988c579fdfcdebe66989b4ba429ba66933fa8024c238b4c2f4b764fb1304",
+      "transparentFraction": 0.5757365902795266,
+      "columns": 4,
+      "rows": 4
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/reinforcements/items-atlas.png",
+      "name": "items",
+      "prompt": "Use case: stylized-concept. Asset type: 16 individual game pickup/HUD sprites, transparent 1536 x 1536 atlas, EXACTLY four equal columns by four equal rows, no grid. Premium illustrated sci-fi metal casings, bright readable neon colors, cyan, mint, magenta, gold, red. Every icon centered in its own equal square cell with 18% transparent padding, same scale, isolated true transparent background. No text, no letters, no numbers, no labels, no scenery, no containers around the individual icons. Row1 left to right: red reserve-life heart with silver wings; mint health medkit with clear white medical cross; cyan shield battery with shield emblem; gold energy cell with lightning symbol. Row2: magenta weapon crate with small gun; purple EMP core with electricity; gold keycard with keyhole; mint AI circuit chip. Row3: silver repair wrench and gear; orange armored chest plate; large luminous cyan spherical Neon Orb; gold five-point score star. Row4: cyan dash boot with speed trails; mint jump jet boots; elongated horizontal cyan plasma projectile pointing right; elongated horizontal red enemy plasma projectile pointing right. Exactly these 16 icons, no duplicates.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 2010840,
+      "sha256": "8f7e244b76ec54f92d3c2948e33d9565f5f305ca66efbd687e5cb160d0396e81",
+      "transparentFraction": 0.5501273119001651,
+      "columns": 4,
+      "rows": 4
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/reinforcements/effects-atlas.png",
+      "name": "effects",
+      "prompt": "Use case: stylized-concept. Asset type: transparent animated 2D game effects atlas. Exactly four equal columns and four equal rows on a 1536 x 1536 transparent canvas. No text, no borders, no background. Each effect fully inside its own cell with 12% transparent padding, centered, consistent location. Four consecutive animation frames per row. Row1: cyan gun muzzle flash expanding then fading, side view. Row2: orange and magenta robot explosion expanding then fading into sparks, no debris crossing cell. Row3: red triangular attack warning marker with a bright exclamation mark, four pulsing brightness frames. Row4: mint and cyan circular EMP shock ring expanding and fading. Clean vibrant neon effects readable at small sizes.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "bytes": 1867833,
+      "sha256": "44e4ffc4f674cc678fb65efd5850ae0cba4a0834eaaa98ef2133579bf06f8994",
+      "transparentFraction": 0.6392857052010917,
+      "columns": 4,
+      "rows": 4
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/reinforcements/ally-atlas.png",
+      "name": "ally",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D sci-fi friendly helper robot animation sheet for Neon Orb Base Defence. 1536 x 1024 canvas, EXACTLY four equal columns and two equal rows, eight consecutive walking animation frames reading left to right then next row. Same small friendly mint-white helper droid in every frame, rounded head with cyan face visor and two tiny antennas, short legs, no weapon, clearly distinct from a humanoid armored soldier. Polished hand-painted game art, orthographic side view facing LEFT, same scale and feet baseline in each equal cell, 15% transparent padding, complete body in every cell. True transparent background, no scenery, no floor shadows, no grid, no text, no borders.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "bytes": 2138479,
+      "sha256": "407781dd1537ea80a6be97a194a750e64922f089e813b1ea413970f2302dac5d",
+      "transparentFraction": 0.6761442820231119,
+      "columns": 4,
+      "rows": 2
+    }
+  ]
+}
