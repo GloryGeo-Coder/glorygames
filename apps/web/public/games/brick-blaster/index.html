@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <title>Brick Blaster</title>
-<link rel="stylesheet" href="./styles.css?v=2.1" />
+<link rel="stylesheet" href="./styles.css?v=2.2" />
 <link rel="stylesheet" href="/sdk/gg-sdk.css" />
 <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
@@ -17,6 +17,7 @@
   <div class="hudLeft"><div class="brand" id="ggTitle">Brick Blaster</div><div class="sub" id="ggSub">Classic Arcade · Aim, ricochet and chain your hits</div></div>
   <div class="hudRight" aria-label="Game statistics"><div class="stat"><span class="label">Score</span><strong class="value" id="score">0</strong></div><div class="stat"><span class="label">Lives</span><strong class="value" id="lives">3</strong></div><div class="stat"><span class="label">Level</span><strong class="value" id="level">1</strong></div></div>
 </header>
+<div class="missionHud" id="missionHud" hidden><strong id="missionName"></strong><span id="missionGoal" aria-live="polite"></span></div>
 <main class="stage"><canvas id="c" tabindex="0" aria-label="Brick Blaster arena. Drag to steer; tap or press Space to launch. Use arrow keys or A and D to move."></canvas></main>
 <div class="controlDock">
   <div id="controlZone" class="controlZone" role="group" tabindex="0" aria-label="Paddle control strip. Drag left or right to steer without covering the arena; tap to launch."><span id="controlStatus" aria-hidden="true">Drag here to steer ↔</span><span class="controlHint" aria-hidden="true">Tap to launch · Pause for controls</span><span class="controlLine" aria-hidden="true"></span></div>
@@ -25,11 +26,11 @@
 </div>
 <div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
 <section class="panelInner"><div class="panelGrid">
-  <div><div class="panelEyebrow">Classic Arcade</div><h1 class="panelTitle" id="panelTitle">Brick Blaster</h1><p class="panelText" id="panelText">Steer from the strip below the arena, tap to launch, and ricochet through glowing bricks. Catch power-ups and build your combo.</p><div class="panelButtons"><button class="btn primary" id="btnStart" type="button">Play</button><button class="btn" id="btnOverlay" type="button">Leaderboard</button></div><p class="panelHint">Six power-ups · Explosive chains · Multiball<br />Keyboard: ← → or A / D · Space to launch · P to pause</p></div>
-  <fieldset class="settings"><legend>Controls &amp; sound</legend><label for="controlMode">Touch steering</label><select id="controlMode"><option value="relative">Relative — follow finger movement</option><option value="direct">Direct — follow finger position</option></select><p id="controlHelp">Touch anywhere on the strip, then slide. The paddle keeps its starting position.</p><button class="btn" id="btnSound" type="button" aria-pressed="false">Sound On</button><div class="secondaryActions"><button class="btn" id="btnRestart" type="button">Restart</button><button class="btn" id="btnSubmit" type="button">Submit Score</button><button class="btn" id="btnChat" type="button">Chat</button></div></fieldset>
+  <div><div class="modePicker" role="group" aria-label="Game mode"><button class="btn" id="btnClassic" type="button" aria-pressed="true">Classic Arcade</button><button class="btn" id="btnCampaign" type="button" aria-pressed="false">Neon Grid Campaign</button></div><div class="panelEyebrow" id="modeLabel">Classic Arcade</div><h1 class="panelTitle" id="panelTitle">Brick Blaster</h1><p class="panelText" id="panelText">Steer from the strip below the arena, tap to launch, and ricochet through glowing bricks. Catch power-ups and build your combo.</p><div class="panelButtons"><button class="btn primary" id="btnStart" type="button">Play</button><button class="btn" id="btnOverlay" type="button">Leaderboard</button></div><section id="campaignMap" class="campaignMap" aria-label="Neon Grid mission map" hidden><p>Complete missions to unlock the next. Select a mission for a fresh run.</p><div class="missionList"><button class="missionButton" id="mission0" type="button"></button><button class="missionButton" id="mission1" type="button"></button><button class="missionButton" id="mission2" type="button"></button><button class="missionButton" id="mission3" type="button"></button><button class="missionButton" id="mission4" type="button"></button></div><p>Stars: finish ★ · lose at most one life ★★ · lose no lives ★★★</p></section><p class="panelHint">Six power-ups · Explosive chains · Multiball<br />Keyboard: ← → or A / D · Space to launch · P to pause</p></div>
+  <fieldset class="settings"><legend>Controls &amp; sound</legend><label for="sceneryMode">Background</label><select id="sceneryMode"><option value="illustrated">Neon city scenes</option><option value="grid">Original neon grid</option></select><label for="controlMode">Touch steering</label><select id="controlMode"><option value="relative">Relative — follow finger movement</option><option value="direct">Direct — follow finger position</option></select><p id="controlHelp">Touch anywhere on the strip, then slide. The paddle keeps its starting position.</p><button class="btn" id="btnSound" type="button" aria-pressed="false">Sound On</button><div class="secondaryActions"><button class="btn" id="btnRestart" type="button">Restart</button><button class="btn" id="btnSubmit" type="button">Submit Score</button><button class="btn" id="btnChat" type="button">Chat</button></div></fieldset>
 </div></section>
 </div>
 <script src="/sdk/gg-sdk.js"></script><script src="/games/_shared/gg-sdk.js"></script>
-<script src="./brick-layout.js?v=2.1"></script><script src="./game.js?v=2.1"></script><script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
+<script src="./brick-layout.js?v=2.2"></script><script src="./brick-campaign.js?v=2.2"></script><script src="./brick-scenery.js?v=2.2"></script><script src="./game.js?v=2.2"></script><script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

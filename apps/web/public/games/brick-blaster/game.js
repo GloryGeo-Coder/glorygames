@@ -26,14 +26,24 @@
   const controlZone = $("controlZone"), controlMode = $("controlMode"), btnSound = $("btnSound");
   const { grid, cell, physicsScale } = window.BrickLayout;
   const PREFS_KEY = "gg_brick_blaster_controls_v1";
-  const prefs = { controlMode: "relative", muted: false };
-  try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)); if (saved && typeof saved === "object") { if (["relative", "direct"].includes(saved.controlMode)) prefs.controlMode = saved.controlMode; prefs.muted = saved.muted === true; } } catch (_) {}
+  const prefs = { controlMode: "relative", muted: false, scenery: "illustrated" };
+  const campaignRules = window.BrickCampaign, scenery = window.BrickScenery.create(window.Image);
+  let progress = campaignRules.readProgress(null);
+  try { progress = campaignRules.readProgress(JSON.parse(localStorage.getItem(campaignRules.SAVE_KEY))); } catch (_) {}
+  let gameMode = "classic", missionIndex = 0, campaign = null, missionCleared = false, livesLost = 0;
+  try { const saved = JSON.parse(localStorage.getItem(PREFS_KEY)); if (saved && typeof saved === "object") { if (["relative", "direct"].includes(saved.controlMode)) prefs.controlMode = saved.controlMode; prefs.muted = saved.muted === true; if (saved.scenery === "grid") prefs.scenery = "grid"; } } catch (_) {}
   const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || false;
   let playTime = 0;
   const playNow = () => playTime;
   function savePrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (_) {} }
   function syncSettings() {
     controlMode.value = prefs.controlMode;
+    $("sceneryMode").value = prefs.scenery;
+    $("btnClassic").setAttribute("aria-pressed", String(gameMode === "classic"));
+    $("btnCampaign").setAttribute("aria-pressed", String(gameMode === "campaign"));
+    $("modeLabel").textContent = gameMode === "campaign" ? "Neon Grid · World 1" : "Classic Arcade";
+    $("campaignMap").hidden = gameMode !== "campaign";
+    for (let i = 0; i < 5; i++) { const b = $("mission" + i), unlocked = i < progress.unlocked; b.disabled = !unlocked; b.setAttribute("aria-current", i === missionIndex ? "step" : "false"); b.textContent = `${i + 1}. ${campaignRules.missions[i].title} · ${unlocked ? (progress.stars[i] ? "★".repeat(progress.stars[i]) : "Ready") : "Locked"}`; }
     $("controlHelp").textContent = prefs.controlMode === "relative" ? "Touch anywhere on the strip, then slide. The paddle keeps its starting position." : "The paddle follows your finger position. Use the strip to keep the ball in view.";
     btnSound.textContent = (prefs.muted || GG_MUTED) ? "Sound Off" : "Sound On";
     btnSound.setAttribute("aria-pressed", String(prefs.muted || GG_MUTED));
@@ -88,6 +98,8 @@
       maxCombo,
       balls: balls.length,
       playerName: getPlayerName(),
+      gameMode,
+      ...(campaign ? { world: "neon-grid", mission: missionIndex + 1 } : {}),
       ...extra,
     };
 
@@ -190,9 +202,7 @@
       const title = META.title || "Brick Blaster";
       document.title = title;
       if (elTitle) elTitle.textContent = title;
-      if (panelTitle) panelTitle.textContent = title;
-      if (panelText && !running && !gameOver && level === 1) panelText.textContent = META.description || panelText.textContent;
-      if (elSub) elSub.textContent = "Classic Arcade · Aim, ricochet and chain your hits";
+      if (gameMode === "classic" && !running && !paused && !gameOver && level === 1) { if (panelTitle) panelTitle.textContent = title; if (panelText) panelText.textContent = META.description || panelText.textContent; }
       try { window.GG?.setSlug?.(GAME_SLUG); window.GG?.setTitle?.(title); window.GG?.init?.({ title }); } catch (_) {}
     } catch (_) {}
   }
@@ -218,8 +228,9 @@
       paddle.x *= w / oldW; paddle.targetX *= w / oldW;
       const g = grid(w, h, boardRows, boardCols);
       for (const b of bricks) Object.assign(b, cell(g, b.row, b.col));
+      campaign?.reflow(w, h);
       for (const b of balls) { b.x = clamp(b.x * w / oldW, ballRadius(), w - ballRadius()); b.y = clamp(b.y * h / oldH, ballRadius(), h + ballRadius()); b.r = ballRadius(); b.vx *= speedRatio; b.vy *= speedRatio; b.trail = []; b.touching.clear();
-        if (!b.stuck && bricks.some(br => circleRectHit(b.x, b.y, b.r, br.x, br.y, br.w, br.h))) { b.y = g.bottom + b.r + 3; b.vy = Math.abs(b.vy); }
+        if (!b.stuck && [...bricks.filter(br => !campaign || campaign.solid(br)), ...(campaign?.enemies.filter(a => a.hp > 0) || [])].some(br => circleRectHit(b.x, b.y, b.r, br.x, br.y, br.w, br.h))) { b.y = Math.max(g.bottom, ...(campaign?.enemies.filter(a => a.hp > 0).map(a => a.y + a.h) || [])) + b.r + 3; b.vy = Math.abs(b.vy); }
       }
       for (const d of drops) { d.x = clamp(d.x * w / oldW, d.r, w - d.r); d.y *= h / oldH; d.vy = clamp(h * .22, 65, 205); }
       particles = [];
@@ -269,7 +280,7 @@
     return { x, y, r: ballRadius(), vx: 0, vy: 0, speed: baseBallSpeed(), stuck, fire: fireballUntil > playNow(), trail: [], touching: new Set() };
   }
   function layoutObjects() {
-    paddle.baseW = clamp(cw() * .27, 84, 152); paddle.w = paddle.baseW * (paddle.widenUntil > playNow() ? 1.48 : 1);
+    paddle.baseW = clamp(cw() * .27, 84, 152); paddle.w = paddle.baseW * (paddle.widenUntil > playNow() ? 1.48 : 1) * (campaign?.jam > 0 ? .78 : 1);
     paddle.h = clamp(ch() * .024, 10, 20); paddle.y = ch() - clamp(ch() * .055, 14, 40);
     paddle.x = clamp(paddle.x || cw() / 2, paddle.w / 2 + 8, cw() - paddle.w / 2 - 8);
     paddle.targetX = clamp(paddle.targetX || paddle.x, paddle.w / 2 + 8, cw() - paddle.w / 2 - 8);
@@ -280,6 +291,10 @@
     const text = (el, value) => { if (el && el.textContent !== value) el.textContent = value; };
     text(elScore, String(Math.floor(score))); text(elLives, String(lives)); text(elLevel, String(level));
     text($("controlStatus"), toasts[toasts.length - 1]?.msg || (comboCount > 1 ? `Combo x${comboCount}` : "Drag here to steer ↔"));
+    $("missionHud").hidden = !campaign;
+    text($("missionName"), campaign ? `${missionIndex + 1}/5 · ${campaign.definition.title}` : "");
+    text($("missionGoal"), campaign ? campaign.status() : "");
+    text(elSub, campaign ? "Neon Grid · Restore the city uplink" : "Classic Arcade · Aim, ricochet and chain your hits");
     text(btnPause, paused ? "Paused / Menu" : "Pause / Menu");
     const disabled = !isPlaying() || !balls.some(b => b.stuck); if (btnLaunch.disabled !== disabled) btnLaunch.disabled = disabled;
   }
@@ -307,7 +322,8 @@
     resetInput(); stopSounds(); accumulator = 0; playTime = 0;
     score = 0;
     lives = 3;
-    level = 1;
+    level = gameMode === "campaign" ? missionIndex + 1 : 1;
+    missionCleared = false; livesLost = 0; campaign = null;
     comboCount = 0;
     maxCombo = 0;
     comboTimer = 0;
@@ -323,14 +339,47 @@
     drops = [];
     particles = [];
     toasts = [];
-    buildLevel(level);
+    if (gameMode === "campaign") buildMission(missionIndex); else buildLevel(level);
     updateHud();
+    if (campaign) { showPanel(campaign.definition.title, campaign.definition.story + "\n\n" + campaign.definition.goal, "Start Mission"); return; }
     showPanel(META.title || "Brick Blaster", META.description || "Drag to move the paddle. Tap to launch. Break bricks and grab power-ups.", "Start");
   }
 
+  function selectMission(index) {
+    if (!Number.isInteger(index) || index < 0 || index >= progress.unlocked || index >= campaignRules.missions.length) return false;
+    gameMode = "campaign"; missionIndex = index; resetGame(); return true;
+  }
+  function buildMission(index) {
+    campaign = campaignRules.create(index, window.BrickLayout); campaign.reflow(cw(), ch()); bricks = campaign.bricks;
+    boardCols = 8; boardRows = campaign.definition.map.length; scenery.select(index);
+    paddle.x = paddle.targetX = cw() / 2; layoutObjects(); balls = [makeBall(true)]; drops = []; comboCount = comboTimer = 0;
+    toast(campaign.definition.goal, 3); updateHud();
+  }
+  function campaignEvents() {
+    for (const e of campaign.drain()) {
+      if (e.score) addScore(e.score, e.x, e.y, e.label); else if (e.label) toast(e.label);
+      addParticles(e.x, e.y, e.color, e.broken ? 10 : 3, 110);
+      if (e.broken) { sfx("break"); maybeDropPowerUp(e.x, e.y, e.drop); } else if (e.score) sfx("brick");
+      if (e.jam) { comboCount = comboTimer = 0; sfx("life"); }
+    }
+  }
+  function finishMission() {
+    if (!campaign || missionCleared) return;
+    missionCleared = true; campaign.resolve(); resetInput(); stopSounds(); running = false; paused = false; drops = [];
+    score += 350 + (missionIndex + 1) * 100; progress = campaignRules.record(progress, missionIndex, score, livesLost);
+    try { localStorage.setItem(campaignRules.SAVE_KEY, JSON.stringify(progress)); } catch (_) {}
+    sfx("level"); postScore("level_complete", { completedLevel: level, missionStars: livesLost === 0 ? 3 : livesLost === 1 ? 2 : 1 }); updateHud();
+    const ending = missionIndex === 4 ? "Neon Grid restored! The repair drones bring the city back online. Every mission is now yours to replay." : "Uplink secured. The next mission is unlocked.";
+    showPanel(missionIndex === 4 ? "Neon Grid restored" : "Mission complete", `${ending}\nScore: ${Math.floor(score)} · ${"★".repeat(livesLost === 0 ? 3 : livesLost === 1 ? 2 : 1)}\nBest: ${progress.best[missionIndex]} · Best stars: ${"★".repeat(progress.stars[missionIndex])}`, missionIndex < 4 ? "Next Mission" : "Replay Mission");
+  }
+  function advanceFromPanel() {
+    if (missionCleared) { if (missionIndex < 4) missionIndex++; resetGame(); }
+    if (gameOver) resetGame(); if (!running) startGame(); else if (paused) setPaused(false);
+  }
   function isPlaying() { return running && !paused && !gameOver && !GG_PAUSED && !document.hidden; }
   function startGame() {
     if (GG_PAUSED || document.hidden) return;
+    if (missionCleared) { advanceFromPanel(); return; }
     ensureAudio(); resetInput(); running = true; paused = false; gameOver = false; hidePanel(); accumulator = 0; lastTick = now(); updateHud();
   }
   function setPaused(value, message = "Your round and power-ups are paused. Continue when you are ready.") {
@@ -349,13 +398,14 @@
     paused = false;
     sfx("gameover");
     postScore("game_over", { reason: "lives_empty" });
-    showPanel("Game Over", `Final score: ${score | 0}\nBest combo: x${maxCombo}\n\nTip: Keep the ball moving fast, catch multi-ball, and aim for explosive bricks.`, "Try Again");
+    showPanel(campaign ? "Mission interrupted" : "Game Over", `Final score: ${score | 0}\nBest combo: x${maxCombo}\n\n${campaign ? "Retry this mission with three lives. Your unlocked missions and best stars are safe." : "Tip: Keep the ball moving fast, catch multi-ball, and aim for explosive bricks."}`, "Try Again");
   }
 
   // ----------------------------
   // Level generation
   // ----------------------------
   function buildLevel(n) {
+    campaign = null; scenery.select(n - 1);
     const w = cw();
     const cols = boardCols = clamp(Math.floor(w / 56), 6, 12);
     const rows = boardRows = clamp(4 + Math.floor(n * .62), 4, 9);
@@ -459,7 +509,11 @@
     if (key === "r" && isPlaying()) { resetGame(); startGame(); }
   });
   window.addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
-  btnStart?.addEventListener("click", () => { if (gameOver) resetGame(); if (!running) startGame(); else if (paused) setPaused(false); });
+  btnStart?.addEventListener("click", advanceFromPanel);
+  $("btnClassic").addEventListener("click", () => { gameMode = "classic"; resetGame(); });
+  $("btnCampaign").addEventListener("click", () => selectMission(missionIndex));
+  for (let i = 0; i < 5; i++) $("mission" + i).addEventListener("click", () => selectMission(i));
+  $("sceneryMode").addEventListener("change", () => { if (["grid", "illustrated"].includes($("sceneryMode").value)) prefs.scenery = $("sceneryMode").value; savePrefs(); syncSettings(); });
   function openOverlay() { if (running) setPaused(true); try { window.GG?.openOverlay?.(); } catch (_) {} }
   btnOverlay?.addEventListener("click", openOverlay); btnChat?.addEventListener("click", openOverlay);
   btnPause?.addEventListener("click", togglePause); btnLaunch?.addEventListener("click", launchBall);
@@ -482,7 +536,7 @@
   function applyPowerUp(type) {
     if (type === "W") {
       paddle.widenUntil = playNow() + 10500;
-      paddle.w = paddle.baseW * 1.48;
+      paddle.w = paddle.baseW * 1.48 * (campaign?.jam > 0 ? .78 : 1);
       toast("Wide paddle");
     } else if (type === "S") {
       for (const b of balls) { b.vx *= 0.72; b.vy *= 0.72; }
@@ -626,6 +680,7 @@
     if (fireballUntil && playNow() >= fireballUntil) { fireballUntil = 0; for (const b of balls) b.fire = false; toast("Fire ended"); }
     if (stickyUntil && playNow() >= stickyUntil) stickyUntil = 0;
 
+    if (campaign) { campaign.update(dt, paddle, balls.some(b => !b.stuck)); campaignEvents(); paddle.w = paddle.baseW * (paddle.widenUntil > playNow() ? 1.48 : 1) * (campaign.jam > 0 ? .78 : 1); }
     movePaddle(dt);
     updateDrops(dt);
     updateParticles(dt);
@@ -633,8 +688,9 @@
 
     for (let i = balls.length - 1; i >= 0; i--) updateBall(balls[i], i, dt);
 
+    if (campaign?.complete()) { finishMission(); return; }
     if (balls.length === 0) {
-      lives -= 1;
+      lives -= 1; livesLost++; campaign?.clearShots();
       updateHud();
       sfx("life");
       if (lives <= 0) { endGame(); return; }
@@ -644,7 +700,7 @@
       comboTimer = 0;
     }
 
-    if (bricks.length === 0) { nextLevel(); return; }
+    if (!campaign && bricks.length === 0) { nextLevel(); return; }
     if (now() - lastBridgeScoreAt > 450) { lastBridgeScoreAt = now(); postScore("live"); }
     updateHud();
   }
@@ -663,7 +719,7 @@
 
   function updateBall(ball, ballIndex, dt) {
     if (ball.stuck) return;
-    for (const br of ball.touching) if (!bricks.includes(br) || !circleRectHit(ball.x, ball.y, ball.r, br.x, br.y, br.w, br.h)) ball.touching.delete(br);
+    for (const br of ball.touching) if ((!bricks.includes(br) && !campaign?.enemies.includes(br)) || !circleRectHit(ball.x, ball.y, ball.r, br.x, br.y, br.w, br.h)) ball.touching.delete(br);
     ball.trail.push({ x: ball.x, y: ball.y, r: ball.r, t: .22 });
     if (ball.trail.length > 10) ball.trail.shift();
 
@@ -689,10 +745,16 @@
       sfx("paddle");
     }
 
+    if (campaign) for (const a of campaign.enemies) {
+      if (a.hp <= 0 || ball.touching.has(a) || !circleRectHit(ball.x, ball.y, ball.r, a.x, a.y, a.w, a.h)) continue;
+      ball.touching.add(a); campaign.hitActor(a, ball); reflectBall(ball, prevX, prevY, a); campaignEvents(); normalizeBallSpeed(ball); return;
+    }
     for (let i = 0; i < bricks.length; i++) {
       const b = bricks[i];
+      if (campaign && !campaign.solid(b)) continue;
       if (!circleRectHit(ball.x, ball.y, ball.r, b.x, b.y, b.w, b.h) || ball.touching.has(b)) continue;
       ball.touching.add(b);
+      if (campaign) { const hit = campaign.hitBrick(b, ball.fire ? 2 : 1); if (!ball.fire || hit.forceBounce) reflectBall(ball, prevX, prevY, b); campaignEvents(); break; }
       if (!ball.fire) reflectBall(ball, prevX, prevY, b);
       b.hp -= ball.fire ? 2 : 1;
       b.pulse = 0;
@@ -747,6 +809,7 @@
 
     drawBackground(w, h);
     drawBricks();
+    campaign?.draw(ctx, reducedMotion);
     drawDrops();
     drawPaddle();
     drawBalls();
@@ -757,6 +820,7 @@
   }
 
   function drawBackground(w, h) {
+    if (prefs.scenery === "illustrated" && scenery.draw(ctx, w, h)) return;
     const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, "#070b1d");
     g.addColorStop(.52, "#0d1736");
@@ -794,6 +858,7 @@
   }
 
   function brickGradient(b) {
+    if (["relay", "pod", "core", "generator"].includes(b.type)) { const special = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h); special.addColorStop(0, b.active ? "#14532d" : b.color); special.addColorStop(1, "#14213d"); return special; }
     const g = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y + b.h);
     if (b.type === "steel") { g.addColorStop(0, "#e5e7eb"); g.addColorStop(.55, "#64748b"); g.addColorStop(1, "#111827"); return g; }
     if (b.type === "explode") { g.addColorStop(0, "#fb7185"); g.addColorStop(.55, "#f97316"); g.addColorStop(1, "#7f1d1d"); return g; }
@@ -840,6 +905,16 @@
         ctx.textBaseline = "middle";
         ctx.fillText("★", b.x + b.w / 2, b.y + b.h / 2 + 1);
       }
+      if (["relay", "pod", "core", "generator"].includes(b.type)) {
+        ctx.strokeStyle = b.active ? "#86efac" : b.color; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(b.x + 1, b.y + 1, b.w - 2, b.h - 2, r); ctx.stroke();
+        const cx = b.x + b.w / 2, cy = b.y + b.h / 2, size = Math.max(2, b.h * .28);
+        ctx.fillStyle = "#f8fafc"; ctx.strokeStyle = "#f8fafc";
+        if (b.type === "relay" && !b.active) { ctx.beginPath(); ctx.arc(cx, cy, size, 0, Math.PI * 2); ctx.stroke(); }
+        else if (b.type === "relay") { ctx.beginPath(); ctx.moveTo(cx - size, cy); ctx.lineTo(cx, cy + size * .6); ctx.lineTo(cx + size, cy - size); ctx.stroke(); }
+        else if (b.type === "pod") { ctx.beginPath(); ctx.arc(cx, cy, size, 0, Math.PI * 2); ctx.stroke(); ctx.fillRect(cx - size * 1.7, cy - 1, size * 3.4, 2); }
+        else { ctx.beginPath(); ctx.moveTo(cx, cy - size); ctx.lineTo(cx + size, cy); ctx.lineTo(cx, cy + size); ctx.lineTo(cx - size, cy); ctx.closePath(); ctx.stroke(); }
+      }
       ctx.restore();
     }
   }
@@ -849,7 +924,7 @@
     const y = paddle.y - paddle.h / 2;
     ctx.save();
     const g = ctx.createLinearGradient(x, y, x + paddle.w, y + paddle.h);
-    g.addColorStop(0, "#38bdf8");
+    g.addColorStop(0, campaign?.jam > 0 ? "#fbbf24" : "#38bdf8");
     g.addColorStop(.55, "#a78bfa");
     g.addColorStop(1, "#f0abfc");
     ctx.fillStyle = g;
