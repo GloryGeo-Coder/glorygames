@@ -1,0 +1,465 @@
+{
+  "title": "Fruit Slice: Sunset Sessions",
+  "style": "Original playful arcade instrumentals with mallets, plucked keys, bass and percussion",
+  "provenance": "Procedurally composed and synthesized for WebGameArena; no third-party songs, recordings or samples.",
+  "renderer": "tools/build-fruit-soundtrack.py",
+  "sampleRate": 44100,
+  "channels": 2,
+  "bitrateKbps": 112,
+  "mastering": {
+    "integratedLufs": -18,
+    "truePeakDb": -2.5
+  },
+  "tracks": [
+    {
+      "id": 1,
+      "title": "First Slice",
+      "bpm": 108,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 71.111,
+      "url": "./assets/music/fruit-01.mp3",
+      "bytes": 996702,
+      "sha256": "ea23e13935983d0918b63089809b2fd84cecbef814bc6f3a5a944e2b18d0f800",
+      "score": {
+        "progression": 0,
+        "groove": 0,
+        "phrase": 0
+      },
+      "sourcePeak": 0.42286,
+      "sourceRms": 0.06957
+    },
+    {
+      "id": 2,
+      "title": "Orange Orbit",
+      "bpm": 111,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 69.189,
+      "url": "./assets/music/fruit-02.mp3",
+      "bytes": 969641,
+      "sha256": "783be479d077f5486c2449189469f0694594b0f3c4f850b4debfaab17788676a",
+      "score": {
+        "progression": 1,
+        "groove": 5,
+        "phrase": 1
+      },
+      "sourcePeak": 0.39485,
+      "sourceRms": 0.07258
+    },
+    {
+      "id": 3,
+      "title": "Melon Morning",
+      "bpm": 114,
+      "tonicMidi": 50,
+      "bars": 32,
+      "duration": 67.368,
+      "url": "./assets/music/fruit-03.mp3",
+      "bytes": 944042,
+      "sha256": "68d9ff1ed291c5a2cc4ec638f4421edd9e3bed8a86913838bd36e54a6397b920",
+      "score": {
+        "progression": 2,
+        "groove": 4,
+        "phrase": 2
+      },
+      "sourcePeak": 0.42359,
+      "sourceRms": 0.07279
+    },
+    {
+      "id": 4,
+      "title": "Triple Cut",
+      "bpm": 117,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 65.641,
+      "url": "./assets/music/fruit-04.mp3",
+      "bytes": 919901,
+      "sha256": "69adbe42241b456bff83e51034e713317a990eb10e91d2437e98f2227fb8e3ef",
+      "score": {
+        "progression": 3,
+        "groove": 3,
+        "phrase": 3
+      },
+      "sourcePeak": 0.41183,
+      "sourceRms": 0.07346
+    },
+    {
+      "id": 5,
+      "title": "Golden Crown",
+      "bpm": 120,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 64.0,
+      "url": "./assets/music/fruit-05.mp3",
+      "bytes": 896863,
+      "sha256": "c47c1fe3f7957dbc765226ca481ef89d56165d9d26a190ff275fd279e4316d01",
+      "score": {
+        "progression": 4,
+        "groove": 2,
+        "phrase": 4
+      },
+      "sourcePeak": 0.45344,
+      "sourceRms": 0.07454
+    },
+    {
+      "id": 6,
+      "title": "Market Warm-up",
+      "bpm": 124,
+      "tonicMidi": 52,
+      "bars": 32,
+      "duration": 61.935,
+      "url": "./assets/music/fruit-06.mp3",
+      "bytes": 867974,
+      "sha256": "b1a19253e7378277dec5c9d4a5f49a2dd677f8ec25d6e636b7d091d41b91e964",
+      "score": {
+        "progression": 0,
+        "groove": 2,
+        "phrase": 5
+      },
+      "sourcePeak": 0.45313,
+      "sourceRms": 0.07475
+    },
+    {
+      "id": 7,
+      "title": "Melon Market",
+      "bpm": 109,
+      "tonicMidi": 46,
+      "bars": 32,
+      "duration": 70.459,
+      "url": "./assets/music/fruit-07.mp3",
+      "bytes": 987561,
+      "sha256": "e851bda4ede6d8c75b1ae3478f97ec74bbabdd91ac4fddd579ad4d3817be578a",
+      "score": {
+        "progression": 1,
+        "groove": 1,
+        "phrase": 6
+      },
+      "sourcePeak": 0.45133,
+      "sourceRms": 0.07096
+    },
+    {
+      "id": 8,
+      "title": "Juice Rush",
+      "bpm": 112,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 68.571,
+      "url": "./assets/music/fruit-08.mp3",
+      "bytes": 960861,
+      "sha256": "6b70dfb20d8f307fd62e194784ce86a9a4d3d0c1a857ec80e44c066a2784acf7",
+      "score": {
+        "progression": 2,
+        "groove": 0,
+        "phrase": 7
+      },
+      "sourcePeak": 0.41142,
+      "sourceRms": 0.07259
+    },
+    {
+      "id": 9,
+      "title": "Market Combos",
+      "bpm": 115,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 66.783,
+      "url": "./assets/music/fruit-09.mp3",
+      "bytes": 935996,
+      "sha256": "d426d281c052e23122ba5ef359b95960e6d98a546528a83773ab7fd3c96385c8",
+      "score": {
+        "progression": 3,
+        "groove": 5,
+        "phrase": 8
+      },
+      "sourcePeak": 0.40521,
+      "sourceRms": 0.07266
+    },
+    {
+      "id": 10,
+      "title": "Golden Basket",
+      "bpm": 118,
+      "tonicMidi": 50,
+      "bars": 32,
+      "duration": 65.085,
+      "url": "./assets/music/fruit-10.mp3",
+      "bytes": 912224,
+      "sha256": "03ab4fbfa32304c249cbc3674bf595d08f0279af9d73596280de9707698c6df9",
+      "score": {
+        "progression": 4,
+        "groove": 4,
+        "phrase": 9
+      },
+      "sourcePeak": 0.47171,
+      "sourceRms": 0.07336
+    },
+    {
+      "id": 11,
+      "title": "Garden Glide",
+      "bpm": 122,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 62.951,
+      "url": "./assets/music/fruit-11.mp3",
+      "bytes": 882235,
+      "sha256": "7fc219e656c494b6e3df16d2743238fe1adfcaba685136775129e2c8677fad9f",
+      "score": {
+        "progression": 0,
+        "groove": 4,
+        "phrase": 10
+      },
+      "sourcePeak": 0.43525,
+      "sourceRms": 0.0745
+    },
+    {
+      "id": 12,
+      "title": "Kiwi Crossing",
+      "bpm": 125,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 61.44,
+      "url": "./assets/music/fruit-12.mp3",
+      "bytes": 861024,
+      "sha256": "b799b1ff30cbf9e213c7f8286a16ca2a61662a588b8a0d96109cb556c0b62a7d",
+      "score": {
+        "progression": 1,
+        "groove": 3,
+        "phrase": 11
+      },
+      "sourcePeak": 0.46775,
+      "sourceRms": 0.07603
+    },
+    {
+      "id": 13,
+      "title": "Frenzy Bloom",
+      "bpm": 110,
+      "tonicMidi": 52,
+      "bars": 32,
+      "duration": 69.818,
+      "url": "./assets/music/fruit-13.mp3",
+      "bytes": 978418,
+      "sha256": "31f77610649628cdaca89c31cd25164dac6eedf2ddcb0dc5c7328c72e5b4e75d",
+      "score": {
+        "progression": 2,
+        "groove": 2,
+        "phrase": 12
+      },
+      "sourcePeak": 0.41355,
+      "sourceRms": 0.07162
+    },
+    {
+      "id": 14,
+      "title": "Garden Rhythm",
+      "bpm": 113,
+      "tonicMidi": 46,
+      "bars": 32,
+      "duration": 67.965,
+      "url": "./assets/music/fruit-14.mp3",
+      "bytes": 952453,
+      "sha256": "0c3cc3f2062e6d4338967bd085524190c38b649c571fc25565fd1b76fcb05d5d",
+      "score": {
+        "progression": 3,
+        "groove": 1,
+        "phrase": 13
+      },
+      "sourcePeak": 0.4309,
+      "sourceRms": 0.0728
+    },
+    {
+      "id": 15,
+      "title": "Golden Harvest",
+      "bpm": 116,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 66.207,
+      "url": "./assets/music/fruit-15.mp3",
+      "bytes": 927951,
+      "sha256": "2fc4aceb472550bbb61875c0111a0e9ed12ce25e12386e957f5fafd610a15e05",
+      "score": {
+        "progression": 4,
+        "groove": 0,
+        "phrase": 14
+      },
+      "sourcePeak": 0.4347,
+      "sourceRms": 0.0729
+    },
+    {
+      "id": 16,
+      "title": "Lantern Launch",
+      "bpm": 120,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 64.0,
+      "url": "./assets/music/fruit-16.mp3",
+      "bytes": 896865,
+      "sha256": "ad8d39c72960fe913e93e2097b56e7b862a408a2083bc0b997e09de7677b7475",
+      "score": {
+        "progression": 0,
+        "groove": 0,
+        "phrase": 15
+      },
+      "sourcePeak": 0.43819,
+      "sourceRms": 0.07569
+    },
+    {
+      "id": 17,
+      "title": "Pineapple Lanterns",
+      "bpm": 123,
+      "tonicMidi": 50,
+      "bars": 32,
+      "duration": 62.439,
+      "url": "./assets/music/fruit-17.mp3",
+      "bytes": 875292,
+      "sha256": "89cc91463abd2ba99b8b86cceaabf525ff77f4fd56486be0d4c25d451ea054d6",
+      "score": {
+        "progression": 1,
+        "groove": 5,
+        "phrase": 16
+      },
+      "sourcePeak": 0.39884,
+      "sourceRms": 0.07618
+    },
+    {
+      "id": 18,
+      "title": "Festival Frenzy",
+      "bpm": 126,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 60.952,
+      "url": "./assets/music/fruit-18.mp3",
+      "bytes": 854444,
+      "sha256": "a1a68c306e1c3b21f8f6e80ad527bb8c96930e1d630659654d8667c44145d5ee",
+      "score": {
+        "progression": 2,
+        "groove": 4,
+        "phrase": 17
+      },
+      "sourcePeak": 0.41267,
+      "sourceRms": 0.07795
+    },
+    {
+      "id": 19,
+      "title": "Five-fruit Flow",
+      "bpm": 111,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 69.189,
+      "url": "./assets/music/fruit-19.mp3",
+      "bytes": 969644,
+      "sha256": "1451fd63582b9503e5e36858f5ed99b8c7b2087598c7a7dcca0f6f7b4ab53b17",
+      "score": {
+        "progression": 3,
+        "groove": 3,
+        "phrase": 18
+      },
+      "sourcePeak": 0.44956,
+      "sourceRms": 0.07248
+    },
+    {
+      "id": 20,
+      "title": "Midnight Gold",
+      "bpm": 114,
+      "tonicMidi": 52,
+      "bars": 32,
+      "duration": 67.368,
+      "url": "./assets/music/fruit-20.mp3",
+      "bytes": 944042,
+      "sha256": "8d4b209b04e3bc299ecfefb3007078a1da44d9978de0c3c7c8886ed0e6da7861",
+      "score": {
+        "progression": 4,
+        "groove": 2,
+        "phrase": 19
+      },
+      "sourcePeak": 0.4217,
+      "sourceRms": 0.07399
+    },
+    {
+      "id": 21,
+      "title": "Masters Gate",
+      "bpm": 118,
+      "tonicMidi": 46,
+      "bars": 32,
+      "duration": 65.085,
+      "url": "./assets/music/fruit-21.mp3",
+      "bytes": 912223,
+      "sha256": "0321455380f063450fd5c0e5f8a178c98a10230b638b76c488c6fb7800e47adc",
+      "score": {
+        "progression": 0,
+        "groove": 2,
+        "phrase": 20
+      },
+      "sourcePeak": 0.40341,
+      "sourceRms": 0.07269
+    },
+    {
+      "id": 22,
+      "title": "Apple Precision",
+      "bpm": 121,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 63.471,
+      "url": "./assets/music/fruit-22.mp3",
+      "bytes": 889552,
+      "sha256": "4c2baa2ba60de5495f6cd61412cc92b94aa2c08c5d7f232832c841e1025846ef",
+      "score": {
+        "progression": 1,
+        "groove": 1,
+        "phrase": 21
+      },
+      "sourcePeak": 0.46806,
+      "sourceRms": 0.07343
+    },
+    {
+      "id": 23,
+      "title": "Sunburst Frenzy",
+      "bpm": 124,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 61.935,
+      "url": "./assets/music/fruit-23.mp3",
+      "bytes": 867975,
+      "sha256": "4de774ff3507bfe546b7cdb2d97cac79870f3f309b1606bcf00e15e6c35b740c",
+      "score": {
+        "progression": 2,
+        "groove": 0,
+        "phrase": 22
+      },
+      "sourcePeak": 0.45139,
+      "sourceRms": 0.07591
+    },
+    {
+      "id": 24,
+      "title": "Perfect Rhythm",
+      "bpm": 127,
+      "tonicMidi": 50,
+      "bars": 32,
+      "duration": 60.472,
+      "url": "./assets/music/fruit-24.mp3",
+      "bytes": 847494,
+      "sha256": "c5e8478feede3a89104ff5372d06e549d1eb582a740ce2a1a57e007de68be9d3",
+      "score": {
+        "progression": 3,
+        "groove": 5,
+        "phrase": 23
+      },
+      "sourcePeak": 0.37806,
+      "sourceRms": 0.07609
+    },
+    {
+      "id": 25,
+      "title": "Sunset Champion",
+      "bpm": 112,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 68.571,
+      "url": "./assets/music/fruit-25.mp3",
+      "bytes": 960866,
+      "sha256": "1e14514242f17e17f9af159f982b2f9873943acc0de4c74b5936c85febd90787",
+      "score": {
+        "progression": 4,
+        "groove": 4,
+        "phrase": 24
+      },
+      "sourcePeak": 0.43028,
+      "sourceRms": 0.07264
+    }
+  ]
+}

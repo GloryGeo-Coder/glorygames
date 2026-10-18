@@ -1,14 +1,21 @@
 {
   "slug": "fruit-slice",
   "title": "Fruit Slice",
-  "description": "Swipe to slice flying fruit, dodge bombs, build combos, and trigger frenzy mode. Enhanced mobile-first arcade gameplay with polished graphics, sounds, and juicy animations.",
+  "description": "Swipe through animated fruit across 25 sunset trials, or chase your best in Endless Arcade. Master combos, golden fruit and frenzy with responsive touch controls and original music for every stage.",
   "category": "Arcade",
-  "tags": ["Swipe", "Reflex", "Casual", "Mobile", "Arcade", "Fruit"],
+  "tags": [
+    "Swipe",
+    "Reflex",
+    "Casual",
+    "Mobile",
+    "Arcade",
+    "Fruit"
+  ],
   "minPlayers": 1,
   "maxPlayers": 1,
   "controls": {
-    "mobile": "Swipe anywhere to slice.",
-    "desktop": "Click and drag to slice."
+    "mobile": "Swipe with one or two fingers. Pause contains level map, restart, audio and score controls.",
+    "desktop": "Click and drag to slice. P / Escape pauses."
   },
   "features": {
     "mobileFirst": true,
@@ -16,8 +23,17 @@
     "pause": true,
     "restart": true,
     "autoSubmitScore": true,
-    "frenzyMode": true
+    "frenzyMode": true,
+    "levels": 25,
+    "endless": true,
+    "animatedSprites": true,
+    "animationPoses": 24,
+    "cutHalfSprites": 10,
+    "musicTracks": 25,
+    "savedAudioSettings": true,
+    "progressionLocks": true
   },
-  "difficulty": "Easy",
-  "version": "2.0.0"
+  "difficulty": "Progressive",
+  "version": "2.1.0",
+  "orientation": "any"
 }

@@ -1,0 +1,13 @@
+{
+  "base_commit": "72f8449d7f22aab5c8156d13c66211306a463269",
+  "unchanged": {
+    "assets/backgrounds/dojo-sunset.png": "0f196c94b795892ca33676629115a4d69324170a26c07f0996f94da878f534b3",
+    "assets/fruits/apple.png": "0024afc634b313a1a55d7735f3697d2ca1d4ef2686ef20280191c972fa3bb51a",
+    "assets/fruits/bomb.png": "145acee4ffa3a645d698a1b47556c4c6430ff1cd9ed4eb52da1ce044371a0766",
+    "assets/fruits/kiwi.png": "91ff222681e7e323492b46c819f0d51e800ee397db07b4ff74bdbbbcb1ec612f",
+    "assets/fruits/orange.png": "a98efa22db7894536ada58f85dd8feb4781fa23abe7d373013c9d49f028ac1c4",
+    "assets/fruits/pineapple.png": "48199ade20df8a0c1f71e8f3b447bad74c2ebc047e94c7cb32c12cd2c4936841",
+    "assets/fruits/watermelon.png": "3727bb48bb8ce6febf932aa3f0f968f57d5fe82d816365db5aa86c522ef86ed2",
+    "thumb.png": "c777ba0a80843368400f1bf67cd87396ad3c8489e56233808b94c3a8ed33d922"
+  }
+}

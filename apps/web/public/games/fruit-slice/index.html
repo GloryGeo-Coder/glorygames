@@ -1,67 +1,54 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0f120f" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <title>Fruit Slice</title>
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
-  </head>
-  <body>
-    <div class="gameShell">
-      <header class="gameTop">
-        <div class="titleBlock">
-          <div id="ggTitle">Fruit Slice</div>
-          <div id="ggSub">Swipe to slice • Avoid bombs • Build combos • Enter frenzy mode</div>
-        </div>
-        <div class="hud" aria-label="Game stats">
-          <div class="pill"><span class="label">Score</span><b id="score">0</b></div>
-          <div class="pill"><span class="label">Lives</span><b id="lives">3</b></div>
-          <div class="pill"><span class="label">Combo</span><b id="combo">0</b></div>
-          <div class="pill"><span class="label">Best</span><b id="best">0</b></div>
-        </div>
-      </header>
-
-      <main class="gameStage" id="gameStage">
-        <canvas id="c" aria-label="Fruit Slice game canvas"></canvas>
-
-        <div class="meterWrap">
-          <div class="meterLabel">Frenzy</div>
-          <div class="meter"><div id="frenzyFill"></div></div>
-        </div>
-
-        <div id="panel" class="overlay">
-          <div class="card">
-            <div id="panelTitle">Fruit Slice</div>
-            <p id="panelText">Swipe across the screen to slice fruit. Avoid bombs. Build combos for bonus points and fill the frenzy meter for extra-fast scoring.</p>
-            <div class="row">
-              <button id="btnStart" class="cta" type="button">Start</button>
-              <button id="btnHow" class="ghost" type="button">How to Play</button>
-            </div>
-            <div class="tips">
-              <span>🍎 Slice fruit</span>
-              <span>💣 Avoid bombs</span>
-              <span>⚡ Chain combos</span>
-              <span>🔥 Trigger frenzy</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="actionDock">
-          <button id="btnPause" class="dockBtn" type="button">Pause</button>
-          <button id="btnRestart" class="dockBtn" type="button">Restart</button>
-          <button id="btnMute" class="dockBtn" type="button">Sound</button>
-          <button id="btnSubmit" class="dockBtn" type="button">Submit</button>
-        </div>
-
-        <button id="btnLaunch" class="hiddenCompat" type="button"></button>
-        <button id="btnChat" class="hiddenCompat" type="button"></button>
-      </main>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#24150d" />
+  <title>Fruit Slice</title>
+  <link rel="stylesheet" href="./styles.css?v=2.1" />
+  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+</head>
+<body>
+  <div class="gameShell"><main class="gameStage" id="gameStage">
+    <canvas id="c" tabindex="0" aria-label="Fruit Slice game canvas. Swipe or drag to slice fruit; avoid bombs."></canvas>
+    <header class="gameTop">
+      <div class="titleBlock"><b id="ggTitle">Fruit Slice</b><span id="stageLabel">25 Sunset Trials</span></div>
+      <div class="hud" aria-label="Game stats">
+        <div class="pill"><span>Score</span><b id="score">0</b></div>
+        <div class="pill"><span>Lives</span><b id="lives">5</b></div>
+        <div class="pill"><span>Time</span><b id="timeLeft">50</b></div>
+      </div>
+      <p id="mission">Complete the trials, master your blade and become the sunset champion.</p>
+    </header>
+    <nav class="actionDock" aria-label="Round controls"><button id="btnPause" type="button">Pause</button><button id="btnMute" type="button" aria-pressed="false">Sound On</button></nav>
+    <div class="meterWrap"><span>Combo <b id="combo">0</b></span><span id="frenzyLabel">Frenzy</span><div class="meter"><div id="frenzyFill"></div></div></div>
+    <div id="panel" class="overlay" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+      <section class="card">
+        <div class="eyebrow" id="panelEyebrow">Sunset Dojo</div>
+        <h1 id="panelTitle">Fruit Slice</h1>
+        <p id="panelText">Complete 25 slicing trials or chase your best in Endless mode. Slice ripe fruit, avoid bombs, and chain your way into frenzy.</p>
+        <div class="modeSelect" id="modeSelect" role="group" aria-label="Game mode"><button id="btnCampaign" type="button" aria-pressed="true">Campaign</button><button id="btnEndless" type="button" aria-pressed="false">Endless</button></div>
+        <div id="roundSummary" class="roundSummary" hidden></div>
+        <div id="levelMap" class="mapGrid" hidden aria-label="Campaign levels"></div>
+        <fieldset id="audioSettings" class="audioSettings" hidden><legend>Audio</legend>
+          <p>Track: <span id="musicTrack">First Slice</span></p>
+          <label for="musicVolume">Music <output id="musicVolumeValue" for="musicVolume">55%</output></label><input id="musicVolume" type="range" min="0" max="100" step="1" value="55" />
+          <label for="effectsVolume">Sound effects <output id="effectsVolumeValue" for="effectsVolume">80%</output></label><input id="effectsVolume" type="range" min="0" max="100" step="1" value="80" />
+        </fieldset>
+        <div class="row primaryRow"><button id="btnStart" class="cta" type="button" disabled>Preparing dojo…</button><button id="btnHow" type="button">How to Play</button><button id="btnLevels" type="button">Level Map</button></div>
+        <div class="row secondaryRow"><button id="btnRestart" type="button" hidden>Restart Round</button><button id="btnSubmit" type="button" hidden>Submit Score</button><button id="btnMenu" type="button" hidden>Main Menu</button></div>
+        <div class="tips" id="tips"><span>Swipe or drag</span><span>Golden fruit bonuses</span><span>7-second frenzy</span></div>
+        <p class="bestLine">Best score <b id="best">0</b> <span id="progressLabel">· 1 / 25 levels unlocked</span></p>
+      </section>
     </div>
-    <script src="./game.js" defer></script>
-    <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
-  </body>
+    <button id="btnLaunch" type="button" hidden></button><button id="btnChat" type="button" hidden></button>
+  </main></div>
+  <script src="./fruit-levels.js?v=2.1" defer></script>
+  <script src="./fruit-animation-data.js?v=2.1" defer></script>
+  <script src="./fruit-render.js?v=2.1" defer></script>
+  <script src="./fruit-music.js?v=2.1" defer></script>
+  <script src="./fruit-audio.js?v=2.1" defer></script>
+  <script src="./game.js?v=2.1" defer></script>
+  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
+</body>
 </html>
