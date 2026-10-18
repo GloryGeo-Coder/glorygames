@@ -21,7 +21,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "map-master-africa": { category: "EDUCATIONAL", description: "Explore African geography through 15 missions involving map pins, routes, country knowledge and coordinates." },
   "math-sprint-arena": { category: "EDUCATIONAL", description: "Solve arithmetic, fractions, multiplication, geometry and algebra questions in a fast-moving neon maths arena." },
   "neon-hover-runner": { category: "RACING", description: "Steer a futuristic hover runner around hazards, jump barriers and collect energy, shields, magnets and boosts." },
-  "neon-orb-defender": { category: "DEFENSE", description: "Defend a futuristic Neon Orb, rescue friendly AI units and repel rogue robots and drones across nine stages." },
+  "neon-orb-defender": { category: "DEFENSE", description: "Defend a futuristic Neon Orb, rescue friendly AI units and repel rogue robots and drones across 25 missions with animated combat and original level music." },
   "physics-force-lab": { category: "EDUCATIONAL", description: "Follow a young physicist through 12 educational missions about forces, gravity, energy, circuits and other concepts." },
   "recycle-rush": { category: "EDUCATIONAL", description: "Sort recyclables into the right bins, prevent contamination and tackle eight community recycling scenarios." },
   "science-lab-dash": { category: "EDUCATIONAL", description: "Restore Nova Science Academy by completing 20 science missions, collecting evidence and solving challenges." },

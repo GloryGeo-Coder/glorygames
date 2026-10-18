@@ -1,0 +1,425 @@
+{
+  "version": "2.1.0",
+  "generated": [
+    {
+      "file": "defender-run-sheet.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/animated/defender-run-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent sprite sheet for a premium 2D side-scrolling neon action game. Exactly 8 animation frames arranged in a precise 4-column by 2-row grid on a fully transparent 1536x1024 canvas, each cell 384x512, same ground baseline and scale, generous transparent padding inside each cell, no visible grid. The same small athletic armored robot defender in every cell: navy metal, cyan luminous visor, short pointed helmet ears, magenta chest diamond, integrated right-arm blaster. Side view facing RIGHT. Eight sequential frames of a clear complete running cycle with alternating legs and arms; the gun points forward. Consistent character, proportions and position across every frame. Crisp detailed cel-shaded game art, full body, no shadows extending outside a cell, no text, no numbers, no background, no other characters.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "bytes": 1984367,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "sha256": "fdfdda211b925df14b43a25458485a86239a7c9448d71c8f0d7aed0762b37fb9",
+      "alphaRange": [
+        0,
+        254
+      ],
+      "transparentFraction": 0.755
+    },
+    {
+      "file": "rogue-walk-sheet.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/animated/rogue-walk-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent enemy sprite sheet for a polished 2D neon action game. Exactly 8 animation frames in a precise 4-column by 2-row grid on fully transparent 1536x1024 canvas, each cell 384x512, same baseline and scale with generous transparent padding inside each cell. One consistent compact hostile armored security robot, angular black steel, orange-red visor, crimson energy chest, short arm cannon. Side view facing LEFT. Eight sequential frames forming a clear full walking cycle with alternating legs and arm movement. Full body, crisp premium cel-shaded mechanical detail, identical design in every frame, no cropped limbs, no visible grid, no ground shadow, no text or numbers, no background.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "bytes": 2253698,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "sha256": "1383feaaa3d7384e0cd1e7a6ede20a8b476fd223d8ca0c83afc091a7c96014da",
+      "alphaRange": [
+        0,
+        254
+      ],
+      "transparentFraction": 0.6627
+    },
+    {
+      "file": "drone-flight-sheet.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/animated/drone-flight-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent animated drone sprite sheet for a polished 2D neon action game. Exactly 8 frames in a precise 4-column by 2-row grid on a fully transparent 1536x1024 canvas, each cell 384x512, consistent scale and position, generous padding. One consistent hostile compact hovering battle drone, dark navy angular body, bright red-orange central eye, two articulated cyan-lit wings and small propulsion jets. Side view facing LEFT. Sequential eight-frame hover cycle: wings tilt and fold slightly, thrusters pulse, eye glow changes gently. Crisp detailed cel-shaded premium game art, complete silhouette in each cell, no visible grid, no characters or scenery, no text or numbers, no shadows beyond the cell.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "bytes": 2065891,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "sha256": "3a52deb895e0277bf5ece0106624f8e3b57abc0e61edc0d0db54799710f8645e",
+      "alphaRange": [
+        0,
+        254
+      ],
+      "transparentFraction": 0.7185
+    },
+    {
+      "file": "omega-core-sheet.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/animated/omega-core-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent boss sprite sheet for a polished neon 2D action game. Exactly 8 sequential frames in a precise 4-column by 2-row grid on a fully transparent 1536x1024 canvas, each cell 384x512, same size and central position, generous transparent padding. The same imposing floating AI core boss in every cell: angular navy armored chassis, large magenta-red luminous central eye, cyan circuit segments, articulated metal claw-like fins, no legs. Front three-quarter view pointing toward LEFT. Eight-frame cycle of fins opening slightly, energy core pulsing and rings turning, with consistent chassis design. Premium crisp cel-shaded mechanical detail, full silhouette in every cell, no text, no labels, no visible grid, no background, no large external glow reaching other cells.",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "bytes": 2724239,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "sha256": "5c54275d0f4e8df9b3dfa270c0ca16addfda2a97657a54293d1946bccafbee8c",
+      "alphaRange": [
+        0,
+        254
+      ],
+      "transparentFraction": 0.4898
+    },
+    {
+      "file": "level-10-rainline-transit.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-10-rainline-transit.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a rain-soaked elevated transit depot above the neon city; cyan railway gantries frame the edges, soft reflections and mist in an open central platform. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2890987,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "36df61fce3909dcea31c60610aeaaaeeed58968d8151c3c823dd6cf52ba95bc3"
+    },
+    {
+      "file": "level-11-cryo-storage.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-11-cryo-storage.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a vast cryogenic storage hall, ice-blue glass tanks along the sides, frosted pipes, pale vapor and a broad empty central aisle. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2590348,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "dee39332f1e82c6231539780bb0cae4070a1909157500d5a4e3c3deaabe7d953"
+    },
+    {
+      "file": "level-12-solar-foundry.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-12-solar-foundry.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a futuristic solar foundry at dusk, distant glowing amber furnaces and enormous fabrication cranes around the edges, subdued violet central air and steel flooring. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2307649,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "8ec743196b5478be0a954c0ac17f50eeccc3f113ff82a33b43707973680bb884"
+    },
+    {
+      "file": "level-13-signal-archive.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-13-signal-archive.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a monumental data archive, towering violet server columns, thin cyan fiber-optic conduits and a calm dark central chamber with immense depth. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2273577,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "9242389188166d76a40d994f4ecea007c05e8cd6dc16364b535f5c3a949e098e"
+    },
+    {
+      "file": "level-14-skyrail-junction.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-14-skyrail-junction.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a high-altitude junction of suspended railway bridges over clouds, distant neon towers, rose twilight and quiet blue space in the middle. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2175866,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "e0da0d793f98277cf5ec669773e06c3d61096c869cdfb33e5d01fe0e8a21ca51"
+    },
+    {
+      "file": "level-15-aegis-bastion.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-15-aegis-bastion.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: an imposing fortified AI bastion, angular shield pylons along the sides, deep burgundy energy lighting and a broad dark command courtyard. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2340027,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "edb313f01711444bff7cc97a8763b144cc30bc64f9b0091bb67dce41dd021299"
+    },
+    {
+      "file": "level-16-oceanic-relay.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-16-oceanic-relay.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: an ocean research relay seen through a panoramic glass wall, bioluminescent deep-blue water outside, cyan instrumentation at the sides and a calm wide central deck. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2205706,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "207b36d8c43119d66ff0a7799185bcaa3cdde66c62cefaa2e7a78bf88fff66b4"
+    },
+    {
+      "file": "level-17-geothermal-shaft.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-17-geothermal-shaft.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a subterranean geothermal station, copper pipes and small orange magma seams behind protective glass at the edges, cool dark center with gentle steam. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2388203,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "91b6c53204e780077ea75e625d1663babeb385000aac338b0b76c9fd5bad68d7"
+    },
+    {
+      "file": "level-18-magnetic-canyon.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-18-magnetic-canyon.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a canyon of immense dark metallic rock spires, distant suspended magnetic rail lines, teal aurora and a level futuristic landing deck at the bottom. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2346161,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "76ad761f39173f95907cb34ff643d2c2313f401ec871aeb17fe90a6542a8134b"
+    },
+    {
+      "file": "level-19-orbital-lift.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-19-orbital-lift.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: the upper chamber of an orbital elevator above a curved planet, steel support columns frame a panoramic indigo view, subtle gold horizon and calm central space. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2428158,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "87bdb937b4ecf316f2a2b53822363c181113d23c52831efc4df4fa9bc5d43f88"
+    },
+    {
+      "file": "level-20-skyforge-carrier.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-20-skyforge-carrier.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a vast airborne carrier hangar floating above storm clouds, violet structural ribs at the sides, dim amber runway lights and distant blue lightning, wide open center. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2498511,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "cac8f19ffb6097b2e04fe5a1d2865bf00bc8a13db6a7e1061a520a21c1c6c498"
+    },
+    {
+      "file": "level-21-lunar-outpost.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-21-lunar-outpost.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a moonbase command outpost, distant crater rim and a small blue planet through broad windows, white-gray architecture with restrained cyan lighting and dark quiet center. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2217962,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "1b84c6360d10589d0827a2c8d675d49e4d43154ae819dc3fbdab6278e36db232"
+    },
+    {
+      "file": "level-22-nebula-corridor.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-22-nebula-corridor.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a glass observation corridor looking into a magnificent magenta and blue nebula, dark geometric ribs at the sides, subtle scattered stars and low-contrast deep-blue central field. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2384240,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "c640f19315c5a579727fc4e7c537357ca033c2d6e6404eb4a48b6993ef923c86"
+    },
+    {
+      "file": "level-23-graviton-vault.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-23-graviton-vault.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: an immense gravity research vault, suspended rectangular architecture at the far edges, deep violet haze and faint curved cyan field lines, open central laboratory deck without a central orb. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2154356,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "4ae40b9251a6d21e3162e9fa7bba5dab2beee61f327c61bbdf50a1391b6ba58b"
+    },
+    {
+      "file": "level-24-nexus-bridge.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-24-nexus-bridge.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: a long command bridge suspended between two orbital towers, a distant planet and dark blue starfield, thin magenta lights along side railings, quiet open central space. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2289369,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "99d2ac2d0dd6b132daa1b46f431a7565a0243c25f31de681e2101d79cc274407"
+    },
+    {
+      "file": "level-25-prime-uplink.png",
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-25-prime-uplink.png",
+      "prompt": "Use case: stylized-concept. Asset type: full-screen level background for Neon Orb: Base Defence, a polished side-view mobile action game. Premium detailed futuristic environment illustration, deep navy and cyan with magenta energy accents. Full-bleed landscape 1536x864. Preserve an open, dark, low-contrast central 65 percent for moving characters and projectiles, with most detail along the edges and distant horizon. The central portrait crop must also look complete. No foreground characters, robots, weapons, enemies, UI, floating objects, text, signs, letters, logos, watermark or border. No baked-in game targets. Scene: the final AI uplink chamber, monumental black and silver circuit pillars, restrained red-magenta signal light and a distant star-filled panoramic opening, ominous deep navy empty center. Stationary environment painting; no motion blur.",
+      "mode": "built-in image generation",
+      "transparent_background": false,
+      "bytes": 2599646,
+      "dimensions": [
+        1672,
+        941
+      ],
+      "sha256": "0d4cb967ae93a69467b4edefcaba8dad10005a37b93155db473987bd5a11a348"
+    }
+  ],
+  "preserved": [
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-01-perimeter.png",
+      "sha256": "0919944f78ec57dbf50f5b56c091d21d5f57ed293db6feb8766e6769798d5b38"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-02-hangar.png",
+      "sha256": "d0f8effcf4d100e48787b0a05b71dc2a9fb1308921fe206a5e19267ef58808ce"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-03-power-core.png",
+      "sha256": "c073f1cc08dfd237ae7b11914c1fc8e86f05c5b3da9ce2c12a21d2661209b937"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-04-command-tower.png",
+      "sha256": "fe5f36cc64892f37499d89357bd47a5db1fd3db68b1f0152f1a78166646db29a"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-05-robotics-lab.png",
+      "sha256": "69fb63c13c61a8ab0ccc5235e5af617fb76087dbaf7c6c45c7c88843dabe4bad"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-06-weapons-vault.png",
+      "sha256": "c6308feceb94c734ccb46d8d76fa799928a5c98aa44ec5ec1877bfa9de41055b"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-07-missile-platform.png",
+      "sha256": "7e186bcb401bccc77f8195e4f7c16a15e9184efa37019c92bae67bb0b3da86f9"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-08-central-command.png",
+      "sha256": "e2ade7733298c6fea9ddcfbfb6afca287b4dcf100887cb05fdd959a6325e61a7"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/level-09-omega-core.png",
+      "sha256": "d4af5c71357aa435c2def870e0da6708f4b73107c13aad3bd47e7e7c8aa1ed05"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/nebula-a.png",
+      "sha256": "e86695530122032fb100021c8c4263c0ef77e6774d3341ef19a111e2cd38298b"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/backgrounds/nebula-b.png",
+      "sha256": "2f96f695b07bc28464edd900e0cd6670cc5943b9ad399d3f286efb15184e36f7"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/ai-chip.png",
+      "sha256": "a3f9b2106b4ef0bd0b1185453ffeaf8222652531a8bcf6ba8f978cbff12b4988"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/emp-core.png",
+      "sha256": "571158558999806828b44895c2d729a2c25c60842af3cfcd843a49fa2a95d09f"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/energy-cell.png",
+      "sha256": "ab994f00c8f69de43736e8677c65aa8dad8e206bfbc243dab3b20bf6757996d3"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/health-pack.png",
+      "sha256": "73bf94afe8aad2c0ce1dc7d74ef72697278e6d149e9a8efc5c5582b87cb5886d"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/keycard.png",
+      "sha256": "37848ffafcb721eb6715999a2cb2a6fd4e79e4e96baf1b5ffdfa0e95a137e6b6"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/repair-kit.png",
+      "sha256": "e142be1cf583f8fc605a77eaf08c311aa24a3b1aa72026cf3a146e37db472ef2"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/shield-battery.png",
+      "sha256": "c7dab89e1cbd14829f232f7bed400d1d5110b3bd2c50a4e08ce44b0ce9f0882f"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/items/weapon-crate.png",
+      "sha256": "092e486cd517d7901bcc570cff65f4468c2b6f67638a2639caeeee47a648e781"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/boss-omega-core.png",
+      "sha256": "7cab22342fc1454fc65303843d3337e487197fc43b247a1630f2195726ab3c72"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/enemy-drone.png",
+      "sha256": "898e016fa48d86befedf2d5e29ac123f8d0cc0f9c8a60038993c5449c2f5292f"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/enemy-heavy-mech.png",
+      "sha256": "ae393aefb6f9364d433dabdf34e0e9377841d0ac97f8f9d656955dc936b6bbe5"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/enemy-laser-drone.png",
+      "sha256": "866f71519487e99bde035bdfdcb72d27f77f5b8f58fba6a5b558e3e4a048f22d"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/enemy-repair-drone.png",
+      "sha256": "34ca7d5d2b54cd9795a50b77de24ca7e286ccb7de4aae626003b3dd6c1800386"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/enemy-scout-robot.png",
+      "sha256": "72c063e124afd218b666b952b1f4a3221c029b5ebbaa7b1773d2cd5f9f380dae"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/enemy-shield-bot.png",
+      "sha256": "339e771f61726daa5920b17abea74771b5456232390cd42b47b580e95af16d73"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/enemy-turret.png",
+      "sha256": "898ec2e1019c45f33815409f46f33da4bd2304712e5ef9f13a984f81677399bb"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/enemies/friendly-ai-bot.png",
+      "sha256": "0a633b1824810a47fda6c1e7f5a63dec022d1f69f7404ed7fef20394022fa23d"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/npcs/friendly-ai-bot.png",
+      "sha256": "f1b63c5a2a005893264094f45927bdbe1974002205c3e1c414cdb89a60b785c1"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/player/player-idle.png",
+      "sha256": "f71f7f032a3193114f67dee076e2cf13dae2a22f6f1f7527d9541b3ba40f44b1"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/player/player-jump.png",
+      "sha256": "71256eb4d0ba8f6d3889f87f6c11c963a0b88030fe15b6c92021b3687e95a402"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/assets/sprites/player/player-run.png",
+      "sha256": "d8ea87b27fc739fd43095b892d7f84f020db118de0854e823f9c0ae69f33a4ae"
+    },
+    {
+      "path": "apps/web/public/games/neon-orb-defender/thumb.png",
+      "sha256": "eaa1b615749c6c8234afa3c2d5accac90a199ab391d52b570dfeac99c93e7ecd"
+    }
+  ],
+  "spriteLayout": {
+    "columns": 4,
+    "rows": 2,
+    "frames": 8
+  },
+  "originalBackgroundPresentation": "The top 17% is cropped in the renderer to remove baked-in title banners. Original bytes are unchanged."
+}

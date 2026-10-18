@@ -826,14 +826,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "neon-orb-defender": {
     "category": "Defense",
-    "summary": "Protect a futuristic base's Neon Orb, fight rogue machines and support friendly AI units across nine stages.",
+    "summary": "Protect a futuristic base's Neon Orb, fight rogue machines and support friendly AI units across 25 longer missions.",
     "overview": [
       "Neon Orb: Base Defence is an arcade action game built around protecting a vulnerable futuristic base. Rogue robots and drones create waves of danger, while the player works to keep the central Neon Orb safe and help friendly AI units.",
       "Unlike a pure survival shooter, the game has an explicit protective objective. Positioning and responding to threats matter because enemies do not have to defeat the player personally to create pressure; they can threaten the orb or disrupt the defence mission."
     ],
     "story": [
       "The setting is a future military-style base with a valuable Neon Orb at its centre. Hostile, rogue AI forces threaten the installation, and the defender must resist their attacks while supporting friendly units.",
-      "Nine stages of enemy attacks test more than shooting accuracy. The defender must choose which threat to stop first while keeping the Neon Orb safe. The campaign builds toward a boss encounter that puts every learned skill under pressure."
+      "Twenty-five missions of enemy attacks test more than shooting accuracy. The defender must choose which threat to stop first while keeping the Neon Orb safe. The campaign builds toward a boss encounter that puts every learned skill under pressure."
     ],
     "howToPlay": [
       "Enter a mission and identify the position of the Neon Orb and the nearest incoming threat.",
@@ -860,11 +860,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Waves and bosses",
-        "body": "Nine stages and a boss fight provide escalating action."
+        "body": "Twenty-five missions have three waves each, four command-core bosses, saved unlocks and replay stars."
       }
     ],
     "progression": [
-      "The nine-level story progression challenges you to keep the base defended as stronger enemies appear.",
+      "The 25-level story progression challenges you to keep the base defended as stronger enemies appear.",
       "Sound effects, background music and WebGameArena scoring are supported, but exact score awards or enemy weaknesses should be learned in play."
     ],
     "tips": [

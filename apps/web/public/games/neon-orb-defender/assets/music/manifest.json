@@ -1,0 +1,465 @@
+{
+  "title": "Neon Orb: Fort Nova Signals",
+  "style": "Original sci-fi electronic combat score with stereo pads, sequenced bass, bright arpeggios and electronic drums",
+  "provenance": "Procedurally composed and synthesized for WebGameArena; no third-party songs, recordings or samples.",
+  "renderer": "tools/build-orb-soundtrack.py",
+  "sampleRate": 44100,
+  "channels": 2,
+  "bitrateKbps": 112,
+  "mastering": {
+    "integratedLufs": -18,
+    "truePeakDb": -2.5
+  },
+  "tracks": [
+    {
+      "id": 1,
+      "title": "Base Perimeter Breach",
+      "bpm": 120,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 64.0,
+      "url": "./assets/music/orb-01.mp3",
+      "bytes": 896871,
+      "sha256": "e5760e469e361619ff16f4d1cb7c72505e0d0063fd8f1186454cbc594604dbf7",
+      "score": {
+        "progression": 0,
+        "groove": 0,
+        "phrase": 0
+      },
+      "sourcePeak": 0.45741,
+      "sourceRms": 0.09129
+    },
+    {
+      "id": 2,
+      "title": "Hangar Recovery",
+      "bpm": 122,
+      "tonicMidi": 42,
+      "bars": 32,
+      "duration": 62.951,
+      "url": "./assets/music/orb-02.mp3",
+      "bytes": 882237,
+      "sha256": "0623ed8a547af0f7aa9b42c72656ef811c368f889726f463f5c1a1bfb6bebfbb",
+      "score": {
+        "progression": 1,
+        "groove": 5,
+        "phrase": 1
+      },
+      "sourcePeak": 0.42771,
+      "sourceRms": 0.09146
+    },
+    {
+      "id": 3,
+      "title": "Power Core Defence",
+      "bpm": 124,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 61.935,
+      "url": "./assets/music/orb-03.mp3",
+      "bytes": 867977,
+      "sha256": "df896445dd63cd5db59da55339ebbcfb2c3dea4d971e650288b6a42e36dc7456",
+      "score": {
+        "progression": 2,
+        "groove": 4,
+        "phrase": 2
+      },
+      "sourcePeak": 0.49258,
+      "sourceRms": 0.0917
+    },
+    {
+      "id": 4,
+      "title": "Drone Command Tower",
+      "bpm": 126,
+      "tonicMidi": 40,
+      "bars": 32,
+      "duration": 60.952,
+      "url": "./assets/music/orb-04.mp3",
+      "bytes": 854447,
+      "sha256": "95b3452da4984ebba991ba54d4416a3090cbeead2a5d589733ddbc90c3d7f93b",
+      "score": {
+        "progression": 3,
+        "groove": 3,
+        "phrase": 3
+      },
+      "sourcePeak": 0.54388,
+      "sourceRms": 0.0928
+    },
+    {
+      "id": 5,
+      "title": "AI Robotics Lab",
+      "bpm": 128,
+      "tonicMidi": 44,
+      "bars": 32,
+      "duration": 60.0,
+      "url": "./assets/music/orb-05.mp3",
+      "bytes": 840911,
+      "sha256": "826d5b03e00a7915fe71a85967774649814ed864b7b9857a25166ce7c59b2cc4",
+      "score": {
+        "progression": 4,
+        "groove": 2,
+        "phrase": 4
+      },
+      "sourcePeak": 0.48056,
+      "sourceRms": 0.09385
+    },
+    {
+      "id": 6,
+      "title": "Underground Weapons Vault",
+      "bpm": 131,
+      "tonicMidi": 49,
+      "bars": 32,
+      "duration": 58.626,
+      "url": "./assets/music/orb-06.mp3",
+      "bytes": 821904,
+      "sha256": "2361c02f51850779772ce652fb3fada19fbdcbe641357f0a330179a4fa1f0b49",
+      "score": {
+        "progression": 0,
+        "groove": 2,
+        "phrase": 5
+      },
+      "sourcePeak": 0.49324,
+      "sourceRms": 0.0956
+    },
+    {
+      "id": 7,
+      "title": "Missile Defence Platform",
+      "bpm": 133,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 57.744,
+      "url": "./assets/music/orb-07.mp3",
+      "bytes": 809469,
+      "sha256": "1d1391853ff638e3350a325a143b32e2ddca95e1ecd7f82504620d1fdade4b28",
+      "score": {
+        "progression": 1,
+        "groove": 1,
+        "phrase": 6
+      },
+      "sourcePeak": 0.5047,
+      "sourceRms": 0.09563
+    },
+    {
+      "id": 8,
+      "title": "Central Command",
+      "bpm": 121,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 63.471,
+      "url": "./assets/music/orb-08.mp3",
+      "bytes": 889551,
+      "sha256": "8ec10acb3b34e3bd89505893a2a53c3a0af669af625a8fb7a60c577a3c51f0f4",
+      "score": {
+        "progression": 2,
+        "groove": 0,
+        "phrase": 7
+      },
+      "sourcePeak": 0.4556,
+      "sourceRms": 0.08905
+    },
+    {
+      "id": 9,
+      "title": "OMEGA-9: First Contact",
+      "bpm": 123,
+      "tonicMidi": 42,
+      "bars": 32,
+      "duration": 62.439,
+      "url": "./assets/music/orb-09.mp3",
+      "bytes": 875295,
+      "sha256": "3cea3f61fc7aa8a39e2b723dcf18da6985a607e1859802e5618b6ef6a3016fc4",
+      "score": {
+        "progression": 3,
+        "groove": 5,
+        "phrase": 8
+      },
+      "sourcePeak": 0.43566,
+      "sourceRms": 0.09262
+    },
+    {
+      "id": 10,
+      "title": "Rainline Transit",
+      "bpm": 125,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 61.44,
+      "url": "./assets/music/orb-10.mp3",
+      "bytes": 861026,
+      "sha256": "dd1dc363dfef2c975e07bb9e1d21977cde48d49218eba4adeeecf767a0c509e1",
+      "score": {
+        "progression": 4,
+        "groove": 4,
+        "phrase": 9
+      },
+      "sourcePeak": 0.49656,
+      "sourceRms": 0.09158
+    },
+    {
+      "id": 11,
+      "title": "Cryo Storage",
+      "bpm": 128,
+      "tonicMidi": 40,
+      "bars": 32,
+      "duration": 60.0,
+      "url": "./assets/music/orb-11.mp3",
+      "bytes": 840908,
+      "sha256": "699a3d05a39addb29c3617a649b22eb32e56d44cef8730535781071ce29e4b68",
+      "score": {
+        "progression": 0,
+        "groove": 4,
+        "phrase": 10
+      },
+      "sourcePeak": 0.47442,
+      "sourceRms": 0.09394
+    },
+    {
+      "id": 12,
+      "title": "Solar Foundry",
+      "bpm": 130,
+      "tonicMidi": 44,
+      "bars": 32,
+      "duration": 59.077,
+      "url": "./assets/music/orb-12.mp3",
+      "bytes": 828109,
+      "sha256": "3f017b800d5ba61280f9bef359e9b065713acd0ebc844bdafc065eef854391bb",
+      "score": {
+        "progression": 1,
+        "groove": 3,
+        "phrase": 11
+      },
+      "sourcePeak": 0.48202,
+      "sourceRms": 0.09424
+    },
+    {
+      "id": 13,
+      "title": "Signal Archive",
+      "bpm": 132,
+      "tonicMidi": 49,
+      "bars": 32,
+      "duration": 58.182,
+      "url": "./assets/music/orb-13.mp3",
+      "bytes": 815676,
+      "sha256": "4c23737b5e00f2f154d4d98f10425fbe9a4b400d51d60dc486fa8d6a6208793b",
+      "score": {
+        "progression": 2,
+        "groove": 2,
+        "phrase": 12
+      },
+      "sourcePeak": 0.46483,
+      "sourceRms": 0.09354
+    },
+    {
+      "id": 14,
+      "title": "Skyrail Junction",
+      "bpm": 134,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 57.313,
+      "url": "./assets/music/orb-14.mp3",
+      "bytes": 803609,
+      "sha256": "6c2062699ee4d2ecfb6e793cc6b124c628d7a8aadef2c3b95711542924f066b3",
+      "score": {
+        "progression": 3,
+        "groove": 1,
+        "phrase": 13
+      },
+      "sourcePeak": 0.49777,
+      "sourceRms": 0.09495
+    },
+    {
+      "id": 15,
+      "title": "Aegis Bastion",
+      "bpm": 122,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 62.951,
+      "url": "./assets/music/orb-15.mp3",
+      "bytes": 882235,
+      "sha256": "d938b98f48dc00d73e4d8ef8a853b638eb5956a6a16aab0be710b1e4d8f45a50",
+      "score": {
+        "progression": 4,
+        "groove": 0,
+        "phrase": 14
+      },
+      "sourcePeak": 0.50159,
+      "sourceRms": 0.09136
+    },
+    {
+      "id": 16,
+      "title": "Oceanic Relay",
+      "bpm": 125,
+      "tonicMidi": 42,
+      "bars": 32,
+      "duration": 61.44,
+      "url": "./assets/music/orb-16.mp3",
+      "bytes": 861023,
+      "sha256": "926fed16742699e583d5ae07f8fafe6ad3f12af20d1a2135e8ce938ad041de3a",
+      "score": {
+        "progression": 0,
+        "groove": 0,
+        "phrase": 15
+      },
+      "sourcePeak": 0.48382,
+      "sourceRms": 0.09406
+    },
+    {
+      "id": 17,
+      "title": "Geothermal Shaft",
+      "bpm": 127,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 60.472,
+      "url": "./assets/music/orb-17.mp3",
+      "bytes": 847495,
+      "sha256": "534190ea8ea2f6bae39baa8d36f924006c9f57f548b02ade213100e5fbc53dd5",
+      "score": {
+        "progression": 1,
+        "groove": 5,
+        "phrase": 16
+      },
+      "sourcePeak": 0.47228,
+      "sourceRms": 0.09382
+    },
+    {
+      "id": 18,
+      "title": "Magnetic Canyon",
+      "bpm": 129,
+      "tonicMidi": 40,
+      "bars": 32,
+      "duration": 59.535,
+      "url": "./assets/music/orb-18.mp3",
+      "bytes": 834694,
+      "sha256": "69743730b2618eeb723efd463ca0341cff85ce11932ca08c0776e66a442aaf20",
+      "score": {
+        "progression": 2,
+        "groove": 4,
+        "phrase": 17
+      },
+      "sourcePeak": 0.47196,
+      "sourceRms": 0.09171
+    },
+    {
+      "id": 19,
+      "title": "Orbital Lift",
+      "bpm": 131,
+      "tonicMidi": 44,
+      "bars": 32,
+      "duration": 58.626,
+      "url": "./assets/music/orb-19.mp3",
+      "bytes": 821891,
+      "sha256": "14449ac55cedcc8efb6cfd8c5f517b0d3424ce33af883195aea39e89a785de4c",
+      "score": {
+        "progression": 3,
+        "groove": 3,
+        "phrase": 18
+      },
+      "sourcePeak": 0.51241,
+      "sourceRms": 0.09501
+    },
+    {
+      "id": 20,
+      "title": "Skyforge Carrier",
+      "bpm": 133,
+      "tonicMidi": 49,
+      "bars": 32,
+      "duration": 57.744,
+      "url": "./assets/music/orb-20.mp3",
+      "bytes": 809461,
+      "sha256": "963693289705c55834eaa3b8936e4944c5290aac55f113f749b023e592d64518",
+      "score": {
+        "progression": 4,
+        "groove": 2,
+        "phrase": 19
+      },
+      "sourcePeak": 0.51375,
+      "sourceRms": 0.09428
+    },
+    {
+      "id": 21,
+      "title": "Lunar Outpost",
+      "bpm": 136,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 56.471,
+      "url": "./assets/music/orb-21.mp3",
+      "bytes": 791538,
+      "sha256": "6e23cc408a8a3742e3ef45118f9b2a976e97160a3a24d96438ca088bd64eeacf",
+      "score": {
+        "progression": 0,
+        "groove": 2,
+        "phrase": 20
+      },
+      "sourcePeak": 0.45794,
+      "sourceRms": 0.09375
+    },
+    {
+      "id": 22,
+      "title": "Nebula Corridor",
+      "bpm": 124,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 61.935,
+      "url": "./assets/music/orb-22.mp3",
+      "bytes": 867974,
+      "sha256": "0d5b2015308a6c225565123740e5dfaabdff8276a9bced263997e1b5270616e9",
+      "score": {
+        "progression": 1,
+        "groove": 1,
+        "phrase": 21
+      },
+      "sourcePeak": 0.50016,
+      "sourceRms": 0.09326
+    },
+    {
+      "id": 23,
+      "title": "Graviton Vault",
+      "bpm": 126,
+      "tonicMidi": 42,
+      "bars": 32,
+      "duration": 60.952,
+      "url": "./assets/music/orb-23.mp3",
+      "bytes": 854442,
+      "sha256": "cc36cb1ae24eab6dfc22b1066aba24ca1cbdd6860644d57dbe1798b4ea0f0712",
+      "score": {
+        "progression": 2,
+        "groove": 0,
+        "phrase": 22
+      },
+      "sourcePeak": 0.52506,
+      "sourceRms": 0.09505
+    },
+    {
+      "id": 24,
+      "title": "Nexus Bridge",
+      "bpm": 128,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 60.0,
+      "url": "./assets/music/orb-24.mp3",
+      "bytes": 840908,
+      "sha256": "a35dfc5a8f4b6e281ffbc7b12bff46b7be803528e3256589b8b145d18d3b8315",
+      "score": {
+        "progression": 3,
+        "groove": 5,
+        "phrase": 23
+      },
+      "sourcePeak": 0.43909,
+      "sourceRms": 0.0933
+    },
+    {
+      "id": 25,
+      "title": "Prime Uplink",
+      "bpm": 130,
+      "tonicMidi": 40,
+      "bars": 32,
+      "duration": 59.077,
+      "url": "./assets/music/orb-25.mp3",
+      "bytes": 828108,
+      "sha256": "5a85eb32df8b9785dcbae8dee12d469c692c65a6e0101f2cbe89a67a7bbf112c",
+      "score": {
+        "progression": 4,
+        "groove": 4,
+        "phrase": 24
+      },
+      "sourcePeak": 0.45594,
+      "sourceRms": 0.0934
+    }
+  ]
+}
