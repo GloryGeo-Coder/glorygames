@@ -1,0 +1,13 @@
+{
+  "baseCommit": "8152ec9dcc3f0ab460cfc6c14ebbc6a79a56669f",
+  "unchanged": {
+    "assets/bubbles/freeze.png": "ec4ce8a7b75665bb691e510b421dd952f61938cb1f9bb0a32764996e923e8fa6",
+    "assets/bubbles/bomb.png": "e1e6e9631cfbfa3cc8110432c758cb750d8313790b840fb86a774144abd96d69",
+    "assets/bubbles/bonus.png": "6b64e9489f325f3b4ff725ff9532f4e6d6564f92de88a82b6bc1cc41193c7179",
+    "assets/bubbles/time.png": "560f2afb995f2c67b961de3ca3dbb3a14a54dcae7d47309c88ce80b62533e3ed",
+    "assets/bubbles/normal.png": "4e55ec0d15842099fbaafad16aeb4cfa90ce8d9c6fe90baa9dd8342f1e5a846d",
+    "assets/backgrounds/bg-lagoon.png": "cfbb858807323c871ac4f1a8270099fc7a5306dabaebd6ecd5b245282aeb83ce",
+    "assets/backgrounds/bg-cosmic.png": "9d5fd112b757b693763856e741fa81fc2a54d6e4f4c4f1153369bb48fb45a238",
+    "assets/backgrounds/bg-underwater.png": "e89ef56d8c8b15035ff971587443c347c77286c591324b9cb72320cb80da6ccf"
+  }
+}

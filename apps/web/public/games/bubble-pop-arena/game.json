@@ -1,9 +1,34 @@
 {
   "title": "Bubble Pop Arena",
-  "description": "Pop as many bubbles as you can before time runs out. Chain combos, catch time bubbles, trigger freeze effects, and dodge bomb bubbles. Designed for mobile play with tap and drag popping.",
-  "tags": ["arcade", "mobile", "touch", "casual", "timed", "combo", "score-attack", "bubble"],
+  "description": "Pop bubbles, chain combos and chase your best through six shifting arenas. Catch gold time bubbles to keep your continuous round going, collect freeze and bonus bubbles, and avoid red bombs. Tap or drag on mobile, tablet or desktop.",
+  "tags": [
+    "arcade",
+    "mobile",
+    "touch",
+    "casual",
+    "timed",
+    "combo",
+    "score-attack",
+    "bubble"
+  ],
   "controls": [
-    { "key": "Tap / Drag", "action": "Pop bubbles" },
-    { "key": "Buttons", "action": "Pause / Submit score / Restart / Overlay" }
-  ]
+    {
+      "key": "Tap / Drag",
+      "action": "Pop bubbles"
+    },
+    {
+      "key": "Buttons",
+      "action": "Pause / Submit score / Restart / Overlay"
+    }
+  ],
+  "version": "2.1.0",
+  "orientation": "any",
+  "features": {
+    "mode": "continuous-score-attack",
+    "backgrounds": 6,
+    "musicTracks": 6,
+    "progressiveWaves": true,
+    "touchDrag": true,
+    "independentAudioControls": true
+  }
 }

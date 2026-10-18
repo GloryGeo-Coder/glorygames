@@ -1,570 +1,131 @@
+/* Bubble Pop Arena 2.1: continuous mobile arena, original score bridge retained. */
 (() => {
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d', { alpha: false });
-  canvas.style.touchAction = 'none';
-
-  const elScore = document.getElementById('score');
-  const elBest = document.getElementById('best');
-  const elTime = document.getElementById('time');
-  const elCombo = document.getElementById('combo');
-  const elFreeze = document.getElementById('freeze');
-  const elFever = document.getElementById('fever');
-  const elTitle = document.getElementById('ggTitle');
-  const elSub = document.getElementById('ggSub');
-
-  const panel = document.getElementById('panel');
-  const panelTitle = document.getElementById('panelTitle');
-  const panelText = document.getElementById('panelText');
-  const btnStart = document.getElementById('btnStart');
-  const btnOverlay = document.getElementById('btnOverlay');
-  const btnPause = document.getElementById('btnPause');
-  const btnSubmit = document.getElementById('btnSubmit');
-  const btnRestart = document.getElementById('btnRestart');
-  const btnChat = document.getElementById('btnChat');
-
-  let META = { title: 'Bubble Pop Arena', description: '' };
-  const BEST_KEY = 'gg_bubble_pop_best_v2';
-  const GAME_SLUG = 'bubble-pop-arena';
-
-  const ASSETS = {
-    backgrounds: [
-      './assets/backgrounds/bg-underwater.png',
-      './assets/backgrounds/bg-lagoon.png',
-      './assets/backgrounds/bg-cosmic.png',
-    ],
-    bubbles: {
-      normal: './assets/bubbles/normal.png',
-      time: './assets/bubbles/time.png',
-      bomb: './assets/bubbles/bomb.png',
-      freeze: './assets/bubbles/freeze.png',
-      bonus: './assets/bubbles/bonus.png',
+  'use strict';
+  const $=id=>document.getElementById(id),canvas=$('c'),ctx=canvas.getContext('2d',{alpha:false});
+  const {scenes,pacing,cover,distanceToSegment,clamp}=window.BubbleRules;
+  const audio=window.BubbleAudio.create(window,window.BubbleMusic);
+  const BEST_KEY='gg_bubble_pop_best_v2',SETTINGS_KEY='gg_bubble_pop_audio_v1',GAME_SLUG='bubble-pop-arena';
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const safeRead=k=>{try{return localStorage.getItem(k);}catch{return null;}};
+  const safeWrite=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
+  let settings={muted:false,musicVolume:.55,effectsVolume:.8};
+  try{const s=JSON.parse(safeRead(SETTINGS_KEY));if(s&&typeof s==='object'){settings.muted=s.muted===true;for(const k of ['musicVolume','effectsVolume'])if(typeof s[k]==='number'&&Number.isFinite(s[k]))settings[k]=clamp(s[k],0,1);}}catch{}
+  let best=Math.max(0,Math.floor(Number(safeRead(BEST_KEY))||0));if(!Number.isFinite(best))best=0;
+  const images={bg:[],bubble:{}};
+  let running=false,paused=false,gameOver=false,ready=false;
+  let score=0,combo=0,timeLeft=45,comboWindow=0,freezeTimer=0,feverMeter=0,feverTimer=0;
+  let pops=0,elapsed=0,wave=1,sceneIndex=0,previousScene=0,transition=1,toastTimer=0,visualTime=0;
+  let bubbles=[],particles=[],floatingTexts=[],ambientBubbles=[],spawnT=0,hudT=0;
+  let pointerId=null,pointerPoint=null,width=1,height=1,DPR=1;
+  let lastT=performance.now(),accumulator=0,lastReportedScore=-1,lastReportAt=0,lastSubmittedScore=-1,warningSecond=-1;
+  const reducedMotion=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;
+  function cw(){return width;}function ch(){return height;}
+  function resetInput(){const id=pointerId;pointerId=null;pointerPoint=null;if(id!==null)try{if(canvas.hasPointerCapture?.(id))canvas.releasePointerCapture(id);}catch{}}
+  function viewport(){return {width,height,DPR};}
+  function resize(){
+    const r=canvas.getBoundingClientRect(),w=Math.max(1,r.width),h=Math.max(1,r.height),changed=Math.abs(w-width)>1||Math.abs(h-height)>1;
+    if(changed&&running&&!paused)setPaused(true,'Screen changed. Continue when you are ready.');
+    const sx=w/width,sy=h/height;width=w;height=h;
+    const maxR=Math.max(26,Math.min(48,width*.12,height*.18));
+    for(const b of bubbles){b.r=Math.min(b.r,maxR);b.x=clamp(b.x*sx,b.r+6,width-b.r-6);b.y*=sy;b.vy*=sy;b.ttl=Math.max(b.ttl,(b.y+b.r+40)/Math.max(1,-b.vy)+.5);}
+    resetInput();DPR=Math.max(.5,Math.min(2,window.devicePixelRatio||1,Math.sqrt(3000000/(w*h))));
+    canvas.width=Math.max(1,Math.floor(w*DPR));canvas.height=Math.max(1,Math.floor(h*DPR));ctx.setTransform(DPR,0,0,DPR,0,0);draw();
+  }
+  function loadImageSafe(src){return new Promise(resolve=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src=src;});}
+  async function loadAssets(){
+    images.bg[0]=await loadImageSafe('./assets/backgrounds/'+scenes[0].file);
+    for(const type of ['normal','time','bomb','freeze','bonus'])images.bubble[type]=await loadImageSafe('./assets/bubbles/'+type+'.png');
+  }
+  async function preloadScenes(){for(let i=1;i<scenes.length;i++)images.bg[i]=await loadImageSafe('./assets/backgrounds/'+scenes[i].file);}
+  function reportScoreLive(force=false){const now=performance.now();if(!force&&(score===lastReportedScore||now-lastReportAt<80))return;lastReportedScore=score;lastReportAt=now;
+    try{window.GG?.setScore?.(score);}catch{}
+    for(const type of ['GG_SCORE','gg:score'])try{window.parent?.postMessage?.({type,slug:GAME_SLUG,score},'*');}catch{}
+    try{window.dispatchEvent(new CustomEvent('gg:score',{detail:{slug:GAME_SLUG,score}}));}catch{}
+  }
+  function updateHud(){for(const [id,value] of Object.entries({score,best,combo,time:Math.max(0,timeLeft).toFixed(1),freeze:Math.max(0,freezeTimer).toFixed(1)+'s',fever:feverTimer>0?'ACTIVE':Math.round(clamp(feverMeter,0,1)*100)+'%',wave:'Wave '+wave,scene:scenes[sceneIndex].title}))$(id).textContent=String(value);$('btnPause').textContent=paused?'Resume':'Pause';reportScoreLive();}
+  function showPanel(title,text,button){$('panelTitle').textContent=title;$('panelText').textContent=text;$('btnStart').textContent=button;$('panel').hidden=false;$('roundSummary').textContent=running||gameOver?`${pops} pops · Wave ${wave} · Best ${best}`:'20 pops or 25 seconds bring the next wave.';}
+  function syncAudioSettings(){audio.configure(settings);$('btnMute').textContent=settings.muted?'Sound Off':'Sound On';$('btnMute').setAttribute('aria-pressed',String(settings.muted));for(const k of ['musicVolume','effectsVolume']){$(k).value=String(Math.round(settings[k]*100));$(k+'Value').textContent=$(k).value+'%';}$('musicTrack').textContent=window.BubbleMusic[sceneIndex]?.title||scenes[sceneIndex].title;}
+  function setPaused(value,message='Take a breath. Your timer and bubbles are paused.'){
+    if(!running||gameOver)return;paused=value;resetInput();accumulator=0;lastT=performance.now();
+    if(paused){audio.pause();showPanel('Paused',message,'Continue');}else{$('panel').hidden=true;audio.unlock();audio.playScene(sceneIndex+1);}updateHud();
+  }
+  function togglePause(){setPaused(!paused);}
+  function rememberBest(){if(score>best){best=score;safeWrite(BEST_KEY,String(best));}}
+  function startGame(){if(!ready)return;rememberBest();audio.pause();resetInput();
+    running=true;paused=false;gameOver=false;score=0;combo=0;timeLeft=45;comboWindow=0;freezeTimer=0;feverMeter=0;feverTimer=0;
+    pops=0;elapsed=0;wave=1;sceneIndex=0;previousScene=0;transition=1;toastTimer=0;spawnT=0;hudT=0;warningSecond=-1;
+    bubbles=[];particles=[];floatingTexts=[];lastReportedScore=-1;lastReportAt=0;lastSubmittedScore=-1;accumulator=0;lastT=performance.now();
+    $('panel').hidden=true;$('sceneToast').className='sceneToast';audio.selectScene(1);syncAudioSettings();audio.unlock();audio.playScene(1);audio.effect('start');
+    for(let i=0;i<8;i++)spawnBubble(true);updateHud();
+  }
+  function submitScore(){if(score===lastSubmittedScore)return;lastSubmittedScore=score;reportScoreLive(true);try{window.GG?.submitScore?.(score);}catch{}}
+  function endGame(){if(gameOver)return;gameOver=true;running=false;paused=false;resetInput();audio.pause();audio.effect('gameover');rememberBest();updateHud();showPanel('Round Over',`Time’s up!\nScore: ${score} · ${pops} pops\nKeep your next round going with gold time bubbles.`,'Play Again');submitScore();}
+  function advanceWave(){const next=pacing(pops,elapsed,width,height);if(next.wave===wave)return;wave=next.wave;previousScene=sceneIndex;sceneIndex=next.scene;transition=reducedMotion?1:0;toastTimer=2.2;$('sceneToast').textContent=`Wave ${wave} · ${scenes[sceneIndex].title}`;$('sceneToast').className='sceneToast visible';audio.selectScene(sceneIndex+1);syncAudioSettings();if(running&&!paused)audio.playScene(sceneIndex+1);audio.effect('scene');updateHud();}
+  function bubbleColor(type){return {bomb:'#ff567d',time:'#ffdb6b',freeze:'#8ef6ff',bonus:'#f29bff',normal:'#69caff'}[type]||'#69caff';}
+  function spawnBubble(seedStart=false){
+    const p=pacing(pops,elapsed,width,height);if(bubbles.length>=p.capacity)return null;
+    const base=clamp(Math.min(width,height)*.065,26,38),r=rnd(base,base*1.3),x=rnd(r+8,width-r-8),y=seedStart?rnd(r+10,Math.max(r+11,height-r-10)):height+r+8;
+    const speed=clamp(height/rnd(4.8,6.5),55,175)*p.speed,vy=-speed,vx=rnd(-16,16),roll=Math.random();
+    let type=roll<.08?'bomb':roll<.18?'time':roll<.25?'freeze':roll<.33?'bonus':'normal';
+    if(seedStart&&bubbles.length<3)type='normal';
+    const b={x,y,r,vx,vy,type,ttl:(y+r+45)/speed+1,pulse:rnd(0,Math.PI*2),spin:rnd(-1,1)};
+    // Space the opening targets; later waves can form readable clusters.
+    if(seedStart)for(let attempt=0;attempt<12;attempt++){if(!bubbles.some(o=>Math.hypot(o.x-b.x,o.y-b.y)<o.r+b.r+6))break;b.x=rnd(r+8,width-r-8);b.y=rnd(r+10,Math.max(r+11,height-r-10));b.ttl=(b.y+r+45)/speed+1;}
+    bubbles.push(b);return b;
+  }
+  function multiplierForCombo(c){return feverTimer>0?2.25:c>=12?1.9:c>=8?1.55:c>=4?1.25:1;}
+  function addFloatingText(x,y,text,color='#fff',size=18){if(floatingTexts.length>=36)floatingTexts.shift();floatingTexts.push({x,y,text,color,size,t:.85,vy:-28});}
+  function popParticles(x,y,color,count=14,radius=0){for(let i=0;i<(reducedMotion?Math.min(5,count):count);i++){const ang=rnd(0,Math.PI*2),sp=rnd(45,150)+radius*.5;particles.push({x,y,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp-40,t:rnd(.3,.65),r:rnd(2,4.5),color});}if(particles.length>240)particles.splice(0,particles.length-240);}
+  function triggerFever(){feverTimer=5.5;feverMeter=1;addFloatingText(width*.5,height*.28,'FEVER!','#ffd5ff',28);audio.effect('fever');}
+  function onPop(b){
+    if(b.type==='bomb'){combo=0;comboWindow=0;feverMeter=Math.max(0,feverMeter-.35);score=Math.max(0,score-30);addFloatingText(b.x,b.y,'−30','#ff7b93',20);popParticles(b.x,b.y,bubbleColor('bomb'),24,b.r);audio.effect('bomb');return;}
+    pops++;combo++;comboWindow=1.2;feverMeter=clamp(feverMeter+.08,0,1);if(feverMeter>=1&&feverTimer<=0)triggerFever();
+    let base=Math.round(10+b.r*.48);if(b.type==='time')base+=6;if(b.type==='freeze')base+=8;if(b.type==='bonus')base+=18;
+    const gained=Math.round(base*multiplierForCombo(combo));score+=gained;popParticles(b.x,b.y,bubbleColor(b.type),b.type==='bonus'?22:14,b.r);addFloatingText(b.x,b.y,`+${gained}`,bubbleColor(b.type));
+    if(b.type==='time'){timeLeft+=2.4;addFloatingText(b.x,b.y-22,'+2.4s','#ffe486');}
+    else if(b.type==='freeze'){freezeTimer=Math.min(8,freezeTimer+3.5);addFloatingText(b.x,b.y-22,'FREEZE','#9ff7ff');}
+    else if(b.type==='bonus'){score+=20;addFloatingText(b.x,b.y-22,'BONUS!','#ffb0ff');}
+    audio.effect(b.type==='normal'?'pop':b.type,combo);advanceWave();
+  }
+  function tryPopSegment(a,b){if(!running||paused||gameOver)return false;const hits=[];for(const bubble of bubbles){if(bubble.y<0||bubble.y>height)continue;const d=distanceToSegment(bubble.x,bubble.y,a.x,a.y,b.x,b.y);if(d.distance<=bubble.r+4)hits.push({bubble,t:d.t,distance:d.distance});}if(Math.hypot(b.x-a.x,b.y-a.y)<.5){hits.sort((x,y)=>x.distance-y.distance);hits.splice(1);}else hits.sort((x,y)=>x.t-y.t);for(const hit of hits){const i=bubbles.indexOf(hit.bubble);if(i<0)continue;bubbles.splice(i,1);onPop(hit.bubble);}if(hits.length)updateHud();return hits.length>0;}
+  function point(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left)*width/Math.max(1,r.width),y:(e.clientY-r.top)*height/Math.max(1,r.height)};}
+  canvas.addEventListener('pointerdown',e=>{if(e.button!==0||pointerId!==null||!running||paused||gameOver)return;e.preventDefault();audio.unlock();audio.playScene(sceneIndex+1);pointerId=e.pointerId;pointerPoint=point(e);try{canvas.setPointerCapture(pointerId);}catch{}tryPopSegment(pointerPoint,pointerPoint);},{passive:false});
+  canvas.addEventListener('pointermove',e=>{if(e.pointerId!==pointerId||!pointerPoint)return;e.preventDefault();const samples=e.getCoalescedEvents?.()||[];for(const sample of [...samples,e]){const next=point(sample);if(Math.hypot(next.x-pointerPoint.x,next.y-pointerPoint.y)>=.5){tryPopSegment(pointerPoint,next);pointerPoint=next;}}},{passive:false});
+  canvas.addEventListener('pointerup',e=>{if(e.pointerId!==pointerId)return;if(pointerPoint){const next=point(e);if(Math.hypot(next.x-pointerPoint.x,next.y-pointerPoint.y)>=.5)tryPopSegment(pointerPoint,next);}resetInput();});
+  for(const type of ['pointercancel','lostpointercapture'])canvas.addEventListener(type,e=>{if(e.pointerId===pointerId)resetInput();});
+  $('btnStart').addEventListener('click',()=>running?setPaused(false):startGame());$('btnPause').addEventListener('click',togglePause);$('btnRestart').addEventListener('click',startGame);
+  $('btnSubmit').addEventListener('click',()=>{if(!ready)return;if(running)setPaused(true);submitScore();});
+  function openOverlay(chat=false){if(running)setPaused(true);try{window.GG?.openOverlay?.();if(chat)window.GG?.openChat?.();}catch{}}
+  $('btnOverlay').addEventListener('click',()=>openOverlay());$('btnChat').addEventListener('click',()=>openOverlay(true));
+  for(const k of ['musicVolume','effectsVolume'])$(k).addEventListener('input',()=>{settings[k]=clamp(Number($(k).value)/100,0,1);safeWrite(SETTINGS_KEY,JSON.stringify(settings));syncAudioSettings();if(running&&!paused)audio.playScene(sceneIndex+1);});
+  $('btnMute').addEventListener('click',()=>{settings.muted=!settings.muted;safeWrite(SETTINGS_KEY,JSON.stringify(settings));syncAudioSettings();if(running&&!paused)audio.playScene(sceneIndex+1);});
+  window.addEventListener('keydown',e=>{if(e.repeat||e.altKey||e.ctrlKey||e.metaKey||['INPUT','BUTTON','TEXTAREA','SELECT'].includes(e.target?.tagName))return;const key=e.key.toLowerCase();if([' ','enter','p','escape'].includes(key)){e.preventDefault();if(!running&&key!=='p'&&key!=='escape')startGame();else if(running){if(key==='escape')setPaused(true);else togglePause();}}});
+  window.addEventListener('blur',()=>{resetInput();if(running)setPaused(true);});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){resetInput();if(running)setPaused(true);audio.pause();}});
+  window.addEventListener('pagehide',()=>{if(running)setPaused(true);audio.pause();resetInput();});
+  function update(dt){
+    if(!running||paused||gameOver)return;elapsed+=dt;visualTime+=dt;timeLeft=Math.max(0,timeLeft-dt);if(timeLeft<=0){endGame();return;}
+    comboWindow=Math.max(0,comboWindow-dt);if(comboWindow===0)combo=0;
+    freezeTimer=Math.max(0,freezeTimer-dt);if(feverTimer>0){feverTimer=Math.max(0,feverTimer-dt);if(!feverTimer)feverMeter=.35;}
+    advanceWave();transition=Math.min(1,transition+dt*.85);toastTimer=Math.max(0,toastTimer-dt);if(!toastTimer)$('sceneToast').className='sceneToast';
+    const p=pacing(pops,elapsed,width,height),interval=p.interval*(feverTimer>0?.75:1);spawnT+=dt;
+    while(spawnT>=interval){spawnT-=interval;for(let i=0;i<p.batch;i++)spawnBubble();}
+    for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i],speed=freezeTimer>0?.48:1;b.x+=b.vx*dt*speed;b.y+=b.vy*dt*speed;b.ttl-=dt*speed;b.pulse+=dt*(1.8+b.spin*.2);
+      if(b.x<b.r+6){b.x=b.r+6;b.vx=Math.abs(b.vx)*.85;}else if(b.x>width-b.r-6){b.x=width-b.r-6;b.vx=-Math.abs(b.vx)*.85;}
+      if(b.ttl<=0||b.y+b.r<-30){if(b.type!=='bomb'){combo=0;comboWindow=0;}bubbles.splice(i,1);}
     }
-  };
-
-  let DPR = 1;
-  let lastT = performance.now();
-  let running = false;
-  let paused = false;
-  let gameOver = false;
-  let submitted = false;
-
-  let score = 0;
-  let combo = 0;
-  let timeLeft = 45;
-  let comboWindow = 0;
-  let freezeTimer = 0;
-  let feverMeter = 0;
-  let feverTimer = 0;
-  let best = Number(localStorage.getItem(BEST_KEY) || '0') || 0;
-
-  let spawnT = 0;
-  let bubbles = [];
-  let particles = [];
-  let floatingTexts = [];
-  let ambientBubbles = [];
-  let activePointer = false;
-  let pointerTrailCooldown = 0;
-
-  let lastReportedScore = -1;
-  let lastReportAt = 0;
-
-  const images = { bg: [], bubble: {} };
-
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const rnd = (a, b) => a + Math.random() * (b - a);
-  const lerp = (a, b, t) => a + (b - a) * t;
-
-  function cw() { return canvas.clientWidth || 360; }
-  function ch() { return canvas.clientHeight || 640; }
-
-  function resize() {
-    const cssW = Math.max(1, canvas.clientWidth || window.innerWidth);
-    const cssH = Math.max(1, canvas.clientHeight || window.innerHeight);
-    DPR = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.floor(cssW * DPR);
-    canvas.height = Math.floor(cssH * DPR);
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.t-=dt;if(p.t<=0){particles.splice(i,1);continue;}p.vy+=260*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;}
+    for(let i=floatingTexts.length-1;i>=0;i--){const f=floatingTexts[i];f.t-=dt;if(f.t<=0)floatingTexts.splice(i,1);else f.y+=f.vy*dt;}
+    const sec=Math.ceil(timeLeft);if(sec<=5&&sec!==warningSecond){warningSecond=sec;audio.effect('warning');}
+    hudT+=dt;if(hudT>=.1){hudT=0;updateHud();}
   }
-
-  function loadImageSafe(src) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
-      img.src = src;
-    });
+  function drawBackground(){
+    const w=width,h=height;ctx.fillStyle='#12395b';ctx.fillRect(0,0,w,h);
+    function paint(index,alpha){const im=images.bg[index]||images.bg[0];if(!im)return;const r=cover(im.width,im.height,w,h);ctx.save();ctx.globalAlpha=alpha;ctx.drawImage(im,r.x,r.y,r.w,r.h);ctx.restore();}
+    if(transition<1)paint(previousScene,1);paint(sceneIndex,transition);
+    const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,'rgba(3,12,30,.14)');grad.addColorStop(1,'rgba(3,12,30,.32)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+    if(!reducedMotion)for(const b of ambientBubbles){const x=b.x*w+Math.sin(visualTime*.6+b.phase)*6,y=h-((b.y*h+visualTime*b.speed)%(h+40));ctx.save();ctx.globalAlpha=.12;ctx.strokeStyle='#c5f7ff';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,b.size,0,Math.PI*2);ctx.stroke();ctx.restore();}
   }
-
-  async function loadMeta() {
-    try {
-      const res = await fetch('./game.json', { cache: 'no-store' });
-      META = (await res.json()) || META;
-    } catch {}
-    document.title = META.title || 'Bubble Pop Arena';
-    if (elTitle) elTitle.textContent = META.title || 'Bubble Pop Arena';
-    if (panelTitle) panelTitle.textContent = META.title || 'Bubble Pop Arena';
-    if (panelText) panelText.textContent = META.description || 'Pop as many bubbles as you can before time runs out.';
-    if (elSub) elSub.textContent = 'Drag or tap to pop • Catch time bubbles • Avoid bombs';
-    try { window.GG?.init?.({ title: META.title || 'Bubble Pop Arena' }); } catch {}
-  }
-
-  async function loadAssets() {
-    images.bg = await Promise.all(ASSETS.backgrounds.map(loadImageSafe));
-    const keys = Object.keys(ASSETS.bubbles);
-    const vals = await Promise.all(keys.map((k) => loadImageSafe(ASSETS.bubbles[k])));
-    keys.forEach((k, i) => { images.bubble[k] = vals[i]; });
-  }
-
-  function canvasPointFromClient(clientX, clientY) {
-    const r = canvas.getBoundingClientRect();
-    return { x: clientX - r.left, y: clientY - r.top };
-  }
-
-  function showPanel(title, text) {
-    if (panelTitle) panelTitle.textContent = title;
-    if (panelText) panelText.textContent = text;
-    if (panel) panel.style.display = 'flex';
-  }
-  function hidePanel() {
-    if (panel) panel.style.display = 'none';
-  }
-
-  function reportScoreLive(force = false) {
-    const now = performance.now();
-    if (!force) {
-      if (score === lastReportedScore) return;
-      if (now - lastReportAt < 80) return;
-    }
-    lastReportedScore = score;
-    lastReportAt = now;
-    try { window.GG?.setScore?.(score | 0); } catch {}
-    try { window.parent?.postMessage?.({ type: 'GG_SCORE', slug: GAME_SLUG, score: score | 0 }, '*'); } catch {}
-    try { window.parent?.postMessage?.({ type: 'gg:score', slug: GAME_SLUG, score: score | 0 }, '*'); } catch {}
-    try { window.dispatchEvent(new CustomEvent('gg:score', { detail: { slug: GAME_SLUG, score: score | 0 } })); } catch {}
-  }
-
-  function updateHud() {
-    if (elScore) elScore.textContent = String(score | 0);
-    if (elBest) elBest.textContent = String(best | 0);
-    if (elCombo) elCombo.textContent = String(combo | 0);
-    if (elTime) elTime.textContent = Math.max(0, timeLeft).toFixed(1);
-    if (elFreeze) elFreeze.textContent = `${Math.max(0, freezeTimer).toFixed(1)}s`;
-    if (elFever) elFever.textContent = feverTimer > 0 ? 'ACTIVE' : `${Math.round(clamp(feverMeter, 0, 1) * 100)}%`;
-    reportScoreLive(false);
-  }
-
-  function resetAmbientBubbles() {
-    ambientBubbles = [];
-    for (let i = 0; i < 18; i++) {
-      ambientBubbles.push({
-        x: Math.random(),
-        y: Math.random(),
-        size: rnd(12, 42),
-        speed: rnd(6, 18),
-        sway: rnd(4, 18),
-        phase: rnd(0, Math.PI * 2),
-        alpha: rnd(0.12, 0.32),
-      });
-    }
-  }
-
-  function resetGame(showIntro = true) {
-    running = false;
-    paused = false;
-    gameOver = false;
-    submitted = false;
-    score = 0;
-    combo = 0;
-    timeLeft = 45;
-    comboWindow = 0;
-    freezeTimer = 0;
-    feverMeter = 0;
-    feverTimer = 0;
-    spawnT = 0;
-    bubbles = [];
-    particles = [];
-    floatingTexts = [];
-    activePointer = false;
-    pointerTrailCooldown = 0;
-    lastReportedScore = -1;
-    resetAmbientBubbles();
-    updateHud();
-    if (showIntro) {
-      showPanel(META.title || 'Bubble Pop Arena', META.description || 'Pop bubbles for points, chain combos, and avoid bombs.');
-    }
-  }
-
-  function startGame() {
-    running = true;
-    paused = false;
-    gameOver = false;
-    submitted = false;
-    score = 0;
-    combo = 0;
-    timeLeft = 45;
-    comboWindow = 0;
-    freezeTimer = 0;
-    feverMeter = 0;
-    feverTimer = 0;
-    spawnT = 0;
-    bubbles = [];
-    particles = [];
-    floatingTexts = [];
-    activePointer = false;
-    pointerTrailCooldown = 0;
-    lastReportedScore = -1;
-    hidePanel();
-    for (let i = 0; i < 8; i++) spawnBubble(true);
-    updateHud();
-  }
-
-  function togglePause() {
-    if (!running || gameOver) return;
-    paused = !paused;
-    if (paused) showPanel('Paused', 'Tap Start or Pause to continue your round.');
-    else hidePanel();
-  }
-
-  function submitScore() {
-    if (submitted) return;
-    submitted = true;
-    reportScoreLive(true);
-    try { window.GG?.submitScore?.(score | 0); } catch {}
-  }
-
-  function endGame(reason) {
-    gameOver = true;
-    running = false;
-    paused = false;
-    if (score > best) {
-      best = score;
-      localStorage.setItem(BEST_KEY, String(best));
-    }
-    updateHud();
-    showPanel('Round Over', `${reason}\n\nScore: ${score} • Best: ${best}\nTap Start to play again.`);
-    submitScore();
-  }
-
-  function bubbleColor(type) {
-    switch (type) {
-      case 'bomb': return 'rgba(255,80,110,0.95)';
-      case 'time': return 'rgba(255,210,70,0.95)';
-      case 'freeze': return 'rgba(110,240,255,0.95)';
-      case 'bonus': return 'rgba(225,90,255,0.95)';
-      default: return 'rgba(73,153,255,0.95)';
-    }
-  }
-
-  function spawnBubble(seedStart = false) {
-    const w = cw(), h = ch();
-    const levelFactor = clamp(score / 1800, 0, 1.4);
-    const largeChance = Math.random() < 0.14;
-    const r = largeChance ? rnd(34, 56) : rnd(20, 44);
-    const x = rnd(r + 8, w - r - 8);
-    const y = seedStart ? rnd(h * 0.25, h * 0.92) : h + r + 20;
-    const speedMul = freezeTimer > 0 ? 0.62 : 1;
-    const vy = (seedStart ? rnd(-60, -150) : -rnd(92, 170)) * (1 + levelFactor * 0.35) * speedMul;
-    const vx = rnd(-30, 30) * speedMul;
-
-    let roll = Math.random();
-    let type = 'normal';
-    if (roll < 0.08) type = 'bomb';
-    else if (roll < 0.18) type = 'time';
-    else if (roll < 0.25) type = 'freeze';
-    else if (roll < 0.33) type = 'bonus';
-
-    const ttl = rnd(3.2, 5.2);
-    bubbles.push({
-      x, y, r, vx, vy, type, ttl,
-      pulse: rnd(0, Math.PI * 2),
-      spin: rnd(-1, 1),
-      popped: false,
-    });
-  }
-
-  function multiplierForCombo(c) {
-    if (feverTimer > 0) return 2.25;
-    if (c >= 12) return 1.9;
-    if (c >= 8) return 1.55;
-    if (c >= 4) return 1.25;
-    return 1;
-  }
-
-  function addFloatingText(x, y, text, color = '#fff', size = 18) {
-    floatingTexts.push({ x, y, text, color, size, t: 0.85, vy: rnd(-34, -22) });
-  }
-
-  function popParticles(x, y, baseColor, count = 14, radius = 0) {
-    for (let i = 0; i < count; i++) {
-      const ang = Math.random() * Math.PI * 2;
-      const sp = rnd(55, 210) + radius * 0.8;
-      particles.push({
-        x, y,
-        vx: Math.cos(ang) * sp,
-        vy: Math.sin(ang) * sp - rnd(25, 100),
-        t: rnd(0.35, 0.9),
-        r: rnd(2.5, 6.5),
-        color: baseColor,
-      });
-    }
-  }
-
-  function triggerFever() {
-    feverTimer = 5.5;
-    feverMeter = 1;
-    addFloatingText(cw() * 0.5, ch() * 0.28, 'FEVER!', '#ffd5ff', 28);
-  }
-
-  function onPop(b) {
-    if (b.type === 'bomb') {
-      combo = 0;
-      comboWindow = 0;
-      feverMeter = Math.max(0, feverMeter - 0.35);
-      score = Math.max(0, score - 30);
-      addFloatingText(b.x, b.y, '-30', '#ff7b93', 20);
-      popParticles(b.x, b.y, bubbleColor('bomb'), 24, b.r);
-      return;
-    }
-
-    combo += 1;
-    comboWindow = 1.2;
-    feverMeter = clamp(feverMeter + 0.08, 0, 1);
-    if (feverMeter >= 1 && feverTimer <= 0) triggerFever();
-
-    const mult = multiplierForCombo(combo);
-    let base = Math.round(10 + b.r * 0.48);
-    if (b.type === 'time') base += 6;
-    if (b.type === 'freeze') base += 8;
-    if (b.type === 'bonus') base += 18;
-    const gained = Math.round(base * mult);
-    score += gained;
-    popParticles(b.x, b.y, bubbleColor(b.type), b.type === 'bonus' ? 22 : 16, b.r);
-    addFloatingText(b.x, b.y, `+${gained}`, b.type === 'time' ? '#ffe486' : b.type === 'freeze' ? '#9ff7ff' : b.type === 'bonus' ? '#ffb0ff' : '#dff4ff', b.type === 'bonus' ? 22 : 18);
-
-    if (b.type === 'time') {
-      timeLeft += 2.4;
-      addFloatingText(b.x, b.y - 20, '+2.4s', '#ffe486', 18);
-    } else if (b.type === 'freeze') {
-      freezeTimer = Math.min(8, freezeTimer + 3.5);
-      addFloatingText(b.x, b.y - 20, 'FREEZE', '#9ff7ff', 18);
-    } else if (b.type === 'bonus') {
-      score += 20;
-      addFloatingText(b.x, b.y - 22, 'BONUS!', '#ffb0ff', 20);
-    }
-  }
-
-  function tryPopAt(px, py) {
-    if (!running || paused || gameOver) return false;
-    let bestI = -1;
-    let bestD2 = 1e18;
-    for (let i = 0; i < bubbles.length; i++) {
-      const b = bubbles[i];
-      const dx = px - b.x;
-      const dy = py - b.y;
-      const d2 = dx * dx + dy * dy;
-      const rr = b.r + 14;
-      if (d2 <= rr * rr && d2 < bestD2) {
-        bestD2 = d2;
-        bestI = i;
-      }
-    }
-    if (bestI >= 0) {
-      const b = bubbles[bestI];
-      bubbles.splice(bestI, 1);
-      onPop(b);
-      updateHud();
-      playPopTone(b.type);
-      return true;
-    }
-    return false;
-  }
-
-  let audioCtx = null;
-  function ensureAudio() {
-    if (!audioCtx) {
-      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
-    }
-    if (audioCtx?.state === 'suspended') audioCtx.resume().catch(() => {});
-  }
-  function playPopTone(type) {
-    ensureAudio();
-    if (!audioCtx) return;
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    const now = audioCtx.currentTime;
-    const freq = type === 'bomb' ? 160 : type === 'time' ? 720 : type === 'freeze' ? 480 : type === 'bonus' ? 860 : 620;
-    o.type = type === 'bomb' ? 'square' : 'sine';
-    o.frequency.setValueAtTime(freq, now);
-    o.frequency.exponentialRampToValueAtTime(type === 'bomb' ? 110 : freq * 1.12, now + 0.07);
-    g.gain.setValueAtTime(type === 'bomb' ? 0.045 : 0.03, now);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + (type === 'bomb' ? 0.15 : 0.11));
-    o.connect(g); g.connect(audioCtx.destination); o.start(now); o.stop(now + 0.16);
-  }
-
-  function onPointerDown(e) {
-    e.preventDefault?.();
-    ensureAudio();
-    const p = canvasPointFromClient(e.clientX, e.clientY);
-    activePointer = true;
-    pointerTrailCooldown = 0;
-
-    if (!running && !gameOver) {
-      startGame();
-      return;
-    }
-    if (gameOver) {
-      startGame();
-      return;
-    }
-    tryPopAt(p.x, p.y);
-  }
-  function onPointerMove(e) {
-    if (!activePointer) return;
-    const p = canvasPointFromClient(e.clientX, e.clientY);
-    if (pointerTrailCooldown <= 0) {
-      if (tryPopAt(p.x, p.y)) pointerTrailCooldown = 0.02;
-    }
-  }
-  function onPointerUp() {
-    activePointer = false;
-  }
-
-  canvas.addEventListener('pointerdown', onPointerDown, { passive: false });
-  canvas.addEventListener('pointermove', onPointerMove, { passive: true });
-  canvas.addEventListener('pointerup', onPointerUp, { passive: true });
-  canvas.addEventListener('pointercancel', onPointerUp, { passive: true });
-  canvas.addEventListener('pointerleave', onPointerUp, { passive: true });
-
-  btnStart?.addEventListener('click', () => {
-    ensureAudio();
-    if (gameOver || !running) startGame();
-    else togglePause();
-  });
-  btnPause?.addEventListener('click', togglePause);
-  btnRestart?.addEventListener('click', () => { resetGame(false); startGame(); });
-  btnSubmit?.addEventListener('click', submitScore);
-  btnOverlay?.addEventListener('click', () => window.GG?.openOverlay?.());
-  btnChat?.addEventListener('click', () => { window.GG?.openOverlay?.(); window.GG?.openChat?.(); });
-
-  window.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      if (gameOver || !running) startGame();
-      else togglePause();
-    }
-    if (e.key.toLowerCase() === 'p') togglePause();
-  });
-
-  function update(dt) {
-    if (!running || paused || gameOver) return;
-    timeLeft -= dt;
-    if (timeLeft <= 0) {
-      timeLeft = 0;
-      updateHud();
-      endGame('Time\'s up!');
-      return;
-    }
-
-    pointerTrailCooldown = Math.max(0, pointerTrailCooldown - dt);
-    comboWindow -= dt;
-    if (comboWindow <= 0 && combo !== 0) {
-      combo = 0;
-      comboWindow = 0;
-    }
-
-    if (freezeTimer > 0) freezeTimer = Math.max(0, freezeTimer - dt);
-    if (feverTimer > 0) {
-      feverTimer = Math.max(0, feverTimer - dt);
-      if (feverTimer <= 0) feverMeter = 0.35;
-    }
-
-    spawnT += dt;
-    const freezeMul = freezeTimer > 0 ? 1.25 : 1;
-    const feverMul = feverTimer > 0 ? 0.7 : 1;
-    const spawnEvery = clamp(0.58 - score * 0.00003, 0.22, 0.58) * freezeMul * feverMul;
-    while (spawnT >= spawnEvery) {
-      spawnT -= spawnEvery;
-      spawnBubble(false);
-    }
-
-    for (let i = bubbles.length - 1; i >= 0; i--) {
-      const b = bubbles[i];
-      const speedMul = freezeTimer > 0 ? 0.68 : 1;
-      b.x += b.vx * dt * speedMul;
-      b.y += b.vy * dt * speedMul;
-      b.ttl -= dt;
-      b.pulse += dt * (1.8 + b.spin * 0.2);
-
-      if (b.x < b.r + 6) { b.x = b.r + 6; b.vx *= -0.85; }
-      else if (b.x > cw() - b.r - 6) { b.x = cw() - b.r - 6; b.vx *= -0.85; }
-
-      const offTop = b.y + b.r < -30;
-      if (b.ttl <= 0 || offTop) {
-        if (b.type !== 'bomb') {
-          combo = 0;
-          comboWindow = 0;
-        }
-        bubbles.splice(i, 1);
-      }
-    }
-
-    for (let i = particles.length - 1; i >= 0; i--) {
-      const p = particles[i];
-      p.t -= dt;
-      if (p.t <= 0) { particles.splice(i, 1); continue; }
-      p.vy += 420 * dt;
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-    }
-
-    for (let i = floatingTexts.length - 1; i >= 0; i--) {
-      const f = floatingTexts[i];
-      f.t -= dt;
-      if (f.t <= 0) { floatingTexts.splice(i, 1); continue; }
-      f.y += f.vy * dt;
-    }
-
-    updateHud();
-  }
-
-  function drawBackground() {
-    const w = cw(), h = ch();
-    ctx.fillStyle = '#06101f';
-    ctx.fillRect(0, 0, w, h);
-
-    const phase = performance.now() * 0.00003;
-    const bgIndex = Math.floor((performance.now() * 0.00003 + score / 1600) % Math.max(1, images.bg.length));
-    const bg = images.bg[bgIndex] || null;
-    if (bg) {
-      const parallax = Math.sin(performance.now() * 0.00025) * 12;
-      const drawW = w;
-      const drawH = h;
-      ctx.save();
-      ctx.globalAlpha = 0.88;
-      ctx.drawImage(bg, 0, parallax - 8, drawW, drawH + 16);
-      ctx.restore();
-    }
-
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, 'rgba(8,11,36,0.26)');
-    grad.addColorStop(1, 'rgba(3,10,20,0.44)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, w, h);
-
-    for (const b of ambientBubbles) {
-      const x = b.x * w + Math.sin(phase * 9 + b.phase) * b.sway;
-      const y = (b.y * h + (performance.now() * 0.001 * b.speed)) % (h + b.size * 2) - b.size;
-      ctx.save();
-      ctx.globalAlpha = b.alpha;
-      ctx.strokeStyle = 'rgba(255,255,255,.55)';
-      ctx.lineWidth = 1.25;
-      ctx.beginPath();
-      ctx.arc(x, h - y, b.size * 0.5, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-  }
-
   function fallbackBubble(b) {
     const col = bubbleColor(b.type);
     ctx.save();
@@ -658,49 +219,16 @@
     ctx.restore();
   }
 
-  function drawIdleOverlay() {
-    if (running || gameOver) return;
-    const w = cw(), h = ch();
-    ctx.save();
-    ctx.fillStyle = 'rgba(4,7,18,.26)';
-    ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = 'rgba(255,255,255,.96)';
-    ctx.font = '1000 18px system-ui';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Tap Start or tap the screen to begin', w * 0.5, h * 0.43);
-    ctx.font = '900 14px system-ui';
-    ctx.fillStyle = 'rgba(255,255,255,.78)';
-    ctx.fillText('Drag across bubbles for fast pops • Avoid red bomb bubbles', w * 0.5, h * 0.50);
-    ctx.restore();
-  }
 
-  function draw() {
-    drawBackground();
-    for (const b of bubbles) drawBubble(b);
-    drawParticles();
-    drawFloatingTexts();
-    drawComboBanner();
-    drawIdleOverlay();
+  function draw(){drawBackground();for(const b of bubbles)drawBubble(b);drawParticles();drawFloatingTexts();drawComboBanner();}
+  function loop(t){const dt=Math.max(0,Math.min(.1,(t-lastT)/1000));lastT=t;if(running&&!paused){accumulator+=dt;while(accumulator>=1/120){update(1/120);accumulator-=1/120;if(!running)break;}}else accumulator=0;draw();requestAnimationFrame(loop);}
+  async function boot(){
+    syncAudioSettings();resize();for(let i=0;i<12;i++)ambientBubbles.push({x:Math.random(),y:Math.random(),size:rnd(3,9),speed:rnd(6,14),phase:rnd(0,6.28)});
+    try{window.GG?.init?.({title:'Bubble Pop Arena'});}catch{}
+    await loadAssets();ready=true;$('btnStart').disabled=false;showPanel('Bubble Pop Arena','Start with 45 seconds. Pop time bubbles to keep going, chain combos and chase your best across six beautiful arenas.','Play');updateHud();
+    window.addEventListener('resize',resize,{passive:true});window.visualViewport?.addEventListener('resize',resize,{passive:true});
+    if(typeof ResizeObserver!=='undefined')new ResizeObserver(resize).observe(canvas.parentElement);
+    lastT=performance.now();requestAnimationFrame(loop);preloadScenes();
   }
-
-  function loop(t) {
-    const dt = Math.min(0.033, Math.max(0.001, (t - lastT) / 1000));
-    lastT = t;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  async function boot() {
-    await loadMeta();
-    await loadAssets();
-    resize();
-    resetGame(true);
-    updateHud();
-    requestAnimationFrame(loop);
-    window.addEventListener('resize', resize, { passive: true });
-  }
-
   boot();
 })();

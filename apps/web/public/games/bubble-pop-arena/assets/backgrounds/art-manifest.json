@@ -1,0 +1,38 @@
+{
+  "release": "2.1.0",
+  "assets": [
+    {
+      "file": "assets/backgrounds/bg-jelly-grotto.png",
+      "title": "Jellylight Grotto",
+      "mode": "built-in",
+      "transparent": false,
+      "prompt": "Asset type: complete widescreen 16:9 background painting for Bubble Pop Arena, a polished colourful casual mobile bubble popping game. A magical underwater Jellylight Grotto: softly glowing turquoise water, indigo grotto arches and pearlescent pink jellyfish at the far edges, bioluminescent mushrooms and delicate sea plants framing a sandy bottom. Saturated cyan, violet and warm pink, beautiful painterly game illustration with soft volumetric rays, gentle depth and premium detail. Composition: large calm uncluttered central water area occupying at least 65 percent of image for gameplay, important scenery also survives a central portrait crop; decorative details mainly edges. Full bleed to every edge, no border, no UI, no writing, no watermark, no large circular bubbles or foreground objects that could be mistaken for pop targets. Landscape 1536x864.",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2291319,
+      "sha256": "a68bc3437401f21819bb228c085a0ac42d0fc043a0cee19755c2d7c348903345"
+    },
+    {
+      "file": "assets/backgrounds/bg-aurora-garden.png",
+      "title": "Aurora Garden",
+      "mode": "built-in",
+      "transparent": false,
+      "prompt": "Asset type: full bleed widescreen 16:9 environment background for a polished colourful casual mobile bubble popping game, Bubble Pop Arena. Aurora Garden: a fantastical quiet crystal lake beneath sweeping mint and lavender northern lights, floating luminous lotus petals, distant rounded ice mountains, iridescent crystal flowers framing the left and right edges and reflective water along the lower edge. Premium painterly game illustration, rich indigo teal pastel pink palette, gentle moonlight and layered depth. Keep 65 percent central area calm and uncluttered for gameplay and attractive when cropped to portrait. No text, no logos, no border, no UI, no large round bubble objects or busy foreground. Beautiful entire-screen background, landscape 1536x864.",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2574810,
+      "sha256": "b1248e7026290dc3ea6811b469d6adbf98a9e1324d45510971db440903eaf7c4"
+    },
+    {
+      "file": "assets/backgrounds/bg-solar-oasis.png",
+      "title": "Solar Oasis",
+      "mode": "built-in",
+      "transparent": false,
+      "prompt": "Asset type: complete full bleed widescreen game background illustration for Bubble Pop Arena, colourful magical casual mobile arcade. Solar Oasis: a dreamlike warm coral and amber sunset over a turquoise lagoon in a floating cloud kingdom, distant elegant floating rock islands and cascading narrow waterfalls, glowing peach tropical flowers and golden crystal formations at the lower corners. Beautiful polished painterly fantasy art, sophisticated warm orange pink versus deep teal contrast, luminous atmosphere and layered depth. Large calm open centre occupying 65 percent for bubble gameplay, scene readable in central portrait crop, main details edges. No text, UI, logos, frame, watermark, no large circular bubbles that look like clickable targets. Landscape 1536x864.",
+      "width": 1672,
+      "height": 941,
+      "bytes": 2733550,
+      "sha256": "3349dee3eec0a9023482b0978c6f244dd93ed3e0452ce2737e3a59fc8d58adb4"
+    }
+  ]
+}
