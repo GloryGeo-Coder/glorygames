@@ -68,10 +68,13 @@
     lv.mission='Talk to a guide, recover '+lv.target+' city keepsakes'+(lv.boss?', defeat the taxi guardian':'')+', then reach the gate.';
     lv.campaignVersion=22;
   }
+  function describeRoute(lv) {
+    lv.subtitle='Extended city route. '+lv.enemies.length+' enemies across '+lv.checkpoints.length+' checkpoint beacons.';
+  }
   function buildDistrict(d) {
     const width=11000+(d.id-11)*240;
     const boss=[15,20,25].includes(d.id)?{type:'boss_taxi',w:144,h:104,speed:95+d.id,hp:d.id===25?14:12,shoot:true,cooldown:1.5}:null;
-    const lv={...d,width,originalWidth:width/2,subtitle:'A new township route with safe checkpoints.',mission:'',start:{x:100,y:488},
+    const lv={...d,width,originalWidth:width/2,subtitle:'',mission:'',start:{x:100,y:488},
       exit:null,npcs:[],platforms:[],coins:[],tokens:[],badges:[],powers:[],enemies:[],obstacles:[],boss};
     addTerrain(lv,0,width-(boss?900:0),d.theme);finish(lv,d.theme);
     lv.start.y=lv.platforms[0].y-82;
@@ -79,7 +82,7 @@
     lv.npcs=[{x:260,y:lv.platforms[0].y,kind:'npc',text:d.story},{x:mid.x,y:mid.p.y,kind:'npc_elder',text:'Keep moving between the beacons. Use cover when a sentry charges, and save your shield for a difficult crossing.'}];
     lv.enemyBudget=2*(12+Math.floor((d.id-11)/3));
     addEnemies(lv,lv.enemyBudget,650,width-(boss?1250:550));
-    addCheckpoints(lv,[{...lv.start}]);return lv;
+    addCheckpoints(lv,[{...lv.start}]);describeRoute(lv);return lv;
   }
   function expand(levels) {
     if(levels.length===25&&levels.every(l=>l.campaignVersion===22))return levels;
@@ -92,7 +95,7 @@
       finish(lv,theme);
       addEnemies(lv,oldEnemies.length,oldWidth+280,lv.width-(lv.boss?1250:550),oldEnemies);
       addCheckpoints(lv,retained);
-      lv.subtitle='Extended city route. '+lv.enemies.length+' enemies across '+lv.checkpoints.length+' checkpoint beacons.';
+      describeRoute(lv);
     }
     levels.push(...districts.map(buildDistrict));return levels;
   }

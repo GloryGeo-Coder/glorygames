@@ -1,0 +1,465 @@
+{
+  "title": "City Quest: Township Rhythms",
+  "style": "Original Amapiano-inspired instrumentals",
+  "provenance": "Procedurally composed and synthesized for WebGameArena; no third-party songs, recordings or samples.",
+  "renderer": "tools/build-city-soundtrack.py",
+  "sampleRate": 44100,
+  "channels": 2,
+  "bitrateKbps": 112,
+  "mastering": {
+    "integratedLufs": -18,
+    "truePeakDb": -2
+  },
+  "tracks": [
+    {
+      "id": 1,
+      "title": "Dawn over the Rooftops",
+      "bpm": 110,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 69.818,
+      "url": "./assets/music/city-01.mp3",
+      "bytes": 978428,
+      "sha256": "1468dcf0a851622cbef8213ee54c6511fc1b4be2a4cb093f9b2a7551ab669354",
+      "score": {
+        "progression": 0,
+        "groove": 0,
+        "phrase": 0
+      },
+      "sourcePeak": 0.50238,
+      "sourceRms": 0.0937
+    },
+    {
+      "id": 2,
+      "title": "Main Street Bounce",
+      "bpm": 112,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 68.571,
+      "url": "./assets/music/city-02.mp3",
+      "bytes": 960869,
+      "sha256": "24bbbad2efda0a10c3fa40eb1434f5180b4e720e65a70196a88d4396528316bd",
+      "score": {
+        "progression": 1,
+        "groove": 1,
+        "phrase": 1
+      },
+      "sourcePeak": 0.57286,
+      "sourceRms": 0.09199
+    },
+    {
+      "id": 3,
+      "title": "Market Day Keys",
+      "bpm": 111,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 69.189,
+      "url": "./assets/music/city-03.mp3",
+      "bytes": 969644,
+      "sha256": "55af0baa05ff4c16058e0d90946407f703c41e2be6423f6f69e89b7691bd831b",
+      "score": {
+        "progression": 2,
+        "groove": 2,
+        "phrase": 2
+      },
+      "sourcePeak": 0.51964,
+      "sourceRms": 0.09332
+    },
+    {
+      "id": 4,
+      "title": "Last Taxi Home",
+      "bpm": 114,
+      "tonicMidi": 46,
+      "bars": 32,
+      "duration": 67.368,
+      "url": "./assets/music/city-04.mp3",
+      "bytes": 944043,
+      "sha256": "54dfebf0b0a519793a725099bd1ada0d672168c2a347df146358a47b0efea59e",
+      "score": {
+        "progression": 3,
+        "groove": 3,
+        "phrase": 3
+      },
+      "sourcePeak": 0.56644,
+      "sourceRms": 0.09202
+    },
+    {
+      "id": 5,
+      "title": "Below the City",
+      "bpm": 108,
+      "tonicMidi": 42,
+      "bars": 32,
+      "duration": 71.111,
+      "url": "./assets/music/city-05.mp3",
+      "bytes": 996705,
+      "sha256": "4fa17a950f2b97c79af05a196a077c270a0e86345cf0301fe03a695458e3a125",
+      "score": {
+        "progression": 4,
+        "groove": 4,
+        "phrase": 4
+      },
+      "sourcePeak": 0.50258,
+      "sourceRms": 0.08967
+    },
+    {
+      "id": 6,
+      "title": "Guardian in the Rank",
+      "bpm": 115,
+      "tonicMidi": 44,
+      "bars": 32,
+      "duration": 66.783,
+      "url": "./assets/music/city-06.mp3",
+      "bytes": 936003,
+      "sha256": "8639915879133c3460e7ff234437ae3f335e389aaf59ac958c72498e23dca8fe",
+      "score": {
+        "progression": 1,
+        "groove": 5,
+        "phrase": 5
+      },
+      "sourcePeak": 0.49796,
+      "sourceRms": 0.09355
+    },
+    {
+      "id": 7,
+      "title": "Railway Afterglow",
+      "bpm": 113,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 67.965,
+      "url": "./assets/music/city-07.mp3",
+      "bytes": 952457,
+      "sha256": "f0240113e91b9272c6e8d21ce357f3ab3dda9e5d056ce5d6e39344057e98a283",
+      "score": {
+        "progression": 2,
+        "groove": 0,
+        "phrase": 6
+      },
+      "sourcePeak": 0.51553,
+      "sourceRms": 0.09263
+    },
+    {
+      "id": 8,
+      "title": "Bridge to the Skyline",
+      "bpm": 110,
+      "tonicMidi": 41,
+      "bars": 32,
+      "duration": 69.818,
+      "url": "./assets/music/city-08.mp3",
+      "bytes": 978427,
+      "sha256": "fa27fbc2696103dce8dd327f06197af6404b5d24acd077e4dc251a9f19de39b9",
+      "score": {
+        "progression": 3,
+        "groove": 1,
+        "phrase": 7
+      },
+      "sourcePeak": 0.53269,
+      "sourceRms": 0.08995
+    },
+    {
+      "id": 9,
+      "title": "Vault of Echoes",
+      "bpm": 109,
+      "tonicMidi": 40,
+      "bars": 32,
+      "duration": 70.459,
+      "url": "./assets/music/city-09.mp3",
+      "bytes": 987564,
+      "sha256": "9874ed8e7ebcb2263b895562157f3adef06fd2c9a07b9787e6ba29cc4fb79bdb",
+      "score": {
+        "progression": 4,
+        "groove": 2,
+        "phrase": 8
+      },
+      "sourcePeak": 0.49707,
+      "sourceRms": 0.0923
+    },
+    {
+      "id": 10,
+      "title": "The First Crown",
+      "bpm": 116,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 66.207,
+      "url": "./assets/music/city-10.mp3",
+      "bytes": 927952,
+      "sha256": "2af9e53fb8c05e1d3c556406024e3e7b52485d3b90e7385cb8126669d5d472f6",
+      "score": {
+        "progression": 0,
+        "groove": 3,
+        "phrase": 9
+      },
+      "sourcePeak": 0.54569,
+      "sourceRms": 0.09112
+    },
+    {
+      "id": 11,
+      "title": "Ubuntu Sundown",
+      "bpm": 110,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 69.818,
+      "url": "./assets/music/city-11.mp3",
+      "bytes": 978420,
+      "sha256": "da9b995456ba117ceec341ead7e2a8de82cb8a5c7d354cbd04f2f25dd2f76a52",
+      "score": {
+        "progression": 2,
+        "groove": 4,
+        "phrase": 10
+      },
+      "sourcePeak": 0.52851,
+      "sourceRms": 0.09197
+    },
+    {
+      "id": 12,
+      "title": "Sunrise at the Exchange",
+      "bpm": 113,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 67.965,
+      "url": "./assets/music/city-12.mp3",
+      "bytes": 952463,
+      "sha256": "7f7783c7b6d5fb7e2c914000af3ffab7c46ef6f23aab2c2a4b013246ab6ea837",
+      "score": {
+        "progression": 0,
+        "groove": 5,
+        "phrase": 11
+      },
+      "sourcePeak": 0.46932,
+      "sourceRms": 0.09288
+    },
+    {
+      "id": 13,
+      "title": "Spaza Street Shuffle",
+      "bpm": 112,
+      "tonicMidi": 46,
+      "bars": 32,
+      "duration": 68.571,
+      "url": "./assets/music/city-13.mp3",
+      "bytes": 960871,
+      "sha256": "c883aba9b8cdee2fc1456257ee85f8bf07ba804d445e47abae2c1cbc9c656aae",
+      "score": {
+        "progression": 3,
+        "groove": 0,
+        "phrase": 12
+      },
+      "sourcePeak": 0.52515,
+      "sourceRms": 0.09141
+    },
+    {
+      "id": 14,
+      "title": "Schoolyard Memories",
+      "bpm": 109,
+      "tonicMidi": 41,
+      "bars": 32,
+      "duration": 70.459,
+      "url": "./assets/music/city-14.mp3",
+      "bytes": 987568,
+      "sha256": "17aa0cc1523dd88eb3cad9ca634169678fcd0b58be9c4dd7cc6d696d12d5f314",
+      "score": {
+        "progression": 1,
+        "groove": 1,
+        "phrase": 13
+      },
+      "sourcePeak": 0.56234,
+      "sourceRms": 0.08903
+    },
+    {
+      "id": 15,
+      "title": "Colours of the Square",
+      "bpm": 115,
+      "tonicMidi": 44,
+      "bars": 32,
+      "duration": 66.783,
+      "url": "./assets/music/city-15.mp3",
+      "bytes": 936004,
+      "sha256": "35a4cfead9e6e628de5adb3345cbbe58b3bce07f37ba021c2f77b4f16ed0d3a9",
+      "score": {
+        "progression": 4,
+        "groove": 2,
+        "phrase": 14
+      },
+      "sourcePeak": 0.48227,
+      "sourceRms": 0.09238
+    },
+    {
+      "id": 16,
+      "title": "Garden Conversations",
+      "bpm": 108,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 71.111,
+      "url": "./assets/music/city-16.mp3",
+      "bytes": 996711,
+      "sha256": "86b873b5b0d171826380963feea162bf1e7cfb094b897956e42466c4fec3c6bd",
+      "score": {
+        "progression": 0,
+        "groove": 3,
+        "phrase": 15
+      },
+      "sourcePeak": 0.54086,
+      "sourceRms": 0.08966
+    },
+    {
+      "id": 17,
+      "title": "Crossing with Care",
+      "bpm": 111,
+      "tonicMidi": 42,
+      "bars": 32,
+      "duration": 69.189,
+      "url": "./assets/music/city-17.mp3",
+      "bytes": 969647,
+      "sha256": "b1dcd79175c6cc286520c211c7984765658f769d3b82103bfc1878eb7dbce5f0",
+      "score": {
+        "progression": 3,
+        "groove": 4,
+        "phrase": 16
+      },
+      "sourcePeak": 0.51775,
+      "sourceRms": 0.09084
+    },
+    {
+      "id": 18,
+      "title": "Commuter Rhythm",
+      "bpm": 114,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 67.368,
+      "url": "./assets/music/city-18.mp3",
+      "bytes": 944044,
+      "sha256": "c21b51e3937973d81f342ba28f13d06a84fac7289056992bc0a910b1121ba490",
+      "score": {
+        "progression": 2,
+        "groove": 5,
+        "phrase": 17
+      },
+      "sourcePeak": 0.48322,
+      "sourceRms": 0.092
+    },
+    {
+      "id": 19,
+      "title": "Second Life Groove",
+      "bpm": 112,
+      "tonicMidi": 40,
+      "bars": 32,
+      "duration": 68.571,
+      "url": "./assets/music/city-19.mp3",
+      "bytes": 960869,
+      "sha256": "b19ebcb8c1fc2e59754440c3a08c3204656a2b832c2f0761c3da36ccbe088e40",
+      "score": {
+        "progression": 1,
+        "groove": 0,
+        "phrase": 18
+      },
+      "sourcePeak": 0.57459,
+      "sourceRms": 0.09328
+    },
+    {
+      "id": 20,
+      "title": "Waterline Guardian",
+      "bpm": 116,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 66.207,
+      "url": "./assets/music/city-20.mp3",
+      "bytes": 927955,
+      "sha256": "286e52a75630baad24b4f572cedc5ca99f2d046b402d93dd4a23cf6965c83505",
+      "score": {
+        "progression": 4,
+        "groove": 1,
+        "phrase": 19
+      },
+      "sourcePeak": 0.56199,
+      "sourceRms": 0.09316
+    },
+    {
+      "id": 21,
+      "title": "Festival on the Avenue",
+      "bpm": 114,
+      "tonicMidi": 46,
+      "bars": 32,
+      "duration": 67.368,
+      "url": "./assets/music/city-21.mp3",
+      "bytes": 944051,
+      "sha256": "e63983a1a8ab2c4a8989b70fc474bae191cbe9d70e1cd13124bdcea49c0fea63",
+      "score": {
+        "progression": 0,
+        "groove": 2,
+        "phrase": 20
+      },
+      "sourcePeak": 0.48877,
+      "sourceRms": 0.09252
+    },
+    {
+      "id": 22,
+      "title": "Solar Gold",
+      "bpm": 111,
+      "tonicMidi": 41,
+      "bars": 32,
+      "duration": 69.189,
+      "url": "./assets/music/city-22.mp3",
+      "bytes": 969639,
+      "sha256": "0ac016f9571ef5f654d604fb712d1352adc3aa7412674114db7e856a34bb4913",
+      "score": {
+        "progression": 2,
+        "groove": 3,
+        "phrase": 21
+      },
+      "sourcePeak": 0.55496,
+      "sourceRms": 0.09145
+    },
+    {
+      "id": 23,
+      "title": "Above the Water Tower",
+      "bpm": 110,
+      "tonicMidi": 44,
+      "bars": 32,
+      "duration": 69.818,
+      "url": "./assets/music/city-23.mp3",
+      "bytes": 978427,
+      "sha256": "12a2fa7d786360fabac0ef306b1c404370c14739663d8be183000ee7fcea4095",
+      "score": {
+        "progression": 3,
+        "groove": 4,
+        "phrase": 22
+      },
+      "sourcePeak": 0.53876,
+      "sourceRms": 0.09138
+    },
+    {
+      "id": 24,
+      "title": "Lanterns after Dark",
+      "bpm": 113,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 67.965,
+      "url": "./assets/music/city-24.mp3",
+      "bytes": 952459,
+      "sha256": "1536b6e7cd9e9cda5903c849ef518ff3ad7bad4f13df34ac41e2a9791d415d77",
+      "score": {
+        "progression": 1,
+        "groove": 5,
+        "phrase": 23
+      },
+      "sourcePeak": 0.48309,
+      "sourceRms": 0.09088
+    },
+    {
+      "id": 25,
+      "title": "Home is Ubuntu",
+      "bpm": 115,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 66.783,
+      "url": "./assets/music/city-25.mp3",
+      "bytes": 935997,
+      "sha256": "efcd1dd76f77f792b3542a89baaa1850e7db19d29e19c159a91feb345f1dfb1a",
+      "score": {
+        "progression": 4,
+        "groove": 0,
+        "phrase": 24
+      },
+      "sourcePeak": 0.54663,
+      "sourceRms": 0.09264
+    }
+  ]
+}
