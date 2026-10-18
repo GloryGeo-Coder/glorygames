@@ -1,0 +1,123 @@
+{
+  "title": "Bubble Pop Arena: Prismatic Tides",
+  "style": "Original sparkling chill-house instrumentals with liquid mallets, soft synth pads, plucked bass and light percussion",
+  "provenance": "Procedurally composed and synthesized for WebGameArena; no third-party songs, recordings or samples.",
+  "renderer": "tools/build-bubble-soundtrack.py",
+  "sampleRate": 44100,
+  "channels": 2,
+  "bitrateKbps": 112,
+  "mastering": {
+    "integratedLufs": -18,
+    "truePeakDb": -2.5
+  },
+  "tracks": [
+    {
+      "id": 1,
+      "title": "Coral Kingdom",
+      "bpm": 104,
+      "tonicMidi": 48,
+      "bars": 32,
+      "duration": 73.846,
+      "url": "./assets/music/bubble-01.mp3",
+      "bytes": 1034744,
+      "sha256": "5c1b98c5c98d4ceac2c1e8496c8ce32253f0a64e73948eec0980ac80457a5ec8",
+      "score": {
+        "progression": 0,
+        "groove": 0,
+        "phrase": 1
+      },
+      "sourcePeak": 0.39972,
+      "sourceRms": 0.06641
+    },
+    {
+      "id": 2,
+      "title": "Moonlit Lagoon",
+      "bpm": 108,
+      "tonicMidi": 45,
+      "bars": 32,
+      "duration": 71.111,
+      "url": "./assets/music/bubble-02.mp3",
+      "bytes": 996710,
+      "sha256": "a83a608c43b6bce6be35f2612c171808fc769c78bcc1f60f453e41fcc8278b3d",
+      "score": {
+        "progression": 1,
+        "groove": 2,
+        "phrase": 5
+      },
+      "sourcePeak": 0.42233,
+      "sourceRms": 0.06894
+    },
+    {
+      "id": 3,
+      "title": "Cosmic Drift",
+      "bpm": 112,
+      "tonicMidi": 50,
+      "bars": 32,
+      "duration": 68.571,
+      "url": "./assets/music/bubble-03.mp3",
+      "bytes": 960868,
+      "sha256": "e7443c15846060ac75cc90746d238edf0c128f7715cfb2dfec03665199765627",
+      "score": {
+        "progression": 2,
+        "groove": 4,
+        "phrase": 9
+      },
+      "sourcePeak": 0.40977,
+      "sourceRms": 0.06968
+    },
+    {
+      "id": 4,
+      "title": "Jellylight Grotto",
+      "bpm": 106,
+      "tonicMidi": 43,
+      "bars": 32,
+      "duration": 72.453,
+      "url": "./assets/music/bubble-04.mp3",
+      "bytes": 1015365,
+      "sha256": "1ba9ed7258635f9a5f138f9f04875570d0be165af767e49c92f025ed36ac540a",
+      "score": {
+        "progression": 3,
+        "groove": 1,
+        "phrase": 13
+      },
+      "sourcePeak": 0.42287,
+      "sourceRms": 0.06879
+    },
+    {
+      "id": 5,
+      "title": "Aurora Garden",
+      "bpm": 110,
+      "tonicMidi": 47,
+      "bars": 32,
+      "duration": 69.818,
+      "url": "./assets/music/bubble-05.mp3",
+      "bytes": 978424,
+      "sha256": "73f8c9c897e2d9a17754121ef9ee6bfa414e121ddcfc143af9811c21e7e30787",
+      "score": {
+        "progression": 4,
+        "groove": 5,
+        "phrase": 17
+      },
+      "sourcePeak": 0.36508,
+      "sourceRms": 0.07014
+    },
+    {
+      "id": 6,
+      "title": "Solar Oasis",
+      "bpm": 116,
+      "tonicMidi": 52,
+      "bars": 32,
+      "duration": 66.207,
+      "url": "./assets/music/bubble-06.mp3",
+      "bytes": 927953,
+      "sha256": "15480098613b65d031cf4c17fbd0bfdb553fff0043c81c5915eb3264288dcc32",
+      "score": {
+        "progression": 0,
+        "groove": 3,
+        "phrase": 21
+      },
+      "sourcePeak": 0.40663,
+      "sourceRms": 0.07075
+    }
+  ]
+}

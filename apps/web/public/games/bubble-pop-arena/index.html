@@ -1,63 +1,48 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-  <meta name="theme-color" content="#06101f" />
-  <title>Bubble Pop Arena</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="/sdk/gg-sdk.css" />
-  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#06101f" />
+<title>Bubble Pop Arena</title>
+<link rel="stylesheet" href="./styles.css?v=2.1" />
+<link rel="stylesheet" href="/sdk/gg-sdk.css" />
+<link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
-  <header class="hud">
-    <div class="hudLeft">
-      <div class="brand" id="ggTitle">Bubble Pop Arena</div>
-      <div class="sub" id="ggSub">Drag or tap to pop • Catch time bubbles • Avoid bombs</div>
-    </div>
-    <div class="hudRight">
-      <div class="stat"><div class="label">Score</div><div class="value" id="score">0</div></div>
-      <div class="stat"><div class="label">Best</div><div class="value" id="best">0</div></div>
-      <div class="stat"><div class="label">Time</div><div class="value" id="time">45.0</div></div>
-      <div class="stat"><div class="label">Combo</div><div class="value" id="combo">0</div></div>
-    </div>
-  </header>
-
-  <main class="stage">
-    <canvas id="c"></canvas>
-
-    <div class="statusBar">
-      <div class="statusPill"><span>Freeze</span><strong id="freeze">0.0s</strong></div>
-      <div class="statusPill"><span>Fever</span><strong id="fever">0%</strong></div>
-    </div>
-
-    <div class="panel" id="panel">
-      <div class="panelInner">
-        <div class="panelTitle" id="panelTitle">Bubble Pop Arena</div>
-        <div class="panelText" id="panelText">Pop bubbles for points, build combos, grab time bubbles, and avoid bombs.</div>
-        <div class="panelButtons">
-          <button class="btn primary" id="btnStart">Start</button>
-          <button class="btn" id="btnOverlay">Open Overlay</button>
-        </div>
-        <div class="panelHint">
-          <span class="pill">Tap bubbles</span>
-          <span class="pill">Drag to chain pops</span>
-          <span class="pill">Freeze + bonus bubbles</span>
-        </div>
-      </div>
-    </div>
-
-    <nav class="actions">
-      <button class="chip" id="btnPause" aria-label="Pause">⏸ Pause</button>
-      <button class="chip" id="btnSubmit" aria-label="Submit Score">🏆 Submit</button>
-      <button class="chip" id="btnRestart" aria-label="Restart">↻ Restart</button>
-      <button class="chip" id="btnChat" aria-label="Overlay / Chat">💬 Overlay</button>
-    </nav>
-  </main>
-
-  <script src="/sdk/gg-sdk.js"></script>
-  <script src="/games/_shared/gg-sdk.js"></script>
-  <script src="./game.js"></script>
-  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
+<div class="gameShell">
+<header class="hud">
+  <div><div class="brand" id="ggTitle">Bubble Pop Arena</div><div class="sub">Tap or drag · Catch time · Avoid red bombs</div></div>
+  <div class="hudRight" aria-label="Round statistics">
+    <div class="stat"><span class="label">Score</span><strong class="value" id="score">0</strong></div>
+    <div class="stat"><span class="label">Best</span><strong class="value" id="best">0</strong></div>
+    <div class="stat"><span class="label">Time</span><strong class="value" id="time">45.0</strong></div>
+    <div class="stat"><span class="label">Combo</span><strong class="value" id="combo">0</strong></div>
+  </div>
+</header>
+<main class="stage">
+  <div class="statusBar"><div class="sceneInfo"><span class="wave" id="wave">Wave 1</span><strong id="scene">Coral Kingdom</strong></div><div class="statusPill">Freeze <strong id="freeze">0.0s</strong></div><div class="statusPill">Fever <strong id="fever">0%</strong></div></div>
+  <div class="playfield"><canvas id="c" tabindex="0" aria-label="Bubble arena. Tap or drag to pop bubbles, collect time, freeze and bonus bubbles, and avoid red bombs."></canvas><div class="sceneToast" id="sceneToast" role="status" aria-live="polite"></div></div>
+  <nav class="actions" aria-label="Round controls"><button class="chip" id="btnPause" type="button">Pause</button><button class="chip" id="btnSubmit" type="button">Submit</button><button class="chip" id="btnRestart" type="button">Restart</button><button class="chip" id="btnChat" type="button">Chat</button></nav>
+</main>
+</div>
+<div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="panelTitle">
+<section class="panelInner"><div class="panelGrid">
+  <div><div class="eyebrow">Endless bubble adventure</div><h1 class="panelTitle" id="panelTitle">Bubble Pop Arena</h1>
+    <p class="panelText" id="panelText">Start with 45 seconds. Pop time bubbles to keep going, chain combos and chase your best across six beautiful arenas.</p>
+    <div class="panelButtons"><button class="btn primary" id="btnStart" type="button" disabled>Loading arena…</button><button class="btn" id="btnOverlay" type="button">Scoreboard</button></div>
+    <p class="panelHint">Blue: points · Gold clock: +2.4s · Ice: slow bubbles · Purple star: bonus · Red bomb: −30 points</p>
+    <p class="bestLine" id="roundSummary">20 pops or 25 seconds bring the next wave.</p>
+  </div>
+  <fieldset class="audioSettings"><legend>Sound</legend><p>Now playing: <span id="musicTrack">Coral Kingdom</span></p>
+    <label for="musicVolume">Music <output id="musicVolumeValue" for="musicVolume">55%</output></label><input id="musicVolume" type="range" min="0" max="100" step="1" value="55" />
+    <label for="effectsVolume">Sound effects <output id="effectsVolumeValue" for="effectsVolume">80%</output></label><input id="effectsVolume" type="range" min="0" max="100" step="1" value="80" />
+    <button id="btnMute" type="button" aria-pressed="false">Sound On</button>
+  </fieldset>
+</div></section>
+</div>
+<script src="/sdk/gg-sdk.js"></script><script src="/games/_shared/gg-sdk.js"></script>
+<script src="./bubble-rules.js?v=2.1"></script><script src="./bubble-music.js?v=2.1"></script><script src="./bubble-audio.js?v=2.1"></script><script src="./game.js?v=2.1"></script>
+<script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
