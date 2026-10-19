@@ -216,14 +216,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "climate-rescue-quest": {
     "category": "Educational",
-    "summary": "Move through environmental rescue missions involving energy, water, forests and oceans while using protective power-ups.",
+    "summary": "Restore cities, energy networks, rivers and forests across 25 missions with animated sprites, nature-inspired level music and responsive touch controls.",
     "overview": [
       "Climate Rescue Quest combines an environmental theme with an accessible arcade challenge. The game moves across distinct scenes inspired by city environments, clean energy, waterways, forests and oceans. Players guide a hero through active stages while responding to obstacles and collecting helpful items.",
       "The environmental setting is more than a colour palette. Each backdrop suggests a different part of the climate challenge: energy decisions, water protection, healthy ecosystems and the importance of reducing waste. It is an introduction to those ideas through play, not a substitute for a complete climate-science lesson."
     ],
     "story": [
       "The adventure is framed as a sequence of environmental rescue tasks. The hero moves from one affected setting to the next, with later levels increasing the challenge and introducing a boss-style encounter.",
-      "The rescue journey passes through ten increasingly demanding stages, leading toward a major final challenge. Animated environments, changing hazards and powers such as Shield, Magnet and Freeze make each destination feel like a new part of the adventure."
+      "The rescue journey passes through 25 increasingly demanding missions, leading toward a major final challenge. Animated environments, changing hazards and powers such as Shield, Magnet and Freeze make each destination feel like a new part of the adventure."
     ],
     "howToPlay": [
       "Begin the current mission and watch how obstacles and collectible items enter the play area.",
@@ -237,7 +237,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "The controls support S, M and F for Shield, Magnet and Freeze, respectively."
     ],
     "mobile": [
-      "Swipe or drag left and right to move the hero.",
+      "Drag anywhere in the arena or hold the movement buttons to steer left and right.",
       "Use the on-screen movement and power-up buttons when available."
     ],
     "systems": [
@@ -251,7 +251,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Increasing challenge",
-        "body": "A ten-stage progression leads toward a boss encounter rather than repeating one identical screen."
+        "body": "A 25-mission progression includes five smog-front encounters rather than repeating one identical screen."
       }
     ],
     "progression": [
@@ -272,7 +272,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many stages are in Climate Rescue Quest?",
-        "a": "Climate Rescue Quest features ten stages, including a boss-style challenge."
+        "a": "Climate Rescue Quest features 25 missions, including five smog-front encounters."
       },
       {
         "q": "What does the magnet power do?",

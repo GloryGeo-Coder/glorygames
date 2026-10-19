@@ -1,0 +1,266 @@
+{
+  "generated": [
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/animated/hero-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D arcade game sprite atlas for Climate Rescue Quest. Friendly polished painted cartoon game art, clear silhouettes and vibrant leaf green, turquoise, gold accents, matches a cheerful green leaf superhero environmental game. TRUE transparent background, no scenery, floor, floor shadow, grid lines, labels, text, logos or borders. Equal rectangular cells, each subject entirely inside its cell with 12% transparent padding. Reference image: existing green leaf superhero, identity/style reference ONLY. Create a new 1536 x 1024 animation atlas with EXACTLY four equal columns and two equal rows. Eight consecutive running frames left to right, then next row. Preserve the young hero's leaf-shaped green hair, green eye mask, green leaf-emblem outfit, gloves and boots, brown belt and leaf cape. Side view facing RIGHT. Clear alternating leg/arm positions and flowing leaf cape. Same body proportions, scale and feet baseline in every frame. This is a new animation sheet, not an illustration collage.",
+      "reference": "assets/sprites/player_01.png",
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "transparentFraction": 0.6286780039469401,
+      "bytes": 2052125,
+      "sha256": "462e52b3e76ec9d9aae0dfd6cf01a4f6870b77a361d8eae8d818170f505de844",
+      "columns": 4,
+      "rows": 2
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/animated/eco-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D arcade game sprite atlas for Climate Rescue Quest. Friendly polished painted cartoon game art, clear silhouettes and vibrant leaf green, turquoise, gold accents, matches a cheerful green leaf superhero environmental game. TRUE transparent background, no scenery, floor, floor shadow, grid lines, labels, text, logos or borders. Equal rectangular cells, each subject entirely inside its cell with 12% transparent padding. 1536 x 2304 canvas, EXACTLY four columns and SIX rows. Each row one collectible design with four sequential animation frames. Row1: blue solar panel on a small silver stand, sunlight glint travels across its cells. Row2: sapling tree with bright green leaves gently unfurling. Row3: turquoise water drop with a gentle inner ripple and changing highlight. Row4: green clean-energy battery, glowing charge pulse, NO text. Row5: three bright green recycling arrows chasing in a loop, clean recognizable recycling symbol. Row6: white wind turbine, blades rotate in four successive angles. All cells well separated, complete objects, consistent size within each row.",
+      "reference": null,
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "transparentFraction": 0.6571019490559896,
+      "bytes": 2172969,
+      "sha256": "079a838bc8a2eff440c10acf8f7e78e3cfdb1e3e7d0954e129c6664c56af420d",
+      "columns": 4,
+      "rows": 6
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/animated/hazards-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D arcade game sprite atlas for Climate Rescue Quest. Friendly polished painted cartoon game art, clear silhouettes and vibrant leaf green, turquoise, gold accents, matches a cheerful green leaf superhero environmental game. TRUE transparent background, no scenery, floor, floor shadow, grid lines, labels, text, logos or borders. Equal rectangular cells, each subject entirely inside its cell with 12% transparent padding. 1536 x 1152 canvas, EXACTLY four columns and THREE rows. Four sequential animated frames per row, no text. Row1: dark purple-grey cartoon pollution cloud, orange inner glow, billowing smog, recognizable hostile hazard. Row2: small rusty brick factory with three chimney stacks, four frames of smoky chimney puffs; factory stays same size and position. Row3: lively orange and red wildfire flame cluster above a charred log, four distinct flickering flame shapes. Family-friendly hazards with readable red/orange rim highlights, not frightening.",
+      "reference": null,
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "transparentFraction": 0.5423610899138203,
+      "bytes": 1800990,
+      "sha256": "d99b98cf5c1da10d16a340d9a4124de107034dd3c9b22f9d4172bbe6cfe79e0e",
+      "columns": 4,
+      "rows": 3
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/animated/boss-power-sheet.png",
+      "prompt": "Use case: stylized-concept. Asset type: transparent 2D arcade game sprite atlas for Climate Rescue Quest. Friendly polished painted cartoon game art, clear silhouettes and vibrant leaf green, turquoise, gold accents, matches a cheerful green leaf superhero environmental game. TRUE transparent background, no scenery, floor, floor shadow, grid lines, labels, text, logos or borders. Equal rectangular cells, each subject entirely inside its cell with 12% transparent padding. 1536 x 1024 canvas, EXACTLY four columns and TWO rows. Row1: the same cartoon Carbon Boss in four consecutive pulsing animation frames: a large billowing dark purple smog creature with orange eyes and two rusty exhaust vents, twisting grey smoke and a green clean-energy crystal trapped at its centre. Menacing but family-friendly, full shape contained inside each cell, same size and anchor. Row2: four DIFFERENT large pickup icons, one per cell, left to right: luminous green protective shield with leaf emblem; turquoise horseshoe magnet with leaf sparkles; gold snowflake inside a blue energy crystal; red life heart wrapped in two green leaves. Complete standalone objects, no badges or labels.",
+      "reference": null,
+      "mode": "built-in image generation",
+      "transparent_background": true,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "transparentFraction": 0.438662846883138,
+      "bytes": 2589737,
+      "sha256": "855314994ab9716388922071e3a56d40f5b0e9afddf4a0806391c3afbb82b9ce",
+      "columns": 4,
+      "rows": 2
+    }
+  ],
+  "preserved": [
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-01-city.png",
+      "sha256": "abafc4d0b11afc6f79bb573511c53d6cf1a8c45d14c65f4054f83741a02a0831"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-01.png",
+      "sha256": "38a2db3370602411c890c76189dc4607dc1834f7330ab39148d0380a4c10293c"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-02-energy.png",
+      "sha256": "7c5895ba3498b1be646a438d35154a43d57395accb4973bf33a4dcd7c789a393"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-02.png",
+      "sha256": "071eaf80554d2cd6b1300a0f3c34e5002342f1bd627b45e46f9f4c096bd78dc7"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-03-water.png",
+      "sha256": "fbf65530f81efe3d1e06b1972efcacb2eddb95443ed15cab008dcdc688995a16"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-03.png",
+      "sha256": "5beacb41962a577af788dbfefa755a08ada4f79cd12e5004f555e1f7b74cd15c"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-04-forest.png",
+      "sha256": "3abe9542e5cd95789a83b83ddcb5ba2a58e1050fc7cef65c07689ad61a6372ed"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-04.png",
+      "sha256": "db44bac896acea43c55b6676f3baac1c58c1709840cff5c10bc9dffa7002d92f"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-05-ocean.png",
+      "sha256": "2e6d13907e97988551b615f4930ea1ebc4f7903a68301bc7ec0abfe21bb90a7f"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-05.png",
+      "sha256": "6b0ea0d22df5609f64dbc44844a51e20e3bdd3af759d16ea20bd22458c4aacad"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-06-boss.png",
+      "sha256": "c926e5039fc2de2316bca763f2022f14c1621a90406ef350da90043052f91894"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-06.png",
+      "sha256": "75e1475a25ff25d71ef97de45a1590afaa4e2d86b64eb34a45f0df1c3f804f95"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-07.png",
+      "sha256": "ff6c37f3b046076613a8587c7760c44a59908b564654b89f5b78a9766f38ba5e"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-08.png",
+      "sha256": "f7d15b4b663481b3993efb1886c523a77bea49f19fd26b6addee4e7d8f0e14ca"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-09.png",
+      "sha256": "3ad3102386a97e1c4f3c01c9ab0c5fa9a3ebbfcc462d3994451a81df21c217eb"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/backgrounds/level-10.png",
+      "sha256": "a98a0efe015e838ac7f2771e1643c6584a2f0312694c22c8afd37b1a66f73cd5"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/battery.png",
+      "sha256": "6d6d70cd66244845a504deb536971e1b4cddc7598c75c0da303cb5bd0aebbe0a"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/battery_01.png",
+      "sha256": "987976ef115f011a6af101208f4ac56d01f9495271d6845282bdaa35dc01638b"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/battery_02.png",
+      "sha256": "430939cc4b1ff29f7e69ea2928a41a102ce10810510c05993e8fab5ffb3c5660"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/factory.png",
+      "sha256": "1c1334fe85b674645d8f5be1a1c3767a0d37c8bd343b0f93852f2c9524103a82"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/factory_01.png",
+      "sha256": "733ad22c9415607f81aae05dc2ea04a04f094b1a2ca6f336781917a39586f611"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/factory_02.png",
+      "sha256": "733ad22c9415607f81aae05dc2ea04a04f094b1a2ca6f336781917a39586f611"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/factory_03.png",
+      "sha256": "541fd7e0329e63f3722d0ee0fe1131cb3095ee2a6ef7ca1ec5633a35a134a243"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/player.png",
+      "sha256": "173b6c0d2233565cabb2fb8758a6c4dad2aea65515bbe5c5e6543e1d2b907260"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/player_01.png",
+      "sha256": "4e0c958c35dfa2b29947a93323811de8784ed76cf4ab3675903c7dc001d347df"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/player_02.png",
+      "sha256": "ecb3909ba6c5d72fefccf5265a2f732b82b792cb0c0050c378fcfc705714b913"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/player_03.png",
+      "sha256": "3a08984e5e106648f1bdec1afcd713fdfd668c9fa7c055a4dbb95b908ffdd9fb"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/pollution_cloud.png",
+      "sha256": "32e0a0fcaf641f5ddad33b73c9a0370bbf9e33038c5700803ce4f8773242207e"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/pollution_cloud_01.png",
+      "sha256": "a4a6e2f215af50e7cf1160d8789044cf4ad922e044bb40dff2462bf35de059fa"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/pollution_cloud_02.png",
+      "sha256": "6e3633b2cfa02767febbe98f7ec00b05e16db55d8585d013857f3ee98ad9b2b7"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/recycle.png",
+      "sha256": "6cbd8c1b02ba4e703824ace2b4ac65989b3692bcd5d072c295ffee646d18ee23"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/recycle_01.png",
+      "sha256": "dd8e79f41f9812f6e05bdaeb47b0a7bdbf3ad7a280ad5f249f9adea88326b0c3"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/recycle_02.png",
+      "sha256": "bb4ac85cd8a8d16f93c7c04ed6707b42da80ec0585567944a38655777c4108d4"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/solar.png",
+      "sha256": "cd870f8ee041d29914f58adecc56c2bb5c83435957754bdaf94ec8c967a6daa7"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/solar_01.png",
+      "sha256": "580a9c54b967f3e0993ab0a99332dbf3bba02844691765e399f9726ba858256e"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/solar_02.png",
+      "sha256": "1b60e2d551e6ca3bd20dd88858aef72370297181845ed70d04c8691bdb6f4a5f"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/tree.png",
+      "sha256": "9f661fc368cd7b7f9dc6faeb890bab2850201f86248251a073a42afcd1e58dba"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/tree_01.png",
+      "sha256": "38f7d737795c89b201996192530254109f70e907ea1b60a6a1c8a51ee93d2d64"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/tree_02.png",
+      "sha256": "ebe37a644065de39b3922d6391e419ca2eb93184428a478b666380aa4d277cc7"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/water.png",
+      "sha256": "592fa1b28d609f474e3be1424128232c49e0d7b5be008edcd818c92c5c1969bf"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/water_01.png",
+      "sha256": "448be30d81d1e679bd042048f7ad852b463de1d4ae5490162d98e41888dd3f72"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/water_02.png",
+      "sha256": "e1b4c05ca1c9d9b6c763f987f1689a29d5b1780013c868c368a95e600605dd9b"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/wildfire.png",
+      "sha256": "15099b3b318f7a50e3f585aa80da892fae515138e651e48d7b32034bc6b97164"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/wildfire_01.png",
+      "sha256": "180286bbfe96b62d53a8ea5aa22cde1acae3e249b40300b5094d1fced46a3726"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/wildfire_02.png",
+      "sha256": "66fb1b430c141b86099f8bccd83ef935c52375d5ee84833e65f406b6d22554e4"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/wind_turbine.png",
+      "sha256": "7fae95eddfa06ad6a89c218d9f8dbd4e6954a79553fe06b20665606e47a057c9"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/wind_turbine_01.png",
+      "sha256": "2fc6aa6b6764026f8b25fef9209e47c00a1269f3a67c0ef14f1e29c7f75d3635"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/wind_turbine_02.png",
+      "sha256": "dc76b599ccff693ab643f2306d696d0b416fd9bb753fb407a9221efc079ddb04"
+    },
+    {
+      "path": "apps/web/public/games/climate-rescue-quest/thumb.png",
+      "sha256": "23b7f395314319605d8099717179839072c685922156cada3ef766ffe24f19a3"
+    }
+  ]
+}

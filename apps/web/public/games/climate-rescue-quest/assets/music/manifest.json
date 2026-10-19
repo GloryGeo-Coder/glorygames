@@ -1,0 +1,807 @@
+{
+  "composer": "Original synthesized Climate Rescue Quest score",
+  "samples": "None; birds, water and wind are synthesized",
+  "sampleRate": 22050,
+  "tracks": [
+    {
+      "id": 1,
+      "title": "Urban Eco Start",
+      "url": "./assets/music/climate-01.mp3",
+      "duration": 46.829,
+      "bytes": 750698,
+      "sha256": "18608fcdb3f8a824c562d5756d6b79104e17877b8111f2a5fe5a6ce626c4b597",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.11803,
+      "score": {
+        "bpm": 82,
+        "tonic": 48,
+        "progression": [
+          0,
+          5,
+          7,
+          0
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7900
+      }
+    },
+    {
+      "id": 2,
+      "title": "Solar Valley",
+      "url": "./assets/music/climate-02.mp3",
+      "duration": 45.176,
+      "bytes": 724367,
+      "sha256": "f2d8b0f65fc24ba7e5df892bc91632c5a34edb461e76e7997c8442bb6fad3d26",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13121,
+      "score": {
+        "bpm": 85,
+        "tonic": 50,
+        "progression": [
+          0,
+          7,
+          5,
+          9
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7901
+      }
+    },
+    {
+      "id": 3,
+      "title": "River Renewal",
+      "url": "./assets/music/climate-03.mp3",
+      "duration": 43.636,
+      "bytes": 699707,
+      "sha256": "83cb81818b43674fcc3961ad5d76295f18a0c547f5d8b620385dd8e131b2a430",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.11735,
+      "score": {
+        "bpm": 88,
+        "tonic": 53,
+        "progression": [
+          0,
+          9,
+          5,
+          7
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7902
+      }
+    },
+    {
+      "id": 4,
+      "title": "Forest Guardian",
+      "url": "./assets/music/climate-04.mp3",
+      "duration": 42.198,
+      "bytes": 676719,
+      "sha256": "5a458786b222f67d054a657f2e1b913a72bcd14b5dc6d8a9ab1ca14647b7e51e",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.1316,
+      "score": {
+        "bpm": 91,
+        "tonic": 55,
+        "progression": [
+          0,
+          5,
+          9,
+          7
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7903
+      }
+    },
+    {
+      "id": 5,
+      "title": "Wetland Watch",
+      "url": "./assets/music/climate-05.mp3",
+      "duration": 40.851,
+      "bytes": 654986,
+      "sha256": "4329dc3266ff8254a4cfed1e2a5a40eeb91acab768bf0ce7f7b239f3a1dcdf4a",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.12375,
+      "score": {
+        "bpm": 94,
+        "tonic": 57,
+        "progression": [
+          0,
+          7,
+          2,
+          5
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7904
+      }
+    },
+    {
+      "id": 6,
+      "title": "Ocean Shield",
+      "url": "./assets/music/climate-06.mp3",
+      "duration": 39.588,
+      "bytes": 634924,
+      "sha256": "ee0af0a8c17fcafe2044f6372417395e81b6eaecefdad40cbb70841879d75ae1",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13673,
+      "score": {
+        "bpm": 97,
+        "tonic": 48,
+        "progression": [
+          0,
+          5,
+          7,
+          0
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7905
+      }
+    },
+    {
+      "id": 7,
+      "title": "Mountain Wind",
+      "url": "./assets/music/climate-07.mp3",
+      "duration": 46.829,
+      "bytes": 750698,
+      "sha256": "4f5d81df949cb1e052fe394b53e8a4d4a33070c5eb2adb890ccb2a64661e4206",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.12033,
+      "score": {
+        "bpm": 82,
+        "tonic": 50,
+        "progression": [
+          0,
+          7,
+          5,
+          9
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7906
+      }
+    },
+    {
+      "id": 8,
+      "title": "Community Recycling",
+      "url": "./assets/music/climate-08.mp3",
+      "duration": 45.176,
+      "bytes": 724367,
+      "sha256": "7055954a34e89139b5eb5c9dc0c800b32375725e9b63234f5fbb52186360f4e2",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13705,
+      "score": {
+        "bpm": 85,
+        "tonic": 53,
+        "progression": [
+          0,
+          9,
+          5,
+          7
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7907
+      }
+    },
+    {
+      "id": 9,
+      "title": "Green Farm Run",
+      "url": "./assets/music/climate-09.mp3",
+      "duration": 43.636,
+      "bytes": 699707,
+      "sha256": "4c55d0985cd7786cde254f9bc049a7eefabb764c7aa9ce7c18f8d3fd8e6277ee",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.11261,
+      "score": {
+        "bpm": 88,
+        "tonic": 55,
+        "progression": [
+          0,
+          5,
+          9,
+          7
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7908
+      }
+    },
+    {
+      "id": 10,
+      "title": "Carbon Boss",
+      "url": "./assets/music/climate-10.mp3",
+      "duration": 42.198,
+      "bytes": 676719,
+      "sha256": "47a49bb9cfa884999287775b06e7a8568074094255a98c6f28bafc0b3ad46f4d",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.14059,
+      "score": {
+        "bpm": 91,
+        "tonic": 57,
+        "progression": [
+          0,
+          7,
+          2,
+          5
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7909
+      }
+    },
+    {
+      "id": 11,
+      "title": "Mangrove Keepers",
+      "url": "./assets/music/climate-11.mp3",
+      "duration": 40.421,
+      "bytes": 648298,
+      "sha256": "acaf62bbaaab534360d5b8b6637222fa63ae77ffcabd84c66944c53aabbfdbfa",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.11301,
+      "score": {
+        "bpm": 95,
+        "tonic": 48,
+        "progression": [
+          0,
+          5,
+          7,
+          0
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7910
+      }
+    },
+    {
+      "id": 12,
+      "title": "Rooftop Revolution",
+      "url": "./assets/music/climate-12.mp3",
+      "duration": 39.184,
+      "bytes": 628236,
+      "sha256": "40602efcde4ba1439ee4012464975939f192fe8938849d058aa1683031762894",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13953,
+      "score": {
+        "bpm": 98,
+        "tonic": 50,
+        "progression": [
+          0,
+          7,
+          5,
+          9
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7911
+      }
+    },
+    {
+      "id": 13,
+      "title": "River-to-Reef Relay",
+      "url": "./assets/music/climate-13.mp3",
+      "duration": 46.265,
+      "bytes": 741921,
+      "sha256": "bd656f9e5033744cf006009c7ae20615dff90713786ea1fb586cefc7fb7d67da",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.11606,
+      "score": {
+        "bpm": 83,
+        "tonic": 53,
+        "progression": [
+          0,
+          9,
+          5,
+          7
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7912
+      }
+    },
+    {
+      "id": 14,
+      "title": "Wildlife Corridor",
+      "url": "./assets/music/climate-14.mp3",
+      "duration": 44.651,
+      "bytes": 716008,
+      "sha256": "5c6f494155d6720ce1c6ab2a2f59b930b27cad47bca5043fe6ccfb2bcc3ac364",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13119,
+      "score": {
+        "bpm": 86,
+        "tonic": 55,
+        "progression": [
+          0,
+          5,
+          9,
+          7
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7913
+      }
+    },
+    {
+      "id": 15,
+      "title": "Drought Recovery",
+      "url": "./assets/music/climate-15.mp3",
+      "duration": 43.146,
+      "bytes": 691766,
+      "sha256": "55e01586c5011d57c4297a88efb41c6188fa002a0bb380a4d8a91dc97886f1be",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.10975,
+      "score": {
+        "bpm": 89,
+        "tonic": 57,
+        "progression": [
+          0,
+          7,
+          2,
+          5
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7914
+      }
+    },
+    {
+      "id": 16,
+      "title": "Circular Neighbourhood",
+      "url": "./assets/music/climate-16.mp3",
+      "duration": 41.739,
+      "bytes": 669196,
+      "sha256": "5b28642d9a5a4f7a415010fb436856561b32443ace448e0a813561b73ec18df6",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.12987,
+      "score": {
+        "bpm": 92,
+        "tonic": 48,
+        "progression": [
+          0,
+          5,
+          7,
+          0
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7915
+      }
+    },
+    {
+      "id": 17,
+      "title": "Regenerative Fields",
+      "url": "./assets/music/climate-17.mp3",
+      "duration": 40.421,
+      "bytes": 648298,
+      "sha256": "9a0820ed709b1a99034478b28330a1ab68429ba743edc3e5b0fde1b664556fc8",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.12177,
+      "score": {
+        "bpm": 95,
+        "tonic": 50,
+        "progression": [
+          0,
+          7,
+          5,
+          9
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7916
+      }
+    },
+    {
+      "id": 18,
+      "title": "Clean Air Coalition",
+      "url": "./assets/music/climate-18.mp3",
+      "duration": 39.184,
+      "bytes": 628236,
+      "sha256": "9cc3463d82537b3804e85dc4ce1c75da967b7f8535798fdd5f51353ab542b98d",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.11904,
+      "score": {
+        "bpm": 98,
+        "tonic": 53,
+        "progression": [
+          0,
+          9,
+          5,
+          7
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7917
+      }
+    },
+    {
+      "id": 19,
+      "title": "Watershed Alliance",
+      "url": "./assets/music/climate-19.mp3",
+      "duration": 46.265,
+      "bytes": 741921,
+      "sha256": "8ba1f9061b0e769ba5cb48763ce8c556704f69014c280dde1289cedde215f2cb",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.10993,
+      "score": {
+        "bpm": 83,
+        "tonic": 55,
+        "progression": [
+          0,
+          5,
+          9,
+          7
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7918
+      }
+    },
+    {
+      "id": 20,
+      "title": "Ocean Recovery",
+      "url": "./assets/music/climate-20.mp3",
+      "duration": 44.651,
+      "bytes": 716008,
+      "sha256": "2c66084d1381c3818ec97571b892ed2b8d1e05a764c8507dac50cf4f01f4e276",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13958,
+      "score": {
+        "bpm": 86,
+        "tonic": 57,
+        "progression": [
+          0,
+          7,
+          2,
+          5
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7919
+      }
+    },
+    {
+      "id": 21,
+      "title": "Forest Canopy",
+      "url": "./assets/music/climate-21.mp3",
+      "duration": 42.667,
+      "bytes": 684243,
+      "sha256": "f60b1b90d5e7fc5cafaf099a85731e3c76d93f2ad056b42b6c987dd95bae50f5",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13293,
+      "score": {
+        "bpm": 90,
+        "tonic": 48,
+        "progression": [
+          0,
+          5,
+          7,
+          0
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7920
+      }
+    },
+    {
+      "id": 22,
+      "title": "Island Microgrid",
+      "url": "./assets/music/climate-22.mp3",
+      "duration": 41.29,
+      "bytes": 662091,
+      "sha256": "629a49a963590bcd5d9f150651c75698c7b12dc073864e8c28b7874849240d45",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.12389,
+      "score": {
+        "bpm": 93,
+        "tonic": 50,
+        "progression": [
+          0,
+          7,
+          5,
+          9
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7921
+      }
+    },
+    {
+      "id": 23,
+      "title": "Wetland Revival",
+      "url": "./assets/music/climate-23.mp3",
+      "duration": 40.0,
+      "bytes": 641611,
+      "sha256": "eed9a8a0f1f2325d6bec7d3dfe6eaf0cb72a6a7e3ce9367afd884b13b6c92751",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.11661,
+      "score": {
+        "bpm": 96,
+        "tonic": 53,
+        "progression": [
+          0,
+          9,
+          5,
+          7
+        ],
+        "motif": [
+          7,
+          12,
+          16,
+          2,
+          7,
+          12,
+          19,
+          2
+        ],
+        "ambience": "water and soft wind",
+        "seed": 7922
+      }
+    },
+    {
+      "id": 24,
+      "title": "Planetary Partnership",
+      "url": "./assets/music/climate-24.mp3",
+      "duration": 38.788,
+      "bytes": 621967,
+      "sha256": "923729872e23b13d7379f07db7c873cec0db688810250d3d6be3e0159607402b",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.10945,
+      "score": {
+        "bpm": 99,
+        "tonic": 55,
+        "progression": [
+          0,
+          5,
+          9,
+          7
+        ],
+        "motif": [
+          14,
+          19,
+          2,
+          9,
+          14,
+          19,
+          4,
+          9
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7923
+      }
+    },
+    {
+      "id": 25,
+      "title": "Carbon Renewal",
+      "url": "./assets/music/climate-25.mp3",
+      "duration": 45.714,
+      "bytes": 732726,
+      "sha256": "b4da7c930644b34845f0ce52aae0e4f8ee7a80a3a71337b0f6968b31a4ce05c5",
+      "sourcePeak": 0.7,
+      "sourceRms": 0.13103,
+      "score": {
+        "bpm": 84,
+        "tonic": 57,
+        "progression": [
+          0,
+          7,
+          2,
+          5
+        ],
+        "motif": [
+          0,
+          4,
+          9,
+          16,
+          0,
+          4,
+          12,
+          16
+        ],
+        "ambience": "soft wind and occasional birds",
+        "seed": 7924
+      }
+    }
+  ]
+}
