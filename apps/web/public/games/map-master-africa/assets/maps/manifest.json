@@ -1,0 +1,175 @@
+{
+  "source": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_50m_admin_0_countries.geojson",
+  "sourceCommit": "ca96624a56bd078437bca8184e78163e5039ad19",
+  "sourceSha256": "3e458fc036ad0a66411f2c1e6cac49c5d7bfb81cb1123bc513b22511a2b7fdeb",
+  "sourceScale": "1:50,000,000",
+  "license": "public domain",
+  "terms": "https://www.naturalearthdata.com/about/terms-of-use/",
+  "attribution": "Made with Natural Earth.",
+  "boundaryPolicy": "Source de facto overview boundaries; mapped units include territories and disputed areas. The count is not a sovereign-state count.",
+  "conversion": "All polygons, rings and vertices retained. Coordinates rounded to four decimal degrees. No simplification or invented boundaries.",
+  "projection": "Equirectangular: x = longitude, y = -latitude. Not an equal-distance or equal-area map.",
+  "file": "atlas-data.js",
+  "bytes": 1872478,
+  "sha256": "0aeb830f328e389e1b385b30a300ac90f17e3c9f3dea8f02f0a27a95fb2c065d",
+  "features": 242,
+  "sourceVertices": 99613,
+  "preservedArtwork": [
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-africa-physical.png",
+      "sha256": "163cffd8b1dbc26e9bc1c181bae8eec757440c8db03aac977668e96133d1d320"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-africa-political.png",
+      "sha256": "c37b0328f949ebf264bd452c539ccaa2ae7cdebf08b30215e0de8bf235103068"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-atlas.png",
+      "sha256": "bdae5bb18793029d0fdd70ec7ce2c98709aaabd8128eb150f379eabd9aa247c3"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-continents-focus.png",
+      "sha256": "2fcb6be1e6deb1982e75ca2bf918a713ffacb2bf606d7c8cd973b2e2f593c9ec"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-coordinate-lab.png",
+      "sha256": "53546204c9f1c4d59f2d0a5cf39c104961a067bd1e063bb2cc7e21b56f83e1b0"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-desert-survival.png",
+      "sha256": "a650817ff106c62f561809227bbf7f284726cfcba736949c054378bf6d4f1a9a"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-desert.png",
+      "sha256": "91d16476afc1783be20bc1cc473fd6e75fa2c1799bb4a580b7bad40e0cbf0765"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-explorer-desk.png",
+      "sha256": "c341323d298301fc8020eb3f20991b95ba759213c841892a977fc10837501062"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-final-arena.png",
+      "sha256": "da91f75963361415c4f4e0673b88511ba2d1c6b3795b65ccc9fef31194bff44f"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-gis-coordinates.png",
+      "sha256": "b52d785d937a29bb49cdab2d857bf4059aebc562df79f8600f59d5dd8704a742"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-island-mission.png",
+      "sha256": "3ec16ec8665f8d0fe9997647593bfc9b3d982f5a7f045abe350d17f7499880f7"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-mountain-mission.png",
+      "sha256": "8350707aa396e9c97566c610d07933f20c8cb8e0ba657562c49b45c8888b680d"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-night.png",
+      "sha256": "f5199e602dedc6721568887f4f674f5f87087436c3a2c9143249d62d60c8fe6d"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-ocean-grid.png",
+      "sha256": "2df5afec6118a305aad25ca04943fcfee92c3678113a80120ec0211d4147afd7"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-river-expedition.png",
+      "sha256": "dc02043b00c6b2233e578500510eede3de08e92702732d1579154c733b94308f"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-sa-provinces.png",
+      "sha256": "389849ec89697f83631c96e5d49bd7e41ecafab8c7e3e3786495860b79364a01"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-savanna.png",
+      "sha256": "8dec9584c4f74a1f48591a3f5b721cd1a9ef0432eae4f5e81c231507acbc81cb"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/backgrounds/bg-world-overview.png",
+      "sha256": "28c945764e962047fc82c62c2ee2fbdcbab10bfe3ea6f6a16c03d2edb4f07dc5"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-capitals.png",
+      "sha256": "9b7ed43551e5325438fc21bd9a361f3e83f8ce894d39cbabf635d041891b10a6"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-continent.png",
+      "sha256": "b0e4c75569c317f23ab9d9721fefb0ba869c07ef0cec9e3112794815cba78190"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-countries.png",
+      "sha256": "54f1fc28408dd7c830c5e414711399b24aedb72ff22e16ddac60ede69a433c97"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-deserts.png",
+      "sha256": "abd8e8a76a8d52a102b909b8363e9645c808e319ab066998c10d564fa3b74adc"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-gis.png",
+      "sha256": "bd4c5e8dbda96840ae7aba4353c6234553fca7be8642dee25ce1a06bc2823ef7"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-islands.png",
+      "sha256": "859e46654d8c140561d603bd71b5df51d3fe0835e566ff867de41a42a2324165"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-lakes.png",
+      "sha256": "6a8c50097b58632b357956a88afa0508536558ba5a35ba742e06a721c8840409"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-master.png",
+      "sha256": "ba30de13b240f4bb6de873985131407ecc1f0ac518b9acde26320c5b6883c13e"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-mountains.png",
+      "sha256": "801746856e364a6f5a0025e6b786d0b70ece3514f9ace7d1c8196807040edfa9"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-regions.png",
+      "sha256": "490f32e3918ed2e22cd043052034cb2b75dbe653d31d2caede4f7f8a70d9663c"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-rivers.png",
+      "sha256": "06d2e194e2bca450a7becda1be43c5862c216bf3df2a412bb02cab5839b6a566"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/badges/badge-sa.png",
+      "sha256": "f9f2ec60fd9ee3a00cdb88169d8f9e86798de0bef157240c7511409ab99382c4"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/compass-v3.png",
+      "sha256": "de36a16d1049207103c9293a7eaa67ef3f77189d29a662813e667db07469dfb9"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/compass.png",
+      "sha256": "16b731bc184922c7f2803756acc55948f641765791f4eedac06c06946999f554"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/map-pin.png",
+      "sha256": "9f5ca1ca459793e2bef5cc025abd5f9d5d08ee1c52b2caa7f69c2c5b05b627e1"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/master-badge.png",
+      "sha256": "e45451246bc43524787b4ac912e49b7bd8f0890d8744ddfdf2f2615381b78706"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/mission-scroll.png",
+      "sha256": "38e2995a64f7e3f88dc65e3a583028c52ded062f5dc3de7c5652b1a5dbaae2b2"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/passport.png",
+      "sha256": "b0b46417e5e99c4a23708f53356a94ff524c9b5e04600508efad0d5b21cf9e6b"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/pin-explorer.png",
+      "sha256": "7c8c434ae742d7d750cfa2c8b77a620e1f22a215d27af86a8d7c1d2ef37de6fe"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/assets/ui/trophy-map-master.png",
+      "sha256": "4553854e694cdbae7f1d6e1632e8b6840fd2824073a38220f550a9669b58dbe5"
+    },
+    {
+      "path": "apps/web/public/games/map-master-africa/thumb.png",
+      "sha256": "13eea0c5bfd1916a0fd10af44e8055dec21692db510093fa4ef48e604969cf4c"
+    }
+  ]
+}
