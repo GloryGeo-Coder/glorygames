@@ -620,72 +620,88 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "map-master-africa": {
     "category": "Educational",
-    "summary": "Explore African geography through map-pin searches, location questions, route tracing and coordinate missions.",
+    "summary": "Learn map skills in five Map Academy expeditions, then explore countries and territories across an interactive world atlas.",
     "overview": [
-      "Map Master Africa: Explorer Missions turns map reading into an interactive journey across the continent. Rather than presenting a long static geography quiz, it gives players a sequence of fifteen missions that use map pins, geographic choices, routes and coordinates.",
-      "The game encourages close observation of place and space. Players encounter questions about African countries, capitals, rivers, mountains and other geographic features, then practise translating clues into positions on a map. Animated route lines and passport badges make each completed task feel like part of a continuing expedition."
+      "Map Master Africa: World Explorer combines a geographic world atlas with five introductory Map Academy expeditions. Thirty authored tasks teach map symbols, compass directions, alphanumeric grids, simple routes and world-map orientation.",
+      "Learners can explore the whole world at their own pace. Country and territory outlines, map markers and selections stay aligned while zooming or panning. The world overview uses Natural Earth geographic data; community exercises use a clearly identified fictional town plan."
     ],
     "story": [
-      "You take on the role of an explorer completing a geographic mission book. Each task adds another destination or mapping skill to the journey, building an explorer's passport as you progress.",
-      "There is no need to invent a fictional crisis or villain: the challenge comes from travelling intellectually across Africa, learning where places are and understanding how they relate to one another."
+      "You join a young mapping team creating a useful community atlas. Restore its missing map key, guide a courier, record services and plan supply routes before connecting your atlas with the wider world.",
+      "Each expedition begins with a field note. Apply the skill on the map, read feedback after each answer and collect a badge for your atlas journal."
     ],
     "howToPlay": [
-      "Open the first mission and read the location or mapping objective.",
-      "Tap or click the appropriate map pin or coordinate point when a mission asks for a location.",
-      "For multiple-choice tasks, inspect the question and select the best response.",
-      "For a route task, trace the requested journey using the game's route interaction.",
-      "Use a Hint if you need guidance, or Skip knowing that skipping carries a score penalty.",
-      "Complete further tasks to progress through the fifteen explorer missions and collect passport badges."
+      "Start the first unlocked expedition and read its briefing and field note.",
+      "Tap a town grid square or country outline when asked for a location. For choice questions, study the map and select an answer.",
+      "For a route, tap the listed neighbouring squares in order. Dragging pans the map rather than answering.",
+      "Use Map key freely. Hint provides guidance; Find opens a searchable country close-up and counts as a hint during a mission.",
+      "Read the explanation, then choose Continue. Mistakes allow another attempt without losing the whole expedition.",
+      "Complete the expedition to unlock the next one, or open Explore the world for unrestricted atlas discovery."
     ],
     "desktop": [
-      "Click map pins and geographic points with the mouse.",
-      "Use the displayed choice, Hint and Skip controls; route tasks rely on the on-screen map interaction."
+      "Click squares, country outlines and answer buttons. Drag to pan and use the zoom controls or mouse wheel.",
+      "Tab to controls and activate them with Enter or Space. Within the town grid, arrow keys move between squares.",
+      "On the world map, arrow keys pan; Enter selects the country at the centre. Find provides a searchable list."
     ],
     "mobile": [
-      "Tap pins, locations and answer buttons on the map.",
-      "Follow the route-tracing gestures displayed for the current mission."
+      "Tap squares, outlines and answer buttons. Drag with one finger to pan; pinch or use + / − to zoom.",
+      "The map and task share one viewport in portrait and landscape. Open the menu for your journal and sound settings.",
+      "Rotation or interruptions pause the expedition. Resume explicitly when ready."
     ],
     "systems": [
       {
-        "title": "Four mission types",
-        "body": "Tap, choice, route and coordinate tasks require different skills, so successful play is not just memorising facts."
+        "title": "Map Academy",
+        "body": "Five expeditions contain 30 tasks covering symbols, directions, grids, routes and introductory world-map reading."
       },
       {
-        "title": "Map interpretation",
-        "body": "Pins, location prompts and route lines draw attention to spatial relationships between places."
+        "title": "World atlas",
+        "body": "Browse 242 mapped countries and territories across all continents, with region views and searchable close-ups. This is a cartographic feature count, not a count of sovereign states."
       },
       {
-        "title": "Passport and progression",
-        "body": "Mission progress and passport badges provide feedback across the fifteen-part explorer journey."
+        "title": "Learning feedback",
+        "body": "Answers receive explanations and learner-controlled continuation. Wrong answers remain recoverable; map-key reference is free, while hints provide supported practice."
+      },
+      {
+        "title": "Saved mastery",
+        "body": "Your browser records completed tasks, best results, stars and unlocked expeditions. Replaying improves results without awarding duplicate XP for the same task."
       }
     ],
     "progression": [
-      "The game contains fifteen missions rather than an endless round. Each task asks the player to interpret a map or question before moving on.",
-      "The presence of hints and skip penalties encourages careful thinking. Accuracy and completing the requested interaction matter more than random tapping."
+      "Complete the five Map Academy expeditions in order. Explore mode is available from the beginning and does not change campaign progress.",
+      "Independent answers earn 100 Atlas XP, hinted answers 70 and answers after mistakes 50. Only the best score per task contributes to your total. Stars reward clean runs; completed badges and better results are retained."
     ],
     "tips": [
-      "Read the entire location clue before choosing a map pin.",
-      "Use surrounding countries and major geographic features to orient yourself.",
-      "For a coordinate task, pay attention to direction and position rather than guessing from familiar names.",
-      "Trace a route deliberately; planning the order of places first can prevent mistakes.",
-      "Use hints to learn, then try the next similar task without assistance."
+      "Read the field note before beginning a new skill.",
+      "Use the north arrow and map key rather than guessing from pictures.",
+      "Read a grid column letter first, then its row number.",
+      "For practice-town routes, count moves between square centres rather than counting visited squares.",
+      "Zoom into small countries and islands. The world overview is not a surface for measuring ground distances.",
+      "Read feedback and revisit tasks that needed help to improve your independent results."
     ],
     "learning": [
-      "Build recognition of African countries, capitals and notable physical geography.",
-      "Practise foundational geographic information concepts: locations, coordinates, routes and spatial relationships."
+      "Practise foundational South African CAPS Grade 4 mapwork with original activities and clearly identified enrichment.",
+      "Distinguish country, continent and geographic region while exploring a world atlas.",
+      "Use symbols, compass directions, grid references and simple routes to solve practical mapping tasks."
     ],
     "faqs": [
       {
-        "q": "How many explorer missions are there?",
-        "a": "The game features fifteen missions."
+        "q": "How many expeditions are playable?",
+        "a": "Map Academy has five complete expeditions containing 30 tasks. Explore mode also opens the whole world atlas."
       },
       {
-        "q": "Can I ask for help?",
-        "a": "Yes. A Hint button is part of the interface."
+        "q": "Does a wrong answer end the game?",
+        "a": "No. Read the clue and choose Try again. Your completed progress remains saved."
       },
       {
-        "q": "Does skipping a mission affect my score?",
-        "a": "Yes. Skip is described as carrying a scoring penalty."
+        "q": "What does Find do?",
+        "a": "Find searches countries and territories and opens a close-up. In a mission it uses a hint, and country tasks can also be answered through its accessible list."
+      },
+      {
+        "q": "Is this a full school geography course?",
+        "a": "The current course introduces map-reading skills. Its original activities reference CAPS topics and include labelled enrichment; it is not a complete grade curriculum or an official assessment."
+      },
+      {
+        "q": "Is my old score preserved?",
+        "a": "The previous Explorer Missions best score is retained on the same browser. New learning progress uses its own saved record."
       }
     ]
   },

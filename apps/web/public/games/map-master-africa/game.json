@@ -1,60 +1,76 @@
 {
-  "title": "Map Master Africa: Explorer Missions",
-  "slug": "map-master-africa-explorer-missions",
+  "title": "Map Master Africa: World Explorer",
+  "slug": "map-master-africa",
   "entry": "index.html",
   "thumbnail": "thumb.png",
-  "orientation": "landscape",
+  "orientation": "any",
   "category": "Educational",
-  "description": "A mission-based African geography and GIS game with 15 explorer missions, animated map pins, route tracing, coordinate challenges, passport badges, background music, sound effects, and score bridge support.",
+  "description": "Build map-reading skills in five Map Academy expeditions, then explore a geographic world atlas with countries, territories, zoom, search and saved learning progress.",
   "tags": [
     "geography",
+    "world",
     "Africa",
-    "GIS",
-    "education",
-    "maps",
-    "countries",
-    "capitals",
-    "rivers",
-    "mountains",
     "South Africa",
-    "coordinates"
+    "maps",
+    "curriculum",
+    "education",
+    "map skills",
+    "countries",
+    "coordinates",
+    "mobile"
   ],
   "controls": [
     {
-      "key": "Tap / click",
-      "action": "Select map pins and coordinate points"
+      "key": "Tap / Enter",
+      "action": "Select a square, country or answer"
     },
     {
-      "key": "Choice buttons",
-      "action": "Answer quiz missions"
+      "key": "Drag / arrow keys",
+      "action": "Pan the map; arrows move focus within the town grid"
     },
     {
-      "key": "Hint",
-      "action": "Show mission hint"
+      "key": "Pinch / + / \u2212",
+      "action": "Zoom the map"
     },
     {
-      "key": "Skip",
-      "action": "Skip current task with score penalty"
+      "key": "Map key / Hint / Find",
+      "action": "Read symbols and use guided support"
+    },
+    {
+      "key": "Escape / Menu",
+      "action": "Pause, resume and view the atlas journal"
     }
   ],
   "features": {
     "mobileFirst": true,
-    "levels": 15,
+    "levels": 5,
+    "tasks": 30,
+    "worldAtlas": true,
+    "mappedCountriesAndTerritories": 242,
     "missionTypes": [
-      "tap",
       "choice",
+      "cell",
       "route",
-      "coordinate"
+      "country"
     ],
+    "persistentLearningProgress": true,
     "passportBadges": true,
     "animatedRoutes": true,
-    "animatedMapPins": true,
     "backgroundMusic": true,
     "soundEffects": true,
+    "curriculumRoadmapGrades": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
     "scoreBridge": [
       "GG_SCORE",
       "gg:score"
     ]
   },
-  "version": "4.0.0-explorer-missions"
+  "version": "5.0.0"
 }

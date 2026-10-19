@@ -1,117 +1,73 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <meta name="theme-color" content="#07111f" />
-  <title>Map Master Africa: Explorer Missions</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+ <meta charset="utf-8" />
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+ <meta name="theme-color" content="#153c40" />
+ <title>Map Master Africa: World Explorer</title>
+ <link rel="stylesheet" href="./styles.css" />
+ <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
-  <main class="app-shell">
-    <header class="topbar">
-      <div class="brand-block">
-        <img src="./assets/ui/compass-v3.png" alt="" />
-        <div>
-          <strong>Map Master Africa</strong>
-          <span>Explorer Missions • Geography + GIS</span>
-        </div>
-      </div>
-
-      <div class="stats">
-        <div><span>Score</span><b id="scoreValue">0</b></div>
-        <div><span>Lives</span><b id="livesValue">3</b></div>
-        <div><span>Streak</span><b id="streakValue">0</b></div>
-        <div><span>Stars</span><b id="starsValue">0</b></div>
-        <div><span>Best</span><b id="bestValue">0</b></div>
-      </div>
-    </header>
-
-    <section class="main-grid">
-      <aside class="side-panel">
-        <section class="panel mission-card">
-          <div class="panel-title">
-            <span>Mission</span>
-            <b id="missionNumber">1 / 15</b>
-          </div>
-          <h2 id="missionTitle">Explorer Training</h2>
-          <p id="missionText">Tap Start to begin your expedition.</p>
-          <div class="mission-progress">
-            <div id="missionFill"></div>
-          </div>
-          <div class="mission-meta">
-            <span id="missionPct">0%</span>
-            <span id="missionMode">Tap</span>
-          </div>
-        </section>
-
-        <section class="panel question-card">
-          <div class="panel-title">
-            <span>Current Task</span>
-            <b id="questionType">Map</b>
-          </div>
-          <p id="questionText">Your geography mission will appear here.</p>
-          <div id="choiceList" class="choice-list"></div>
-        </section>
-
-        <section class="panel passport-card">
-          <div class="panel-title">
-            <span>Explorer Passport</span>
-            <b id="badgeCount">0</b>
-          </div>
-          <div class="passport-row">
-            <img src="./assets/ui/passport.png" alt="" />
-            <p id="passportText">Complete missions to unlock badges.</p>
-          </div>
-          <div id="badgeGrid" class="badge-grid"></div>
-        </section>
-      </aside>
-
-      <section class="game-column">
-        <section class="canvas-shell">
-          <canvas id="gameCanvas" width="1280" height="720" aria-label="Map Master Africa Explorer Missions game canvas"></canvas>
-
-          <div class="toast" id="toast">Ready</div>
-
-          <div class="overlay active" id="overlay">
-            <div class="overlay-card">
-              <img src="./assets/ui/trophy-map-master.png" alt="" />
-              <h1 id="overlayTitle">Map Master Africa</h1>
-              <h2>Explorer Missions</h2>
-              <p id="overlayText">
-                Travel across Africa, complete geography missions, learn countries, capitals,
-                rivers, mountains, deserts, islands, South African provinces, compass skills,
-                coordinates, and GIS basics.
-              </p>
-              <div class="overlay-tags">
-                <span>15 missions</span>
-                <span>Animated routes</span>
-                <span>Passport badges</span>
-                <span>GIS basics</span>
-              </div>
-              <div class="overlay-actions">
-                <button id="startBtn" class="primary">Start Expedition</button>
-                <button id="helpBtn">How to Play</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <footer class="bottombar">
-          <button id="pauseBtn">Pause</button>
-          <button id="hintBtn">Hint</button>
-          <button id="skipBtn">Skip Task</button>
-          <button id="mapBtn">Mission Map</button>
-          <button id="submitBtn">Submit Score</button>
-          <button id="restartBtn">Restart</button>
-          <button id="muteBtn">Sound On</button>
-        </footer>
-      </section>
-    </section>
-  </main>
-
-  <script src="./game.js"></script>
-  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
+ <main class="app-shell">
+  <header class="topbar">
+   <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><div><strong>Map Master</strong><span id="missionLabel">WORLD EXPLORER</span></div></div>
+   <div class="stats"><span><small>Atlas XP</small><b id="scoreValue">0</b></span><span><small>Stars</small><b id="starsValue">0 / 15</b></span></div>
+  </header>
+  <section class="workspace" aria-label="Interactive geography expedition">
+   <section class="map-panel" aria-label="Map area">
+    <div class="map-caption"><span id="mapCaption">Community atlas</span><span class="north-chip">↑ N</span></div>
+    <svg id="atlas" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Interactive map. Arrow keys pan; plus and minus zoom; Enter selects." tabindex="0"></svg>
+    <div class="reticle" aria-hidden="true">+</div>
+    <div class="zoom-tools" role="group" aria-label="Map zoom"><button id="zoomInBtn" aria-label="Zoom in">+</button><button id="zoomOutBtn" aria-label="Zoom out">−</button><button id="resetViewBtn" aria-label="Fit map">⌂</button></div>
+    <span id="mapCredit" class="map-credit">Practice town · north-up</span>
+   </section>
+   <section class="task-panel" aria-label="Current expedition task">
+    <div class="task-top"><span id="taskSkill">Map Academy</span><b id="taskNumber">1 / 6</b></div>
+    <div class="progress-track" aria-hidden="true"><span id="taskProgress"></span></div>
+    <h1 id="questionText">Your next expedition awaits.</h1>
+    <p id="taskInstruction" class="instruction">Learn a skill, use the map and build your atlas.</p>
+    <div id="choiceList" class="choices"></div>
+    <section id="feedback" class="feedback" hidden aria-live="polite"><strong id="feedbackTitle"></strong><p id="feedbackText"></p><button id="continueBtn" class="primary">Continue</button></section>
+    <p id="hintText" class="hint-text" hidden aria-live="polite"></p>
+    <div id="exploreTools" hidden>
+     <label for="regionSelect">Travel to a region</label><select id="regionSelect"></select>
+     <div class="country-card"><span>ATLAS DISCOVERY</span><h2 id="countryName">Choose a country or territory</h2><p id="countryDetail">Tap an outline, or use Find to open a close-up.</p></div>
+     <p class="instruction">Drag to pan. Pinch or use + / − to zoom. The Equator is marked at 0° latitude.</p>
+    </div>
+   </section>
+  </section>
+  <nav class="action-dock" aria-label="Expedition actions">
+   <button id="hintBtn"><span aria-hidden="true">✧</span>Hint</button>
+   <button id="keyBtn"><span aria-hidden="true">▧</span>Map key</button>
+   <button id="findBtn" disabled><span aria-hidden="true">⌕</span>Find</button>
+   <button id="journalBtn"><span aria-hidden="true">◇</span>Journal</button>
+   <button id="menuBtn"><span aria-hidden="true">☰</span>Menu</button>
+  </nav>
+ </main>
+ <section id="menu" class="scrim" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+  <div class="sheet menu-sheet"><div class="eyebrow">YOUR ATLAS. YOUR EXPEDITION.</div><h2 id="menuTitle">A world worth exploring.</h2><p>Join a young mapping team. Learn to read maps in five Map Academy expeditions, then explore countries and territories across the world.</p>
+   <div class="launch-actions"><button id="startBtn" class="primary" disabled>Start expedition</button><button id="exploreBtn" disabled>Explore the world</button></div>
+   <p id="loadStatus" role="status">Preparing your atlas…</p>
+   <h3>Map Academy</h3><div id="missionList" class="mission-list"></div>
+   <details id="journalDetails"><summary>Your atlas journal</summary><p id="journalSummary"></p><div id="journalList" class="journal-list"></div><p id="storageStatus" class="instruction"></p><p>Atlas XP records your best result for each task, so replaying improves mastery without farming points. 100 XP: independent answer. 70 XP: answer with a hint. 50 XP: answer after a mistake.</p><p>Three stars: no mistakes or hints. Two stars: at most two mistakes. One star: another completed expedition.</p></details>
+   <details><summary>Controls and map notes</summary><p>Tap squares or country outlines. Drag to pan; pinch or use + / − to zoom. On a keyboard, Tab to controls; Enter or Space activates them. Within the town grid, arrow keys move between squares. On the world map, arrows pan and Enter selects the centre. Find offers a searchable country list.</p><p>Map Academy uses original fictional town plans for symbols, grids and routes. The world atlas uses Natural Earth overview boundaries. They show countries and territories, including disputed areas, and are not a count of sovereign states. Oceania is a region containing Australia and Pacific islands. The overview is not an equal-distance or equal-area map.</p><p>Made with Natural Earth · public-domain map data. School topics follow South African CAPS references; these original activities are not an official assessment.</p></details>
+   <details><summary>Sound and scores</summary><label for="musicVolume">Music</label><input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.35" /><label for="effectsVolume">Sound effects</label><input id="effectsVolume" type="range" min="0" max="1" step="0.05" value="0.7" /><div class="inline-actions"><button id="muteBtn">Sound on</button><button id="submitBtn">Submit score</button><button id="chatBtn">Scores &amp; chat</button><button id="restartBtn">Replay this expedition</button></div><p id="bestText"></p></details>
+  </div>
+ </section>
+ <section id="brief" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="briefTitle"><div class="sheet brief-sheet"><div class="eyebrow" id="briefTag"></div><h2 id="briefTitle"></h2><p id="briefStory"></p><div class="lesson-card"><strong>Your field note</strong><p id="briefLesson"></p></div><div class="inline-actions"><button id="beginBtn" class="primary">Begin mission</button><button id="briefMenuBtn">Back to atlas</button></div></div></section>
+ <section id="summary" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="summaryTitle"><div class="sheet summary-sheet"><div class="badge-emblem" aria-hidden="true">✦</div><div class="eyebrow" id="badgeTitle"></div><h2 id="summaryTitle">Expedition complete</h2><p id="summaryText"></p><div class="inline-actions"><button id="nextMissionBtn" class="primary">Next expedition</button><button id="replayBtn">Practise again</button><button id="exploreAfterBtn">Explore the world</button><button id="homeBtn">Atlas journal</button></div></div></section>
+ <section id="keyPanel" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="keyTitle"><div class="sheet compact-sheet"><h2 id="keyTitle">Map key</h2><div id="keyItems" class="key-items"></div><p id="keyNote"></p><button id="closeKeyBtn" class="primary">Return to map</button></div></section>
+ <section id="searchPanel" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="searchTitle"><div class="sheet compact-sheet"><h2 id="searchTitle">Find a place</h2><p id="searchNote">Choose a place to open its close-up.</p><label for="countrySearch">Search countries and territories</label><input id="countrySearch" type="search" placeholder="Try South Africa, Japan or Brazil" autocomplete="off" /><div id="searchResults" class="search-results"></div><label for="countrySelect">Or choose from the full atlas</label><select id="countrySelect"></select><div class="inline-actions"><button id="locateBtn" class="primary">Show on map</button><button id="selectCountryBtn">Select this country</button><button id="closeSearchBtn">Back</button></div></div></section>
+ <p id="liveStatus" class="sr-only" aria-live="polite"></p>
+ <script defer src="/games/_shared/gg-sdk.js"></script>
+ <script defer src="./atlas-data.js"></script>
+ <script defer src="./atlas-geometry.js"></script>
+ <script defer src="./academy-content.js"></script>
+ <script defer src="./academy-engine.js"></script>
+ <script defer src="./atlas-view.js"></script>
+ <script defer src="./academy-audio.js"></script>
+ <script defer src="./game.js"></script>
+ <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
