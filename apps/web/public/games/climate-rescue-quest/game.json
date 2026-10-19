@@ -1,11 +1,11 @@
 {
-  "title": "Climate Rescue Quest v2",
+  "title": "Climate Rescue Quest",
   "slug": "climate-rescue-quest",
   "entry": "index.html",
   "thumbnail": "thumb.png",
-  "orientation": "landscape",
+  "orientation": "any",
   "category": "Educational Arcade",
-  "description": "A greener, leafy environmental visuals, high-quality backgrounds, animated transparent sprite frames, sound, and boss progression.",
+  "description": "Restore a connected planet through 25 climate missions with animated heroes, eco-items and hazards, nature-inspired music, responsive touch controls and saved campaign progress.",
   "tags": [
     "educational",
     "climate change",
@@ -53,11 +53,18 @@
       "magnet",
       "freeze"
     ],
-    "levels": 10,
+    "levels": 25,
     "bossLevel": true,
     "leafyGreenTheme": true,
     "highQualityBackgrounds": true,
-    "highQualityThumbnail": true
+    "highQualityThumbnail": true,
+    "musicTracks": 25,
+    "bossEncounters": 5,
+    "savedCampaign": true,
+    "multiTouch": true,
+    "dragAnywhere": true,
+    "separateAudioVolumes": true,
+    "pauseSafeTimers": true
   },
-  "version": "2.0.0"
+  "version": "2.1.0"
 }
