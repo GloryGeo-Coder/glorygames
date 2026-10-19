@@ -257,10 +257,32 @@
     {
       "path": "apps/web/public/games/climate-rescue-quest/assets/sprites/wind_turbine_02.png",
       "sha256": "dc76b599ccff693ab643f2306d696d0b416fd9bb753fb407a9221efc079ddb04"
-    },
+    }
+  ],
+  "replacedArtwork": [
     {
       "path": "apps/web/public/games/climate-rescue-quest/thumb.png",
-      "sha256": "23b7f395314319605d8099717179839072c685922156cada3ef766ffe24f19a3"
+      "reason": "User-requested thumbnail refresh to match the animated eco-collection game",
+      "previousSha256": "23b7f395314319605d8099717179839072c685922156cada3ef766ffe24f19a3",
+      "prompt": "Use case: stylized-concept.\nAsset type: final website game thumbnail / illustrated cover, landscape 16:9 composition, for Climate Rescue Quest.\nPrimary request: Replace the old game cover with polished illustrated key art that faithfully represents the current 2D eco-collection arcade game. This is ONE finished cover image, not a sprite sheet or mockup.\nInput images: Image 1 is the existing hero animation sheet, identity/style reference ONLY: use ONE hero, retain his youthful face, leaf-shaped green hair, green eye mask, leaf-emblem green outfit, gloves, boots, brown belt and flowing leaf cape. Image 2 is an actual current game field, reference ONLY for gameplay, collectible appearances and eco-city setting. Do not reproduce its HUD, duplicate characters, rows of icons or screenshot layout.\nScene/backdrop: bright illustrated eco-city street with green roofs, a few blue solar panels and white wind turbines, a river and lush trees receding into the distance. A small dark purple smoky Carbon Boss cloud with glowing orange eyes approaches from the far right, contrasting with the green restoration theme.\nSubject/action: a single recognizable leaf superhero in a lively side-on running/catching pose along the bottom street, reaching to collect a glowing turquoise water drop. A small sapling collectible and a blue solar-panel collectible descend from above him, as in this actual catch-and-dodge game. A compact purple smog hazard floats farther away. Keep the active objects distinct and clearly readable at small thumbnail size.\nStyle/medium: premium hand-painted 2D cartoon game illustration with crisp silhouettes, dimensional painted shading and saturated emerald/lime greens, turquoise sky/water and restrained warm golden highlights. Match the reference sprites. Hero large and expressive, eye-level 2D action, welcoming environmental adventure.\nComposition/framing: landscape cover with title occupying the left third/half and hero plus catches in the center/right; all essential title letters and hero fully within a generous 7 percent safe margin for thumbnail crops. Clear hierarchy, uncluttered, artwork fills every edge, no frame.\nText (verbatim): \"CLIMATE RESCUE QUEST\". Set as a large legible three-line game title, cream/white and leafy green lettering with a dark green outline and subtle leaf detailing. No other words or numbers.\nConstraints: no V2, version numbers, feature lists, buttons, badges, HUD, ratings, logos or watermarks. No weapons, space suits, different hero, photorealism, 3D game rendering, platform jumping, floating platforms or implied mechanics that are absent from the real game. This game is about catching eco-actions while dodging environmental hazards.",
+      "mode": "built-in image generation",
+      "references": [
+        {
+          "path": "apps/web/public/games/climate-rescue-quest/assets/animated/hero-sheet.png",
+          "role": "hero identity and painted sprite style"
+        },
+        {
+          "source": "native-canvas render of mission 1 at 390x580",
+          "role": "actual gameplay, collectibles and eco-city setting"
+        }
+      ],
+      "dimensions": [
+        1672,
+        941
+      ],
+      "bytes": 2166715,
+      "sha256": "efd88e20b40e378b5009a3f3bae982725b87069961eaed97485ef1ddefc2768d",
+      "transparent_background": false
     }
   ]
 }
