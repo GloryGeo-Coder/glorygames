@@ -620,8 +620,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "map-master-africa": {
     "category": "Educational",
-    "summary": "Learn map skills in five Map Academy expeditions, then explore countries and territories across an interactive world atlas.",
+    "summary": "Begin a Grades 4–10 geography learning journey with five introductory Grade 4 mapwork missions and a world atlas. Further grade courses are planned.",
     "overview": [
+      "The curriculum journey spans Grades 4–10 geography, with South African, African and worldwide examples. Available now: introductory Grade 4 mapwork through five missions and 30 tasks, plus free world exploration. Further lessons across Grades 4–10 are planned. Open the game menu to view topics by grade.",
       "Map Master Africa: World Explorer combines a geographic world atlas with five introductory Map Academy expeditions. Thirty authored tasks teach map symbols, compass directions, alphanumeric grids, simple routes and world-map orientation.",
       "Learners can explore the whole world at their own pace. Country and territory outlines, map markers and selections stay aligned while zooming or panning. The world overview uses Natural Earth geographic data; community exercises use a clearly identified fictional town plan."
     ],
@@ -696,8 +697,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         "a": "Find searches countries and territories and opens a close-up. In a mission it uses a hint, and country tasks can also be answered through its accessible list."
       },
       {
-        "q": "Is this a full school geography course?",
-        "a": "The current course introduces map-reading skills. Its original activities reference CAPS topics and include labelled enrichment; it is not a complete grade curriculum or an official assessment."
+        "q": "Which curriculum and grades does Map Master cover?",
+        "a": "The learning journey follows South African CAPS geography topics for Grades 4–10, including world geography. Five introductory Grade 4 mapwork missions are playable now; further grade courses are planned. The menu includes a topic guide for each grade. The current release is not a complete grade curriculum or an official assessment."
       },
       {
         "q": "Is my old score preserved?",

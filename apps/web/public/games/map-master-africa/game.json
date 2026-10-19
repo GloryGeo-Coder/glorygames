@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Build map-reading skills in five Map Academy expeditions, then explore a geographic world atlas with countries, territories, zoom, search and saved learning progress.",
+  "description": "Start a Grades 4\u201310 geography learning journey with five introductory Grade 4 mapwork missions and a world atlas. Further grade courses are planned; explore the curriculum guide in the menu.",
   "tags": [
     "geography",
     "world",
@@ -72,5 +72,5 @@
       "gg:score"
     ]
   },
-  "version": "5.0.0"
+  "version": "5.0.1"
 }
