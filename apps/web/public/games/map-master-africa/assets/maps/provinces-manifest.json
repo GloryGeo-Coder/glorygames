@@ -1,0 +1,16 @@
+{
+  "source": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/ca96624a56bd078437bca8184e78163e5039ad19/geojson/ne_10m_admin_1_states_provinces.geojson",
+  "sourceCommit": "ca96624a56bd078437bca8184e78163e5039ad19",
+  "sourceSha256": "22d0e3ad85eb3e27f17cabf8ba2d50e554fbc27a87796ff891d958185da62fb5",
+  "sourceScale": "1:10,000,000",
+  "license": "public domain",
+  "terms": "https://www.naturalearthdata.com/about/terms-of-use/",
+  "attribution": "Made with Natural Earth.",
+  "conversion": "Select admin=South Africa; retain every polygon, ring and vertex; round coordinates to five decimal degrees. No simplification.",
+  "projection": "Equirectangular: longitude, negative latitude. Overview only, not an equal-distance or equal-area map.",
+  "features": 9,
+  "sourceVertices": 6229,
+  "file": "province-data.js",
+  "bytes": 130446,
+  "sha256": "b0566d0495ba05e907a53ddc26a09a26b8adc8bed503aac75575bfac35dd50f2"
+}

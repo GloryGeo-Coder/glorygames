@@ -18,7 +18,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "high-spead-racer": { category: "RACING", description: "Race AI rivals, change lanes, use nitro, pass checkpoints and progress through a multi-level arcade racing campaign." },
   "kasi-quest": { category: "ADVENTURE", description: "Jump through township-inspired platform missions, meet NPCs, collect coins, unlock upgrades and face bosses." },
   "lost-jungle-3d-temple-of-the-sun": { category: "ADVENTURE", description: "Search for Sun Relics and keys, cross dangerous jungle platforms, solve temple puzzles and face guardians." },
-  "map-master-africa": { category: "EDUCATIONAL", description: "Begin a Grades 4–10 geography learning journey with introductory Grade 4 mapwork and a world atlas. Further grade courses are planned." },
+  "map-master-africa": { category: "EDUCATIONAL", description: "Practise Grade 4 and Grade 5 geography through 20 missions and 120 tasks, with a world atlas and all nine South African provinces. The curriculum journey extends towards Grade 10." },
   "math-sprint-arena": { category: "EDUCATIONAL", description: "Solve arithmetic, fractions, multiplication, geometry and algebra questions in a fast-moving neon maths arena." },
   "neon-hover-runner": { category: "RACING", description: "Steer a futuristic hover runner around hazards, jump barriers and collect energy, shields, magnets and boosts." },
   "neon-orb-defender": { category: "DEFENSE", description: "Defend a futuristic Neon Orb, rescue friendly AI units and repel rogue robots and drones across 25 missions with animated combat and original level music." },

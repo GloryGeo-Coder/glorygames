@@ -6,6 +6,7 @@ on:
       - 'apps/web/scripts/map-master-*'
       - 'apps/web/scripts/helpers/map-master-*'
       - 'tools/build-map-master-atlas.py'
+      - 'tools/build-map-master-provinces.py'
       - '.github/workflows/map-master.yml'
   push:
     branches: [main]
@@ -14,6 +15,7 @@ on:
       - 'apps/web/scripts/map-master-*'
       - 'apps/web/scripts/helpers/map-master-*'
       - 'tools/build-map-master-atlas.py'
+      - 'tools/build-map-master-provinces.py'
       - '.github/workflows/map-master.yml'
 permissions:
   contents: read
