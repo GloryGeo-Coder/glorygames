@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Start a Grades 4\u201310 geography learning journey with five introductory Grade 4 mapwork missions and a world atlas. Further grade courses are planned; explore the curriculum guide in the menu.",
+  "description": "Explore the world and South Africa\u2019s nine provinces while practising Grade 4 and Grade 5 geography through 20 missions and 120 tasks. The curriculum guide shows the planned journey through Grade 10.",
   "tags": [
     "geography",
     "world",
@@ -43,15 +43,16 @@
   ],
   "features": {
     "mobileFirst": true,
-    "levels": 5,
-    "tasks": 30,
+    "levels": 20,
+    "tasks": 120,
     "worldAtlas": true,
     "mappedCountriesAndTerritories": 242,
     "missionTypes": [
       "choice",
       "cell",
       "route",
-      "country"
+      "country",
+      "province"
     ],
     "persistentLearningProgress": true,
     "passportBadges": true,
@@ -70,7 +71,15 @@
     "scoreBridge": [
       "GG_SCORE",
       "gg:score"
-    ]
+    ],
+    "provinceAtlas": true,
+    "provinces": 9,
+    "playableGrades": [
+      4,
+      5
+    ],
+    "independentGradePaths": true,
+    "evidenceInvestigations": true
   },
-  "version": "5.0.1"
+  "version": "5.1.0"
 }

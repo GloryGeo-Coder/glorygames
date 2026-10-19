@@ -68,5 +68,12 @@
   {grade:9,topics:['Topographic and orthophoto maps','Development','Surface processes','Resource use and sustainability'],source:'sp'},
   {grade:10,topics:['Coordinates in degrees, minutes and seconds; scale','1:50,000 topographic maps, bearings, contours and simple cross-sections','Aerial and orthophoto interpretation','GIS, remote sensing and fieldwork','The atmosphere and synoptic maps','Geomorphology and tectonics','Population','Water resources'],source:'fet'}
  ];
- const api={sources,places,missions,roadmap};if(typeof module==='object'&&module.exports)module.exports=api;else root.AcademyContent=api;
+ const expansion=typeof module==='object'&&module.exports?require('./academy-expansion.js'):root.AcademyExpansion;
+ if(!expansion)throw new Error('The Grade 4–5 activities could not load.');
+ missions.push(...expansion.missions);
+ for(const [i,m] of missions.entries()){
+  m.topic=m.topic||'Map skills';m.objective=m.objective||m.skill;
+  m.prerequisite=missions.slice(0,i).filter(p=>p.grade===m.grade).at(-1)?.id||null;
+ }
+ const api={sources,places,missions,roadmap,provinceNotes:expansion.provinceNotes,countryNotes:expansion.countryNotes};if(typeof module==='object'&&module.exports)module.exports=api;else root.AcademyContent=api;
 })(typeof window!=='undefined'?window:globalThis);

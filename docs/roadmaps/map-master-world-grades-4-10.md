@@ -10,6 +10,16 @@ Activities identify their grade, term, curriculum source and enrichment scope. T
 
 The locally bundled Natural Earth 1:50m overview contains 242 mapped countries and territories, including all continents. This is a cartographic-feature count, not a sovereign-country count. Source outlines, interior holes, island polygons and every source vertex are retained. Rendering, markers and hit testing use one longitude/latitude transform. Pan, zoom, country search, keyboard alternatives, hints, explanations, mastery XP, badges and saved progress form the reusable learning foundation.
 
+## Released expansion: v5.1.0
+
+Twenty playable missions contain 120 tasks. Grade 4 has the five preserved Map Academy missions plus seven investigations for settlements, provinces/oceans, food/farming and water; Grade 5 has eight missions covering African map skills, South African physical features, weather/climate/vegetation and minerals/mining. Both grade paths start independently, with sequential unlocking within each path. The release provides practice across the four topic areas in each grade, not a complete school course or an official assessment. Grade 6–10 remain planned.
+
+The provincial atlas uses pinned public-domain Natural Earth 1:10m data: nine provinces, all 6,229 source vertices and every source polygon/ring, including the distant Prince Edward Islands in a separate view. Geographic hit testing, markers, labels and zoom use the same coordinate transform. Capitals and descriptive notes use the South African Government province reference. Provincial overviews do not represent every river, landform or mineral deposit. The world atlas and all 39 existing PNG assets remain unchanged.
+
+Original fictional evidence tables support community, food, water, weather and mining investigations; the landform cross-section is explicitly schematic. The saved-progress record is upgraded in place to version 2 with stable mission IDs, retaining all original five results/cursors, hint history, stars, best score and sound preferences. No future mission completion is invented. The curriculum guide now identifies Grade 4 and Grade 5 practice as available.
+
+See `docs/learning/map-master-grade4-5-v5.1.md` for the mission-to-topic matrix and factual sources.
+
 ## Curriculum paths
 
 Each grade is a separate learning path with units, short skill lessons, applied missions and mixed revision. Country/capital recognition is enrichment within a much broader geography curriculum. Mission counts will follow the objective matrix and review, rather than stretching one activity into an arbitrary fixed number of levels.
