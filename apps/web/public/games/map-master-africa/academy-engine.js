@@ -1,5 +1,6 @@
 (function(root){
  'use strict';
+ const F=typeof module==='object'&&module.exports?require('./field-lab.js'):root.AtlasFieldLab;
  const KEY='wga_map_master_world_progress_v1',SETTINGS='wga_map_master_world_settings_v1',LEGACY='wga_map_master_africa_explorer_best_v1';
  const finite=(x,d=0)=>typeof x==='number'&&Number.isFinite(x)?x:d;
  const bounded=(x,max)=>Math.max(0,Math.min(max,Math.floor(finite(x))));
@@ -32,7 +33,7 @@
   function answer(value){if(state.phase!=='question')return null;const q=question();if(q.type==='route'){
     const expected=q.answer[state.route.length];if(value===expected){state.route.push(value);if(state.route.length<q.answer.length)return {partial:true};}else return finish(false,value);
    }
-   const correct=q.type==='coordinate'?Array.isArray(value)&&value.length===2&&q.answer.every((n,i)=>Number.isFinite(value[i])&&value[i]===n):q.type==='route'||value===q.answer;
+   const correct=q.type==='street-route'?!!F.inspect(value,q).complete:q.type==='coordinate'?Array.isArray(value)&&value.length===2&&q.answer.every((n,i)=>Number.isFinite(value[i])&&value[i]===n):q.type==='route'||value===q.answer;
    return finish(correct,value);
   }
   function finish(correct,value){const q=question();if(!correct){state.attempts++;state.mistakes++;state.route=[];cursor();}
