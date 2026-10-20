@@ -1,0 +1,18 @@
+{
+  "file": "usgs-washington-ortho.jpg",
+  "bytes": 226034,
+  "sha256": "a514d937045840ac992f0fc5ed49973649cc5a12956f7695a094cffe09f5bf89",
+  "width": 1336,
+  "height": 692,
+  "sourcePage": "https://www.usgs.gov/media/images/orthoimage-layer-a-us-topo-map-washington-dc",
+  "sourceImage": "https://d9-wret.s3.us-west-2.amazonaws.com/assets/palladium/production/s3fs-public/styles/full_width/public/thumbnails/image/The%20National%20Map%20OrthoImage%20Wash%20DC_0.JPG?itok=a-Ua8NFm",
+  "publisher": "USGS National Geospatial Program",
+  "credit": "Kristin A. Fishburn",
+  "pagePublished": "2014-04-14",
+  "captureDate": "Not specified on the source page; not inferred from publication date",
+  "retrieved": "2026-10-20",
+  "license": "Public Domain",
+  "modifications": "Full-width publisher rendition bundled without byte changes; interactive labels are a separate SVG layer.",
+  "coordinateSystem": "Image pixels; no georeferenced ground scale or north orientation asserted",
+  "teachingUse": "Historical observation of water, crossings, urban blocks and tree cover; not a South African 1:10000 orthophoto map"
+}

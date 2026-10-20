@@ -5,14 +5,14 @@
  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
  <meta name="theme-color" content="#153c40" />
  <title>Map Master Africa: World Explorer</title>
- <link rel="stylesheet" href="./styles.css?v=5.4.0" />
+ <link rel="stylesheet" href="./styles.css?v=5.5.0" />
  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
  <main class="app-shell">
   <header class="topbar">
    <div class="brand"><span class="brand-mark" aria-hidden="true">✦</span><div><strong>Map Master</strong><span id="missionLabel">WORLD EXPLORER</span></div></div>
-   <div class="stats"><span><small>Atlas XP</small><b id="scoreValue">0</b></span><span><small>Stars</small><b id="starsValue">0 / 168</b></span></div>
+   <div class="stats"><span><small>Atlas XP</small><b id="scoreValue">0</b></span><span><small>Stars</small><b id="starsValue">0 / 204</b></span></div>
   </header>
   <section class="workspace" aria-label="Interactive geography expedition">
    <section class="map-panel" aria-label="Map area">
@@ -39,6 +39,7 @@
     </form>
     <form id="numberForm" class="coordinate-form" hidden><label id="numberLabel" for="numberAnswer">Your answer</label><input id="numberAnswer" type="text" inputmode="decimal" autocomplete="off" required /><button id="numberCheckBtn" class="primary" type="submit" disabled>Check answer</button></form>
     <section id="streetControls" hidden aria-label="Street plan controls"><p id="routeStatus" class="instruction" aria-live="polite"></p><div id="junctionChoices" class="junction-choices"></div><div id="streetEditControls" hidden><div class="inline-actions"><button id="routeUndoBtn">Undo</button><button id="routeResetBtn">Start again</button></div><button id="routeCheckBtn" class="primary">Check route</button></div></section>
+    <section id="interpretControls" hidden aria-label="Map and image interpretation controls"><p id="measureStatus" class="instruction" aria-live="polite"></p><div id="featureChoices" class="feature-choices"></div><div id="measureEditControls" hidden><div class="inline-actions"><button id="measureResetBtn">Reset endpoints</button><button id="measureCheckBtn" class="primary" disabled>Check measurement</button></div></div></section>
     <div id="choiceList" class="choices"></div>
     <section id="feedback" class="feedback" hidden aria-live="polite"><strong id="feedbackTitle"></strong><p id="feedbackText"></p><button id="continueBtn" class="primary">Continue</button></section>
     <p id="hintText" class="hint-text" hidden aria-live="polite"></p>
@@ -60,30 +61,30 @@
   </nav>
  </main>
  <section id="menu" class="scrim" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
-  <div class="sheet menu-sheet"><div class="eyebrow">YOUR ATLAS. YOUR EXPEDITION.</div><h2 id="menuTitle">A world worth exploring.</h2><p>Join a young mapping team. Build geography skills through Grades 4–8 learning paths, then explore South African provinces and the world.</p>
+  <div class="sheet menu-sheet"><div class="eyebrow">YOUR ATLAS. YOUR EXPEDITION.</div><h2 id="menuTitle">A world worth exploring.</h2><p>Join a young mapping team. Build geography skills through Grades 4–9 learning paths, then explore South African provinces and the world.</p>
    <div class="launch-actions"><button id="startBtn" class="primary" disabled>Start expedition</button><button id="exploreBtn" disabled>Explore the world</button><button id="provinceExploreBtn" disabled>Explore South Africa</button></div>
    <p id="loadStatus" role="status">Preparing your atlas…</p>
    <section class="curriculum-intro" aria-labelledby="curriculumTitle">
     <span class="curriculum-badge">GRADES 4–10 · GEOGRAPHY</span>
     <h3 id="curriculumTitle">Your curriculum journey</h3>
-    <p><strong>Available now:</strong> 56 missions with 336 tasks across Grades 4–8, plus free world and provincial exploration.</p>
+    <p><strong>Available now:</strong> 68 missions with 408 tasks across Grades 4–9, plus free world and provincial exploration.</p>
     <details class="curriculum-guide"><summary>View topics for Grades 4–10</summary>
-     <p>Our learning journey follows South African CAPS geography topics, using South African, African and worldwide examples. Grades 4–8 topic practice is available. Grades 9–10 courses are planned.</p>
+     <p>Our learning journey follows South African CAPS geography topics, using South African, African and worldwide examples. Grades 4–9 topic practice is available. The Grade 10 course is planned.</p>
      <dl class="curriculum-grades">
       <div><dt>Grade 4 <span>12 missions available</span></dt><dd>Settlements, symbols, keys, directions, grids, routes, South African provinces and oceans, food and farming, and water.</dd></div>
       <div><dt>Grade 5 <span>8 missions available</span></dt><dd>Africa map skills, South African landforms, weather, climate, vegetation, minerals and mining.</dd></div>
       <div><dt>Grade 6 <span>12 missions available</span></dt><dd>World map skills, latitude and longitude, scale, trade, climate, vegetation, population and settlement location.</dd></div>
       <div><dt>Grade 7 <span>12 missions available</span></dt><dd>Local maps and scale, earthquakes, volcanoes, floods, population change, natural resources and conservation.</dd></div>
       <div><dt>Grade 8 <span>12 missions available</span></dt><dd>Maps and globes, climate regions, settlements, transport and trade.</dd></div>
-      <div><dt>Grade 9 <span>Planned</span></dt><dd>Topographic and orthophoto maps, development, surface processes, resource use and sustainability.</dd></div>
+      <div><dt>Grade 9 <span>12 missions available</span></dt><dd>Topographic and orthophoto maps, development, surface processes, resource use and sustainability.</dd></div>
       <div><dt>Grade 10 <span>Planned</span></dt><dd>Coordinates and scale, bearings, contours and cross-sections, aerial photographs, GIS and remote sensing, atmosphere, geomorphology, population and water resources.</dd></div>
      </dl>
-     <p>These original learning activities support practice. The current release provides practice across the four topic areas in each of Grades 4, 5, 6, 7 and 8; it is not a complete school course or an official assessment.</p>
+     <p>These original learning activities support practice. The current release provides practice across the four topic areas in each of Grades 4, 5, 6, 7, 8 and 9; it is not a complete school course or an official assessment.</p>
     </details>
    </section>
-   <h3>Choose your learning path</h3><div class="grade-switch" role="group" aria-label="Learning grade"><button id="grade4Btn" aria-pressed="true">Grade 4</button><button id="grade5Btn" aria-pressed="false">Grade 5</button><button id="grade6Btn" aria-pressed="false">Grade 6</button><button id="grade7Btn" aria-pressed="false">Grade 7</button><button id="grade8Btn" aria-pressed="false">Grade 8</button></div><p id="pathSummary" class="instruction"></p><div id="missionList" class="mission-list"></div>
+   <h3>Choose your learning path</h3><div class="grade-switch" role="group" aria-label="Learning grade"><button id="grade4Btn" aria-pressed="true">Grade 4</button><button id="grade5Btn" aria-pressed="false">Grade 5</button><button id="grade6Btn" aria-pressed="false">Grade 6</button><button id="grade7Btn" aria-pressed="false">Grade 7</button><button id="grade8Btn" aria-pressed="false">Grade 8</button><button id="grade9Btn" aria-pressed="false">Grade 9</button></div><p id="pathSummary" class="instruction"></p><div id="missionList" class="mission-list"></div>
    <details id="journalDetails"><summary>Your atlas journal</summary><p id="journalSummary"></p><div id="journalList" class="journal-list"></div><p id="storageStatus" class="instruction"></p><p>Atlas XP records your best result for each task, so replaying improves mastery without farming points. 100 XP: independent answer. 70 XP: answer with a hint. 50 XP: answer after a mistake.</p><p>Three stars: no mistakes or hints. Two stars: at most two mistakes. One star: another completed expedition.</p></details>
-   <details><summary>Controls and map notes</summary><p>Tap squares or country outlines. Drag to pan; pinch or use + / − to zoom. On a keyboard, Tab to controls; Enter or Space activates them. Within the town grid, arrow keys move between squares. On the world map, arrows pan and Enter selects the centre. Find offers a searchable country list.</p><p>Coordinate tasks offer labelled latitude and longitude controls as well as tap previews. The kilometre plan and comparison-layer profiles are fictional practice data, not real station measurements. Its line scale zooms with the plan. The street planner checks open links and accepts alternative routes within the stated limit. Its graph uses metres; unsubmitted routes can be edited freely. Degrees-and-minutes coordinates use separate hemisphere controls; their world marker is approximate. Ratio-scale tasks supply paper measurements: do not measure screen centimetres. The seasonal model is schematic and climate graphs have separate temperature/rainfall panels with matching tables. Earth diagrams are schematic. Graphs include matching tables; source links identify historical cases and estimates. Community activities use original fictional town plans and labelled practice evidence. The landform cross-section is schematic and not to scale. Provincial views use Natural Earth 1:10m boundaries; the mainland view excludes distant islands from its viewport, while the Prince Edward Islands view makes them accessible. Coloured provinces use abbreviations explained in Map key. The world atlas uses Natural Earth overview boundaries. They show countries and territories, including disputed areas, and are not a count of sovereign states. Oceania is a region containing Australia and Pacific islands. The overview is not an equal-distance or equal-area map.</p><p>Made with Natural Earth · public-domain map data. School topics follow South African CAPS references; these original activities are not an official assessment.</p></details>
+   <details><summary>Controls and map notes</summary><p>Tap squares or country outlines. Drag to pan; pinch or use + / − to zoom. On a keyboard, Tab to controls; Enter or Space activates them. Within the town grid, arrow keys move between squares. On the world map, arrows pan and Enter selects the centre. Find offers a searchable country list.</p><p>Coordinate tasks offer labelled latitude and longitude controls as well as tap previews. The kilometre plan and comparison-layer profiles are fictional practice data, not real station measurements. Its line scale zooms with the plan. The street planner checks open links and accepts alternative routes within the stated limit. Its graph uses metres; unsubmitted routes can be edited freely. Degrees-and-minutes coordinates use separate hemisphere controls; their world marker is approximate. Ratio-scale tasks supply paper measurements: do not measure screen centimetres. The seasonal model is schematic and climate graphs have separate temperature/rainfall panels with matching tables. Grade 9 uses a separate fictional metric contour plan and a public-domain historical USGS orthoimage. The plan supports straight-distance measurement; the web image has no ground ruler. Image publication date is not its capture date. Earth diagrams are schematic. Graphs include matching tables; source links identify historical cases and estimates. Community activities use original fictional town plans and labelled practice evidence. The landform cross-section is schematic and not to scale. Provincial views use Natural Earth 1:10m boundaries; the mainland view excludes distant islands from its viewport, while the Prince Edward Islands view makes them accessible. Coloured provinces use abbreviations explained in Map key. The world atlas uses Natural Earth overview boundaries. They show countries and territories, including disputed areas, and are not a count of sovereign states. Oceania is a region containing Australia and Pacific islands. The overview is not an equal-distance or equal-area map.</p><p>Made with Natural Earth · public-domain map data. School topics follow South African CAPS references; these original activities are not an official assessment.</p></details>
    <details><summary>Sound and scores</summary><label for="musicVolume">Music</label><input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.35" /><label for="effectsVolume">Sound effects</label><input id="effectsVolume" type="range" min="0" max="1" step="0.05" value="0.7" /><div class="inline-actions"><button id="muteBtn">Sound on</button><button id="submitBtn">Submit score</button><button id="chatBtn">Scores &amp; chat</button><button id="restartBtn">Replay this expedition</button></div><p id="bestText"></p></details>
   </div>
  </section>
@@ -97,18 +98,20 @@
  <script defer src="./atlas-geometry.js"></script>
  <script defer src="./province-data.js"></script>
  <script defer src="./academy-expansion.js"></script>
- <script defer src="./world-layers.js?v=5.4.0"></script>
- <script defer src="./academy-grade6.js?v=5.4.0"></script>
- <script defer src="./field-lab.js?v=5.4.0"></script>
- <script defer src="./academy-grade7.js?v=5.4.0"></script>
- <script defer src="./connections-lab.js?v=5.4.0"></script>
- <script defer src="./academy-grade8.js?v=5.4.0"></script>
- <script defer src="./academy-content.js?v=5.4.0"></script>
- <script defer src="./academy-engine.js?v=5.4.0"></script>
- <script defer src="./atlas-view.js?v=5.4.0"></script>
- <script defer src="./academy-audio.js?v=5.4.0"></script>
- <script defer src="./field-notes.js?v=5.4.0"></script>
- <script defer src="./game.js?v=5.4.0"></script>
+ <script defer src="./world-layers.js?v=5.5.0"></script>
+ <script defer src="./academy-grade6.js?v=5.5.0"></script>
+ <script defer src="./field-lab.js?v=5.5.0"></script>
+ <script defer src="./academy-grade7.js?v=5.5.0"></script>
+ <script defer src="./connections-lab.js?v=5.5.0"></script>
+ <script defer src="./academy-grade8.js?v=5.5.0"></script>
+ <script defer src="./interpretation-lab.js?v=5.5.0"></script>
+ <script defer src="./academy-grade9.js?v=5.5.0"></script>
+ <script defer src="./academy-content.js?v=5.5.0"></script>
+ <script defer src="./academy-engine.js?v=5.5.0"></script>
+ <script defer src="./atlas-view.js?v=5.5.0"></script>
+ <script defer src="./academy-audio.js?v=5.5.0"></script>
+ <script defer src="./field-notes.js?v=5.5.0"></script>
+ <script defer src="./game.js?v=5.5.0"></script>
  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
