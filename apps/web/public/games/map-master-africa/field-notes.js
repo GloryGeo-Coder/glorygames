@@ -3,6 +3,7 @@
  'use strict';
  const F=typeof module==='object'&&module.exports?require('./field-lab.js'):root.AtlasFieldLab;
  const L=typeof module==='object'&&module.exports?require('./connections-lab.js'):root.AtlasConnectionsLab;
+ const I=typeof module==='object'&&module.exports?require('./interpretation-lab.js'):root.AtlasInterpretationLab;
  const drawings={
   settlement:'<path d="M9 47V29L25 16L41 29V47ZM54 47V12H83V47" fill="#b5c8a3" stroke="#456c5b" stroke-width="2"/><path d="M18 47V34H30V47M61 20H68M73 20H79M61 29H68M73 29H79" fill="none" stroke="#456c5b" stroke-width="3"/><path d="M0 49H95" stroke="#9aa994" stroke-width="3"/>',
   food:'<path d="M15 49V18M15 34Q-1 23 6 20Q15 20 15 28M15 28Q31 14 28 26Q24 32 15 35" fill="#8fb78b" stroke="#447858" stroke-width="2"/><path d="M37 31H54M49 25L56 31L49 37" fill="none" stroke="#bb9450" stroke-width="3"/><path d="M66 18H87L91 49H62Z" fill="#e3c78e" stroke="#8a7147" stroke-width="2"/>',
@@ -17,6 +18,7 @@
   add('summary',evidence.title);const body=add('div');body.className='evidence-body';
   if(drawings[evidence.visual]){const art=add('div',undefined,body);art.className='evidence-art';art.setAttribute('aria-hidden','true');art.innerHTML='<svg viewBox="0 0 96 58">'+drawings[evidence.visual]+'</svg>';}
   if(evidence.chart){const caption=add('p',evidence.chart.title,body);caption.className='chart-caption';const graphic=doc.createElementNS('http://www.w3.org/2000/svg','svg');graphic.setAttribute('class','evidence-chart');body.appendChild(graphic);F.chart(graphic,evidence.chart);}
+  if(evidence.landforms){const graphic=doc.createElementNS('http://www.w3.org/2000/svg','svg');graphic.setAttribute('class','evidence-chart');body.appendChild(graphic);I.landforms(graphic);}
   if(evidence.seasonLab)L.seasonControls(doc,body);
   if(evidence.climate){const caption=add('p',evidence.climate.title,body);caption.className='chart-caption';const graphic=doc.createElementNS('http://www.w3.org/2000/svg','svg');graphic.setAttribute('class','evidence-chart');body.appendChild(graphic);L.climate(graphic,evidence.climate);}
   add('p',evidence.text,body);

@@ -80,6 +80,9 @@
  const grade8=typeof module==='object'&&module.exports?require('./academy-grade8.js'):root.AcademyGrade8;
  if(!grade8)throw new Error('The Grade 8 activities could not load.');
  missions.push(...grade8.missions);
+ const grade9=typeof module==='object'&&module.exports?require('./academy-grade9.js'):root.AcademyGrade9;
+ if(!grade9)throw new Error('The Grade 9 activities could not load.');
+ missions.push(...grade9.missions);
  for(const [i,m] of missions.entries()){
   m.topic=m.topic||'Map skills';m.objective=m.objective||m.skill;
   m.prerequisite=missions.slice(0,i).filter(p=>p.grade===m.grade).at(-1)?.id||null;

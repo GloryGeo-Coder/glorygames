@@ -38,6 +38,12 @@ Twelve Grade 8 missions add 72 tasks: 56 missions / 336 tasks across Grades 4–
 
 The first 44 mission definitions and all existing map/image assets are unchanged. Grade 8 starts independently; progress within it unlocks sequentially. Grades 9–10 remain planned. Activities are original practice, not a complete school course or assessment. Real satellite/aerial imagery interpretation, a national transport map and an independent fieldwork project are not claimed as delivered. See `docs/learning/map-master-grade8-v5.4.md` for precise scope and source notes.
 
+## Grade 9 interpretation: v5.5.0
+
+Twelve Grade 9 missions add 72 tasks: 68 missions / 408 tasks across Grades 4–9. A fictional metric contour plan supports feature selection, slope/height reading and explicitly submitted straight-distance measurements. A separately sourced public-domain USGS orthoimage introduces real image interpretation with publication/capture-date and ground-scale limits. Development comparisons use current UNDP HDI terminology and explicitly fictional profiles; weathering, erosion/deposition, soil-cover comparisons, resource renewal, food security and sustainable project decisions cover the four Grade 9 topic areas.
+
+The first 56 mission definitions, save keys/format, world/province geometry and all existing images remain unchanged. Native feature controls and a map key support phones and keyboards. Licensed South African national topo/orthophoto extracts, a real-country HDI thematic layer and independent field investigations remain further work; this increment does not claim a complete school course or assessment. Grade 10 remains planned. See `docs/learning/map-master-grade9-v5.5.md` for exact scope, sources and model units.
+
 ## Curriculum paths
 
 Each grade is a separate learning path with units, short skill lessons, applied missions and mixed revision. Country/capital recognition is enrichment within a much broader geography curriculum. Mission counts will follow the objective matrix and review, rather than stretching one activity into an arbitrary fixed number of levels.

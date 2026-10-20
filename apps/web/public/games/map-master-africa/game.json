@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Explore geography through Grades 4\u20138: 56 missions and 336 tasks with world and South African atlases. Investigate coordinates in degrees and minutes, ratio scale, world time, seasons, climate graphs, settlement and transport. The curriculum journey continues towards Grade 10.",
+  "description": "Explore Grades 4\u20139 geography through 68 missions and 408 tasks. Interpret contours and real historical imagery, measure a metric plan, compare development evidence and investigate erosion, food systems and sustainable resource use. The curriculum journey continues towards Grade 10.",
   "tags": [
     "geography",
     "world",
@@ -43,8 +43,8 @@
   ],
   "features": {
     "mobileFirst": true,
-    "levels": 56,
-    "tasks": 336,
+    "levels": 68,
+    "tasks": 408,
     "worldAtlas": true,
     "mappedCountriesAndTerritories": 242,
     "missionTypes": [
@@ -57,7 +57,9 @@
       "junction",
       "street-route",
       "dm-coordinate",
-      "number"
+      "number",
+      "map-feature",
+      "map-measure"
     ],
     "persistentLearningProgress": true,
     "passportBadges": true,
@@ -84,7 +86,8 @@
       5,
       6,
       7,
-      8
+      8,
+      9
     ],
     "independentGradePaths": true,
     "evidenceInvestigations": true,
@@ -97,7 +100,11 @@
     "degreesAndMinutes": true,
     "ratioScale": true,
     "seasonComparison": true,
-    "monthlyClimateGraphs": true
+    "monthlyClimateGraphs": true,
+    "contourInterpretation": true,
+    "metricMeasurement": true,
+    "historicalOrthoimagery": true,
+    "resourceInvestigations": true
   },
-  "version": "5.4.0"
+  "version": "5.5.0"
 }
