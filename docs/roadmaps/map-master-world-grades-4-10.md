@@ -12,13 +12,19 @@ The locally bundled Natural Earth 1:50m overview contains 242 mapped countries a
 
 ## Released expansion: v5.1.0
 
-Twenty playable missions contain 120 tasks. Grade 4 has the five preserved Map Academy missions plus seven investigations for settlements, provinces/oceans, food/farming and water; Grade 5 has eight missions covering African map skills, South African physical features, weather/climate/vegetation and minerals/mining. Both grade paths start independently, with sequential unlocking within each path. The release provides practice across the four topic areas in each grade, not a complete school course or an official assessment. Grade 6–10 remain planned.
+Twenty playable missions contain 120 tasks. Grade 4 has the five preserved Map Academy missions plus seven investigations for settlements, provinces/oceans, food/farming and water; Grade 5 has eight missions covering African map skills, South African physical features, weather/climate/vegetation and minerals/mining. Both grade paths start independently, with sequential unlocking within each path. The release provides practice across the four topic areas in each grade, not a complete school course or an official assessment. At that release, Grade 6–10 remained planned.
 
 The provincial atlas uses pinned public-domain Natural Earth 1:10m data: nine provinces, all 6,229 source vertices and every source polygon/ring, including the distant Prince Edward Islands in a separate view. Geographic hit testing, markers, labels and zoom use the same coordinate transform. Capitals and descriptive notes use the South African Government province reference. Provincial overviews do not represent every river, landform or mineral deposit. The world atlas and all 39 existing PNG assets remain unchanged.
 
 Original fictional evidence tables support community, food, water, weather and mining investigations; the landform cross-section is explicitly schematic. The saved-progress record is upgraded in place to version 2 with stable mission IDs, retaining all original five results/cursors, hint history, stars, best score and sound preferences. No future mission completion is invented. The curriculum guide now identifies Grade 4 and Grade 5 practice as available.
 
 See `docs/learning/map-master-grade4-5-v5.1.md` for the mission-to-topic matrix and factual sources.
+
+## Grade 6 expansion: v5.2.0
+
+Twelve Grade 6 missions add 72 tasks, bringing the total to 32 missions / 192 tasks. Grade 6 starts independently and unlocks sequentially. World coordinates have labelled latitude/longitude controls and tap previews; a separate fictional kilometre plan teaches word and line scales. January/July temperature, annual rainfall and vegetation layers compare seven explicitly fictional practice profiles with accessible tables. Trade, production, fair conditions, population and settlement investigations cover the four Grade 6 topic areas. These are original practice activities, not a complete course or assessment. Grades 7–10 remain planned.
+
+The first 20 mission definitions, saved keys, stable IDs and all existing image/geographic assets remain intact. See `docs/learning/map-master-grade6-v5.2.md` for scope and sources.
 
 ## Curriculum paths
 

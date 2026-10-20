@@ -32,7 +32,8 @@
   function answer(value){if(state.phase!=='question')return null;const q=question();if(q.type==='route'){
     const expected=q.answer[state.route.length];if(value===expected){state.route.push(value);if(state.route.length<q.answer.length)return {partial:true};}else return finish(false,value);
    }
-   return finish(q.type==='route'||value===q.answer,value);
+   const correct=q.type==='coordinate'?Array.isArray(value)&&value.length===2&&q.answer.every((n,i)=>Number.isFinite(value[i])&&value[i]===n):q.type==='route'||value===q.answer;
+   return finish(correct,value);
   }
   function finish(correct,value){const q=question();if(!correct){state.attempts++;state.mistakes++;state.route=[];cursor();}
    let earned=0;if(correct){earned=state.attempts>0?50:state.hinted?70:100;const record=progress.best[state.mission];record.scores[state.index]=Math.max(record.scores[state.index],earned);

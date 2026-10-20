@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Explore the world and South Africa\u2019s nine provinces while practising Grade 4 and Grade 5 geography through 20 missions and 120 tasks. The curriculum guide shows the planned journey through Grade 10.",
+  "description": "Explore the world and South Africa’s nine provinces while practising Grades 4–6 geography through 32 missions and 192 tasks. Learn coordinates, scale, trade, climate and settlement; the curriculum guide continues towards Grade 10.",
   "tags": [
     "geography",
     "world",
@@ -29,7 +29,7 @@
       "action": "Pan the map; arrows move focus within the town grid"
     },
     {
-      "key": "Pinch / + / \u2212",
+      "key": "Pinch / + / −",
       "action": "Zoom the map"
     },
     {
@@ -43,8 +43,8 @@
   ],
   "features": {
     "mobileFirst": true,
-    "levels": 20,
-    "tasks": 120,
+    "levels": 32,
+    "tasks": 192,
     "worldAtlas": true,
     "mappedCountriesAndTerritories": 242,
     "missionTypes": [
@@ -52,7 +52,8 @@
       "cell",
       "route",
       "country",
-      "province"
+      "province",
+      "coordinate"
     ],
     "persistentLearningProgress": true,
     "passportBadges": true,
@@ -76,10 +77,14 @@
     "provinces": 9,
     "playableGrades": [
       4,
-      5
+      5,
+      6
     ],
     "independentGradePaths": true,
-    "evidenceInvestigations": true
+    "evidenceInvestigations": true,
+    "coordinatePractice": true,
+    "worldComparisonLayers": true,
+    "wordAndLineScale": true
   },
-  "version": "5.1.0"
+  "version": "5.2.0"
 }
