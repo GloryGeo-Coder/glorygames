@@ -26,6 +26,12 @@ Twelve Grade 6 missions add 72 tasks, bringing the total to 32 missions / 192 ta
 
 The first 20 mission definitions, saved keys, stable IDs and all existing image/geographic assets remain intact. See `docs/learning/map-master-grade6-v5.2.md` for scope and sources.
 
+## Grade 7 investigations: v5.3.0
+
+The prepared Grade 7 path adds 12 missions / 72 tasks: 44 missions / 264 tasks across Grades 4–7. Local street indexing and an editable route planner accept alternative connected routes under distance limits. A schematic Earth cutaway, dated Nepal/Iceland/KwaZulu-Natal hazard cases, population concepts, a world milestone line graph, water-use bar/pie charts and conservation investigations provide practice across the four Grade 7 topic areas. Evidence tables remain available alongside every graph. Grades 8–10 remain planned; this is practice rather than a complete course or assessment.
+
+All first 32 mission definitions, save keys and existing images/geometry are retained. The phase is delivered in a checked feature PR. Per the user’s release preference, leave it unmerged and do not run Cloudflare builds/deployments while development continues; merge/publish when the user is ready. See `docs/learning/map-master-grade7-v5.3.md` for the objective matrix and primary sources.
+
 ## Curriculum paths
 
 Each grade is a separate learning path with units, short skill lessons, applied missions and mixed revision. Country/capital recognition is enrichment within a much broader geography curriculum. Mission counts will follow the objective matrix and review, rather than stretching one activity into an arbitrary fixed number of levels.
@@ -59,7 +65,7 @@ The world overview is equirectangular and is not an equal-distance or equal-area
 7. **v5.6 — Grade 10 geography:** the full topic/technique scope above, applied investigations and increasingly independent evidence-based responses.
 8. **Following releases — Classroom use and polish:** teacher assignment/review tools, printable learning summaries, topic revision, language support, optional narration, reviewed cultural/landmark material, richer soundscapes and a world-focused cover. Use a question bank with meaningful variants and spaced topic return.
 
-Every release contains only new/modified files, applies over the previous complete version, preserves existing save records and platform integration, and passes game/regression/build/asset checks before merge. Unsupported future units remain in this roadmap rather than appearing as inactive production buttons.
+Every release contains only new/modified files, applies over the previous complete version, preserves existing save records and platform integration, and passes game/regression/local-build/asset checks before merge. Cloudflare builds and deployments are deferred while phases accumulate; keep checked work in feature PRs until the user is ready to publish. Unsupported future units remain in this roadmap rather than appearing as inactive production buttons.
 
 ## Content and learning architecture
 
