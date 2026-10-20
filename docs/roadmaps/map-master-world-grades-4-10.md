@@ -30,7 +30,13 @@ The first 20 mission definitions, saved keys, stable IDs and all existing image/
 
 The prepared Grade 7 path adds 12 missions / 72 tasks: 44 missions / 264 tasks across Grades 4–7. Local street indexing and an editable route planner accept alternative connected routes under distance limits. A schematic Earth cutaway, dated Nepal/Iceland/KwaZulu-Natal hazard cases, population concepts, a world milestone line graph, water-use bar/pie charts and conservation investigations provide practice across the four Grade 7 topic areas. Evidence tables remain available alongside every graph. Grades 8–10 remain planned; this is practice rather than a complete course or assessment.
 
-All first 32 mission definitions, save keys and existing images/geometry are retained. The phase is delivered in a checked feature PR. Per the user’s release preference, leave it unmerged and do not run Cloudflare builds/deployments while development continues; merge/publish when the user is ready. See `docs/learning/map-master-grade7-v5.3.md` for the objective matrix and primary sources.
+All first 32 mission definitions, save keys and existing images/geometry are retained. This phase was prepared in a checked feature PR and merged as PR #42 after the user authorised GitHub merges. Cloudflare deployment remains with the user. See `docs/learning/map-master-grade7-v5.3.md` for the objective matrix and primary sources.
+
+## Grade 8 connections: v5.4.0
+
+Twelve Grade 8 missions add 72 tasks: 56 missions / 336 tasks across Grades 4–8. Native degrees/minutes/hemisphere controls use exact integer angular minutes; numeric activities require explicit submission and show units. Ratio-scale tasks supply paper-map measurements rather than asking learners to measure a resized screen. UTC/SAST/date-line work, a seasonal comparison with parallel axes, separate twelve-month temperature/rainfall graphs, seven climate-region reference cards, settlement land use, urbanisation and harbour/commuter investigations cover the four Grade 8 topic areas. Alternative open routes remain valid, including a new via-point requirement.
+
+The first 44 mission definitions and all existing map/image assets are unchanged. Grade 8 starts independently; progress within it unlocks sequentially. Grades 9–10 remain planned. Activities are original practice, not a complete school course or assessment. Real satellite/aerial imagery interpretation, a national transport map and an independent fieldwork project are not claimed as delivered. See `docs/learning/map-master-grade8-v5.4.md` for precise scope and source notes.
 
 ## Curriculum paths
 
@@ -65,7 +71,7 @@ The world overview is equirectangular and is not an equal-distance or equal-area
 7. **v5.6 — Grade 10 geography:** the full topic/technique scope above, applied investigations and increasingly independent evidence-based responses.
 8. **Following releases — Classroom use and polish:** teacher assignment/review tools, printable learning summaries, topic revision, language support, optional narration, reviewed cultural/landmark material, richer soundscapes and a world-focused cover. Use a question bank with meaningful variants and spaced topic return.
 
-Every release contains only new/modified files, applies over the previous complete version, preserves existing save records and platform integration, and passes game/regression/local-build/asset checks before merge. Cloudflare builds and deployments are deferred while phases accumulate; keep checked work in feature PRs until the user is ready to publish. Unsupported future units remain in this roadmap rather than appearing as inactive production buttons.
+Every release contains only new/modified files, applies over the previous complete version, preserves existing save records and platform integration, and passes game/regression/local-build/asset checks before merge. Build locally, open a feature PR and merge after required GitHub checks pass, as authorised by the user. The user runs Cloudflare builds/deployments when ready; do not run Cloudflare release commands. Unsupported future units remain in this roadmap rather than appearing as inactive production buttons.
 
 ## Content and learning architecture
 

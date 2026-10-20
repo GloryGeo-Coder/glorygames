@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Explore geography through Grades 4–7: 44 missions and 264 tasks with world and South African atlases. Plan street routes, investigate hazards, interpret population graphs and explore conservation. The curriculum journey continues towards Grade 10.",
+  "description": "Explore geography through Grades 4\u20138: 56 missions and 336 tasks with world and South African atlases. Investigate coordinates in degrees and minutes, ratio scale, world time, seasons, climate graphs, settlement and transport. The curriculum journey continues towards Grade 10.",
   "tags": [
     "geography",
     "world",
@@ -29,7 +29,7 @@
       "action": "Pan the map; arrows move focus within the town grid"
     },
     {
-      "key": "Pinch / + / −",
+      "key": "Pinch / + / \u2212",
       "action": "Zoom the map"
     },
     {
@@ -43,8 +43,8 @@
   ],
   "features": {
     "mobileFirst": true,
-    "levels": 44,
-    "tasks": 264,
+    "levels": 56,
+    "tasks": 336,
     "worldAtlas": true,
     "mappedCountriesAndTerritories": 242,
     "missionTypes": [
@@ -55,7 +55,9 @@
       "province",
       "coordinate",
       "junction",
-      "street-route"
+      "street-route",
+      "dm-coordinate",
+      "number"
     ],
     "persistentLearningProgress": true,
     "passportBadges": true,
@@ -81,7 +83,8 @@
       4,
       5,
       6,
-      7
+      7,
+      8
     ],
     "independentGradePaths": true,
     "evidenceInvestigations": true,
@@ -90,7 +93,11 @@
     "wordAndLineScale": true,
     "streetRoutePlanner": true,
     "evidenceGraphs": true,
-    "historicalCaseStudies": true
+    "historicalCaseStudies": true,
+    "degreesAndMinutes": true,
+    "ratioScale": true,
+    "seasonComparison": true,
+    "monthlyClimateGraphs": true
   },
-  "version": "5.3.0"
+  "version": "5.4.0"
 }
