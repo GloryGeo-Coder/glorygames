@@ -28,3 +28,10 @@
 .earth-label{font-size:max(2.6px,var(--place-font,10px))}
 
 .street-mode .map-caption>span:first-child,.street-mode .map-credit{display:none}.street-mode .north-chip{margin-left:auto}.street-junction{r:calc(var(--place-font,10px)*1.05)}.street-credit{font:700 calc(var(--place-font,10px)*.76) system-ui}.street-closure{font:900 calc(var(--place-font,10px)*1.6) system-ui}.junction-name,.street-road{display:none}.map-panel svg#atlas:focus{outline:none}.chart-caption{font-weight:750;color:#31594e}@media(min-width:1000px) and (min-height:700px){.junction-name,.street-road{display:block}}
+
+/* Grade 8 controls retain native selects and visible units on small screens. */
+.minute-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.35fr);gap:6px}
+.coordinate-form fieldset{min-width:0;border:1px solid #b9cabe;border-radius:10px;padding:10px;margin:0 0 10px}
+.coordinate-form legend{font-weight:700;padding:0 5px}.minute-fields label{font-size:12px}.minute-fields select{width:100%;min-width:0;padding:8px 4px;font-size:14px}
+.season-controls{display:flex;gap:6px;flex-wrap:wrap}.season-controls button{flex:1;min-height:44px}.season-controls [aria-pressed="true"]{background:#d6e6d7;border-color:#527c63}
+#numberAnswer{width:100%;font-size:18px;min-height:44px;margin:8px 0 10px}.grade-switch{flex-wrap:wrap}

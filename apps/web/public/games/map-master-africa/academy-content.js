@@ -77,6 +77,9 @@
  const grade7=typeof module==='object'&&module.exports?require('./academy-grade7.js'):root.AcademyGrade7;
  if(!grade7)throw new Error('The Grade 7 activities could not load.');
  missions.push(...grade7.missions);
+ const grade8=typeof module==='object'&&module.exports?require('./academy-grade8.js'):root.AcademyGrade8;
+ if(!grade8)throw new Error('The Grade 8 activities could not load.');
+ missions.push(...grade8.missions);
  for(const [i,m] of missions.entries()){
   m.topic=m.topic||'Map skills';m.objective=m.objective||m.skill;
   m.prerequisite=missions.slice(0,i).filter(p=>p.grade===m.grade).at(-1)?.id||null;
