@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "A safe, simulated terminal-based cybersecurity game where players learn UNIX-like commands, defensive investigation, evidence handling, integrity checks, incident response and ethical hacking principles while solving Case BIT.",
+  "description": "Solve Case BIT and protect the Beacon community network through 16 simulated cybersecurity investigations. Resume saved progress, retry chapters, compare evidence, learn from decisions and practise without a timer.",
   "tags": [
     "cybersecurity",
     "terminal",
@@ -38,7 +38,7 @@
     "mobileFirst": true,
     "terminalInterface": true,
     "simulatedOnly": true,
-    "levels": 8,
+    "levels": 16,
     "networkMap": true,
     "fileSystem": true,
     "autoComplete": true,
@@ -56,7 +56,12 @@
       "incident response",
       "change management",
       "evidence reporting"
-    ]
+    ],
+    "savedCheckpoints": true,
+    "chapterRetries": true,
+    "progressiveHints": true,
+    "learningFeedback": true,
+    "untimedPractice": true
   },
-  "version": "3.1.0"
+  "version": "3.2.0"
 }

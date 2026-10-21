@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Cyber Shield Academy: Terminal Ops</title>
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
-  <link rel="stylesheet" href="styles.css?v=3.1" />
+  <link rel="stylesheet" href="styles.css?v=3.2" />
 </head>
 <body>
   <main class="app" id="app" inert>
@@ -14,7 +14,7 @@
         <img src="assets/sprites/shield-ethics.png" alt="" />
         <div>
           <strong>Cyber Shield Academy</strong>
-          <span>Terminal Ops: Case BIT</span>
+          <span id="sessionLabel">Campaign · Case BIT &amp; Beacon</span>
         </div>
       </div>
       <div class="hud">
@@ -42,6 +42,17 @@
           <h3>Objectives</h3>
           <ul id="objectiveList"></ul>
         </div>
+        <section class="decision-section" id="decisionSection" hidden>
+          <h3>Choose your response</h3>
+          <p>Review the evidence, then choose a response. You can also type decide followed by a choice shown by a hint.</p>
+          <p id="decisionStatus" role="status">Complete the required evidence objectives before choosing.</p>
+          <div id="decisionOptions" class="decision-options"></div>
+        </section>
+        <section class="learning-section">
+          <h3>Learning feedback</h3>
+          <p id="learningFeedback" role="status">Read the mission evidence and use Hint if you need a nudge.</p>
+          <p id="saveStatus" role="status">Progress saves on this browser after you start.</p>
+        </section>
         <div class="principle">
           <h3>Cyber principle</h3>
           <p id="principleText"></p>
@@ -99,7 +110,13 @@
         <summary>Case controls</summary>
         <div class="case-menu" id="caseMenu">
           <button id="muteBtn">Sound On</button>
-          <button id="resetBtn">Reset Case</button>
+          <button id="retryBtn">Retry Chapter</button>
+          <label for="practiceSelect">Untimed practice chapter</label>
+          <select id="practiceSelect" aria-label="Practice chapter"></select>
+          <button id="startPracticeBtn">Start Untimed Practice</button>
+          <button id="returnCampaignBtn" hidden>Return to Campaign</button>
+          <button id="debriefBtn">Learning Review</button>
+          <button id="resetBtn">Reset Campaign</button>
           <button id="submitBtn">Submit Score</button>
         </div>
       </details>
@@ -110,11 +127,11 @@
     <div class="overlay-card">
       <img src="assets/sprites/bit-ai.png" alt="" />
       <h1 id="welcomeTitle">Cyber Shield Academy</h1>
-      <h2>Terminal Ops: Case BIT</h2>
+      <h2>Terminal Ops</h2>
+      <p id="resumeSummary" class="resume-summary">16 missions · Saved checkpoints · Untimed practice</p>
       <p>
-        Join an ethical security crew and investigate the disappearance of <strong>Bit</strong>,
-        creator of the ShieldOS platform. Use safe simulated UNIX-like commands, inspect files,
-        analyze logs, verify evidence, and protect systems.
+        Find <strong>Bit</strong>, then protect the Beacon community network. Investigate fictional files,
+        compare evidence and make defensive decisions. Every command runs inside this simulated lab.
       </p>
       <div class="pill-row">
         <span>Simulated lab only</span>
@@ -123,10 +140,13 @@
         <span>Story puzzles</span>
       </div>
       <button id="overlayStartBtn">Enter ShieldOS</button>
+      <button id="overlayPracticeBtn">Untimed Practice</button>
     </div>
   </div>
 
-  <script src="game.js?v=3.1"></script>
+  <script src="cyber-campaign.js?v=3.2"></script>
+  <script src="cyber-progress.js?v=3.2"></script>
+  <script src="game.js?v=3.2"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

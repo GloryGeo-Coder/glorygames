@@ -13,7 +13,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "bubble-pop-arena": { category: "CASUAL", description: "Pop bubbles against the clock, build combos, collect time and freeze effects, and steer clear of bomb bubbles." },
   "city-quest-rise-of-the-guardian": { category: "ADVENTURE", description: "Explore township rooftops, markets and taxi ranks as a Guardian completing NPC missions, battles and platform challenges." },
   "climate-rescue-quest": { category: "EDUCATIONAL", description: "Restore cities, forests, rivers and oceans in 25 animated missions with responsive touch controls and original nature-inspired music." },
-  "cyber-shield-academy": { category: "EDUCATIONAL", description: "Solve Case BIT through simulated terminal investigations, evidence handling and responsible defensive cybersecurity." },
+  "cyber-shield-academy": { category: "EDUCATIONAL", description: "Solve 16 simulated cybersecurity investigations with saved checkpoints, evidence-led decisions and untimed practice." },
   "fruit-slice": { category: "ARCADE", description: "Swipe through flying fruit, build slicing combos, avoid bombs and respond quickly to frenzy mode." },
   "high-spead-racer": { category: "RACING", description: "Race AI rivals, change lanes, use nitro, pass checkpoints and progress through a multi-level arcade racing campaign." },
   "kasi-quest": { category: "ADVENTURE", description: "Jump through township-inspired platform missions, meet NPCs, collect coins, unlock upgrades and face bosses." },

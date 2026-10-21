@@ -259,6 +259,15 @@
     }
   ];
 
+  chapters.push(...window.CyberCampaign.chapters);
+  Object.assign(TOOLS, window.CyberCampaign.tools);
+  const progress = window.CyberProgress;
+  let storage = null;
+  try { storage = window.localStorage; } catch {}
+  const preferences = progress.preferences(storage);
+  let mode = 'campaign', checkpoints = {}, campaignSave = null, practiceSave = null;
+  let resumePending = false, saveAvailable = true;
+  let mapSignature = '', learningSignature = '', toolsLevel = -1, filesHost = '', practiceFrontier = -1;
   let state;
   let AC = null;
   let master = null;
@@ -287,6 +296,7 @@
       lastCommand: '',
       pendingReport: false,
       caseClosed: false,
+      academyClosed: false, practiceComplete: false, retries: 0, hints: {}, mistakes: [], readFiles: [], transcript: [],
       gameOver: false
     };
   }
@@ -352,8 +362,11 @@
   function line(text = '', cls = '') {
     const div = document.createElement('div');
     div.className = `line ${cls}`.trim();
+    state.transcript.push({ text: String(text), cls });
+    if (state.transcript.length > 100) state.transcript.shift();
     div.textContent = String(text).replace(/\\n/g, '\n');
     terminalOutput.appendChild(div);
+    if (terminalOutput.childElementCount > 180) terminalOutput.firstElementChild.remove();
     terminalOutput.scrollTop = terminalOutput.scrollHeight;
   }
 
@@ -363,6 +376,7 @@
 
   function clearTerminal() {
     terminalOutput.innerHTML = '';
+    state.transcript = [];
   }
 
   function help() {
@@ -392,7 +406,12 @@
       '  preserve <file>      preserve a log/evidence file',
       '  collect <file>       add a file to your case evidence',
       '  lock <token>         contain an overprivileged lab token',
-      '  submit report        submit the final case report',
+      '  submit report        submit the current case report',
+      '  decide <choice>      make a mission decision after reviewing evidence',
+      '  restore <snapshot>   test an approved recovery snapshot',
+      '  hint                 reveal the next hint for the current objective',
+      '  debrief              review skills, hints and choices',
+      '  retry                retry this chapter from its checkpoint',
       '',
       'Autocomplete: press Tab to complete commands, files, hosts, and tools.'
     ], 'dim');
@@ -413,35 +432,149 @@
     ], 'ascii');
   }
 
+  function initialState() {
+    const fresh = freshState();
+    fresh.muted = preferences.muted;
+    chapters.forEach(ch => {
+      fresh.files[ch.host] = cloneFS(ch.fs);
+      fresh.defenses[ch.host] = { ...(ch.defenses || { firewall: 0, proxy: 0, ports: [] }), scanned: false, probed: false };
+    });
+    fresh.defenses.local.scanned = true;
+    fresh.defenses.local.probed = true;
+    fresh.unlocked = ['local'];
+    return fresh;
+  }
+
+  function hydrate(snapshot) {
+    mapSignature = ''; learningSignature = ''; toolsLevel = -1; filesHost = '';
+    const fresh = initialState();
+    if (snapshot) {
+      const restored = progress.snapshot(snapshot, chapters, mode === 'practice');
+      const defenseFlags = restored.defenses;
+      delete restored.defenses;
+      Object.assign(fresh, restored);
+      Object.entries(defenseFlags).forEach(([host, flags]) => Object.assign(fresh.defenses[host], flags));
+      fresh.historyIndex = fresh.history.length;
+      fresh.unlocked = chapters.slice(0, fresh.levelIndex + 1).map(ch => ch.host);
+      if (fresh.completed.run_portpatch) { fresh.defenses['atlas-gateway'].firewall = 0; fresh.rooted = fresh.connected === 'atlas-gateway'; }
+      if (fresh.completed.balance_proxy) fresh.defenses['proxy-ring'].proxy = 0;
+      if (fresh.completed.run_crypto) fresh.files['cipher-bay']['/']['decoded_note.txt'] = 'Decoded note: orchid-root is the final review path. The weakness is governance, not a monster.';
+      if (fresh.completed.lock_token) fresh.files['orchid-relay']['/']['token-orchid'] = 'STATUS=LOCKED\nprivilege=disabled\nowner=incident-response';
+      chapters.forEach(ch => {
+        if (ch.output && fresh.completed[ch.output.key]) {
+          fresh.files[ch.host]['/'][ch.output.file] = ch.output.text;
+          Object.assign(fresh.files[ch.host]['/'], ch.output.edits || {});
+        }
+      });
+    }
+    return fresh;
+  }
+
+  function checkpoint() {
+    const saved = progress.snapshot(state, chapters, mode === 'practice');
+    saved.transcript = []; saved.history = [];
+    checkpoints[state.levelIndex] = saved;
+  }
+
+  function sessionCaption() {
+    const label = mode === 'practice' ? 'Untimed practice · Unranked' : 'Campaign · Case BIT & Beacon';
+    return saveAvailable ? label : `${label} · Saving unavailable`;
+  }
+
+  function saveProgress() {
+    if (!state.started) return;
+    const value = { version: 1, state: progress.snapshot(state, chapters, mode === 'practice'), checkpoints };
+    if (mode === 'campaign') campaignSave = value; else practiceSave = value;
+    preferences.muted = state.muted; preferences.mode = mode;
+    saveAvailable = progress.write(storage, progress.keys[mode], value);
+    progress.write(storage, progress.keys.preferences, { muted: state.muted, mode });
+    const notice = saveAvailable ? 'Progress saved on this browser.' : 'Browser saving is unavailable. Keep this tab open to retain progress.';
+    if ($('#saveStatus').textContent !== notice) $('#saveStatus').textContent = notice;
+    $('#sessionLabel').textContent = sessionCaption();
+  }
+
   function startGame() {
+    const transcript = resumePending ? [...state.transcript] : [];
     state.started = true;
     $('#app').inert = false;
     selectPanel('terminal');
     moveFullscreenControl();
     ui.startOverlay.classList.remove('active');
     banner();
+    if (resumePending) {
+      line(`Resumed chapter ${currentChapter().id}: ${currentChapter().title}. Earlier evidence and objectives restored.`, 'ok');
+      transcript.slice(-30).forEach(row => line(row.text, row.cls));
+    }
     briefing();
+    if (state.gameOver) line('Containment timed out. Retry this chapter from Case controls, or use untimed practice.', 'warn');
+    resumePending = false;
     startMusic();
     if (window.matchMedia('(pointer: fine)').matches) focusCommand();
-    syncUI();
+    syncUI(); saveProgress();
   }
 
-  function setup() {
-    state = freshState();
-
-    chapters.forEach(ch => {
-      state.files[ch.host] = cloneFS(ch.fs);
-      state.defenses[ch.host] = { ...(ch.defenses || { firewall: 0, proxy: 0, ports: [] }), scanned: false, probed: false, patched: false, balanced: false };
-    });
-
-    // local also has /tools
-    state.files.local = cloneFS(chapters[0].fs);
-    state.defenses.local = { firewall: 0, proxy: 0, ports: [], scanned: true, probed: true };
-    state.unlocked = ['local', 'atlas-gateway'];
-
+  function setup(load = true) {
+    campaignSave = load ? progress.read(storage, progress.keys.campaign, chapters) : null;
+    practiceSave = load ? progress.read(storage, progress.keys.practice, chapters, true) : null;
+    mode = load && preferences.mode === 'practice' && practiceSave && practiceSave.state.levelIndex <= (campaignSave?.state.levelIndex || 0) ? 'practice' : 'campaign';
+    const saved = mode === 'practice' ? practiceSave : campaignSave;
+    state = hydrate(saved?.state);
+    checkpoints = cloneFS(saved?.checkpoints);
+    if (!checkpoints[state.levelIndex]) checkpoint();
+    resumePending = !!saved;
     selectPanel('terminal');
-    banner();
+    terminalOutput.innerHTML = '';
     syncUI();
+    ui.overlayStartBtn.textContent = saved ? 'Continue Investigation' : 'Enter ShieldOS';
+    $('#resumeSummary').textContent = saved ? `${mode === 'practice' ? 'Untimed practice' : 'Campaign'} · Chapter ${currentChapter().id} / ${chapters.length} · ${currentChapter().title}` : '16 missions · Saved checkpoints · Untimed practice';
+  }
+
+  function retryChapter(ask = true) {
+    if (ask && !window.confirm('Retry this chapter? Its current work and points will reset. Earlier chapters and evidence remain.')) return;
+    const entry = checkpoints[state.levelIndex];
+    if (!entry) return line('This chapter has no checkpoint. Continue the investigation or start a new campaign.', 'warn');
+    const learning = { hints: state.hints, mistakes: state.mistakes, retries: state.retries + 1, muted: state.muted };
+    state = hydrate(entry);
+    Object.assign(state, learning);
+    resumePending = false;
+    $('#caseActions').open = false;
+    startGame();
+    line('Chapter checkpoint restored. Earlier chapters and evidence are safe.', 'ok');
+    saveProgress();
+  }
+
+  function startPractice() {
+    if (state.started) saveProgress();
+    const index = Number($('#practiceSelect').value || 0);
+    const max = campaignSave?.state.levelIndex || (mode === 'campaign' ? state.levelIndex : 0);
+    if (!Number.isInteger(index) || index < 0 || index > max) return;
+    const entry = campaignSave?.checkpoints[index] || (mode === 'campaign' ? checkpoints[index] : null);
+    if (!entry) return;
+    mode = 'practice'; checkpoints = { [index]: cloneFS(entry) };
+    state = hydrate(entry); state.trace = 0; state.gameOver = false;
+    resumePending = false; $('#caseActions').open = false;
+    startGame();
+    line('UNTIMED PRACTICE: no trace countdown, no leaderboard submissions. Campaign progress stays separate.', 'ok');
+    saveProgress();
+  }
+
+  function returnToCampaign() {
+    if (state.started) saveProgress();
+    mode = 'campaign'; checkpoints = cloneFS(campaignSave?.checkpoints);
+    state = hydrate(campaignSave?.state);
+    if (!checkpoints[state.levelIndex]) checkpoint();
+    resumePending = !!campaignSave; $('#caseActions').open = false;
+    startGame();
+  }
+
+  function debrief() {
+    line(`${mode === 'practice' ? 'PRACTICE' : 'CAMPAIGN'} LEARNING REVIEW`, 'story');
+    chapters.filter(ch => ch.objectives.every(([key]) => state.completed[key])).forEach(ch => {
+      const hintCount = ch.objectives.reduce((sum, [key]) => sum + (state.hints[key] || 0), 0);
+      const choices = state.mistakes.filter(key => key.startsWith(`${ch.id}:`)).length;
+      line(`${ch.id}. ${ch.title}: ${ch.takeaway || ch.principle} Hints: ${hintCount}; choices to revisit: ${choices}.`, 'ok');
+    });
+    line(`Chapter retries: ${state.retries}. Use untimed practice to revisit any unlocked chapter.`, 'dim');
   }
 
   function chapterForHost(host) {
@@ -455,20 +588,25 @@
 
   function checkLevelComplete() {
     const ch = currentChapter();
-    const done = ch.objectives.every(([key]) => state.completed[key]);
-    if (!done) return;
+    if (!ch.objectives.every(([key]) => state.completed[key])) return;
     line(`Chapter complete: ${ch.title}`, 'ok');
+    line(`Learned: ${ch.takeaway || ch.principle}`, 'story');
     sfx('level');
-    unlockNextHost();
-
-    if (state.levelIndex < chapters.length - 1) {
+    if (mode === 'practice') {
+      state.practiceComplete = true;
+      line('Practice complete. Retry this chapter, choose another unlocked chapter, or return to campaign in Case controls.', 'ok');
+    } else if (state.levelIndex < chapters.length - 1) {
+      unlockNextHost();
       state.levelIndex += 1;
-      const next = currentChapter();
-      line(`Unlocked next host: ${next.host}`, 'ok');
-      line(`Next mission: ${next.title}. Type briefing or network.`, 'story');
+      $('#practiceSelect').value = String(state.levelIndex);
+      $('#panel-mission').scrollTop = 0;
+      if (selectedPanel === 'mission') $('#panel-mission').focus({ preventScroll: true });
+      $('#learningFeedback').textContent = 'New mission ready. Review its evidence before choosing a response.';
+      state.trace = 0;
+      checkpoint();
+      line(`Next mission: ${currentChapter().title}. Connect to ${currentChapter().host} when ready.`, 'story');
     } else {
-      line('All chapters complete. Type submit report to close the case.', 'ok');
-      state.pendingReport = true;
+      line('ACADEMY COMPLETE: Beacon is protected. Type debrief to review the skills you learned.', 'ok');
     }
     syncUI();
   }
@@ -545,6 +683,12 @@
     line(String(content), 'dim');
 
     const clean = pathNormalize(path);
+    const hostChapter = chapterForHost(state.connected);
+    Object.entries(hostChapter.reads || {}).forEach(([key, files]) => {
+      const name = clean.split('/').pop();
+      if (files.includes(name) && !state.readFiles.includes(`${state.connected}:${name}`)) state.readFiles.push(`${state.connected}:${name}`);
+      if (files.every(file => state.readFiles.includes(`${state.connected}:${file}`))) mark(key, 100);
+    });
     if (state.connected === 'local' && clean.endsWith('/briefing.txt')) mark('read_brief', 100);
     if (state.connected === 'local' && clean.endsWith('/case_bit.txt')) mark('read_case', 120);
     if (state.connected === 'archive-node' && clean.endsWith('/logs/access.log')) mark('cat_logs', 100);
@@ -582,6 +726,7 @@
     if (host === 'cipher-bay') mark('connect_cipher', 80);
     if (host === 'orchid-relay') { mark('connect_relay', 80); activateTrace(); }
     if (host === 'root-of-trust') mark('connect_root', 80);
+    if (ch.id > 8) { mark(ch.objectives[0][0], 80); if (ch.trace && !state.completed.beacon_decision) activateTrace(); }
 
     syncUI();
   }
@@ -638,6 +783,16 @@
     if (!canUseTool(exact)) return line(`run: ${exact} is not unlocked yet.`, 'bad');
 
     const d = currentDefenses();
+    const chapter = chapterForHost(state.connected);
+    if (Object.hasOwn(window.CyberCampaign.tools, exact)) {
+      if (chapter.tool !== exact || chapter.id !== currentChapter().id) return line(`${exact}: this tool has no task on the connected host.`, 'warn');
+      const required = chapter.toolRequires || Object.keys(chapter.reads || {});
+      if (!required.every(key => state.completed[key])) return line(`${exact}: review the mission evidence and required decision first.`, 'warn');
+      line(chapter.analysis, 'ok');
+      applyOutput(chapter, chapter.toolKey);
+      mark(chapter.toolKey, 130);
+      return;
+    }
 
     if (exact === 'ScanKit') return scan([state.connected]);
     if (exact === 'ProbeLite') return probe([state.connected]);
@@ -687,6 +842,13 @@
     }
 
     if (exact === 'ReportKit') {
+      if (state.connected === 'beacon-response') {
+        const required = ['identity-desk:/identity-report.txt', 'recovery-vault:/restore-report.txt', 'privacy-desk:/public-summary.txt', 'beacon-response:/incident.log'];
+        if (!state.completed.beacon_decision || !required.every(item => state.evidence.includes(item))) return line('ReportKit: complete containment and collect the identity, restore, public summary and incident evidence first.', 'warn');
+        state.pendingReport = true;
+        line('Beacon report compiled: verified identity recovery, tested restoration, minimum-data sharing, preserved timeline and scoped containment.', 'ok');
+        mark('beacon_report', 200); return;
+      }
       if (state.connected !== 'root-of-trust') return line('ReportKit: connect to root-of-trust first.', 'bad');
       const required = ['warning.memo', 'decoded_note.txt', '/logs/session.log'];
       const missing = required.filter(r => !state.evidence.some(e => e.endsWith(r)));
@@ -733,12 +895,15 @@
     const file = args[0];
     if (!file) return line('preserve: missing file', 'bad');
     if (!fileExists(file)) return line(`preserve: ${file}: no such file`, 'bad');
+    if (!String(fileAt(file)).trim()) return line('preserve: this evidence has not been generated yet.', 'warn');
     const clean = pathNormalize(file);
     const item = `${state.connected}:${clean}`;
     if (!state.evidence.includes(item)) state.evidence.push(item);
     line(`Evidence preserved with audit trail: ${item}`, 'ok');
     if (state.connected === 'archive-node' && clean.endsWith('/logs/access.log')) mark('preserve_logs', 140);
     if (state.connected === 'orchid-relay' && clean.endsWith('/logs/session.log')) mark('preserve_relay', 140);
+    if (state.connected === 'mail-room' && clean === '/message.eml') mark('mail_preserve', 140);
+    if (state.connected === 'beacon-response' && clean === '/incident.log') mark('beacon_preserve', 140);
     syncUI();
   }
 
@@ -747,6 +912,7 @@
     if (!file) return line('collect: missing file', 'bad');
     if (!fileExists(file)) return line(`collect: ${file}: no such file`, 'bad');
     const clean = pathNormalize(file);
+    if (!String(fileAt(file)).trim()) return line('collect: generate or decode this evidence first.', 'warn');
     if (state.connected === 'cipher-bay' && clean === '/decoded_note.txt' && !state.completed.run_crypto) {
       return line('collect: decode the note with CryptoLens before collecting it.', 'warn');
     }
@@ -755,6 +921,8 @@
     line(`Collected training evidence: ${item}`, 'ok');
     if (state.connected === 'kernel-vault' && clean.endsWith('/warning.memo')) mark('download_evidence', 130);
     if (state.connected === 'cipher-bay' && clean.endsWith('/decoded_note.txt')) mark('collect_cipher', 130);
+    if (state.connected === 'identity-desk' && clean === '/identity-report.txt') mark('identity_collect', 130);
+    if (state.connected === 'privacy-desk' && clean === '/public-summary.txt') mark('privacy_collect', 130);
     syncUI();
   }
 
@@ -770,38 +938,82 @@
     mark('lock_token', 160);
   }
 
+  function decide(args) {
+    const chapter = currentChapter(), decision = chapter.decision;
+    if (!decision || state.connected !== chapter.host) return line('decide: connect to the current mission host and read its briefing first.', 'warn');
+    const choice = decision.choices.find(([id]) => id === args[0]);
+    if (!choice) return line('decide: use one of the response options in the Mission panel.', 'warn');
+    if (state.completed[decision.key]) return line('This response is already recorded. Retry the chapter to revisit its decision.', 'dim');
+    if (!decision.requires.every(key => state.completed[key])) return line('Review and preserve the required evidence before choosing a response.', 'warn');
+    line(`Feedback: ${choice[3]}`, choice[2] ? 'ok' : 'warn');
+    $('#learningFeedback').textContent = choice[3];
+    $('#decisionStatus').textContent = choice[3];
+    if (!choice[2]) {
+      const key = `${chapter.id}:${choice[0]}`;
+      if (!state.mistakes.includes(key)) { state.mistakes.push(key); state.trust = Math.max(0, state.trust - 2); }
+      sfx('bad'); return;
+    }
+    applyOutput(chapter, decision.key);
+    if (decision.key === 'beacon_decision') state.trace = 0;
+    mark(decision.key, 180);
+  }
+
+  function applyOutput(chapter, key) {
+    if (chapter.output?.key !== key) return;
+    state.files[chapter.host]['/'][chapter.output.file] = chapter.output.text;
+    Object.assign(state.files[chapter.host]['/'], chapter.output.edits || {});
+    filesHost = '';
+  }
+
+  function restoreBackup(args) {
+    if (state.connected !== 'recovery-vault' || currentChapter().id !== 12) return line('restore: this task uses the isolated recovery-vault lab.', 'warn');
+    if (!state.completed.recovery_decision || args[0] !== 'backup-clean.snap') return line('restore: verify and select backup-clean.snap before testing a restore.', 'warn');
+    const chapter = currentChapter();
+    applyOutput(chapter, 'recovery_restore');
+    const item = `${chapter.host}:/${chapter.output.file}`;
+    if (!state.evidence.includes(item)) state.evidence.push(item);
+    line(chapter.output.text + '\nThe test report has been added to the evidence chain.', 'ok');
+    mark('recovery_restore', 180);
+  }
+
   function submit(args) {
     if (args[0] !== 'report') return line('submit: usage submit report', 'bad');
-    if (state.caseClosed) return line('Case already closed. Your completion reward has been recorded.', 'dim');
-    const investigationComplete = chapters.every(ch => ch.objectives.every(([key]) => key === 'submit_case' || state.completed[key]));
-    if (!state.pendingReport || !investigationComplete || state.connected !== 'root-of-trust') {
-      return line('submit: complete the investigation and compile the report with ReportKit first.', 'warn');
+    if (state.connected === 'beacon-response') {
+      if (state.academyClosed) return line('Academy report already closed. Completion reward recorded.', 'dim');
+      if (!chapters.every(ch => ch.objectives.every(([key]) => key === 'submit_academy' || state.completed[key]))) return line('submit: finish every investigation and compile the Beacon report first.', 'warn');
+      state.academyClosed = true;
+      state.score += 500;
+      line('BEACON PROTECTED: Bit and the community can trust your evidence-led response.', 'ok');
+      mark('submit_academy', 250);
+      postScore('game_won'); syncUI(); return;
     }
+    if (state.caseClosed) return line('Case already closed. Your completion reward has been recorded.', 'dim');
+    const done = chapters.slice(0, 8).every(ch => ch.objectives.every(([key]) => key === 'submit_case' || state.completed[key]));
+    if (!state.pendingReport || !done || state.connected !== 'root-of-trust') return line('submit: complete Case BIT and compile the report with ReportKit first.', 'warn');
     state.caseClosed = true;
-    line('CASE CLOSED: Bit exposed a governance weakness. Your recommendations strengthened change control, evidence handling, and least privilege.', 'ok');
-    line('Case complete. Your score is shown above.', 'story');
+    line('CASE CLOSED: Bit exposed a governance weakness. Beacon now needs your help in eight new investigations.', 'ok');
     state.score += 500;
     mark('submit_case', 250);
-    postScore('game_won');
-    syncUI();
+    postScore('case_complete'); syncUI();
   }
 
   function activateTrace() {
     if (state.trace < 15) state.trace = 15;
-    line('Containment timer active: keep calm, audit first, and lock the risky token.', 'warn');
+    line(mode === 'practice' ? 'Untimed practice: the containment countdown is disabled.' : 'Containment timer active. Review evidence and contain the identified path. Untimed practice is available in Case controls.', 'warn');
   }
 
   function tickTrace() {
-    if (!state.started || state.gameOver || document.hidden || state.connected !== 'orchid-relay') return;
-    if (state.completed.lock_token) return;
-    state.trace = Math.min(100, state.trace + 1);
+    if (!state.started || state.gameOver || document.hidden || mode === 'practice') return;
+    const active = state.connected === 'orchid-relay' && !state.completed.lock_token || state.connected === 'beacon-response' && !state.completed.beacon_decision;
+    if (!active) return;
+    state.trace = Math.min(100, state.trace + (state.connected === 'beacon-response' ? .4 : 1));
     if (state.trace >= 100) {
       state.gameOver = true;
       state.trust = Math.max(0, state.trust - 20);
-      line('Training lockout: containment timer expired. Review the objective and reset the case.', 'bad');
+      line('Training lockout: containment timer expired. Retry this chapter from Case controls, or use untimed practice.', 'bad');
       postScore('game_over');
     }
-    syncUI();
+    syncUI(); saveProgress();
   }
 
   function unknown(cmd) {
@@ -818,7 +1030,7 @@
   function execute(raw) {
     const clean = raw.trim();
     if (!clean || !state.started) return;
-    if (state.gameOver) return line('Training locked. Use Case controls → Reset Case to try again.', 'warn');
+    if (state.gameOver && clean.toLowerCase() !== 'retry') return line('Training locked. Use Case controls → Retry Chapter, or try untimed practice.', 'warn');
     state.commandCount++;
     state.lastCommand = clean;
     state.history.push(clean);
@@ -829,7 +1041,8 @@
     const cmd = (cmdRaw || '').toLowerCase();
 
     const routes = {
-      help, clear: clearTerminal, briefing, missions: listMissions, status, network, inventory,
+      help, clear: clearTerminal, briefing, missions: listMissions, status, network, inventory, hint, debrief,
+      retry: () => retryChapter(), decide: () => decide(args), restore: () => restoreBackup(args),
       pwd: () => line(state.cwd, 'ok'),
       ls: () => runLs(args),
       cd: () => runCd(args),
@@ -846,11 +1059,11 @@
       lock: () => lockToken(args),
       submit: () => submit(args)
     };
-    if (routes[cmd]) routes[cmd]();
+    if (Object.hasOwn(routes, cmd)) routes[cmd]();
     else unknown(cmd);
 
     syncUI();
-    postScore('live');
+    postScore('live'); saveProgress();
   }
 
   function listMissions() {
@@ -869,7 +1082,7 @@
   function syncUI() {
     ui.score.textContent = String(Math.floor(state.score));
     ui.trust.textContent = String(Math.floor(state.trust));
-    ui.trace.textContent = `${Math.floor(state.trace)}%`;
+    ui.trace.textContent = mode === 'practice' ? 'Off' : `${Math.floor(state.trace)}%`;
     ui.level.textContent = String(currentChapter().id);
     ui.badge.textContent = state.connected;
     ui.prompt.textContent = promptText();
@@ -888,10 +1101,55 @@
       ui.objectives.appendChild(li);
     });
 
-    renderMap();
-    renderFiles();
-    renderTools();
+    renderLearning();
+    const mapKey = `${state.connected}:${Object.keys(state.completed).join(',')}:${state.unlocked.join(',')}`;
+    if (mapKey !== mapSignature) { mapSignature = mapKey; renderMap(); }
+    if (filesHost !== state.connected) { filesHost = state.connected; renderFiles(); }
+    if (toolsLevel !== state.levelIndex) { toolsLevel = state.levelIndex; renderTools(); }
     ui.muteBtn.textContent = state.muted ? 'Sound Off' : 'Sound On';
+    $('#sessionLabel').textContent = sessionCaption();
+    $('#returnCampaignBtn').hidden = mode !== 'practice';
+    ui.submitBtn.disabled = mode === 'practice';
+    ui.resetBtn.textContent = mode === 'practice' ? 'Restart Practice' : 'Reset Campaign';
+    const frontier = campaignSave?.state.levelIndex ?? (mode === 'campaign' ? state.levelIndex : 0);
+    if (practiceFrontier !== frontier) {
+      practiceFrontier = frontier;
+      const select = $('#practiceSelect'), selection = select.value;
+      select.innerHTML = '';
+      chapters.forEach((chapter, i) => {
+        const option = document.createElement('option'); option.value = String(i);
+        option.textContent = `${chapter.id}. ${chapter.title}${i > frontier ? ' · Locked' : ''}`;
+        option.disabled = i > frontier; select.appendChild(option);
+      });
+      select.value = selection !== '' && Number(selection) <= frontier ? selection : String(frontier);
+    }
+  }
+
+  function renderLearning() {
+    const chapter = currentChapter(), decision = chapter.decision;
+    const key = `${chapter.id}:${state.connected}:${Object.keys(state.completed).join(',')}:${state.gameOver}:${mode}`;
+    if (key !== learningSignature) {
+      learningSignature = key;
+      $('#decisionSection').hidden = !decision;
+      const focusedChoice = document.activeElement?.dataset.choice;
+      $('#decisionOptions').innerHTML = '';
+      if (decision) {
+        const ready = state.connected === chapter.host && decision.requires.every(id => state.completed[id]);
+        $('#decisionStatus').textContent = state.completed[decision.key] ? 'Response recorded. Complete the remaining objectives or continue to the next mission.' : ready ? 'Evidence reviewed. Choose the response that matches the task.' : 'Connect to this mission host and complete the evidence objectives above before choosing.';
+        decision.choices.forEach(([id, label]) => {
+          const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
+          button.dataset.choice = id;
+          button.disabled = !ready || !!state.completed[decision.key] || state.gameOver;
+          button.addEventListener('click', () => { execute(`decide ${id}`); });
+          $('#decisionOptions').appendChild(button);
+          if (focusedChoice === id && !button.disabled) button.focus({ preventScroll: true });
+        });
+      }
+    }
+    const missing = chapter.objectives.find(([id]) => !state.completed[id]);
+    const used = missing ? state.hints[missing[0]] || 0 : 0;
+    ui.hintBtn.textContent = missing ? `Hint ${Math.min(3, used + 1)} / 3` : 'Review';
+    if (decision && state.completed[decision.key]) $('#learningFeedback').textContent = chapter.takeaway;
   }
 
   function renderMap() {
@@ -961,7 +1219,7 @@
   }
 
   function allTokens() {
-    const commandNames = ['help','clear','briefing','missions','status','network','inventory','pwd','ls','cd','cat','grep','connect','scan','probe','run','hash','analyze','preserve','collect','lock','submit'];
+    const commandNames = ['help','clear','briefing','missions','status','network','inventory','pwd','ls','cd','cat','grep','connect','scan','probe','run','hash','analyze','preserve','collect','lock','submit','decide','restore','hint','debrief','retry'];
     const hosts = chapters.map(ch => ch.host);
     const tools = Object.keys(TOOLS);
     const files = [];
@@ -970,7 +1228,7 @@
       files.push(dir);
       Object.keys(obj).forEach(f => files.push(dir === '/' ? `/${f}` : `${dir}/${f}`, f));
     });
-    return [...commandNames, ...hosts, ...tools, ...files, 'report', 'alpha', 'beta', 'gamma', 'token-orchid'];
+    return [...commandNames, ...hosts, ...tools, ...files, ...(currentChapter().decision?.choices.map(([id]) => id) || []), 'report', 'alpha', 'beta', 'gamma', 'token-orchid'];
   }
 
   function suggestions(prefix) {
@@ -991,6 +1249,7 @@
       candidates = files;
       if (['connect', 'scan', 'probe'].includes(command)) candidates = state.unlocked;
       else if (command === 'run' && parts.length === 2) candidates = Object.keys(TOOLS).filter(canUseTool);
+      else if (command === 'decide') candidates = currentChapter().decision?.choices.map(([id]) => id) || [];
       else if (command === 'cd') candidates = Object.keys(currentFS());
       else if (command === 'submit') candidates = ['report'];
       else if (command === 'run' && parts[1]?.toLowerCase() === 'proxybalance') candidates = ['alpha', 'beta', 'gamma'];
@@ -1002,14 +1261,40 @@
   }
 
   function hint() {
-    line(`Hint: ${currentChapter().hint}`, 'warn');
+    const chapter = currentChapter();
+    const objective = chapter.objectives.find(([key]) => !state.completed[key]);
+    if (!objective) { debrief(); saveProgress(); return; }
+    const [key, task] = objective, stage = Math.min(3, (state.hints[key] || 0) + 1);
+    state.hints[key] = stage;
+    const command = objectiveCommand(chapter, key, task);
+    const hints = [chapter.principle, `Focus on: ${task} ${chapter.decision?.key === key ? 'Compare the reviewed evidence with the stated purpose and the effect on legitimate users.' : 'Use the Files and Toolkit panels to insert commands without retyping.'}`, command ? `Try: ${command}` : chapter.hint || 'Read the briefing, compare the source files and choose the response that meets the stated purpose.'];
+    line(`Hint ${stage} / 3: ${hints[stage - 1]}`, 'warn');
+    $('#learningFeedback').textContent = hints[stage - 1];
+    syncUI(); saveProgress();
   }
 
-  function postScore(mode = 'live') {
-    const payload = { gameSlug: GAME_SLUG, slug: GAME_SLUG, score: Math.floor(state.score), trust: Math.floor(state.trust), level: currentChapter().id, mode };
+  function objectiveCommand(chapter, key, task) {
+    if (key.startsWith('connect_')) return `connect ${chapter.host}`;
+    if (chapter.reads?.[key]) return chapter.reads[key].map(file => `cat ${file}`).join(' → ');
+    if (key === chapter.toolKey) return `run ${chapter.tool}`;
+    if (key === chapter.decision?.key) return `decide ${chapter.decision.choices.find(choice => choice[2])[0]}`;
+    if (key === 'recovery_restore') return 'restore backup-clean.snap';
+    if (key === 'mail_preserve') return 'preserve message.eml';
+    if (key === 'beacon_preserve') return 'preserve incident.log';
+    if (key === 'identity_collect') return 'collect identity-report.txt';
+    if (key === 'privacy_collect') return 'collect public-summary.txt';
+    if (key === 'beacon_report') return 'run ReportKit';
+    if (key === 'submit_academy') return 'submit report';
+    if (chapter.id <= 8) return { list_home: 'ls', read_brief: 'cat briefing.txt', read_case: 'cat case_bit.txt' }[key] || task;
+    return chapter.hint || task;
+  }
+
+  function postScore(scoreMode = 'live') {
+    if (mode === 'practice') return;
+    const payload = { gameSlug: GAME_SLUG, slug: GAME_SLUG, score: Math.floor(state.score), trust: Math.floor(state.trust), level: currentChapter().id, mode: scoreMode };
     try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
     try { window.GG?.setScore?.(payload.score, { gameSlug: GAME_SLUG }); } catch {}
-    if (mode !== 'live') {
+    if (scoreMode !== 'live') {
       try { window.GG?.submitScore?.(payload.score, { gameSlug: GAME_SLUG }); } catch {}
       try { window.GG?.endRound?.(payload); } catch {}
     }
@@ -1125,30 +1410,37 @@
     });
     ui.overlayStartBtn.addEventListener('click', startGame);
     ui.hintBtn.addEventListener('click', () => { selectPanel('terminal'); hint(); });
+    $('#retryBtn').addEventListener('click', () => retryChapter());
+    $('#startPracticeBtn').addEventListener('click', startPractice);
+    $('#overlayPracticeBtn').addEventListener('click', startPractice);
+    $('#returnCampaignBtn').addEventListener('click', returnToCampaign);
+    $('#debriefBtn').addEventListener('click', () => { selectPanel('terminal'); debrief(); $('#caseActions').open = false; });
     ui.resetBtn.addEventListener('click', () => {
-      if (!window.confirm('Reset Case BIT? This clears the current investigation and score.')) return;
-      const muted = state.muted;
-      setup(); state.muted = muted; $('#caseActions').open = false; startGame();
+      if (mode === 'practice') { retryChapter(); return; }
+      if (!window.confirm('Start a new campaign? This clears saved campaign progress and points on this browser.')) return;
+      mode = 'campaign'; campaignSave = null; practiceSave = null; checkpoints = {}; state = initialState(); checkpoint();
+      try { storage?.removeItem(progress.keys.practice); } catch {}
+      $('#caseActions').open = false; resumePending = false; startGame();
     });
     ui.submitBtn.addEventListener('click', () => postScore('manual_submit'));
     ui.muteBtn.addEventListener('click', () => {
       state.muted = !state.muted;
       if (state.muted) stopMusic(); else startMusic();
-      syncUI();
+      syncUI(); saveProgress();
     });
 
+    window.addEventListener('pagehide', saveProgress);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) saveProgress(); });
     window.addEventListener('message', ev => {
+      if (ev.origin !== window.location.origin || ev.source !== window.parent) return;
       const data = ev.data || {};
       const type = data.type || data.event;
       if (type === 'GG_MUTE') {
         state.muted = !!(data.payload?.muted ?? data.muted);
         if (state.muted) stopMusic(); else startMusic();
-        syncUI();
+        syncUI(); saveProgress();
       }
-      if (type === 'GG_RESTART') {
-        setup();
-        startGame();
-      }
+      if (type === 'GG_RESTART') retryChapter();
     });
 
     setInterval(tickTrace, 1000);
