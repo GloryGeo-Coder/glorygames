@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Recycle Rush 2.0</title>
+  <title>Recycle Rush: Restore Verdale</title>
   <link rel="preload" as="image" href="thumb.png" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="story.css" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
@@ -14,7 +15,7 @@
       <section class="identity">
         <img id="circuitAvatar" src="assets/sprites/circuit-neutral.svg" alt="Circuit" />
         <div>
-          <h1>Recycle Rush 2.0</h1>
+          <h1>Recycle Rush: Restore Verdale</h1>
           <p id="objectiveText">Sort • Build • Save Verdale</p>
         </div>
       </section>
@@ -43,7 +44,7 @@
       <div id="powerSlot">Power: None</div>
     </section>
 
-    <canvas id="gameCanvas" aria-label="Recycle Rush 2.0 game canvas"></canvas>
+    <canvas id="gameCanvas" aria-label="Recycle Rush: Restore Verdale game canvas"></canvas>
 
     <footer class="controls">
       <button id="leftBtn" type="button">◀ Bin</button>
@@ -60,21 +61,22 @@
       <div class="panel-head">
         <div>
           <p class="eyebrow">Verdale Circular Economy Mission</p>
-          <h2>World Map</h2>
-          <p>Clear each eco-hub, defeat Grime and recharge The Loop.</p>
+          <h2>Verdale</h2>
+          <p>Restore the school in five story missions, or take on the 20-mission arcade campaign.</p>
         </div>
         <div class="top-actions">
-          <button id="startNextBtn" type="button">Continue Campaign</button>
+          <button id="storyStartBtn" type="button" class="primary">Begin Story</button>
+          <button id="startNextBtn" type="button">Continue Arcade</button>
           <button id="loopBtn" type="button">Loop Mode</button>
           <button id="badgesBtn" type="button">Eco-Badges</button>
           <button id="settingsBtn" type="button">Settings</button>
         </div>
       </div>
 
-      <section class="thumbnail-hero" aria-label="Recycle Rush 2.0 hero artwork">
-        <img src="thumb.png" alt="Recycle Rush 2.0: Circuit vs Grime in Verdale" />
+      <section class="thumbnail-hero" aria-label="Recycle Rush: Restore Verdale hero artwork">
+        <img src="thumb.png" alt="Recycle Rush: Restore Verdale: Circuit vs Grime in Verdale" />
         <div class="thumbnail-copy">
-          <span class="hero-kicker">Story Campaign</span>
+          <span class="hero-kicker">Community Adventure</span>
           <h3>Circuit vs Grime</h3>
           <p id="heroStatusText">Circuit must sort recyclables, clear Grime hazards and restore colour to Verdale.</p>
           <div class="category-chips" aria-label="Sorting categories">
@@ -83,8 +85,10 @@
         </div>
       </section>
 
+      <section class="story-entry" aria-labelledby="storyEntryTitle"><h3 id="storyEntryTitle">Restore Verdale</h3><p>Bring a community recovery station back to life with Circuit, Professor Loop and their neighbours.</p><p id="storySummary"></p><div class="story-entry-actions"><span>Untimed learning · saved checkpoints</span></div><div id="storyMissionList" class="story-route" aria-label="Story mission selection"></div></section>
+      <h3>Arcade Campaign · 20 missions</h3>
       <div id="mapGrid" class="map-grid"></div>
-      <div class="map-note">Controls: A/D or ◀/▶ selects bins. Tap Grime hazards during boss fights. Use power-ups with Space or the button.</div>
+      <div class="map-note">Arcade: tap an item, then a destination bin, or drag it there. A/D or ◀/▶ selects bins; Enter routes the lowest item. Tap Grime to clear it. Space uses a power-up. Story: tap an object, inspect it, prepare it when needed, then choose an accepted route.</div>
     </div>
 
     <div id="comicScreen" class="panel comic-panel" hidden>
@@ -115,7 +119,11 @@
     </div>
   </section>
 
+  <section id="storyRoot" hidden aria-label="Restore Verdale story campaign"></section>
+  <script src="story-data.js"></script>
+  <script src="story-audio.js"></script>
   <script src="game.js"></script>
+  <script src="story.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

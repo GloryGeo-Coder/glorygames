@@ -270,3 +270,11 @@ body::after{
   .thumbnail-copy p{font-size:13px}
   .category-chips span{font-size:10px;padding:6px 8px}
 }
+
+/* Compact arcade HUD and an explicit playfield row on phones and during bosses. */
+.game-shell{grid-template-rows:auto auto auto auto minmax(0,1fr) auto}
+.game-shell>.hud{grid-row:1}.game-shell>.mentor-row{grid-row:2}.game-shell>.boss-panel{grid-row:3}.game-shell>.progress-strip{grid-row:4}.game-shell>#gameCanvas{grid-row:5}.game-shell>.controls{grid-row:6}
+.controls button,.top-actions button,.panel button{min-height:44px}
+button:disabled{cursor:default;transform:none!important}
+@media(max-width:760px){.identity h1{font-size:14px;letter-spacing:.02em}.identity img{width:32px;height:32px}.identity p{display:none}.stats{flex-wrap:nowrap;gap:3px}.stats div{min-width:34px;padding:3px}.stats div:last-child{display:none}.stats span{font-size:8px}.stats strong{font-size:12px}.progress-strip{grid-template-columns:minmax(0,1fr) auto;gap:5px}.progress-strip .progress-bar{grid-column:1/-1;grid-row:2;height:6px}#progressText{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#powerSlot{font-size:10px;max-width:32vw}.boss-panel span{font-size:10px}.mentor-row{display:none}.controls{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.controls button{font-size:10px;padding:5px}.screen-overlay{padding:8px}.panel{max-height:calc(100dvh - 16px);width:100%;padding:14px}.comic-frame{min-height:120px}.thumbnail-hero img{min-height:140px}.thumbnail-copy h3{font-size:28px}}
+@media(max-height:500px) and (min-width:600px){.mentor-row,.identity p{display:none}.identity h1{font-size:16px}.identity img{width:30px;height:30px}.controls{grid-template-columns:repeat(6,minmax(0,1fr))}.controls button{font-size:10px;min-height:44px;padding:4px}.progress-strip{font-size:10px;padding:4px 8px}.stats div{padding:2px 6px;min-width:44px}.stats span{font-size:8px}.stats strong{font-size:12px}.boss-panel{padding:3px 8px}.boss-panel span{font-size:10px}.boss-bar{height:8px}}

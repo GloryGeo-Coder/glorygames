@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const GAME_SLUG = 'recycle-rush-2';
+  const GAME_SLUG = 'recycle-rush';
   const SAVE_KEY = 'wga_recycle_rush_2_save_v1';
   const BEST_KEY = 'wga_recycle_rush_2_best';
   const THUMBNAIL_SRC = 'thumb.png';
@@ -60,14 +60,14 @@
   };
 
   const CHAPTERS = [
-    { name:'Greenwood Elementary', bg:'assets/backgrounds/bg-school-cleanup.png', theme:'school', boss:'Hallway Sludge', bossIcon:'assets/bosses/hallway-sludge.svg', start:0, end:2, color:'#4bdcff', intro:['Professor Loop activates Circuit in a bright classroom lab.','The Loop is weak. Mis-sorted items have created Hallway Sludge.','Sort the basics: paper, plastic and organic waste.'] },
-    { name:'Maple Street Block Party', bg:'assets/backgrounds/bg-community-day.png', theme:'community', boss:'Curbside Crawler', bossIcon:'assets/bosses/curbside-crawler.svg', start:3, end:5, color:'#ff9d52', intro:['Verdale residents are ready to recycle, but the street bins are clogged.','Glass and metal join the mission.','Curbside Crawler splits grime hazards when hit.'] },
-    { name:'Riverside Park', bg:'assets/backgrounds/bg-park-clean-sweep.png', theme:'park', boss:'The Bog', bossIcon:'assets/bosses/the-bog.svg', start:6, end:8, color:'#53ffb3', intro:['The park is losing its colour as Grime seeps into the riverbank.','Leaf gusts push falling items sideways.','Watch the wind before selecting a bin.'] },
-    { name:'Downtown Buy-Back Centre', bg:'assets/backgrounds/bg-buyback-centre.png', theme:'buyback', boss:'Coin-Op Chaos', bossIcon:'assets/bosses/coin-op-chaos.svg', start:9, end:11, color:'#ffd86b', intro:['The buy-back centre rewards fast sorting and clean materials.','Power-ups are now active.','Coin-Op Chaos forces dual-chute reactions.'] },
-    { name:'Material Recovery Facility', bg:'assets/backgrounds/bg-material-recovery-facility.png', theme:'mrf', boss:'The Sorter', bossIcon:'assets/bosses/the-sorter.svg', start:12, end:14, color:'#4bdcff', intro:['Inside the MRF, conveyors feed items from every direction.','E-waste becomes a core category.','The Sorter accelerates after every mistake.'] },
-    { name:'Landfill Outskirts', bg:'assets/backgrounds/bg-landfill-diversion.png', theme:'landfill', boss:'Landfill Leviathan', bossIcon:'assets/bosses/landfill-leviathan.svg', start:15, end:16, color:'#ff5f84', intro:['The landfill edge is dangerous and dense with hazards.','Hazmat and batteries must be sorted carefully.','The Leviathan changes patterns through three phases.'] },
-    { name:'E-Waste Drop-off Drive', bg:'assets/backgrounds/bg-ewaste-dropoff.png', theme:'ewaste', boss:'Circuit Storm', bossIcon:'assets/bosses/circuit-storm.svg', start:17, end:18, color:'#a379ff', intro:['The e-waste drive flickers with static.','Textiles are introduced with smaller precision targets.','Circuit Storm sends fast swarms across the screen.'] },
-    { name:'The Core', bg:'assets/backgrounds/bg-circular-challenge.png', theme:'core', boss:'The Great Grime', bossIcon:'assets/bosses/great-grime.svg', start:19, end:19, color:'#ff2fb3', intro:['The source of Grime hides inside The Core.','Every category and mechanic returns.','Defeat The Great Grime and restore colour to Verdale.'] }
+    { name:'Greenwood Elementary', bg:'assets/backgrounds/bg-school-cleanup.png', theme:'school', boss:'Hallway Sludge', bossIcon:'assets/bosses/hallway-sludge.png', start:0, end:2, color:'#4bdcff', intro:['Professor Loop activates Circuit in a bright classroom lab.','The Loop is weak. Mis-sorted items have created Hallway Sludge.','Sort the basics: paper, plastic and organic waste.'] },
+    { name:'Maple Street Block Party', bg:'assets/backgrounds/bg-community-day.png', theme:'community', boss:'Curbside Crawler', bossIcon:'assets/bosses/curbside-crawler.png', start:3, end:5, color:'#ff9d52', intro:['Verdale residents are ready to recycle, but the street bins are clogged.','Glass and metal join the mission.','Curbside Crawler splits grime hazards when hit.'] },
+    { name:'Riverside Park', bg:'assets/backgrounds/bg-park-clean-sweep.png', theme:'park', boss:'The Bog', bossIcon:'assets/bosses/the-bog.png', start:6, end:8, color:'#53ffb3', intro:['The park is losing its colour as Grime seeps into the riverbank.','Leaf gusts push falling items sideways.','Choose destinations by material, even when the wind moves an item.'] },
+    { name:'Downtown Buy-Back Centre', bg:'assets/backgrounds/bg-buyback-centre.png', theme:'buyback', boss:'Coin-Op Chaos', bossIcon:'assets/bosses/coin-op-chaos.png', start:9, end:11, color:'#ffd86b', intro:['The buy-back centre rewards fast sorting and clean materials.','Power-ups are now active.','Coin-Op Chaos forces dual-chute reactions.'] },
+    { name:'Material Recovery Facility', bg:'assets/backgrounds/bg-material-recovery-facility.png', theme:'mrf', boss:'The Sorter', bossIcon:'assets/bosses/the-sorter.png', start:12, end:14, color:'#4bdcff', intro:['Inside the MRF, conveyors feed items from every direction.','E-waste becomes a core category.','The Sorter accelerates after every mistake.'] },
+    { name:'Landfill Outskirts', bg:'assets/backgrounds/bg-landfill-diversion.png', theme:'landfill', boss:'Landfill Leviathan', bossIcon:'assets/bosses/landfill-leviathan.png', start:15, end:16, color:'#ff5f84', intro:['The landfill edge is dangerous and dense with hazards.','Hazmat and batteries must be sorted carefully.','The Leviathan changes patterns through three phases.'] },
+    { name:'E-Waste Drop-off Drive', bg:'assets/backgrounds/bg-ewaste-dropoff.png', theme:'ewaste', boss:'Circuit Storm', bossIcon:'assets/bosses/circuit-storm.png', start:17, end:18, color:'#a379ff', intro:['The e-waste drive flickers with static.','Textiles are introduced with smaller precision targets.','Circuit Storm sends fast swarms across the screen.'] },
+    { name:'The Core', bg:'assets/backgrounds/bg-circular-challenge.png', theme:'core', boss:'The Great Grime', bossIcon:'assets/bosses/great-grime.png', start:19, end:19, color:'#ff2fb3', intro:['The source of Grime hides inside The Core.','Every category and mechanic returns.','Defeat The Great Grime and restore colour to Verdale.'] }
   ];
 
   const LEVELS = [
@@ -77,8 +77,8 @@
     { name:'Curbside Basics', chapter:1, kind:'standard', cats:['paper','plastic','organic','glass'], target:22, speed:145, spawn:.80, wind:8, fact:'Glass belongs in a separate stream because it can contaminate other recyclables.' },
     { name:'Metal & Glass Mix', chapter:1, kind:'standard', cats:['paper','plastic','glass','metal'], target:24, speed:153, spawn:.74, wind:10, fact:'Metal containers can be recycled many times if kept clean.' },
     { name:'Boss: Curbside Crawler', chapter:1, kind:'boss', cats:['paper','plastic','glass','metal'], target:22, bossHp:190, speed:156, spawn:.70, attack:'split', fact:'Some hazards split after a hit. Clear both pieces before they reach the bins.' },
-    { name:'Windy Park Pickup', chapter:2, kind:'standard', cats:['paper','plastic','organic','glass'], target:25, speed:160, spawn:.70, wind:46, fact:'Wind gusts make item position matter. Watch the drifting leaves.' },
-    { name:'Riverside Rescue', chapter:2, kind:'standard', cats:['paper','plastic','organic','glass','metal'], target:27, speed:166, spawn:.66, wind:58, fact:'Items can drift away from the correct bin. Hit-detection checks the real x-position.' },
+    { name:'Windy Park Pickup', chapter:2, kind:'standard', cats:['paper','plastic','organic','glass'], target:25, speed:160, spawn:.70, wind:46, fact:'Wind gusts move the items, but your destination choice controls the sort.' },
+    { name:'Riverside Rescue', chapter:2, kind:'standard', cats:['paper','plastic','organic','glass','metal'], target:27, speed:166, spawn:.66, wind:58, fact:'Tap an item, then its matching bin. Wind cannot overrule a correct choice.' },
     { name:'Boss: The Bog', chapter:2, kind:'boss', cats:['paper','plastic','organic','glass','metal'], target:24, bossHp:220, speed:160, spawn:.65, wind:60, attack:'bog', fact:'The Bog creates slow puddles. Use Slow-Mo only when it really matters.' },
     { name:'Power-Up Pickup', chapter:3, kind:'standard', cats:['paper','plastic','glass','metal'], target:27, speed:170, spawn:.63, wind:24, power:true, fact:'Power-ups are tools, not shortcuts. Save them for difficult waves.' },
     { name:'Dual Chute Trial', chapter:3, kind:'standard', cats:['paper','plastic','organic','glass','metal'], target:30, speed:178, spawn:.60, wind:28, power:true, dual:true, fact:'Combos stack extra musical layers and increase your score.' },
@@ -115,14 +115,18 @@
   ];
 
   const DEFAULT_SAVE = { unlockedLevel:0, stars:{}, badges:{}, categoryCounts:{}, bossKills:0, loopUnlocked:false, settings:{music:.45,sfx:.75,reducedMotion:false,colorblind:false} };
-  const save = Object.assign({}, DEFAULT_SAVE, safeStorage.get(SAVE_KEY, DEFAULT_SAVE));
+  const save = Object.assign({}, DEFAULT_SAVE, safeStorage.get(SAVE_KEY, null) || {});
   save.settings = Object.assign({}, DEFAULT_SAVE.settings, save.settings || {});
-  save.stars = save.stars || {}; save.badges = save.badges || {}; save.categoryCounts = save.categoryCounts || {};
+  for(const key of ['stars','badges','categoryCounts']) if(!save[key] || typeof save[key] !== 'object' || Array.isArray(save[key])) save[key] = {};
+  save.unlockedLevel = Number.isSafeInteger(save.unlockedLevel) ? Math.max(0,Math.min(20,save.unlockedLevel)) : 0;
+  for(const key of ['music','sfx']) save.settings[key] = Number.isFinite(save.settings[key]) ? Math.max(0,Math.min(1,save.settings[key])) : DEFAULT_SAVE.settings[key];
+  if(!safeStorage.get(SAVE_KEY,null) && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) save.settings.reducedMotion = true;
 
   const state = {
     screen:'map', running:false, paused:false, loop:false, levelIndex:0, score:0, best:safeStorage.getNumber(BEST_KEY,0), totalStars:0,
     lives:3, startLives:3, combo:0, maxCombo:0, sorted:0, wrong:0, noHit:true, selectedBin:0, bins:[], items:[], particles:[], hazards:[], boss:null,
     spawnTimer:0, bossTimer:3, time:0, transitionLevel:null, power:null, powerTime:0, magnetCharges:0, shield:0, doubleTime:0, slowTime:0, intensity:0,
+    pointerId:null, selectedItem:null, completed:false, rebootTimer:null, lastScore:null, muted:false, redraw:true,
     audio:{ctx:null, master:null, music:null, sfx:null, musicTimer:null, step:0}, images:{}, keys:{}, W:1280, H:720, dpr:1
   };
 
@@ -168,6 +172,8 @@
   }
 
   function resize(){
+    state.redraw=true;
+    const oldW=state.W,oldLine=catchLine();
     const r = canvas.getBoundingClientRect();
     state.dpr = Math.min(2, window.devicePixelRatio || 1);
     state.W = Math.max(1, Math.floor(r.width));
@@ -176,13 +182,17 @@
     canvas.height = Math.floor(state.H * state.dpr);
     ctx.setTransform(state.dpr,0,0,state.dpr,0,0);
     buildBins();
+    const travelScale=(catchLine()+30)/(oldLine+30);
+    for(const it of [...state.items,...state.hazards]) { it.x *= state.W/oldW; it.y=(it.y+it.h+30)*travelScale-it.h-30;it.vy*=travelScale; }
+    if(state.boss){state.boss.x=state.W*.68;state.boss.y=state.H*.12;state.boss.size=Math.min(150,state.W*.28);}
+    cancelPointer();
   }
 
   function ensureAudio(){
     if(!state.audio.ctx){
       const AC = window.AudioContext || window.webkitAudioContext;
       if(!AC) return null;
-      const ac = new AC();
+      let ac; try { ac = new AC(); } catch { return null; }
       state.audio.ctx = ac;
       state.audio.master = ac.createGain();
       state.audio.music = ac.createGain();
@@ -199,7 +209,7 @@
   }
 
   function tone(freq, dur=.08, type='sine', gain=.04, dest='sfx', delay=0){
-    const ac = ensureAudio(); if(!ac || save.settings.sfx <= 0) return;
+    const ac = ensureAudio(); if(!ac || state.muted || (dest === 'music' ? save.settings.music : save.settings.sfx) <= 0) return;
     const t = ac.currentTime + delay;
     const osc = ac.createOscillator();
     const g = ac.createGain();
@@ -212,7 +222,7 @@
   }
 
   function noise(dur=.08, gain=.04, filter=900){
-    const ac = ensureAudio(); if(!ac || save.settings.sfx <= 0) return;
+    const ac = ensureAudio(); if(!ac || state.muted || save.settings.sfx <= 0) return;
     const buffer = ac.createBuffer(1, Math.floor(ac.sampleRate*dur), ac.sampleRate);
     const data = buffer.getChannelData(0);
     for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * (1-i/data.length);
@@ -262,8 +272,7 @@
 
   function startMusic(){
     stopMusic();
-    if(save.settings.music <= 0) return;
-    ensureAudio();
+    if(state.muted || save.settings.music <= 0 || !ensureAudio()) return;
     const p = chapterMusic();
     const interval = Math.max(90, Math.round(60000 / p.bpm / 2));
     state.audio.step = 0;
@@ -288,8 +297,11 @@
 
   function postScore(mode='live'){
     const score = Math.floor(state.score);
+    if(mode === 'live' && state.lastScore === score) return;
+    state.lastScore = score;
+    const oldBest=state.best;
     state.best = Math.max(state.best, score);
-    safeStorage.setNumber(BEST_KEY, state.best);
+    if(state.best>oldBest) safeStorage.setNumber(BEST_KEY, state.best);
     const payload = { type:'GG_SCORE', gameSlug:GAME_SLUG, slug:GAME_SLUG, score, best:state.best, level:state.loop ? 'loop' : state.levelIndex+1, mode };
     try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
     try { window.GG?.setScore?.(score, {gameSlug:GAME_SLUG}); } catch {}
@@ -305,11 +317,11 @@
   }
 
   function renderMap(){
-    state.running = false; state.paused = true; stopMusic();
-    showOnly(ui.mapScreen);
+    state.running = false; state.paused = true; stopMusic(); cancelPointer(); clearTimeout(state.rebootTimer);
+    ui.pauseBtn.textContent="Pause"; showOnly(ui.mapScreen);
     ui.mapGrid.innerHTML = '';
     const heroStatus = document.getElementById('heroStatusText');
-    if(heroStatus) heroStatus.textContent = `Circuit has restored ${Object.keys(save.stars || {}).length}/20 missions. Defeat Grime, heal each hub and save Verdale.`;
+    if(heroStatus) heroStatus.textContent = `Arcade campaign: ${Object.keys(save.stars || {}).length}/20 missions restored. The new story follows Circuit and the neighbours rebuilding the school station.`;
     const totalStars = Object.values(save.stars || {}).reduce((a,b)=>a+(Number(b)||0),0);
     state.totalStars = totalStars;
     ui.stars.textContent = totalStars;
@@ -358,7 +370,7 @@
     const panels = [
       { title:'Verdale Update', text: ch.intro[0] },
       { title:'Professor Loop', text: lv.fact || ch.intro[1] },
-      { title: lv.kind === 'boss' || lv.kind === 'finale' ? 'Grime Taunt' : 'Circuit Mission', text: lv.kind === 'boss' || lv.kind === 'finale' ? `${ch.boss} blocks this hub. Sort clean items and tap Grime hazards to drain its health.` : `Target: ${lv.target} correct sorts. Real x-position matters, so line up the item with the selected bin.` }
+      { title: lv.kind === 'boss' || lv.kind === 'finale' ? 'Grime Taunt' : 'Circuit Mission', text: lv.kind === 'boss' || lv.kind === 'finale' ? `${ch.boss} blocks this hub. Sort clean items and tap Grime hazards to drain its health.` : `Target: ${lv.target} correct sorts. Tap an item and its matching bin, or drag it there. Wind will not change a correct destination choice.` }
     ];
     ui.comicPanels.innerHTML = panels.map(p => `<div class="comic-frame"><h3>${p.title}</h3><p>${p.text}</p></div>`).join('');
     ui.comicContinue.onclick = () => { ui.overlay.classList.remove('active'); onDone(); };
@@ -366,6 +378,7 @@
 
   function startLevel(index){
     index = clamp(index,0,LEVELS.length-1);
+    if(index > save.unlockedLevel) return;
     state.loop = false;
     state.levelIndex = index;
     state.score = state.score || 0;
@@ -385,6 +398,7 @@
   function checkpointLevel(){ return CHAPTERS[level().chapter].start; }
 
   function initLevel(index){
+    clearTimeout(state.rebootTimer); cancelPointer(); state.completed=false; ui.pauseBtn.textContent="Pause";
     state.running = true; state.paused = false; state.levelIndex = index; state.time = 0; state.lives = 3; state.startLives = 3;
     state.combo = 0; state.maxCombo = 0; state.sorted = 0; state.wrong = 0; state.noHit = true; state.items = []; state.hazards = []; state.particles = [];
     state.spawnTimer = .55; state.bossTimer = 2.4; state.selectedBin = 0; state.power = null; state.powerTime = 0; state.magnetCharges = 0; state.shield = 0;
@@ -395,6 +409,7 @@
     else state.boss = null;
     ui.overlay.classList.remove('active');
     ui.bossPanel.hidden = !state.boss;
+    resize();
     if(state.boss){ ui.bossName.textContent = chapter().boss; ui.bossFill.style.width = '100%'; }
     professor(lv.fact, 'neutral');
     startMusic();
@@ -421,7 +436,7 @@
   }
 
   function playAreaBottom(){
-    return Math.max(180, state.H - bottomSafeZone());
+    return Math.max(100, state.H - bottomSafeZone());
   }
 
   function buildBins(){
@@ -430,16 +445,17 @@
     const W = state.W, H = state.H;
     const margin = Math.max(10, W*.02);
     const gap = Math.max(5, Math.min(12, W*.012));
-    const usable = W - margin*2 - gap*(cats.length-1);
-    const bw = Math.max(54, usable / cats.length);
-    const bh = Math.max(68, Math.min(105, H*.14));
-    const bottomLimit = playAreaBottom();
-    const y = clamp(bottomLimit - bh - 12, H*.56, H - bh - 12);
-    state.bins = cats.map((cat,i) => ({ cat, x:margin+i*(bw+gap), y, w:bw, h:bh, fill:0, lid:0 }));
+    const columns=Math.min(cats.length,Math.max(3,Math.floor((W-margin*2)/78)));
+    const rows=Math.ceil(cats.length/columns);
+    const bw=(W-margin*2-gap*(columns-1))/columns;
+    const bh=Math.min(82,Math.max(54,H*.17));
+    const bottomLimit=H-10;
+    const y=Math.max(60,bottomLimit-rows*(bh+gap));
+    state.bins=cats.map((cat,i)=>({cat,x:margin+(i%columns)*(bw+gap),y:y+Math.floor(i/columns)*(bh+gap),w:bw,h:bh,fill:0,lid:0}));
     state.selectedBin = clamp(state.selectedBin,0,state.bins.length-1);
   }
 
-  function itemSize(){ return level().precision ? 42 : 50; }
+  function itemSize(){ return level().precision ? 44 : 50; }
   function catchLine(){
     if(state.bins && state.bins.length) return Math.max(90, state.bins[0].y - 12);
     return playAreaBottom() - Math.max(90, state.H*.16);
@@ -466,7 +482,8 @@
     let x = bin.x + bin.w*.5 - s*.5 + rand(-bin.w*.28, bin.w*.28);
     if(lv.edge && Math.random() < .36) x = Math.random() < .5 ? -s-20 : state.W + 20;
     const speedScale = state.loop ? 1 + Math.min(1.7, state.time/90) : 1;
-    const baseV = (lv.speed + rand(-12,24)) * speedScale;
+    const reactionSeconds = Math.max(2,3.4-lv.chapter*.17);
+    const baseV = Math.min(lv.speed + rand(-12,24),Math.max(100,catchLine()+s+30)/reactionSeconds) * speedScale;
     let vx = rand(-22,22) + (lv.wind || 0) * rand(-1,1);
     if(lv.edge) vx += x < 0 ? rand(85,150) : rand(-150,-85);
     if(state.magnetCharges > 0 && cat && cat !== 'grime'){
@@ -489,7 +506,8 @@
     const count = lv.attack === 'storm' ? 6 : lv.attack === 'final' ? 8 : lv.attack === 'phase' ? 7 : 4;
     for(let i=0;i<count;i++){
       const s = rand(42,62);
-      state.hazards.push({ x:rand(30,state.W-s-30), y:rand(70,state.H*.52), w:s, h:s, life:5.5, vx:rand(-40,40), vy:rand(25,80), split:lv.attack === 'split', damage: lv.attack === 'final' ? 16 : 12, age:0 });
+      const y=rand(0,Math.max(1,catchLine()-s-90));
+      state.hazards.push({ x:rand(10,Math.max(11,state.W-s-10)), y, w:s, h:s, life:5.5, vx:rand(-20,20), vy:Math.min(rand(25,80),Math.max(10,(catchLine()-y-s)/2)), split:lv.attack === 'split', damage: lv.attack === 'final' ? 16 : 12, age:0 });
     }
     professor(level().attack === 'storm' ? 'Static wave! Tap the Grime swarm before it reaches the bins.' : 'Boss attack! Clear the Grime hazards to protect The Loop.', 'worried');
   }
@@ -512,19 +530,17 @@
     updateHUD();
   }
 
-  function handleCatch(item){
+  function handleCatch(item, destination=state.selectedBin){
+    if(!state.running || state.paused || state.completed) return;
     const cx = item.x + item.w/2;
-    const physicalBin = binAtX(cx);
-    const selected = state.bins[state.selectedBin];
-    const selectedMatchesPosition = physicalBin === state.selectedBin;
+    const selected = state.bins[destination];
     if(item.kind === 'power'){
-      if(selectedMatchesPosition){ activatePower(item.power); removeItem(item); return; }
-      badSort('Power-up missed the selected bin.'); removeItem(item); return;
+      activatePower(item.power); removeItem(item); return;
     }
     if(item.kind === 'grime'){
       badSort('Grime reached the bins. Tap it earlier during rush waves.'); removeItem(item); return;
     }
-    const correct = selectedMatchesPosition && selected && selected.cat === item.cat;
+    const correct = selected && selected.cat === item.cat;
     if(correct){
       state.sorted++; state.combo++; state.maxCombo = Math.max(state.maxCombo, state.combo); state.intensity = clamp(state.intensity + .08,0,1.4);
       const mult = state.doubleTime > 0 ? 2 : 1;
@@ -540,9 +556,7 @@
       else if(state.sorted % 6 === 0) professor(choose(FACTS[item.cat] || [level().fact]), 'neutral');
       if(state.boss) damageBoss(6 + Math.floor(state.combo/5), cx, item.y);
     } else {
-      const should = physicalBin >= 0 ? CATS[state.bins[physicalBin].cat].label : 'no bin';
-      const got = selected ? CATS[selected.cat].label : 'none';
-      badSort(`Real hit check failed: item landed over ${should}, but selected bin was ${got}.`);
+      badSort(`${CATS[item.cat].label} belongs in the ${CATS[item.cat].label} bin. Select that material label and try again.`);
     }
     removeItem(item);
     checkClear();
@@ -556,6 +570,7 @@
   }
 
   function removeItem(item){
+    if(state.selectedItem===item) state.selectedItem=null;
     const idx = state.items.indexOf(item);
     if(idx >= 0) state.items.splice(idx,1);
   }
@@ -569,7 +584,7 @@
     professor(msg, 'worried');
     if(state.lives <= 0){
       state.running = false; state.paused = true; stopMusic(); postScore('game_over');
-      setTimeout(rebootCheckpoint, 650);
+      state.rebootTimer=setTimeout(()=>{if(!state.running && !document.body.classList.contains("story-active"))rebootCheckpoint();},650);
     }
   }
 
@@ -578,7 +593,7 @@
   }
 
   function damageBoss(amount,x,y){
-    if(!state.boss) return;
+    if(!state.running || state.completed || !state.boss || state.boss.hp<=0) return;
     state.boss.hp = Math.max(0, state.boss.hp - amount);
     state.boss.hurt = .18;
     addParticles(x || state.boss.x, y || state.boss.y, chapter().color, 20);
@@ -589,16 +604,16 @@
       if(save.bossKills >= 3) unlockBadge('boss');
       professor(`${chapter().boss} is defeated. The hub is ready to heal!`, 'happy');
       sfx('bossDefeat');
-      checkClear(true);
+      checkClear();
     }
   }
 
-  function checkClear(force=false){
-    if(state.loop) return;
+  function checkClear(){
+    if(!state.running || state.completed || state.loop) return;
     const lv = level();
     const enough = state.sorted >= lv.target;
     const bossOk = !state.boss || state.boss.hp <= 0;
-    if(force || (enough && bossOk)) completeLevel();
+    if(enough && bossOk) completeLevel();
   }
 
   function starRating(){
@@ -609,6 +624,8 @@
   }
 
   function completeLevel(){
+    if(state.completed || !state.running) return;
+    state.completed=true; cancelPointer();
     state.running = false; state.paused = true; stopMusic();
     const stars = starRating();
     save.stars[state.levelIndex] = Math.max(Number(save.stars[state.levelIndex]||0), stars);
@@ -641,21 +658,23 @@
     state.doubleTime = Math.max(0, state.doubleTime - dt);
     state.slowTime = Math.max(0, state.slowTime - dt);
     const slowFactor = state.slowTime > 0 ? .48 : 1;
-    state.spawnTimer -= dt / slowFactor;
+    state.spawnTimer -= dt * slowFactor;
     if(state.spawnTimer <= 0){
       spawnItem();
       const loopBoost = state.loop ? Math.min(.22, state.time/420) : 0;
       state.spawnTimer = Math.max(.24, lv.spawn - loopBoost + rand(-.08,.08));
     }
     if(lv.power && Math.random() < dt*.035 && !state.power) spawnItem(true);
-    if(state.boss){
+    if(state.boss && state.boss.hp>0){
       state.bossTimer -= dt;
       if(state.bossTimer <= 0){ spawnBossHazards(); state.bossTimer = Math.max(1.7, 4.6 - level().chapter*.28 - (1-state.boss.hp/state.boss.max)*1.4); }
       state.boss.phase = state.boss.hp < state.boss.max*.33 ? 3 : state.boss.hp < state.boss.max*.66 ? 2 : 1;
       state.boss.hurt = Math.max(0, state.boss.hurt-dt);
     }
     for(let i=state.items.length-1;i>=0;i--){
+      if(!state.running) break;
       const it = state.items[i];
+      if(state.pointerId!==null && state.selectedItem===it) continue;
       it.age += dt; it.spin += dt;
       const wind = (lv.wind||0) * Math.sin(state.time*1.7 + it.age*.4);
       it.vx += wind * dt * .08;
@@ -665,6 +684,7 @@
       if(it.y + it.h >= catchLine()) handleCatch(it);
     }
     for(let i=state.hazards.length-1;i>=0;i--){
+      if(!state.running) break;
       const h = state.hazards[i];
       h.age += dt; h.life -= dt; h.x += h.vx*dt; h.y += h.vy*dt;
       if(h.y > catchLine()+20){ state.hazards.splice(i,1); badSort('A Grime hazard reached the sort line.'); continue; }
@@ -849,15 +869,16 @@
       ctx.fillStyle=cat.color; ctx.globalAlpha=.18; ctx.fillRect(b.x+8,b.y+b.h-12-(b.h-24)*clamp(state.sorted/target,0,1),b.w-16,(b.h-24)*clamp(state.sorted/target,0,1)); ctx.globalAlpha=1;
       const lidLift = b.lid>0 ? -14 : 0;
       ctx.fillStyle=cat.color; roundRect(b.x+8,b.y-10+lidLift,b.w-16,14,7,true,false);
-      drawImage(cat.icon,b.x+b.w/2-18,b.y+16,36,36,1);
-      ctx.fillStyle='#f4ffff'; ctx.font='900 12px system-ui'; ctx.textAlign='center'; ctx.fillText(cat.label,b.x+b.w/2,b.y+b.h-18);
-      if(selected){ ctx.fillStyle=cat.color; ctx.font='900 13px system-ui'; ctx.fillText('SELECTED', b.x+b.w/2, b.y-18); }
+      drawImage(cat.icon,b.x+b.w/2-14,b.y+5,28,28,1);
+      ctx.fillStyle='#f4ffff'; ctx.font='900 12px system-ui'; ctx.textAlign='center'; ctx.fillText(cat.label,b.x+b.w/2,b.y+b.h-8);
+      if(selected){ ctx.fillStyle=cat.color; ctx.font='900 13px system-ui'; ctx.fillText('✓', b.x+b.w-14, b.y+18); }
       ctx.restore();
     }
   }
 
   function drawItems(){
     for(const it of state.items){
+      if(it===state.selectedItem){ctx.save();ctx.strokeStyle='#ffe299';ctx.lineWidth=3;ctx.strokeRect(it.x-4,it.y-4,it.w+8,it.h+8);ctx.restore();}
       const bob = Math.sin(it.age*8)*2;
       if(it.kind === 'item') drawImage(CATS[it.cat].icon,it.x,it.y+bob,it.w,it.h,1,Math.sin(it.spin)*.08);
       if(it.kind === 'power') drawImage(POWERS[it.power].icon,it.x,it.y+bob,it.w,it.h,1,Math.sin(it.spin)*.12);
@@ -891,7 +912,7 @@
     const y = catchLine();
     ctx.save();
     ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.setLineDash([10,12]); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(state.W,y); ctx.stroke();
-    ctx.setLineDash([]); ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='800 12px system-ui'; ctx.textAlign='right'; ctx.fillText('REAL X-POSITION SORT LINE',state.W-14,y-8);
+    ctx.setLineDash([]); ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='800 12px system-ui'; ctx.textAlign='right'; ctx.fillText('SELECT THE MATCHING MATERIAL',state.W-14,y-8);
     ctx.restore();
   }
 
@@ -901,6 +922,7 @@
   }
 
   function draw(){
+    if(document.body.classList.contains("story-active")) return;
     const lv = level();
     const prog = progress();
     const grime = state.running ? 1 - prog : .35;
@@ -949,7 +971,6 @@
 
   function handlePointer(e){
     if(!state.running || state.paused) return;
-    ensureAudio();
     const p = pointerPos(e);
     for(let i=state.hazards.length-1;i>=0;i--){
       const h=state.hazards[i];
@@ -963,19 +984,49 @@
         return;
       }
     }
-    for(let i=0;i<state.bins.length;i++) if(hit(p.x,p.y,state.bins[i])) { state.selectedBin=i; addParticles(p.x,p.y,CATS[state.bins[i].cat].color,7); return; }
+    for(let i=state.items.length-1;i>=0;i--){
+      const it=state.items[i]; if(!hit(p.x,p.y,it)) continue;
+      if(it.kind==='grime'){removeItem(it);state.score+=30;damageBoss(3,it.x,it.y);sfx('bossHit');return;}
+      state.selectedItem=it;return;
+    }
+  }
+
+  function cancelPointer(){
+    const id=state.pointerId;state.pointerId=null;state.selectedItem=null;
+    if(id!==null && canvas.hasPointerCapture?.(id)) canvas.releasePointerCapture(id);
+  }
+  function pointerDown(e){
+    if(e.button!==0 || state.pointerId!==null || !state.running || state.paused) return;
+    state.pointerId=e.pointerId; canvas.setPointerCapture?.(e.pointerId); ensureAudio(); handlePointer(e);
+  }
+  function pointerMove(e){
+    if(e.pointerId!==state.pointerId || !state.selectedItem || state.paused) return;
+    if(!(e.buttons&1) && e.pointerType==='mouse') return;
+    const p=pointerPos(e),it=state.selectedItem;
+    it.x=clamp(p.x-it.w/2,0,state.W-it.w);it.y=clamp(p.y-it.h/2,0,state.H-it.h);
+  }
+  function pointerUp(e){
+    if(e.pointerId!==state.pointerId) return;
+    const p=pointerPos(e),bin=state.bins.findIndex(b=>hit(p.x,p.y,b));
+    if(!state.paused && bin>=0){state.selectedBin=bin;if(state.selectedItem)handleCatch(state.selectedItem,bin);}
+    const id=state.pointerId;state.pointerId=null;
+    if(canvas.hasPointerCapture?.(id))canvas.releasePointerCapture(id);
   }
 
   function loop(ts){
     const now = ts || performance.now();
     const dt = Math.min(.05, (now - (loop.last || now))/1000); loop.last = now;
-    update(dt); draw(); requestAnimationFrame(loop);
+    update(dt); if(state.running && !state.paused || state.redraw){draw();state.redraw=false;} requestAnimationFrame(loop);
   }
 
   function initEvents(){
     window.addEventListener('resize', resize);
     document.addEventListener('keydown', e => {
+      if(document.body.classList.contains('story-active') || /INPUT|SELECT|TEXTAREA/.test(e.target?.tagName || '')) return;
       const k=e.key.toLowerCase();
+      if(e.target?.tagName==='BUTTON' && (k==='enter'||k===' ')) return;
+      if(k==='enter' && state.running && !state.paused){const it=state.selectedItem || [...state.items].filter(i=>i.kind!=='grime').sort((a,b)=>b.y-a.y)[0];if(it)handleCatch(it);}
+      if(k.startsWith('arrow')) e.preventDefault();
       if(k==='arrowleft'||k==='a') nextBin(-1);
       if(k==='arrowright'||k==='d') nextBin(1);
       if(k===' '||k==='e') { e.preventDefault(); usePower(); }
@@ -987,14 +1038,14 @@
     ui.powerBtn.addEventListener('click',()=>{ensureAudio();usePower();});
     ui.pauseBtn.addEventListener('click',togglePause);
     ui.restartBtn.addEventListener('click',renderMap);
-    ui.muteBtn.addEventListener('click',()=>{ save.settings.music = save.settings.music > 0 ? 0 : .45; persist(); applySettings(); ui.muteBtn.textContent = save.settings.music>0?'Sound':'Muted'; if(save.settings.music>0 && state.running && !state.paused) startMusic(); else stopMusic(); });
+    ui.muteBtn.addEventListener('click',()=>{state.muted=!state.muted;if(state.audio.master)state.audio.master.gain.value=state.muted?0:.33;ui.muteBtn.textContent=state.muted?'Unmute':'Sound';if(!state.muted&&state.running&&!state.paused)startMusic();else stopMusic();});
     ui.startNext.addEventListener('click',startNext);
     ui.loopBtn.addEventListener('click',startLoop);
     ui.settingsBtn.addEventListener('click',()=>showOnly(ui.settingsScreen));
     ui.badgesBtn.addEventListener('click',renderBadges);
     const restartCampaignBtn = document.getElementById('restartCampaignBtn');
     if(restartCampaignBtn) restartCampaignBtn.addEventListener('click',()=>{
-      if(confirm('Restart the Recycle Rush 2.0 campaign from Level 1? This keeps settings but clears stars and badges.')){
+      if(confirm('Restart the 20-mission arcade campaign from Level 1? Story progress and settings are kept; arcade stars and badges will clear.')){
         save.unlockedLevel=0; save.stars={}; save.badges={}; save.categoryCounts={}; save.bossKills=0; save.loopUnlocked=false; persist(); state.score=0; renderMap();
       }
     });
@@ -1003,16 +1054,25 @@
     ui.sfxVolume.addEventListener('input',()=>{ save.settings.sfx = Number(ui.sfxVolume.value); persist(); applySettings(); });
     ui.reducedMotion.addEventListener('change',()=>{ save.settings.reducedMotion = ui.reducedMotion.checked; persist(); applySettings(); });
     ui.colorblindMode.addEventListener('change',()=>{ save.settings.colorblind = ui.colorblindMode.checked; persist(); applySettings(); });
-    canvas.addEventListener('pointerdown',handlePointer,{passive:true});
+    canvas.addEventListener('pointerdown',pointerDown);
+    canvas.addEventListener('pointermove',pointerMove);
+    canvas.addEventListener('pointerup',pointerUp);
+    canvas.addEventListener('pointercancel',cancelPointer);
+    canvas.addEventListener('lostpointercapture',()=>{if(state.pointerId!==null)cancelPointer();});
+    document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.running&&!state.paused)togglePause();});
+    window.addEventListener('blur',()=>{cancelPointer();if(state.running&&!state.paused)togglePause();});
   }
 
   function togglePause(){
     if(!state.running) return;
-    state.paused = !state.paused;
+    cancelPointer(); state.redraw=true; state.paused = !state.paused; ui.pauseBtn.textContent=state.paused?"Resume":"Pause";
     if(state.paused){ stopMusic(); professor('Paused. The Loop will wait for Circuit.', 'neutral'); }
     else { startMusic(); professor(level().fact, 'neutral'); }
   }
 
+  window.RecycleArcade={preferences:()=>({...save.settings}),setPreferences(patch){Object.assign(save.settings,patch);persist();applySettings();}};
+  document.addEventListener('recycle:story-open',()=>{state.running=false;state.paused=true;stopMusic();cancelPointer();clearTimeout(state.rebootTimer);});
+  document.addEventListener('recycle:story-exit',renderMap);
   loadAssets().then(() => {
     applySettings(); initEvents(); resize(); renderMap(); requestAnimationFrame(loop);
   });

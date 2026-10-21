@@ -108,7 +108,7 @@ export const games = [
   },
   {
     "slug": "recycle-rush",
-    "title": "Recycle Rush",
+    "title": "Recycle Rush: Restore Verdale",
     "href": "/games/recycle-rush/index.html",
     "thumbnail": "/games/recycle-rush/thumb.png",
     "category": "Arcade",

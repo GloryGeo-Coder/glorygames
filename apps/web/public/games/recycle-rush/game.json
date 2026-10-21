@@ -1,6 +1,6 @@
 {
-  "title": "Recycle Rush",
-  "description": "Educational sorting game with polished HD graphics, animated gameplay, 3D-style waste item art, sound effects, background music, and eight difficulty-progressive levels.",
+  "title": "Recycle Rush: Restore Verdale",
+  "description": "Restore a community recovery station with Circuit in five untimed story missions featuring preparation, reuse, repair, local acceptance rules, animated characters, saved checkpoints and original music. Includes the 20-mission arcade campaign and endless Loop Mode.",
   "tags": [
     "education",
     "environment",
@@ -13,20 +13,20 @@
   ],
   "controls": [
     {
-      "key": "Swipe Left / Right",
-      "action": "Change the active recycling bin"
+      "key": "Tap item, then destination",
+      "action": "Inspect and route an item in story missions; prepare it first when needed."
     },
     {
-      "key": "Tap bin",
-      "action": "Jump directly to a visible bin"
+      "key": "Arcade: tap or drag item to bin",
+      "action": "Choose its material destination. A/D or arrows selects a bin; Enter routes the lowest item."
     },
     {
-      "key": "Tap orange hazard",
-      "action": "Remove mixed-waste contamination"
+      "key": "Tap Grime / Space",
+      "action": "Clear arcade hazards / activate the collected arcade power-up."
     },
     {
-      "key": "Pause / Restart / Sound",
-      "action": "Control the run"
+      "key": "Pause / Menu",
+      "action": "Pause, adjust music and effects, retry the current story area or return to the map."
     }
   ],
   "features": {
@@ -38,7 +38,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "levels": 8,
+    "levels": 25,
     "educational": true,
     "missions": true,
     "backgrounds": [
@@ -50,7 +50,14 @@
       "bg-landfill-diversion.png",
       "bg-ewaste-dropoff.png",
       "bg-circular-challenge.png"
-    ]
+    ],
+    "storyMissions": 5,
+    "arcadeMissions": 20,
+    "storyAreasPerMission": 3,
+    "storyTasksPerMission": 18,
+    "savedStoryCheckpoints": true,
+    "untimedStory": true,
+    "originalStoryMusicTracks": 5
   },
-  "version": "1.1.0"
+  "version": "3.0.0"
 }
