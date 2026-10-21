@@ -1,13 +1,54 @@
 (() => {
   'use strict';
 
-  const GAME_SLUG = 'cyber-shield-academy-terminal';
-  const BEST_KEY = 'csa_terminal_best_v1';
+  const GAME_SLUG = 'cyber-shield-academy';
 
   const $ = sel => document.querySelector(sel);
   const terminalOutput = $('#terminalOutput');
   const form = $('#terminalForm');
   const input = $('#cmdInput');
+  const compactLayout = window.matchMedia('(max-width: 1160px)');
+  const panelTabs = [...document.querySelectorAll('[data-panel]')];
+  const panels = [...document.querySelectorAll('[role="tabpanel"]')];
+  let selectedPanel = 'terminal';
+
+  function selectPanel(name, focusTab = false) {
+    selectedPanel = name;
+    panelTabs.forEach(tab => {
+      const active = tab.dataset.panel === name;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      if (active && focusTab) tab.focus();
+    });
+    panels.forEach(panel => { panel.hidden = compactLayout.matches && panel.id !== `panel-${name}`; });
+  }
+
+  function focusCommand() {
+    input.focus({ preventScroll: true });
+  }
+
+  function draftCommand(command) {
+    selectPanel('terminal');
+    input.value = command;
+    focusCommand();
+  }
+
+  function recallCommand(direction) {
+    state.historyIndex = Math.max(0, Math.min(state.history.length, state.historyIndex + direction));
+    input.value = state.history[state.historyIndex] || '';
+  }
+
+  function resizeAcademy() {
+    // Follow the visible area when the software keyboard or browser bars resize it.
+    const height = window.visualViewport?.height || window.innerHeight;
+    document.documentElement.style.setProperty('--academy-height', `${height}px`);
+    document.documentElement.setAttribute('data-short-viewport', String(height <= 500));
+  }
+
+  function moveFullscreenControl() {
+    document.querySelectorAll('#startOverlay .wga-tab-fullscreen, #startOverlay .wga-tab-status')
+      .forEach(control => $('#caseMenu').appendChild(control));
+  }
 
   const ui = {
     score: $('#scoreValue'),
@@ -245,6 +286,7 @@
       commandCount: 0,
       lastCommand: '',
       pendingReport: false,
+      caseClosed: false,
       gameOver: false
     };
   }
@@ -310,7 +352,7 @@
   function line(text = '', cls = '') {
     const div = document.createElement('div');
     div.className = `line ${cls}`.trim();
-    div.textContent = text;
+    div.textContent = String(text).replace(/\\n/g, '\n');
     terminalOutput.appendChild(div);
     terminalOutput.scrollTop = terminalOutput.scrollHeight;
   }
@@ -373,11 +415,14 @@
 
   function startGame() {
     state.started = true;
+    $('#app').inert = false;
+    selectPanel('terminal');
+    moveFullscreenControl();
     ui.startOverlay.classList.remove('active');
     banner();
     briefing();
     startMusic();
-    input.focus();
+    if (window.matchMedia('(pointer: fine)').matches) focusCommand();
     syncUI();
   }
 
@@ -394,6 +439,7 @@
     state.defenses.local = { firewall: 0, proxy: 0, ports: [], scanned: true, probed: true };
     state.unlocked = ['local', 'atlas-gateway'];
 
+    selectPanel('terminal');
     banner();
     syncUI();
   }
@@ -611,7 +657,7 @@
       line('LogAudit summary:', 'story');
       line('  suspicious scheduler: orchid', 'warn');
       line('  recommended action: preserve logs, lock risky token, write incident report', 'ok');
-      mark('run_logaudit', 120);
+      if (state.connected === 'orchid-relay') mark('run_logaudit', 120);
       return;
     }
 
@@ -701,6 +747,9 @@
     if (!file) return line('collect: missing file', 'bad');
     if (!fileExists(file)) return line(`collect: ${file}: no such file`, 'bad');
     const clean = pathNormalize(file);
+    if (state.connected === 'cipher-bay' && clean === '/decoded_note.txt' && !state.completed.run_crypto) {
+      return line('collect: decode the note with CryptoLens before collecting it.', 'warn');
+    }
     const item = `${state.connected}:${clean}`;
     if (!state.evidence.includes(item)) state.evidence.push(item);
     line(`Collected training evidence: ${item}`, 'ok');
@@ -723,9 +772,14 @@
 
   function submit(args) {
     if (args[0] !== 'report') return line('submit: usage submit report', 'bad');
-    if (!state.pendingReport && state.levelIndex < chapters.length - 1) return line('submit: report is not ready yet.', 'warn');
+    if (state.caseClosed) return line('Case already closed. Your completion reward has been recorded.', 'dim');
+    const investigationComplete = chapters.every(ch => ch.objectives.every(([key]) => key === 'submit_case' || state.completed[key]));
+    if (!state.pendingReport || !investigationComplete || state.connected !== 'root-of-trust') {
+      return line('submit: complete the investigation and compile the report with ReportKit first.', 'warn');
+    }
+    state.caseClosed = true;
     line('CASE CLOSED: Bit exposed a governance weakness. Your recommendations strengthened change control, evidence handling, and least privilege.', 'ok');
-    line('Final score submitted to portal.', 'story');
+    line('Case complete. Your score is shown above.', 'story');
     state.score += 500;
     mark('submit_case', 250);
     postScore('game_won');
@@ -738,7 +792,7 @@
   }
 
   function tickTrace() {
-    if (!state.started || state.gameOver || state.connected !== 'orchid-relay') return;
+    if (!state.started || state.gameOver || document.hidden || state.connected !== 'orchid-relay') return;
     if (state.completed.lock_token) return;
     state.trace = Math.min(100, state.trace + 1);
     if (state.trace >= 100) {
@@ -763,7 +817,8 @@
 
   function execute(raw) {
     const clean = raw.trim();
-    if (!clean) return;
+    if (!clean || !state.started) return;
+    if (state.gameOver) return line('Training locked. Use Case controls → Reset Case to try again.', 'warn');
     state.commandCount++;
     state.lastCommand = clean;
     state.history.push(clean);
@@ -820,6 +875,8 @@
     ui.prompt.textContent = promptText();
 
     const ch = currentChapter();
+    $('#missionTitle').textContent = `${ch.id} / ${chapters.length} · ${ch.title}`;
+    ui.startBtn.textContent = state.started ? 'Briefing' : 'Start Training';
     ui.mission.textContent = ch.mission;
     ui.principle.textContent = ch.principle;
 
@@ -838,50 +895,68 @@
   }
 
   function renderMap() {
+    const focusedHost = document.activeElement?.dataset.host;
     ui.map.innerHTML = '';
-    const positions = [
-      [8, 12], [38, 11], [68, 12],
-      [19, 45], [50, 43], [79, 45],
-      [34, 74], [66, 74]
-    ];
-    chapters.forEach((ch, i) => {
-      const div = document.createElement('div');
-      div.className = 'node';
-      if (state.unlocked.includes(ch.host)) div.classList.add('unlocked'); else div.classList.add('locked');
-      if (state.connected === ch.host) div.classList.add('connected');
-      if (ch.objectives.every(([key]) => state.completed[key])) div.classList.add('rooted');
-      div.style.left = `${positions[i][0]}%`;
-      div.style.top = `${positions[i][1]}%`;
-      div.textContent = ch.host.replace('-', '\n');
-      div.title = `${ch.title} — ${ch.host}`;
-      div.addEventListener('click', () => {
-        if (state.unlocked.includes(ch.host)) execute(`connect ${ch.host}`);
+    chapters.forEach(ch => {
+      const button = document.createElement('button');
+      const unlocked = state.unlocked.includes(ch.host);
+      const complete = ch.objectives.every(([key]) => state.completed[key]);
+      button.type = 'button';
+      button.className = `node ${unlocked ? 'unlocked' : 'locked'}`;
+      button.dataset.host = ch.host;
+      button.disabled = !unlocked;
+      if (state.connected === ch.host) button.classList.add('connected');
+      if (complete) button.classList.add('rooted');
+      button.setAttribute('aria-label', `${ch.title}: ${ch.host}, ${complete ? 'complete' : unlocked ? 'available' : 'locked'}`);
+      button.setAttribute('aria-pressed', String(state.connected === ch.host));
+      button.textContent = ch.host;
+      button.title = `${ch.title} — ${ch.host}`;
+      button.addEventListener('click', () => {
+        execute(`connect ${ch.host}`);
+        selectPanel('terminal');
+        if (compactLayout.matches) terminalOutput.focus({ preventScroll: true });
       });
-      ui.map.appendChild(div);
+      ui.map.appendChild(button);
+      if (focusedHost === ch.host) button.focus({ preventScroll: true });
     });
   }
 
   function renderFiles() {
-    const fs = currentFS();
-    const dirs = Object.keys(fs).sort();
     ui.files.innerHTML = '';
-    dirs.slice(0, 7).forEach(dir => {
-      const code = document.createElement('code');
-      const names = Object.keys(fs[dir]).slice(0, 4).join(', ');
-      code.textContent = `${dir}: ${names}`;
-      ui.files.appendChild(code);
+    Object.entries(currentFS()).sort(([a], [b]) => a.localeCompare(b)).forEach(([dir, files]) => {
+      const heading = document.createElement('h3');
+      heading.textContent = dir;
+      ui.files.appendChild(heading);
+      Object.keys(files).forEach(name => {
+        const button = document.createElement('button');
+        const file = `${dir.replace(/\/$/, '')}/${name}`;
+        button.type = 'button';
+        button.textContent = name;
+        button.title = `Insert cat ${file}`;
+        button.setAttribute('aria-label', `Read ${file}: insert command`);
+        button.addEventListener('click', () => draftCommand(`cat ${file}`));
+        ui.files.appendChild(button);
+      });
     });
   }
 
   function renderTools() {
     ui.tools.innerHTML = '';
     Object.values(TOOLS).forEach(tool => {
-      const code = document.createElement('code');
+      const button = document.createElement('button');
       const ready = tool.unlock <= currentChapter().id;
-      code.className = ready ? 'ready' : 'locked';
-      code.textContent = `${ready ? '✓' : '·'} ${tool.label}`;
-      code.title = tool.desc;
-      ui.tools.appendChild(code);
+      button.type = 'button';
+      button.className = ready ? 'ready' : 'locked';
+      button.disabled = !ready;
+      button.textContent = `${ready ? '✓' : '·'} ${tool.label}`;
+      const description = document.createElement('small');
+      description.textContent = ready ? tool.desc + ' Tap to insert command.' : `Unlocks in chapter ${tool.unlock}.`;
+      button.appendChild(description);
+      button.addEventListener('click', () => {
+        const args = { ProxyBalance: ' alpha beta gamma', CryptoLens: ' cipher.txt', HashCheck: ' kernel.sig' };
+        draftCommand(`run ${tool.label}${args[tool.label] || ''}`);
+      });
+      ui.tools.appendChild(button);
     });
   }
 
@@ -908,7 +983,19 @@
     const value = input.value;
     const parts = value.split(/\s+/);
     const last = parts[parts.length - 1] || '';
-    const match = suggestions(last)[0];
+    const command = parts[0].toLowerCase();
+    let candidates = allTokens();
+    if (parts.length > 1) {
+      const files = Object.entries(currentFS()).flatMap(([dir, entries]) =>
+        Object.keys(entries).flatMap(name => [name, `${dir.replace(/\/$/, '')}/${name}`]));
+      candidates = files;
+      if (['connect', 'scan', 'probe'].includes(command)) candidates = state.unlocked;
+      else if (command === 'run' && parts.length === 2) candidates = Object.keys(TOOLS).filter(canUseTool);
+      else if (command === 'cd') candidates = Object.keys(currentFS());
+      else if (command === 'submit') candidates = ['report'];
+      else if (command === 'run' && parts[1]?.toLowerCase() === 'proxybalance') candidates = ['alpha', 'beta', 'gamma'];
+    }
+    const match = candidates.find(token => token.toLowerCase().startsWith(last.toLowerCase()));
     if (!match) return;
     parts[parts.length - 1] = match;
     input.value = parts.join(' ') + ' ';
@@ -994,33 +1081,55 @@
     });
 
     input.addEventListener('keydown', e => {
-      if (e.key === 'Tab') {
+      if (e.key === 'Tab' && !e.shiftKey) {
         e.preventDefault();
         autocomplete();
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        state.historyIndex = Math.max(0, state.historyIndex - 1);
-        input.value = state.history[state.historyIndex] || '';
+        recallCommand(-1);
       }
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        state.historyIndex = Math.min(state.history.length, state.historyIndex + 1);
-        input.value = state.history[state.historyIndex] || '';
+        recallCommand(1);
       }
     });
 
     document.querySelectorAll('[data-cmd]').forEach(btn => {
       btn.addEventListener('click', () => {
-        input.value = btn.dataset.cmd;
-        input.focus();
+        draftCommand(btn.dataset.cmd);
       });
     });
 
-    ui.startBtn.addEventListener('click', startGame);
+    panelTabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectPanel(tab.dataset.panel));
+      tab.addEventListener('keydown', event => {
+        let next;
+        if (event.key === 'ArrowRight') next = (index + 1) % panelTabs.length;
+        if (event.key === 'ArrowLeft') next = (index + panelTabs.length - 1) % panelTabs.length;
+        if (event.key === 'Home') next = 0;
+        if (event.key === 'End') next = panelTabs.length - 1;
+        if (next !== undefined) { event.preventDefault(); selectPanel(panelTabs[next].dataset.panel, true); }
+      });
+    });
+    compactLayout.addEventListener('change', () => selectPanel(selectedPanel));
+    window.addEventListener('resize', resizeAcademy);
+    window.visualViewport?.addEventListener('resize', resizeAcademy);
+    resizeAcademy();
+    $('#completeBtn').addEventListener('click', () => { autocomplete(); focusCommand(); });
+    $('#previousBtn').addEventListener('click', () => { recallCommand(-1); focusCommand(); });
+    $('#nextBtn').addEventListener('click', () => { recallCommand(1); focusCommand(); });
+    ui.startBtn.addEventListener('click', () => {
+      if (!state.started) startGame();
+      else { selectPanel('mission'); $('#panel-mission').focus({ preventScroll: true }); }
+    });
     ui.overlayStartBtn.addEventListener('click', startGame);
-    ui.hintBtn.addEventListener('click', hint);
-    ui.resetBtn.addEventListener('click', () => { setup(); startGame(); });
+    ui.hintBtn.addEventListener('click', () => { selectPanel('terminal'); hint(); });
+    ui.resetBtn.addEventListener('click', () => {
+      if (!window.confirm('Reset Case BIT? This clears the current investigation and score.')) return;
+      const muted = state.muted;
+      setup(); state.muted = muted; $('#caseActions').open = false; startGame();
+    });
     ui.submitBtn.addEventListener('click', () => postScore('manual_submit'));
     ui.muteBtn.addEventListener('click', () => {
       state.muted = !state.muted;

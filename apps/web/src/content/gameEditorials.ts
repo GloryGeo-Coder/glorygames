@@ -307,8 +307,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Use Tab to complete available commands, filenames, hosts and tools; use Up and Down to revisit command history."
     ],
     "mobile": [
-      "Use the game's terminal interface and the device keyboard; available touch-friendly controls depend on the current mission UI.",
-      "Because command input is central to the experience, a larger screen and physical keyboard may be more comfortable."
+      "Switch between Terminal, Mission, Network, Files and Toolkit using the panel buttons. Tap files or tools to insert a command, then press run.",
+      "Use Complete for autocomplete and Previous / Next for command history. The layout adjusts to portrait, landscape and the on-screen keyboard."
     ],
     "systems": [
       {

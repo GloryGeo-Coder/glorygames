@@ -1,9 +1,9 @@
 {
   "title": "Cyber Shield Academy: Terminal Ops",
-  "slug": "cyber-shield-academy-terminal",
+  "slug": "cyber-shield-academy",
   "entry": "index.html",
   "thumbnail": "thumb.png",
-  "orientation": "landscape",
+  "orientation": "any",
   "category": "Educational",
   "description": "A safe, simulated terminal-based cybersecurity game where players learn UNIX-like commands, defensive investigation, evidence handling, integrity checks, incident response and ethical hacking principles while solving Case BIT.",
   "tags": [
@@ -28,6 +28,10 @@
     {
       "key": "Arrow Up / Down",
       "action": "Command history"
+    },
+    {
+      "key": "Touch",
+      "action": "Switch panels, tap files and tools to insert commands; Complete and Previous / Next replace keyboard shortcuts"
     }
   ],
   "features": {
@@ -54,5 +58,5 @@
       "evidence reporting"
     ]
   },
-  "version": "3.0.0-terminal-rebuild"
+  "version": "3.1.0"
 }
