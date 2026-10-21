@@ -8,16 +8,8 @@ const os = require('node:os');
 const root = path.resolve(__dirname, '../public');
 const output = process.env.CYBER_QA_OUTPUT || fs.mkdtempSync(path.join(os.tmpdir(), 'cyber-shield-qa-'));
 fs.mkdirSync(output, { recursive: true });
-const campaign = [
-  ['ls', 'cat briefing.txt', 'cat case_bit.txt'],
-  ['connect atlas-gateway', 'scan atlas-gateway', 'probe atlas-gateway', 'run PortPatch'],
-  ['connect archive-node', 'scan archive-node', 'cat /logs/access.log', 'preserve /logs/access.log'],
-  ['connect kernel-vault', 'hash kernel.sig', 'analyze warning.memo', 'collect warning.memo'],
-  ['connect proxy-ring', 'scan proxy-ring', 'probe proxy-ring', 'run ProxyBalance alpha beta gamma'],
-  ['connect cipher-bay', 'cat cipher.txt', 'run CryptoLens cipher.txt', 'collect decoded_note.txt'],
-  ['connect orchid-relay', 'run LogAudit', 'lock token-orchid', 'preserve /logs/session.log'],
-  ['connect root-of-trust', 'cat final.txt', 'run ReportKit', 'submit report']
-];
+const { campaign } = require('./helpers/cyber-runtime.cjs');
+const newChapters = require('../public/games/cyber-shield-academy/cyber-campaign.js').chapters;
 const server = http.createServer((req, res) => {
   const route = decodeURIComponent(req.url.split('?')[0]);
   const file = path.resolve(root, '.' + route, route.endsWith('/') ? 'index.html' : '');
@@ -58,7 +50,7 @@ const server = http.createServer((req, res) => {
       await page.goto(`http://127.0.0.1:${server.address().port}/games/cyber-shield-academy/?scores=0`);
       await page.waitForFunction(() => window.__wgaGameTab);
       await page.screenshot({ path: path.join(output, `${width}-${height}-welcome.png`) });
-      await bounds('#overlayStartBtn');
+      await bounds('#overlayStartBtn'); await bounds('#overlayPracticeBtn');
       await activate('#overlayStartBtn');
       await noOverflow(); await bounds('#cmdInput'); await bounds('#terminalForm button');
       assert.equal(await page.locator('#cmdInput').evaluate(el => getComputedStyle(el).fontSize), '16px');
@@ -121,9 +113,50 @@ const server = http.createServer((req, res) => {
       if (completeCase) {
         for (const [index, commands] of campaign.entries()) {
           assert.equal(await page.locator('#levelValue').textContent(), String(index + 1));
-          for (const value of commands) await command(value);
+          if (index === 6 && width === 390) {
+            const baseline = await page.locator('#scoreValue').textContent();
+            await command('connect orchid-relay'); await command('run LogAudit');
+            const partial = await page.locator('#scoreValue').textContent();
+            await page.reload(); await page.waitForFunction(() => window.__wgaGameTab);
+            assert.equal(await page.locator('#overlayStartBtn').textContent(), 'Continue Investigation');
+            await activate('#overlayStartBtn'); assert.equal(await page.locator('#scoreValue').textContent(), partial);
+            await activate('#caseActions summary');
+            page.once('dialog', dialog => dialog.accept()); await activate('#retryBtn');
+            assert.equal(await page.locator('#scoreValue').textContent(), baseline);
+            assert.equal(await page.locator('#levelValue').textContent(), '7');
+            await activate('#caseActions summary'); await page.locator('#practiceSelect').selectOption('6');
+            await activate('#startPracticeBtn'); assert.match(await page.locator('#sessionLabel').textContent(), /Untimed/);
+            const bridgeBefore = await page.evaluate(() => window.__wgaGameTab.scoreBridge.state().best);
+            for (const value of campaign[6]) await command(value);
+            assert.equal(await page.locator('#levelValue').textContent(), '7');
+            assert.equal(await page.locator('#traceValue').textContent(), 'Off');
+            assert.equal(await page.evaluate(() => window.__wgaGameTab.scoreBridge.state().best), bridgeBefore);
+            await page.reload(); await page.waitForFunction(() => window.__wgaGameTab); await activate('#overlayStartBtn');
+            assert.match(await page.locator('#sessionLabel').textContent(), /Untimed/);
+            await activate('#caseActions summary'); await activate('#returnCampaignBtn');
+            assert.equal(await page.locator('#scoreValue').textContent(), baseline);
+          }
+          for (const value of commands) {
+            if (value.startsWith('decide ')) {
+              const chapter = newChapters.find(c => c.id === index + 1);
+              const label = chapter.decision.choices.find(([id]) => id === value.slice(7))[1];
+              if (compact) await activate('#tab-mission');
+              const choice = page.getByRole('button', { name: label, exact: true });
+              if (touch) await choice.tap(); else await choice.click();
+              if (compact) await activate('#tab-terminal');
+            } else await command(value);
+          }
+          if (index === 11 && width === 1440) {
+            const score = await page.locator('#scoreValue').textContent();
+            await page.reload(); await page.waitForFunction(() => window.__wgaGameTab); await activate('#overlayStartBtn');
+            assert.equal(await page.locator('#scoreValue').textContent(), score);
+            assert.equal(await page.locator('#levelValue').textContent(), '13');
+          }
+          if (index === 8 && width === 390) {
+            await activate('#tab-mission'); await page.screenshot({ path: path.join(output, '390-beacon-mission.png') }); await activate('#tab-terminal');
+          }
         }
-        assert.match(await page.locator('#terminalOutput').textContent(), /CASE CLOSED/);
+        assert.match(await page.locator('#terminalOutput').textContent(), /ACADEMY COMPLETE/);
         const score = await page.locator('#scoreValue').textContent();
         await command('submit report'); assert.equal(await page.locator('#scoreValue').textContent(), score);
         assert.equal(await page.evaluate(() => window.__wgaGameTab.scoreBridge.state().best), Number(score));
@@ -133,6 +166,8 @@ const server = http.createServer((req, res) => {
         page.once('dialog', dialog => dialog.accept()); await activate('#resetBtn');
         assert.equal(await page.locator('#levelValue').textContent(), '1');
         assert.equal(await page.locator('#scoreValue').textContent(), '0');
+        await page.reload(); await page.waitForFunction(() => window.__wgaGameTab); await activate('#overlayStartBtn');
+        assert.equal(await page.locator('#levelValue').textContent(), '1');
       }
       await noOverflow(); await page.screenshot({ path: path.join(output, `${width}-${height}-play.png`) });
       assert.deepEqual(errors, [], `${width}x${height}: browser errors`);

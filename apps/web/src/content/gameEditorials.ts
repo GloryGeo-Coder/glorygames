@@ -286,21 +286,21 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "cyber-shield-academy": {
     "category": "Educational",
-    "summary": "Solve a fictional defensive cybersecurity case using a simulated terminal, evidence handling and responsible investigation.",
+    "summary": "Solve 16 fictional cybersecurity missions across Case BIT and the Beacon response, with saved checkpoints, evidence-led choices and untimed practice.",
     "overview": [
       "Cyber Shield Academy: Terminal Ops is a learning-focused cybersecurity adventure built around a simulated command-line interface. Instead of clicking an attack button, players examine information, type commands and work through a fictional case using principles such as authorisation, careful evidence handling and system integrity.",
       "The environment is intentionally simulated. Its terminals, files, hosts and investigation tools are part of the game and do not grant access to external systems. That makes the experience a way to practise structured reasoning and safe defensive habits without handling a real network."
     ],
     "story": [
-      "The player's assignment is called Case BIT. As a trainee investigator, you work through a series of eight cases or stages that involve interpreting technical clues and deciding how to proceed.",
-      "The narrative connects terminal skills to responsible incident response: understand the scope of a task, preserve relevant information, verify rather than guess and report findings. The game introduces a network map, file-system exploration and an end-of-case reporting context."
+      "Your first eight missions investigate Case BIT and the disappearance of ShieldOS creator Bit. The next eight bring Bit back as your adviser while you protect the fictional Beacon community network.",
+      "Beacon investigations cover suspicious email, MFA recovery, role permissions, backup restoration, update planning, network containment, privacy and a final incident response. Compare source files, use simulated review tools and choose actions that protect legitimate services."
     ],
     "howToPlay": [
       "Read the objective and scope of the current training stage before entering commands.",
       "Use the simulated terminal to examine the files, hosts and tools available in that mission.",
       "Explore carefully; use tab completion and command history to avoid repeating long entries.",
       "Compare clues, check integrity where requested and preserve evidence as part of the fictional case.",
-      "Complete the task according to the mission's defensive objective rather than making unrelated changes."
+      "Use the Mission panel to choose an evidence-led response. Hints reveal a principle, then the next objective, then a command. Retry Chapter restores its starting checkpoint while retaining earlier evidence."
     ],
     "desktop": [
       "Type commands using the keyboard inside the simulated terminal.",
@@ -325,15 +325,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Eight training stages take you deeper into Case BIT. Each one introduces more of the simulated terminal environment, from basic commands and files to investigation choices and responsible evidence handling.",
-      "A successful investigation is about following the task and interpreting what you find. Guessing lots of commands is less helpful than reading instructions and connecting evidence."
+      "Sixteen missions unlock in order. Close Case BIT after mission eight, then build a Beacon response using evidence from the following investigations. Progress, evidence, command history and chapter checkpoints save on this browser when browser storage is available.",
+      "Untimed practice revisits any unlocked chapter without a countdown or leaderboard submissions. Practice progress is saved separately; Return to Campaign restores your campaign investigation. The learning review records completed skills, hint use and choices to revisit."
     ],
     "tips": [
       "Read a task's allowed scope before exploring any part of the simulation.",
       "Use Tab completion when unsure of a filename rather than relying on memory.",
       "Check available evidence before forming an explanation of what happened.",
       "Avoid changing simulated evidence unless the mission explicitly asks you to.",
-      "Summarise what you observed in your own words after each stage; explanation builds understanding."
+      "Use Learning Review after a chapter and untimed practice for skills you want to revisit. If a containment timer expires, retry that chapter instead of restarting the whole investigation."
     ],
     "learning": [
       "The game introduces the language of Unix-like terminals, digital evidence and incident response.",
@@ -350,7 +350,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "What is Case BIT?",
-        "a": "Case BIT is the fictional investigation that gives the training missions a shared narrative."
+        "a": "Case BIT is the first eight-mission investigation. It leads into eight Beacon community-network investigations with Bit as your adviser."
+      },
+      {
+        "q": "Will refreshing lose my progress?",
+        "a": "Progress saves locally on this browser after you start and after commands. Continue Investigation restores your evidence, objectives and chapter state. If browser storage is unavailable, the game displays a notice and you can keep playing in the current tab."
+      },
+      {
+        "q": "Does untimed practice affect my campaign or leaderboard?",
+        "a": "No. Practice has a separate save and no leaderboard submissions. It is limited to unlocked chapters and pauses the containment countdown. Return to Campaign resumes your campaign save."
       }
     ]
   },
