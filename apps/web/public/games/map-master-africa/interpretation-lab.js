@@ -26,7 +26,7 @@
  function inspect(ids,q){return Array.isArray(ids)&&ids.length===2&&new Set(ids).size===2&&q.answer.every(id=>ids.includes(id))&&distance(ids,q.surface||'topo')!==null;}
  function nextFeature(id,dx,dy,mode){const list=features(mode),p=list.find(n=>n.id===id);if(!p)return null;return list.filter(n=>(n.x-p.x)*dx+(n.y-p.y)*dy>0).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0]?.id||id;}
  function painter(svg){const doc=svg.ownerDocument;function add(tag,attrs={},parent=svg){const n=doc.createElementNS('http://www.w3.org/2000/svg',tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,String(v));parent.appendChild(n);return n;}return {add,text(value,x,y,attrs={},parent=svg){const n=add('text',{x,y,...attrs},parent);n.textContent=value;return n;}};}
- function draw(svg,{mode='topo',selected=null,measure=[],radius:targetRadius}={}){
+ function draw(svg,{mode='topo',selected=null,measure=[],radius:targetRadius,transect}={}){
   const{add,text}=painter(svg);svg.replaceChildren();
   if(mode==='photo'){
    add('rect',{x:-35,y:-35,width:1406,height:762,fill:'#d6e3d8'});
@@ -46,6 +46,7 @@
    add('path',{d:'M100,2820V2890M100,2855H2100M1100,2820V2890M2100,2820V2890',stroke:'#244f43','stroke-width':2,'vector-effect':'non-scaling-stroke'});
    for(const[v,x]of [['0',100],['1000',1100],['2000 m',2100]])text(v,x,3070,{class:'terrain-note','text-anchor':'middle'});
   }
+  if(mode==='topo'&&Array.isArray(transect)&&transect.length===2&&transect.every(p=>Array.isArray(p)&&p.length===2&&[p[0],p[1]].every(Number.isFinite))){add('path',{d:`M${transect[0][0]},${transect[0][1]}L${transect[1][0]},${transect[1][1]}`,stroke:'#8d5b98','stroke-width':3,'stroke-dasharray':'8 5','vector-effect':'non-scaling-stroke','pointer-events':'none','data-transect':'X-Z'});for(const[i,label]of ['X','Z'].entries())text(label,transect[i][0],transect[i][1]-Math.max(110,2*(targetRadius||60)),{class:'terrain-note','text-anchor':'middle'});}
   const radius=targetRadius||(mode==='photo'?14:60);
   for(const n of features(mode)){const chosen=n.id===selected||measure.includes(n.id),group=add('g',{'data-feature':n.id,role:'button',tabindex:0,'aria-label':n.id+' · '+n.name});add('circle',{cx:n.x,cy:n.y,r:radius,fill:chosen?'#e8b342':'#fffdf1',stroke:'#244f43','stroke-width':2,'vector-effect':'non-scaling-stroke'},group);text(n.id,n.x,n.y,{class:'terrain-letter','text-anchor':'middle','dominant-baseline':'middle'},group);}
   const layer=add('g',{id:'atlasMarkers','pointer-events':'none'});

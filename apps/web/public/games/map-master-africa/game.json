@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Explore Grades 4\u20139 geography through 68 missions and 408 tasks. Interpret contours and real historical imagery, measure a metric plan, compare development evidence and investigate erosion, food systems and sustainable resource use. The curriculum journey continues towards Grade 10.",
+  "description": "Practise geography through all seven Grades 4\u201310 paths: 84 missions and 504 tasks. Explore world and South African atlases, exact coordinates, terrain profiles, compass bearings, GIS, atmosphere, population and water investigations. Original topic practice with saved progress.",
   "tags": [
     "geography",
     "world",
@@ -43,8 +43,8 @@
   ],
   "features": {
     "mobileFirst": true,
-    "levels": 68,
-    "tasks": 408,
+    "levels": 84,
+    "tasks": 504,
     "worldAtlas": true,
     "mappedCountriesAndTerritories": 242,
     "missionTypes": [
@@ -59,7 +59,8 @@
       "dm-coordinate",
       "number",
       "map-feature",
-      "map-measure"
+      "map-measure",
+      "dms-coordinate"
     ],
     "persistentLearningProgress": true,
     "passportBadges": true,
@@ -87,7 +88,8 @@
       6,
       7,
       8,
-      9
+      9,
+      10
     ],
     "independentGradePaths": true,
     "evidenceInvestigations": true,
@@ -104,7 +106,12 @@
     "contourInterpretation": true,
     "metricMeasurement": true,
     "historicalOrthoimagery": true,
-    "resourceInvestigations": true
+    "resourceInvestigations": true,
+    "degreesMinutesSeconds": true,
+    "compassInspection": true,
+    "gisLayerInvestigation": true,
+    "populationStructure": true,
+    "terrainProfile": true
   },
-  "version": "5.5.0"
+  "version": "5.6.0"
 }
