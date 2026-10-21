@@ -1,6 +1,6 @@
 {
   "title": "Recycle Rush: Restore Verdale",
-  "description": "Restore a community recovery station with Circuit in five untimed story missions featuring preparation, reuse, repair, local acceptance rules, animated characters, saved checkpoints and original music. Includes the 20-mission arcade campaign and endless Loop Mode.",
+  "description": "Bring Verdale\u2019s recovery station back to life with an animated Circuit and Grime, hands-on preparation and reuse activities, community project choices, and an energy-powered finale. Five untimed story missions with saved progress, original music and sound effects sit alongside the preserved 20-mission arcade campaign.",
   "tags": [
     "education",
     "environment",
@@ -14,7 +14,7 @@
   "controls": [
     {
       "key": "Tap item, then destination",
-      "action": "Inspect and route an item in story missions; prepare it first when needed."
+      "action": "Inspect, complete a hands-on activity when needed, then select or drag to the accepted route."
     },
     {
       "key": "Arcade: tap or drag item to bin",
@@ -57,7 +57,20 @@
     "storyTasksPerMission": 18,
     "savedStoryCheckpoints": true,
     "untimedStory": true,
-    "originalStoryMusicTracks": 5
+    "originalStoryMusicTracks": 5,
+    "animatedCircuitFrames": 16,
+    "animatedGrimeFrames": 8,
+    "newItemSprites": 20,
+    "handsOnActivities": [
+      "flatten",
+      "empty",
+      "scrape",
+      "repair",
+      "reuse"
+    ],
+    "communityProjects": 3,
+    "storyDragSorting": true,
+    "interactiveFinale": true
   },
-  "version": "3.0.0"
+  "version": "3.1.0"
 }

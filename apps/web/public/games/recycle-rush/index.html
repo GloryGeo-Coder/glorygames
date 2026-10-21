@@ -13,7 +13,7 @@
   <main class="game-shell">
     <header class="hud">
       <section class="identity">
-        <img id="circuitAvatar" src="assets/sprites/circuit-neutral.svg" alt="Circuit" />
+        <span class="arcade-circuit"><img id="circuitAvatar" src="assets/sprites/circuit-neutral.svg" alt="Circuit" /></span>
         <div>
           <h1>Recycle Rush: Restore Verdale</h1>
           <p id="objectiveText">Sort • Build • Save Verdale</p>
@@ -120,7 +120,10 @@
   </section>
 
   <section id="storyRoot" hidden aria-label="Restore Verdale story campaign"></section>
+  <script src="story-input.js"></script>
+  <script src="story-play.js"></script>
   <script src="story-data.js"></script>
+  <script src="story-sprites.js"></script>
   <script src="story-audio.js"></script>
   <script src="game.js"></script>
   <script src="story.js"></script>

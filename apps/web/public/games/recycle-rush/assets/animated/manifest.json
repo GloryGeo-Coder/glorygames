@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "tool": "built-in image_gen",
+  "reference": "User-provided Recycle Rush thumbnail; character identity/style reference only.",
+  "format": "RGBA WebP",
+  "frameSize": 256,
+  "assets": {
+    "circuit": {
+      "sourceSha256": "859910ae4aaeaff7a2021c837a84464bf43a26f7251d919b049c2e16b14f8526",
+      "columns": 4,
+      "rows": 4,
+      "frames": 16,
+      "packing": "Equal-cell extraction, alpha bounds, constant character scale and shared ground baseline; item cells use the largest connected alpha-component bounds and fit a 224px box."
+    },
+    "grime": {
+      "sourceSha256": "afa8313ff173393e938d2cf6d88791e748fef909ec4c0de2dbc2bfd137999780",
+      "columns": 4,
+      "rows": 2,
+      "frames": 8,
+      "packing": "Equal-cell extraction, alpha bounds, constant character scale and shared ground baseline; item cells use the largest connected alpha-component bounds and fit a 224px box."
+    },
+    "items": {
+      "sourceSha256": "f64385ac4d3b539d607277bf93477c4c99c66a42aeea3c75def446b3885997be",
+      "columns": 4,
+      "rows": 4,
+      "frames": 16,
+      "packing": "Equal-cell extraction, alpha bounds, constant character scale and shared ground baseline; item cells use the largest connected alpha-component bounds and fit a 224px box."
+    },
+    "prepared": {
+      "sourceSha256": "49c40da34a885ff87d5d41428247dc0ed4d878e93e32961db886d915e5b5c419",
+      "columns": 2,
+      "rows": 2,
+      "frames": 4,
+      "packing": "Equal-cell extraction, alpha bounds, constant character scale and shared ground baseline; item cells use the largest connected alpha-component bounds and fit a 224px box."
+    },
+    "apple.webp": {
+      "sha256": "266b6baa11c38445013f6f1d8200ce56df85bf5fc8052d566e7f8163d5d66c97",
+      "bytes": 17170
+    },
+    "battery.webp": {
+      "sha256": "337db30c464453a8e46335b786a12a6002928370ac1ed115428f097d1fd470dc",
+      "bytes": 13560
+    },
+    "book.webp": {
+      "sha256": "b320e6340d74ee1710c101e4b15ebb88f55bd2ead0c0721e380dd8a4770fdcc1",
+      "bytes": 16040
+    },
+    "bottle.webp": {
+      "sha256": "6c79ae9b887e75f2842695e2b041bd0d8b20c95a6fa040597d72968aee4323f3",
+      "bytes": 15174
+    },
+    "box-flat.webp": {
+      "sha256": "220b49985d0cf1e95d0fbd04055aabb370d40a2fb4274f557014b7d35c4e847e",
+      "bytes": 12424
+    },
+    "box.webp": {
+      "sha256": "4f2f691110d68f2e7ed78c035e792567b95dfa77830fe789577b508ac74eee2c",
+      "bytes": 15342
+    },
+    "can.webp": {
+      "sha256": "fdb08628a2aa5152a17fe6f10478b5c48502253d4f7cdfbfbd47f4657880db30",
+      "bytes": 16826
+    },
+    "carton.webp": {
+      "sha256": "e3070dda8decd12452f3fac1a2edac9045aa87bae3330990099cb99461a7a2ef",
+      "bytes": 12404
+    },
+    "circuit-atlas.webp": {
+      "sha256": "d571845096c08646630470552caaf9f2c6deb36adb6aae4405f22cfda0ab77de",
+      "bytes": 288412
+    },
+    "circuit-idle.webp": {
+      "sha256": "06d7b24b49db78ff74dda8d9dc1a29cfffb45ee0727bc5d751daf1f176629dc3",
+      "bytes": 19504
+    },
+    "compost-caddy.webp": {
+      "sha256": "3be55346dcbac8cd47a68a7b8884dac9ac25e827bdad4aaa9eb55f71b76a513c",
+      "bytes": 13398
+    },
+    "glass.webp": {
+      "sha256": "4bf91cdc8e18e6e5ca4869f0417bdc2606aa99427ad03ba2457b0b62c3a65bb5",
+      "bytes": 12442
+    },
+    "grime-atlas.webp": {
+      "sha256": "4ae4a10353b99bf790534ccf12a00a8ac6b7ae1414a1612b1fce7380dc2b8fd2",
+      "bytes": 161726
+    },
+    "grime-idle.webp": {
+      "sha256": "e5f8bd08a3441a7da37c8b8e8013880d5869147c093063314f03c2f668befd05",
+      "bytes": 21652
+    },
+    "juice.webp": {
+      "sha256": "8f15fcaa769086558d167dd37106025e12eb7539535d19978cf126dbe781741a",
+      "bytes": 14842
+    },
+    "newspaper.webp": {
+      "sha256": "cc361ca01a800130481c1f9eda1002a5008949f5d1acb95c50496879ea5851ac",
+      "bytes": 14676
+    },
+    "paper-bundle.webp": {
+      "sha256": "bdf467f82397eb33f0bf2e5868059a362fed0832fac8bc3823e18d4ab8d646d4",
+      "bytes": 15868
+    },
+    "peel.webp": {
+      "sha256": "8087f705f02c1e0419bee50a982db2ebd8e173e31ef816d02d2b6dca26281f95",
+      "bytes": 14096
+    },
+    "radio.webp": {
+      "sha256": "f53e3a2ff921ce7e81f6d63eb59398b33ea40f880ceccecb0e0129bb9fe138dd",
+      "bytes": 20934
+    },
+    "shirt.webp": {
+      "sha256": "6ff926ac3debd25b0214bc3424c64afacd0c4a3082e5be1a98dc83e192e9c003",
+      "bytes": 14644
+    },
+    "spanner.webp": {
+      "sha256": "3b73917c7d2a2494b0b45994fe8e06e06f892d1a2eb1bbad7e6375013a1b35ac",
+      "bytes": 13064
+    },
+    "tray-empty.webp": {
+      "sha256": "11da621a12bde8d82277adfda3805ce8d7cbe3c31ed742b4350b07f252898f0a",
+      "bytes": 12180
+    },
+    "tray.webp": {
+      "sha256": "3d18b9abccbb6b07e5361b8e485ba1e60e6873b54038e114edef704a03421b24",
+      "bytes": 16198
+    },
+    "wetpaper.webp": {
+      "sha256": "364b5ec2536e3d83c1547142fa088f320b76aed91d05d8ec3ac36b8d9eca372a",
+      "bytes": 18846
+    }
+  }
+}
