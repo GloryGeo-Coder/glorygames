@@ -1012,71 +1012,77 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "recycle-rush": {
     "category": "Educational",
-    "summary": "Sort recyclable materials, manage contamination and work through eight community waste-management challenges.",
+    "summary": "Restore Verdale with Circuit in five story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
     "overview": [
-      "Recycle Rush is an environmental sorting game that asks players to match arriving waste items with an appropriate recycling option. The task sounds simple, but it becomes challenging when decisions need to be made quickly and when a contaminated or mixed-waste item threatens a clean stream.",
-      "The game uses illustrated materials and eight themed scenes to connect recycling decisions to everyday places such as schools, community clean-ups, parks, buy-back centres and material recovery facilities. It introduces the idea that correct sorting at the point of disposal affects what can be recovered later."
+      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Five untimed story missions contain three saved areas and 18 recovery tasks each, with animated Circuit and a different original music theme for every story mission.",
+      "Tap an object to inspect its material and condition. Prepare packaging when needed, then select an accepted destination. Wrong choices explain the reason and let you try again. The separate 20-mission arcade campaign retains its eight eco-hubs, Grime bosses, badges, powers and endless Loop Mode."
     ],
     "story": [
-      "The mission moves through community recycling situations rather than following a single named hero. Early scenes emphasise familiar clean-up activities; later scenes move toward collection, processing, diversion from landfill and a broader circular-economy challenge.",
-      "The progression creates a small environmental narrative: materials travel through a system, and the player's sorting choices influence how well that system works."
+      "Circuit wakes in a neglected school workshop as Grime feeds on mixed rubbish. Professor Loop asks you to bring the school’s recovery station back to life.",
+      "Nandi helps protect clean materials, Sam assesses repairs, and Musa connects neighbourhood collection to a recovery centre. Each completed mission shows another part of the community working again."
     ],
     "howToPlay": [
-      "Start the current level and inspect the active recycling bin or bins.",
-      "Watch an incoming item and identify the kind of material it represents.",
-      "Swipe left or right to change the active bin, or tap a visible bin directly.",
-      "Match the item to the suitable waste stream before it is processed.",
-      "Tap an orange contamination hazard when the game presents one.",
-      "Continue through increasingly demanding levels while reviewing sorting mistakes."
+      "Choose Begin Story or continue a saved story mission. New missions unlock in order.",
+      "Tap an object in the scene and read its condition on the item card.",
+      "If a preparation action appears, empty, scrape or flatten the packaging before routing it.",
+      "Choose a destination by its label and icon. Use Other routes when a mission has more than four destinations.",
+      "Use a clue or the Service Board to review the local rules. Mistakes can be corrected without restarting the story mission.",
+      "Complete all six tasks in each of three areas. Each decision is saved on this device when storage is available."
     ],
     "desktop": [
-      "The game primarily documents touch-style bin selection. Use the visible bin controls and on-screen buttons with the pointer."
+      "Use the pointer or keyboard Tab and Enter to collect items and choose story actions. Escape opens the mission menu.",
+      "In Arcade Campaign, tap an item then its bin, or drag it there. A/D or arrow keys select bins; Enter routes the lowest item. Space activates a power-up. Tap Grime hazards to clear them."
     ],
     "mobile": [
-      "Swipe left or right to change bins, or tap a bin directly.",
-      "Tap an orange contamination hazard when it appears; use Pause, Restart and Sound as needed."
+      "Play in portrait or landscape with large item targets and labelled destination buttons.",
+      "Tap to collect and tap to route; dragging is optional in the arcade campaign. Story play has no countdown.",
+      "Pause / Menu includes audio sliders, reduced motion and a retry for the current story area. Enter Fullscreen is available where the browser supports it."
     ],
     "systems": [
       {
-        "title": "Material recognition",
-        "body": "The core task is identifying incoming objects and choosing the correct destination instead of sending everything to one bin."
+        "title": "Material and condition",
+        "body": "The item card distinguishes a usable book, empty packaging, food scraps and materials that need preparation or specialist attention."
       },
       {
-        "title": "Contamination prevention",
-        "body": "Orange hazard objects represent mixed-waste contamination, drawing attention to the quality of separated recycling streams."
+        "title": "Reuse, preparation and local routes",
+        "body": "Empty or scrape accepted packaging, flatten boxes, share usable goods and ask qualified people to assess electrical repairs. Read the local service board for cartons, glass and batteries."
       },
       {
-        "title": "Eight learning environments",
-        "body": "Stages move through a school, community, park, buy-back centre, MRF, landfill-diversion scenario, e-waste drop-off and circular challenge."
+        "title": "Saved areas and recoverable mistakes",
+        "body": "The story saves after decisions and supports area retries. Earlier areas and the existing arcade campaign save remain intact. Completing without corrections or clues earns three stars."
       }
     ],
     "progression": [
-      "Eight difficulty-progressive levels expand the challenge as the player becomes more familiar with sorting.",
-      "The game can introduce recycling principles, but real-world collection rules vary by municipality and recycler. For actual disposal decisions, follow local recycling guidance."
+      "Five story missions contain 90 recovery tasks in total. The 20-mission arcade campaign offers a separate, faster challenge across eight themed eco-hubs.",
+      "All story missions are untimed. Arcade difficulty rises through more material categories, wind, power-ups, hazards and bosses. A boss mission requires both its sorting target and the boss defeat."
     ],
     "tips": [
-      "Learn the material categories before prioritising speed.",
-      "Double-check an unfamiliar item instead of moving bins repeatedly at random.",
-      "Notice how contaminated items differ visually from suitable recycling objects.",
-      "Keep your finger close to the bin area so you can react to a late-arriving item.",
-      "Use a wrong sort as a prompt to learn why that material belongs elsewhere."
+      "Read the material and condition together; a usable book has a different first destination from unwanted paper.",
+      "Prepare an item before routing when a preparation button is shown.",
+      "Read the service board rather than treating bin colours as a universal code.",
+      "Use clues to learn, then replay a mission to improve its star rating.",
+      "Ask an adult or trained worker about batteries, electronics, chemicals or broken glass. Do not open or dismantle them."
     ],
     "learning": [
-      "Introduces separation at source, contamination prevention, material recovery and landfill diversion.",
-      "Encourages discussion of recycling systems and the role of households, collectors and recycling facilities."
+      "Practises separation at source, contamination prevention, preparation, reuse, repair and local acceptance rules.",
+      "Shows the role of caretakers, repairers, community collectors and recovery facilities. Real-world services have different acceptance rules; check local guidance."
     ],
     "faqs": [
       {
         "q": "How many levels are in Recycle Rush?",
-        "a": "The game includes eight increasingly difficult levels."
+        "a": "There are five story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
       },
       {
-        "q": "How do I change bins?",
-        "a": "Swipe left or right, or tap a visible bin directly."
+        "q": "Is the story timed?",
+        "a": "No. Inspect items, read feedback and use clues at your own pace. Mistakes can be corrected. Progress saves on the same device when browser storage is available."
+      },
+      {
+        "q": "Are my previous arcade saves kept?",
+        "a": "Yes. The story uses a separate save. Arcade stars, badges, unlocked hubs and Loop Mode remain available."
       },
       {
         "q": "Does the game replace local recycling instructions?",
-        "a": "No. Accepted materials differ across real-world schemes; treat the game as educational practice."
+        "a": "No. The service board describes the fictional community in the game. Accepted materials and preparation rules differ between real collection services; follow your packaging label and local collector’s instructions."
       }
     ]
   },
