@@ -1,0 +1,26 @@
+name: Cyber Shield Academy
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/cyber-shield-academy/**'
+      - 'apps/web/scripts/cyber-shield*'
+      - '.github/workflows/cyber-shield.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/cyber-shield-academy/**'
+      - 'apps/web/scripts/cyber-shield*'
+      - '.github/workflows/cyber-shield.yml'
+permissions:
+  contents: read
+jobs:
+  cyber-shield:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/cyber-shield-academy/game.js
+      - run: node --test apps/web/scripts/cyber-shield.test.cjs

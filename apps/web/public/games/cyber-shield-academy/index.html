@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Cyber Shield Academy: Terminal Ops</title>
-  <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+  <link rel="stylesheet" href="styles.css?v=3.1" />
 </head>
 <body>
-  <main class="app" id="app">
+  <main class="app" id="app" inert>
     <header class="topbar">
       <div class="brand">
         <img src="assets/sprites/shield-ethics.png" alt="" />
@@ -25,9 +25,18 @@
       </div>
     </header>
 
+    <nav class="panel-tabs" role="tablist" aria-label="Academy panels">
+      <button type="button" id="tab-terminal" role="tab" aria-controls="panel-terminal" data-panel="terminal" aria-selected="true">Terminal</button>
+      <button type="button" id="tab-mission" role="tab" aria-controls="panel-mission" data-panel="mission" aria-selected="false" tabindex="-1">Mission</button>
+      <button type="button" id="tab-network" role="tab" aria-controls="panel-network" data-panel="network" aria-selected="false" tabindex="-1">Network</button>
+      <button type="button" id="tab-files" role="tab" aria-controls="panel-files" data-panel="files" aria-selected="false" tabindex="-1">Files</button>
+      <button type="button" id="tab-tools" role="tab" aria-controls="panel-tools" data-panel="tools" aria-selected="false" tabindex="-1">Toolkit</button>
+    </nav>
+
     <section class="desktop">
-      <aside class="window mission-window">
+      <aside class="window mission-window" id="panel-mission" role="tabpanel" aria-labelledby="tab-mission" tabindex="0">
         <div class="win-title"><span></span> Mission Briefing</div>
+        <h2 id="missionTitle" class="mission-title"></h2>
         <div id="missionText" class="mission-text"></div>
         <div class="objectives">
           <h3>Objectives</h3>
@@ -39,19 +48,22 @@
         </div>
       </aside>
 
-      <section class="window terminal-window">
+      <section class="window terminal-window" id="panel-terminal" role="tabpanel" aria-labelledby="tab-terminal" tabindex="0">
         <div class="win-title">
           <span></span>
           <b>secure-terminal</b>
           <em id="connectionBadge">local</em>
         </div>
-        <div class="terminal-output" id="terminalOutput" aria-live="polite"></div>
+        <div class="terminal-output" id="terminalOutput" tabindex="0" role="log" aria-label="Terminal output" aria-live="polite"></div>
         <form id="terminalForm" class="terminal-input">
           <label id="promptLabel" for="cmdInput">cadet@shield:~$</label>
-          <input id="cmdInput" autocomplete="off" spellcheck="false" autofocus />
+          <input id="cmdInput" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="send" aria-label="Terminal command" />
           <button type="submit">run</button>
         </form>
         <div class="command-help">
+          <button type="button" id="completeBtn" title="Complete the current command">Complete</button>
+          <button type="button" id="previousBtn" aria-label="Previous command">Previous</button>
+          <button type="button" id="nextBtn" aria-label="Next command">Next</button>
           <span>Try:</span>
           <button data-cmd="help">help</button>
           <button data-cmd="briefing">briefing</button>
@@ -63,17 +75,17 @@
       </section>
 
       <aside class="right-stack">
-        <section class="window map-window">
+        <section class="window map-window" id="panel-network" role="tabpanel" aria-labelledby="tab-network" tabindex="0">
           <div class="win-title"><span></span> Network Map</div>
           <div id="networkMap" class="network-map"></div>
         </section>
 
-        <section class="window files-window">
+        <section class="window files-window" id="panel-files" role="tabpanel" aria-labelledby="tab-files" tabindex="0">
           <div class="win-title"><span></span> File System</div>
           <div id="fileTree" class="file-tree"></div>
         </section>
 
-        <section class="window tools-window">
+        <section class="window tools-window" id="panel-tools" role="tabpanel" aria-labelledby="tab-tools" tabindex="0">
           <div class="win-title"><span></span> Toolkit</div>
           <div id="toolList" class="tool-list"></div>
         </section>
@@ -83,16 +95,21 @@
     <footer class="footerbar">
       <button id="startBtn">Start Training</button>
       <button id="hintBtn">Hint</button>
-      <button id="muteBtn">Sound On</button>
-      <button id="resetBtn">Reset Case</button>
-      <button id="submitBtn">Submit Score</button>
+      <details class="case-actions" id="caseActions">
+        <summary>Case controls</summary>
+        <div class="case-menu" id="caseMenu">
+          <button id="muteBtn">Sound On</button>
+          <button id="resetBtn">Reset Case</button>
+          <button id="submitBtn">Submit Score</button>
+        </div>
+      </details>
     </footer>
   </main>
 
-  <div class="overlay active" id="startOverlay">
+  <div class="overlay active" id="startOverlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
     <div class="overlay-card">
       <img src="assets/sprites/bit-ai.png" alt="" />
-      <h1>Cyber Shield Academy</h1>
+      <h1 id="welcomeTitle">Cyber Shield Academy</h1>
       <h2>Terminal Ops: Case BIT</h2>
       <p>
         Join an ethical security crew and investigate the disappearance of <strong>Bit</strong>,
@@ -109,7 +126,7 @@
     </div>
   </div>
 
-  <script src="game.js"></script>
+  <script src="game.js?v=3.1"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
