@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
  <meta name="theme-color" content="#153c40" />
  <title>Map Master Africa: World Explorer</title>
- <link rel="stylesheet" href="./styles.css?v=5.6.0" />
+ <link rel="stylesheet" href="./styles.css?v=5.7.0" />
  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body>
@@ -87,7 +87,7 @@
      <p>These original learning activities support practice. The current release provides practice across the four topic areas in each of Grades 4, 5, 6, 7, 8, 9 and 10; it is not a complete school course or an official assessment.</p>
     </details>
    </section>
-   <h3>Choose your learning path</h3><div class="grade-switch" role="group" aria-label="Learning grade"><button id="grade4Btn" aria-pressed="true">Grade 4</button><button id="grade5Btn" aria-pressed="false">Grade 5</button><button id="grade6Btn" aria-pressed="false">Grade 6</button><button id="grade7Btn" aria-pressed="false">Grade 7</button><button id="grade8Btn" aria-pressed="false">Grade 8</button><button id="grade9Btn" aria-pressed="false">Grade 9</button><button id="grade10Btn" aria-pressed="false">Grade 10</button></div><p id="pathSummary" class="instruction"></p><div id="missionList" class="mission-list"></div>
+   <h3>Choose your learning path</h3><div class="grade-switch" role="group" aria-label="Learning grade"><button id="grade4Btn" aria-pressed="true">Grade 4</button><button id="grade5Btn" aria-pressed="false">Grade 5</button><button id="grade6Btn" aria-pressed="false">Grade 6</button><button id="grade7Btn" aria-pressed="false">Grade 7</button><button id="grade8Btn" aria-pressed="false">Grade 8</button><button id="grade9Btn" aria-pressed="false">Grade 9</button><button id="grade10Btn" aria-pressed="false">Grade 10</button></div><p id="pathSummary" class="instruction"></p><section class="revision-card" aria-labelledby="revisionTitle"><h3 id="revisionTitle">Revision and learning progress</h3><p id="revisionNotice" class="instruction"></p><div class="revision-actions"><button id="revisionFocusBtn">Practise focus topics</button><button id="revisionMixBtn">Mixed revision</button><button id="revisionResumeBtn" hidden>Resume revision</button><button id="learningReportBtn">Learning summary</button></div><p class="instruction">Revision sets revisit up to six tasks you have tried. Some include alternate values or map targets. Revision records your practice; replay campaign missions to improve Atlas XP and stars.</p></section><div id="missionList" class="mission-list"></div>
    <details id="journalDetails"><summary>Your atlas journal</summary><p id="journalSummary"></p><div id="journalList" class="journal-list"></div><p id="storageStatus" class="instruction"></p><p>Atlas XP records your best result for each task, so replaying improves mastery without farming points. 100 XP: independent answer. 70 XP: answer with a hint. 50 XP: answer after a mistake.</p><p>Three stars: no mistakes or hints. Two stars: at most two mistakes. One star: another completed expedition.</p></details>
    <details><summary>Controls and map notes</summary><p>Tap squares or country outlines. Drag to pan; pinch or use + / − to zoom. On a keyboard, Tab to controls; Enter or Space activates them. Within the town grid, arrow keys move between squares. On the world map, arrows pan and Enter selects the centre. Find offers a searchable country list.</p><p>Coordinate tasks offer labelled latitude and longitude controls as well as tap previews. The kilometre plan and comparison-layer profiles are fictional practice data, not real station measurements. Its line scale zooms with the plan. The street planner checks open links and accepts alternative routes within the stated limit. Its graph uses metres; unsubmitted routes can be edited freely. Degrees-and-minutes coordinates use separate hemisphere controls; their world marker is approximate. Ratio-scale tasks supply paper measurements: do not measure screen centimetres. The seasonal model is schematic and climate graphs have separate temperature/rainfall panels with matching tables. Grade 9 uses a separate fictional metric contour plan and a public-domain historical USGS orthoimage. The plan supports straight-distance measurement; the web image has no ground ruler. Image publication date is not its capture date. Grade 10 adds exact seconds entry, free compass/GIS/profile inspection and simplified age-sex/weather diagrams with matching tables. The X–Z profile uses the fictional hill’s metric coordinates; its vertical display scale is exaggerated. Declination and practice GIS sites are invented. Earth diagrams are schematic. Graphs include matching tables; source links identify historical cases and estimates. Community activities use original fictional town plans and labelled practice evidence. The landform cross-section is schematic and not to scale. Provincial views use Natural Earth 1:10m boundaries; the mainland view excludes distant islands from its viewport, while the Prince Edward Islands view makes them accessible. Coloured provinces use abbreviations explained in Map key. The world atlas uses Natural Earth overview boundaries. They show countries and territories, including disputed areas, and are not a count of sovereign states. Oceania is a region containing Australia and Pacific islands. The overview is not an equal-distance or equal-area map.</p><p>Made with Natural Earth · public-domain map data. School topics follow South African CAPS references; these original activities are not an official assessment.</p></details>
    <details><summary>Sound and scores</summary><label for="musicVolume">Music</label><input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.35" /><label for="effectsVolume">Sound effects</label><input id="effectsVolume" type="range" min="0" max="1" step="0.05" value="0.7" /><div class="inline-actions"><button id="muteBtn">Sound on</button><button id="submitBtn">Submit score</button><button id="chatBtn">Scores &amp; chat</button><button id="restartBtn">Replay this expedition</button></div><p id="bestText"></p></details>
@@ -97,28 +97,32 @@
  <section id="summary" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="summaryTitle"><div class="sheet summary-sheet"><div class="badge-emblem" aria-hidden="true">✦</div><div class="eyebrow" id="badgeTitle"></div><h2 id="summaryTitle">Expedition complete</h2><p id="summaryText"></p><div class="inline-actions"><button id="nextMissionBtn" class="primary">Next expedition</button><button id="replayBtn">Practise again</button><button id="exploreAfterBtn">Explore the world</button><button id="homeBtn">Atlas journal</button></div></div></section>
  <section id="keyPanel" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="keyTitle"><div class="sheet compact-sheet"><h2 id="keyTitle">Map key</h2><div id="keyItems" class="key-items"></div><p id="keyNote"></p><button id="closeKeyBtn" class="primary">Return to map</button></div></section>
  <section id="searchPanel" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="searchTitle"><div class="sheet compact-sheet"><h2 id="searchTitle">Find a place</h2><p id="searchNote">Choose a place to open its close-up.</p><label for="countrySearch">Search countries and territories</label><input id="countrySearch" type="search" placeholder="Search by place name" autocomplete="off" /><div id="searchResults" class="search-results"></div><label for="countrySelect">Or choose from the full atlas</label><select id="countrySelect"></select><div class="inline-actions"><button id="locateBtn" class="primary">Show on map</button><button id="selectCountryBtn">Select this place</button><button id="closeSearchBtn">Back</button></div></div></section>
+ <section id="learningReportPanel" class="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="learningReportTitle"><div class="sheet report-sheet"><div class="eyebrow">YOUR LEARNING JOURNEY</div><h2 id="learningReportTitle">Learning summary</h2><p id="learningReportIntro"></p><p class="instruction">Tried counts tasks with a recorded answer or hint. On own counts your best independent campaign answers. Focus uses recent mistakes, hints and supported answers; an independent revision answer clears that task from focus. Campaign XP and unlocks stay separate.</p><div id="gradeReport" class="learning-table-wrap"></div><div class="report-controls"><label for="reportGradeSelect">Show topics for</label><select id="reportGradeSelect"></select></div><h3 id="reportTopicTitle"></h3><div id="topicReport" class="learning-table-wrap"></div><p class="instruction">These records describe practice on this browser, rather than school marks. Existing saves retain best campaign results; detailed recent-answer history begins when you use these learning tools.</p><p id="reportStorageNote" class="instruction"></p><div class="inline-actions report-controls"><button id="printReportBtn">Print summary</button><button id="closeReportBtn" class="primary">Back to atlas</button></div></div></section>
  <p id="liveStatus" class="sr-only" aria-live="polite"></p>
  <script defer src="/games/_shared/gg-sdk.js"></script>
  <script defer src="./atlas-data.js"></script>
  <script defer src="./atlas-geometry.js"></script>
  <script defer src="./province-data.js"></script>
  <script defer src="./academy-expansion.js"></script>
- <script defer src="./world-layers.js?v=5.6.0"></script>
- <script defer src="./academy-grade6.js?v=5.6.0"></script>
- <script defer src="./field-lab.js?v=5.6.0"></script>
- <script defer src="./academy-grade7.js?v=5.6.0"></script>
- <script defer src="./connections-lab.js?v=5.6.0"></script>
- <script defer src="./academy-grade8.js?v=5.6.0"></script>
- <script defer src="./interpretation-lab.js?v=5.6.0"></script>
- <script defer src="./academy-grade9.js?v=5.6.0"></script>
- <script defer src="./grade10-lab.js?v=5.6.0"></script>
- <script defer src="./academy-grade10.js?v=5.6.0"></script>
- <script defer src="./academy-content.js?v=5.6.0"></script>
- <script defer src="./academy-engine.js?v=5.6.0"></script>
- <script defer src="./atlas-view.js?v=5.6.0"></script>
- <script defer src="./academy-audio.js?v=5.6.0"></script>
- <script defer src="./field-notes.js?v=5.6.0"></script>
- <script defer src="./game.js?v=5.6.0"></script>
+ <script defer src="./world-layers.js?v=5.7.0"></script>
+ <script defer src="./academy-grade6.js?v=5.7.0"></script>
+ <script defer src="./field-lab.js?v=5.7.0"></script>
+ <script defer src="./academy-grade7.js?v=5.7.0"></script>
+ <script defer src="./connections-lab.js?v=5.7.0"></script>
+ <script defer src="./academy-grade8.js?v=5.7.0"></script>
+ <script defer src="./interpretation-lab.js?v=5.7.0"></script>
+ <script defer src="./academy-grade9.js?v=5.7.0"></script>
+ <script defer src="./grade10-lab.js?v=5.7.0"></script>
+ <script defer src="./academy-grade10.js?v=5.7.0"></script>
+ <script defer src="./academy-content.js?v=5.7.0"></script>
+ <script defer src="./revision-variants.js?v=5.7.0"></script>
+ <script defer src="./learning-tools.js?v=5.7.0"></script>
+ <script defer src="./learning-report.js?v=5.7.0"></script>
+ <script defer src="./academy-engine.js?v=5.7.0"></script>
+ <script defer src="./atlas-view.js?v=5.7.0"></script>
+ <script defer src="./academy-audio.js?v=5.7.0"></script>
+ <script defer src="./field-notes.js?v=5.7.0"></script>
+ <script defer src="./game.js?v=5.7.0"></script>
  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
