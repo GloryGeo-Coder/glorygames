@@ -1014,8 +1014,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "category": "Educational",
     "summary": "Restore Verdale with Circuit in five story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
     "overview": [
-      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Five untimed story missions contain three saved areas and 18 recovery tasks each, with animated Circuit and a different original music theme for every story mission.",
-      "Tap an object to inspect its material and condition. Prepare packaging when needed, then select an accepted destination. Wrong choices explain the reason and let you try again. The separate 20-mission arcade campaign retains its eight eco-hubs, Grime bosses, badges, powers and endless Loop Mode."
+      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Five untimed story missions contain three saved areas and 18 recovery tasks each. Circuit and Grime use illustrated animation frames matching the game artwork, with a different original music theme for every story mission.",
+      "Tap an object to inspect its material and condition. Fold empty boxes, tip and empty bottles, clear food scraps, check reusable goods or help Sam plan a qualified repair. Then tap or drag to an accepted destination. Wrong choices explain the reason and let you try again. The separate 20-mission arcade campaign retains its eight eco-hubs, Grime bosses, badges, powers and endless Loop Mode, with the new item art and animated Grime hazards."
     ],
     "story": [
       "Circuit wakes in a neglected school workshop as Grime feeds on mixed rubbish. Professor Loop asks you to bring the school’s recovery station back to life.",
@@ -1024,10 +1024,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "howToPlay": [
       "Choose Begin Story or continue a saved story mission. New missions unlock in order.",
       "Tap an object in the scene and read its condition on the item card.",
-      "If a preparation action appears, empty, scrape or flatten the packaging before routing it.",
+      "If an activity action appears, open it and use its touch buttons or swipe across the item to fold, empty, scrape, check or assess it before routing.",
       "Choose a destination by its label and icon. Use Other routes when a mission has more than four destinations.",
       "Use a clue or the Service Board to review the local rules. Mistakes can be corrected without restarting the story mission.",
-      "Complete all six tasks in each of three areas. Each decision is saved on this device when storage is available."
+      "Complete six tasks per area, then install a dry-paper shelter, exchange shelf or food-compost caddy. In the finale, finish every recovery task, clear two Grime clouds per wave and fire three charged Loop Pulses. Each action saves on this device when storage is available."
     ],
     "desktop": [
       "Use the pointer or keyboard Tab and Enter to collect items and choose story actions. Escape opens the mission menu.",
@@ -1035,7 +1035,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "mobile": [
       "Play in portrait or landscape with large item targets and labelled destination buttons.",
-      "Tap to collect and tap to route; dragging is optional in the arcade campaign. Story play has no countdown.",
+      "Tap to collect and tap to route, or drag an item to a destination. Hands-on activities also offer visible buttons, so gestures are optional. Story play has no countdown.",
       "Pause / Menu includes audio sliders, reduced motion and a retry for the current story area. Enter Fullscreen is available where the browser supports it."
     ],
     "systems": [
@@ -1049,7 +1049,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Saved areas and recoverable mistakes",
-        "body": "The story saves after decisions and supports area retries. Earlier areas and the existing arcade campaign save remain intact. Completing without corrections or clues earns three stars."
+        "body": "The story saves after decisions and supports area retries. Earlier areas and the existing arcade campaign save remain intact. Choose a community project between areas and watch it appear in the scene. Completing without corrections or clues earns three stars."
       }
     ],
     "progression": [

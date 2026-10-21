@@ -14,7 +14,7 @@
   ];
   function create(environment, settings) {
     let ac, music, effects, timer, step = 0, index = 0, intensity = 0, muted = false;
-    const nodes = new Set();
+    const nodes = new Map();
     function ensure() {
       if (ac) { if (ac.state === 'suspended') ac.resume().catch(() => {}); return ac; }
       try {
@@ -45,7 +45,7 @@
       envelope.gain.exponentialRampToValueAtTime(gain, now + .012);
       envelope.gain.exponentialRampToValueAtTime(.0001, now + duration);
       osc.connect(envelope); envelope.connect(bus);
-      nodes.add(osc);
+      nodes.set(osc, bus);
       osc.onended = () => { nodes.delete(osc); osc.disconnect(); envelope.disconnect(); };
       osc.start(now); osc.stop(now + duration + .03);
     }
@@ -63,20 +63,22 @@
       if (beat % 4 === 2) { note(1800, .024, 'triangle', .012, music); note(980, .04, 'triangle', .009, music, .018); }
       if (intensity > .5 && beat % 2) note(frequency(theme.notes[beat % 16] + 12), .06, 'sine', .012, music);
     }
-    function pause() {
+    function pause(musicOnly = false) {
       if (timer) environment.clearInterval(timer);
       timer = null;
-      for (const node of nodes) { try { node.stop(); } catch {} }
-      nodes.clear();
+      for (const [node, bus] of nodes) if (!musicOnly || bus === music) { try { node.stop(); } catch {} nodes.delete(node); }
     }
     function start(missionIndex) {
-      pause(); index = Math.max(0, Math.min(themes.length - 1, missionIndex)); step = 0;
+      pause(true); const next = Math.max(0, Math.min(themes.length - 1, missionIndex)); if (next !== index) step = 0; index = next;
       if (!ensure()) return;
       tick(); timer = environment.setInterval(tick, 60000 / themes[index].bpm / 2);
     }
     function effect(kind) {
       if (!ensure() || settings.sfx <= 0 || muted) return;
       if (kind === 'collect') { note(440, .09, 'triangle', .06, effects); note(660, .08, 'sine', .04, effects, .06); }
+      if (kind === 'wisp') { note(720, .1, 'sine', .05, effects, 0, 330); }
+      if (kind === 'pulse') { note(180, .22, 'triangle', .08, effects, 0, 720); note(1046, .18, 'sine', .04, effects, .12); }
+      if (kind === 'build') [392, 523, 659, 784].forEach((n, i) => note(n, .17, 'triangle', .04, effects, i * .07));
       if (kind === 'prepare') { note(260, .1, 'triangle', .06, effects); note(520, .13, 'triangle', .04, effects, .07); }
       if (kind === 'retry') { note(220, .16, 'sine', .06, effects, 0, 165); }
       if (kind === 'sort' || kind === 'checkpoint' || kind === 'complete') [523, 659, 784].forEach((n, i) => note(n, .14, 'sine', .045, effects, i * .055));

@@ -52,6 +52,10 @@
     textiles:{ label:'Textiles', color:'#ff9d52', icon:'assets/sprites/item-textiles.svg', sound:'textiles' }
   };
 
+  const artFallbacks = {};
+  const artIds = {paper:'newspaper',plastic:'bottle',organic:'peel',glass:'glass',metal:'can',ewaste:'radio',hazmat:'battery',textiles:'shirt'};
+  for(const [cat,id] of Object.entries(artIds)){const source='assets/animated/'+id+'.webp';artFallbacks[source]=CATS[cat].icon;CATS[cat].icon=source;}
+
   const POWERS = {
     magnet: { label:'Magnet', color:'#ff5f9f', icon:'assets/sprites/power-magnet.svg' },
     slow: { label:'Slow-Mo', color:'#4bdcff', icon:'assets/sprites/power-slow.svg' },
@@ -148,7 +152,7 @@
   }
 
   async function loadAssets(){
-    const paths = new Set([THUMBNAIL_SRC]);
+    const paths = new Set([THUMBNAIL_SRC,'assets/animated/circuit-atlas.webp','assets/animated/grime-atlas.webp',...Object.values(artFallbacks)]);
     CHAPTERS.forEach(c => { paths.add(c.bg); paths.add(c.bossIcon); });
     Object.values(CATS).forEach(c => paths.add(c.icon));
     Object.values(POWERS).forEach(p => paths.add(p.icon));
@@ -712,10 +716,16 @@
   }
 
   function drawImage(src,x,y,w,h,alpha=1,rot=0){
-    const im = img(src);
+    const im = img(src) || img(artFallbacks[src]);
     ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x+w/2,y+h/2); ctx.rotate(rot);
     if(im) ctx.drawImage(im,-w/2,-h/2,w,h); else { ctx.fillStyle='#4bdcff'; ctx.fillRect(-w/2,-h/2,w,h); }
     ctx.restore();
+  }
+
+  function drawGrimeSprite(x,y,w,h,pose='idle',time=state.time){
+    const source=img('assets/animated/grime-atlas.webp'), sprites=window.RecycleSprites;
+    if(source && sprites){const frame=sprites.frameAt('grime',pose,time,save.settings.reducedMotion),r=sprites.rect('grime',frame);ctx.drawImage(source,r.x,r.y,256,256,x,y,w,h);}
+    else drawImage('assets/sprites/grime-blob.svg',x,y,w,h);
   }
 
   function drawCover(src, grimeAlpha){
@@ -882,16 +892,17 @@
       const bob = Math.sin(it.age*8)*2;
       if(it.kind === 'item') drawImage(CATS[it.cat].icon,it.x,it.y+bob,it.w,it.h,1,Math.sin(it.spin)*.08);
       if(it.kind === 'power') drawImage(POWERS[it.power].icon,it.x,it.y+bob,it.w,it.h,1,Math.sin(it.spin)*.12);
-      if(it.kind === 'grime') drawImage('assets/sprites/grime-blob.svg',it.x,it.y+bob,it.w,it.h,1,Math.sin(it.spin)*.08);
+      if(it.kind === 'grime') drawGrimeSprite(it.x,it.y+bob,it.w,it.h);
     }
-    for(const h of state.hazards) drawImage('assets/sprites/grime-blob.svg',h.x,h.y,h.w,h.h,.92 + Math.sin(h.age*8)*.08,Math.sin(h.age*2)*.12);
+    for(const h of state.hazards) drawGrimeSprite(h.x,h.y,h.w,h.h,'idle',h.age);
   }
 
   function drawBoss(){
     if(!state.boss) return;
     const b=state.boss, icon=chapter().bossIcon;
     const pulse = Math.sin(state.time*3)*6 + (b.hurt>0?14:0);
-    drawImage(icon,b.x-b.size/2-pulse/2,b.y-pulse/2,b.size+pulse,b.size+pulse,1,Math.sin(state.time)*.04);
+    if(state.levelIndex===19)drawGrimeSprite(b.x-b.size/2,b.y,b.size,b.size,b.hurt>0?'hurt':'idle');
+    else drawImage(icon,b.x-b.size/2-pulse/2,b.y-pulse/2,b.size+pulse,b.size+pulse,1,Math.sin(state.time)*.04);
     ctx.save(); ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='900 16px system-ui'; ctx.textAlign='center'; ctx.fillText(chapter().boss,b.x,b.y+b.size*.62); ctx.restore();
   }
 
@@ -1074,6 +1085,7 @@
   document.addEventListener('recycle:story-open',()=>{state.running=false;state.paused=true;stopMusic();cancelPointer();clearTimeout(state.rebootTimer);});
   document.addEventListener('recycle:story-exit',renderMap);
   loadAssets().then(() => {
+    document.body.classList.toggle('sprite-art-ready',!!img('assets/animated/circuit-atlas.webp'));
     applySettings(); initEvents(); resize(); renderMap(); requestAnimationFrame(loop);
   });
 })();
