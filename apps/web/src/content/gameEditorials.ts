@@ -620,10 +620,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "map-master-africa": {
     "category": "Educational",
-    "summary": "Practise Grades 4–9 geography through 68 missions and 408 tasks, then explore South Africa’s nine provinces and the world. The curriculum journey continues towards Grade 10.",
+    "summary": "Practise Grades 4–10 geography through 84 missions and 504 tasks, then explore South Africa’s nine provinces and the world. All seven grade paths are available.",
     "overview": [
-      "Six playable learning paths provide topic practice for Grades 4–9. Grades 4, 6, 7, 8 and 9 each have 12 missions; Grade 5 has eight. Each mission has six tasks, a field note, explanations, hints and an earned badge. The Grade 10 course remains planned in the curriculum guide.",
-      "Grade 4 combines the original five Map Academy expeditions with settlements, provincial geography, food and farming, and water investigations. Grade 5 introduces African neighbours and directions, physical features, weather and climate evidence, vegetation, minerals and mining. Grade 6 adds world coordinates, word and line scales, trade, climate and vegetation comparisons, population and settlement investigations. Grade 7 adds a street-route planner, Earth structure, historical hazard cases, population graphs and conservation investigations. Grade 8 adds coordinates in degrees and minutes, ratio scale, world time, seasons, climate graphs, settlements and transport. Grade 9 adds contour interpretation, a metric distance tool, a historical USGS orthoimage, development indicators, erosion, food security and resource sustainability. These are original practice activities, not a complete school course or an official assessment.",
+      "Seven playable learning paths provide topic practice for Grades 4–10. Grades 4, 6, 7, 8 and 9 each have 12 missions; Grade 5 has eight and Grade 10 has sixteen. Each mission has six tasks, a field note, explanations, hints and an earned badge. Grade 10 adds 16 missions across advanced skills, atmosphere, geomorphology, population and water resources.",
+      "Grade 4 combines the original five Map Academy expeditions with settlements, provincial geography, food and farming, and water investigations. Grade 5 introduces African neighbours and directions, physical features, weather and climate evidence, vegetation, minerals and mining. Grade 6 adds world coordinates, word and line scales, trade, climate and vegetation comparisons, population and settlement investigations. Grade 7 adds a street-route planner, Earth structure, historical hazard cases, population graphs and conservation investigations. Grade 8 adds coordinates in degrees and minutes, ratio scale, world time, seasons, climate graphs, settlements and transport. Grade 9 adds contour interpretation, a metric distance tool, a historical USGS orthoimage, development indicators, erosion, food security and resource sustainability. Grade 10 adds exact seconds entry, compass bearings, GIS layer inspection, terrain profiles, age-sex diagrams, weather interpretation and water investigations. These are original practice activities, not a complete school course or an official assessment.",
       "The free atlases contain 242 mapped countries and territories, plus a separate geographic view of all nine South African provinces with capitals, map keys, search and close-ups. Natural Earth data keep outlines, map markers and selections aligned. Community scenarios use a fictional town; weather and other practice records are labelled, and the landform cross-section is schematic."
     ],
     "story": [
@@ -631,9 +631,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Each expedition begins with a field note. Apply the skill on the map, read feedback after each answer and collect a badge for your atlas journal."
     ],
     "howToPlay": [
-      "Choose Grade 4, 5, 6, 7, 8 or 9. The first mission in each grade is available immediately; later missions unlock through completion within that grade. Read each mission’s briefing and field note.",
+      "Choose Grade 4, 5, 6, 7, 8, 9 or 10. The first mission in each grade is available immediately; later missions unlock through completion within that grade. Read each mission’s briefing and field note.",
       "Tap a town square, country outline, province outline or answer button when asked. Read evidence tables for investigation questions; their heading can collapse the table when you are ready to answer.",
-      "For a route, tap neighbouring squares in order. Coordinate tasks use labelled latitude and longitude controls; a map tap previews a 30-degree intersection before Check point records your answer. The Grade 7 street planner accepts connected open routes within the stated distance limit. Add junctions, use Undo or Start again freely, then Check route. Grade 8 coordinates use degree, minute and hemisphere controls; numeric answers show their unit. Ratio-scale tasks supply paper measurements rather than screen centimetres. On the Grade 9 metric plan, select two endpoints and Check measurement; Reset edits the draft freely. The historical web image has no ground ruler. Dragging only pans the map.",
+      "For a route, tap neighbouring squares in order. Coordinate tasks use labelled latitude and longitude controls; a map tap previews a 30-degree intersection before Check point records your answer. The Grade 7 street planner accepts connected open routes within the stated distance limit. Add junctions, use Undo or Start again freely, then Check route. Grade 8 coordinates use degree, minute and hemisphere controls; numeric answers show their unit. Ratio-scale tasks supply paper measurements rather than screen centimetres. On the Grade 9 metric plan, select two endpoints and Check measurement; Reset edits the draft freely. The historical web image has no ground ruler. Grade 10 coordinate tasks include seconds. Compass, GIS and profile inspection are free; Check records the task answer. Dragging only pans the map.",
       "Use Map key freely. Hint provides guidance; Find opens a searchable country close-up and counts as a hint during a mission.",
       "Read the explanation, then choose Continue. Mistakes allow another attempt without losing the whole expedition.",
       "Complete a mission to unlock the next within its grade. Open either free atlas at any time, and use the atlas selector to switch between world countries and South African provinces."
@@ -650,8 +650,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "systems": [
       {
-        "title": "Grades 4–9 learning paths",
-        "body": "Sixty-eight missions contain 408 tasks. Each grade progresses independently, so learners can begin Grade 5, 6, 7, 8 or 9 without clearing earlier grades."
+        "title": "Grades 4–10 learning paths",
+        "body": "Eighty-four missions contain 504 tasks. Each grade progresses independently, so learners can begin Grade 5, 6, 7, 8, 9 or 10 without clearing earlier grades."
       },
       {
         "title": "World atlas",
@@ -675,7 +675,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Complete missions in order within your chosen grade. Grades 4–9 have separate unlock paths, while free exploration remains open from the beginning. Original Map Academy progress, stars, hints, current task and previous best scores are retained.",
+      "Complete missions in order within your chosen grade. Grades 4–10 have separate unlock paths, while free exploration remains open from the beginning. Original Map Academy progress, stars, hints, current task and previous best scores are retained.",
       "Independent answers earn 100 Atlas XP, hinted answers 70 and answers after mistakes 50. Only the best score per task contributes to your total. Stars reward clean runs; completed badges and better results are retained."
     ],
     "tips": [
@@ -689,17 +689,18 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "learning": [
       "Practise the Grade 4 topic areas of settlements, map skills, food and farming, and water in South Africa.",
       "Practise Grade 5 Africa map skills, South African physical features, weather, climate, vegetation, minerals and mining.",
+      "Practise Grade 10 exact coordinates, bearings, GIS, atmosphere, geomorphology, population structure/movement and water systems.",
       "Practise Grade 9 map and image interpretation, development comparisons, weathering, erosion, food systems and resource choices.",
       "Practise Grade 8 coordinates in degrees and minutes, ratio scale, world time, seasons, climate, settlements and transport.",
       "Practise Grade 6 latitude and longitude, word and line scales, imports and exports, climate profiles, population patterns and settlement factors.",
       "Practise Grade 7 local mapwork, route distances, Earth structure, earthquakes and floods, population change, resources and conservation.",
       "Interpret original evidence tables and a schematic cross-section, compare units and distinguish what evidence can support.",
-      "Use provincial outlines, capitals, country boundaries, compass directions, symbols, grids and routes. The planned curriculum journey extends through Grade 10."
+      "Use provincial outlines, capitals, country boundaries, compass directions, symbols, grids and routes. All seven grade paths include original topic practice."
     ],
     "faqs": [
       {
         "q": "Which grades and missions can I play?",
-        "a": "Grades 4, 6, 7, 8 and 9 each have 12 missions; Grade 5 has eight: 68 missions and 408 tasks in total. You can begin any of these grades. Each path unlocks its later missions through completion, and both atlases are available freely."
+        "a": "Grades 4, 6, 7, 8 and 9 each have 12 missions; Grade 5 has eight and Grade 10 has sixteen: 84 missions and 504 tasks in total. You can begin any of these grades. Each path unlocks its later missions through completion, and both atlases are available freely."
       },
       {
         "q": "Does a wrong answer end the game?",
@@ -711,7 +712,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Which curriculum and grades does Map Master cover?",
-        "a": "The learning journey follows South African CAPS geography topics for Grades 4–10. Grades 4–9 topic practice is playable now; The Grade 10 course is planned. The menu lists topics and availability for every grade. The activities support practice and are not a complete school course or an official assessment."
+        "a": "The learning journey follows South African CAPS geography topics for Grades 4–10. All seven grade paths offer playable topic practice. The menu lists topics and availability for every grade. The activities support practice and are not a complete school course or an official assessment."
       },
       {
         "q": "Is my old score preserved?",
@@ -719,7 +720,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Will my earlier Map Academy progress remain?",
-        "a": "Yes. All earlier Grade 4–8 missions keep their results, stars, current position and hint history on the same browser. New missions begin without invented completion. Music settings and the previous Explorer Missions best score are retained."
+        "a": "Yes. All earlier Grade 4–9 missions keep their results, stars, current position and hint history on the same browser. New missions begin without invented completion. Music settings and the previous Explorer Missions best score are retained."
       }
     ]
   },

@@ -43,3 +43,12 @@
 .photo-mode .north-chip{display:none}.photo-mode .map-caption{gap:6px}.photo-mode .map-credit{max-width:calc(100% - 70px)}
 
 .topo-mode .map-caption,.topo-mode .map-credit{display:none}
+
+/* Grade 10: native controls retain usable targets and labels at phone widths. */
+.seconds-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.seconds-fields>div{min-width:0}.seconds-fields label{font-size:12px}.seconds-fields select{width:100%;min-width:0;min-height:44px;padding:8px 5px;font-size:16px}
+.lab-toggles{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.lab-toggles button{flex:1;min-height:44px;font-size:12px}.lab-toggles [aria-pressed="true"]{background:#d6e6d7;border-color:#527c63}
+.evidence-body label{display:block;font-size:13px;font-weight:700;margin:10px 0}.evidence-body label select{display:block;width:100%;min-width:0;min-height:44px;margin-top:6px;font-size:16px;padding:8px}
+/* Keep off-screen table captions inside their scroll container on small viewports. */
+.evidence-table-wrap{position:relative}
+.workspace,.task-panel{min-width:0}
+.app-shell{grid-template-columns:minmax(0,1fr)}.brand>div{min-width:0}

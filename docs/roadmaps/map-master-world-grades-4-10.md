@@ -6,7 +6,7 @@ The product grows from an Africa-only pin quiz into a geographic learning advent
 
 Five complete Map Academy expeditions contain 30 authored tasks: symbols and legends, four-point directions, alphanumeric grids, grid routes and introductory world-map reading. The first four use a clearly identified fictional community plan. The fifth connects South Africa, Brazil and Japan with continental and hemispheric ideas. A free Explore mode opens the whole world independently of campaign unlocking.
 
-Activities identify their grade, term, curriculum source and enrichment scope. The current playable course is introductory Grade 4 mapwork with supported enrichment. It does not claim to provide all Grade 4 topics or playable Grade 5–10 courses yet.
+Activities identify their grade, term, curriculum source and enrichment scope. At that release, the playable course was introductory Grade 4 mapwork with supported enrichment. It does not claim to provide all Grade 4 topics or playable Grade 5–10 courses yet.
 
 The locally bundled Natural Earth 1:50m overview contains 242 mapped countries and territories, including all continents. This is a cartographic-feature count, not a sovereign-country count. Source outlines, interior holes, island polygons and every source vertex are retained. Rendering, markers and hit testing use one longitude/latitude transform. Pan, zoom, country search, keyboard alternatives, hints, explanations, mastery XP, badges and saved progress form the reusable learning foundation.
 
@@ -44,11 +44,19 @@ Twelve Grade 9 missions add 72 tasks: 68 missions / 408 tasks across Grades 4–
 
 The first 56 mission definitions, save keys/format, world/province geometry and all existing images remain unchanged. Native feature controls and a map key support phones and keyboards. Licensed South African national topo/orthophoto extracts, a real-country HDI thematic layer and independent field investigations remain further work; this increment does not claim a complete school course or assessment. Grade 10 remains planned. See `docs/learning/map-master-grade9-v5.5.md` for exact scope, sources and model units.
 
+## Grade 10 geography: v5.6.0
+
+Sixteen Grade 10 missions add 96 tasks, bringing the platform to **84 missions / 504 tasks across all seven Grades 4–10 paths**. Grade 10 starts independently and unlocks sequentially. Exact degrees/minutes/seconds entry, an original South African-style sheet index, a free 16-point compass inspector, a fictional GIS layer investigation and a sampled terrain profile extend the mapwork tools. Atmosphere structure/energy/moisture, a simplified weather station plot, rocks/tectonics/hazards, population distribution/structure/movement/health access, and oceans/catchments/water planning cover introductory topic practice across all four terms.
+
+The first 68 mission definitions, all existing geographic/image assets and saved-progress keys/format remain unchanged. Evidence tables accompany every new diagram; hypothetical observations, declination, sites and counts are labelled fictional. The terrain profile follows the existing metric hill geometry. Browser tests exercise all 504 tasks, with extra small-phone, landscape and desktop layout checks. See `docs/learning/map-master-grade10-v5.6.md` for the objective/source matrix and precise scope.
+
+All seven grades now offer topic practice. Deeper question banks, suitably licensed South African map/photo extracts, richer synoptic maps, independent fieldwork and teacher review remain future work. This increment does not claim a complete school course, official assessment or DBE endorsement.
+
 ## Curriculum paths
 
 Each grade is a separate learning path with units, short skill lessons, applied missions and mixed revision. Country/capital recognition is enrichment within a much broader geography curriculum. Mission counts will follow the objective matrix and review, rather than stretching one activity into an arbitrary fixed number of levels.
 
-| Grade | Curriculum coverage to build | Geographic scope and mission ideas |
+| Grade | Curriculum topic areas | Geographic scope and mission ideas |
 |---|---|---|
 | 4 | Settlements; map symbols, keys, grids and directions; food and farming; water in South Africa | Community plans; provinces and surrounding oceans; compare water sources and farming journeys; world orientation |
 | 5 | Africa map skills; South African physical features; weather, climate and vegetation; minerals and mining | Neighbouring countries, atlas journeys, rivers and escarpments, weather observations and resource maps |
@@ -58,9 +66,11 @@ Each grade is a separate learning path with units, short skill lessons, applied 
 | 9 | Topographic and orthophoto mapwork; development; surface processes; resource use/sustainability | Interpret real map/photo extracts, compare development evidence, investigate erosion and resource decisions |
 | 10 | Geographical skills/techniques; atmosphere; geomorphology; population; water resources | Global processes with local/South African applications, mapped evidence and fieldwork-style investigations |
 
-## Grade 10 depth
+## Grade 10 depth and remaining work
 
-The Grade 10 path must include more than harder location questions. Planned mapwork covers coordinates in degrees/minutes/seconds; word, ratio and line scales; the South African 1:50,000 map referencing system; conventional signs; 16-point directions; true and magnetic bearings; contours, slopes and simple cross-sections; straight and curved map-to-ground distances; and aerial/orthophoto interpretation.
+The Grade 10 path includes more than harder location questions. Its mapwork topic scope covers coordinates in degrees/minutes/seconds; word, ratio and line scales; the South African 1:50,000 map referencing system; conventional signs; 16-point directions; true and magnetic bearings; contours, slopes and simple cross-sections; straight and curved map-to-ground distances; and aerial/orthophoto interpretation.
+
+Current tools teach exact coordinate entry, a South African-style angular index, 16-point/true/magnetic bearings, supplied paper-scale arithmetic, contour profiles and a layer-based site shortlist. The historical Grade 9 US orthoimage remains available, but licensed South African national sheets and photo extracts are not bundled. Curved-distance work uses supplied section lengths; independent georeferenced tracing and full synoptic-map interpretation remain future lessons.
 
 GIS introduces its purpose, remote sensing and spatial objects, points, lines, nodes and scale. Fieldwork and evidence interpretation link the techniques to atmosphere/heating/moisture/synoptic maps, Earth structure and tectonics/folding/faulting/earthquakes/volcanoes, population distribution/structure/growth/migration, and world water/oceans/South African management/floods. Assessment plans will be checked against the applicable current school requirements before assessment claims are made.
 
@@ -74,7 +84,7 @@ The world overview is equirectangular and is not an equal-distance or equal-area
 4. **v5.3 — Grade 7 investigations:** local map techniques, natural hazards, population and conservation, with mixed skill revision.
 5. **v5.4 — Grade 8 connections:** maps/globes, climate, settlement, transport and trade through comparative world cases.
 6. **v5.5 — Grade 9 interpretation:** topographic and orthophoto activities, development, surface processes and sustainability.
-7. **v5.6 — Grade 10 geography:** the full topic/technique scope above, applied investigations and increasingly independent evidence-based responses.
+7. **v5.6 — Grade 10 geography:** introductory practice across the topic areas above, applied investigations and new coordinate, bearing, GIS and profile tools; deeper map/photo/fieldwork coverage follows.
 8. **Following releases — Classroom use and polish:** teacher assignment/review tools, printable learning summaries, topic revision, language support, optional narration, reviewed cultural/landmark material, richer soundscapes and a world-focused cover. Use a question bank with meaningful variants and spaced topic return.
 
 Every release contains only new/modified files, applies over the previous complete version, preserves existing save records and platform integration, and passes game/regression/local-build/asset checks before merge. Build locally, open a feature PR and merge after required GitHub checks pass, as authorised by the user. The user runs Cloudflare builds/deployments when ready; do not run Cloudflare release commands. Unsupported future units remain in this roadmap rather than appearing as inactive production buttons.

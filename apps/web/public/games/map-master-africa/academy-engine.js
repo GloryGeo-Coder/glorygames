@@ -34,7 +34,7 @@
   function answer(value){if(state.phase!=='question')return null;const q=question();if(q.type==='route'){
     const expected=q.answer[state.route.length];if(value===expected){state.route.push(value);if(state.route.length<q.answer.length)return {partial:true};}else return finish(false,value);
    }
-   const correct=q.type==='map-measure'?I.inspect(value,q):q.type==='street-route'?!!F.inspect(value,q).complete:q.type==='number'?typeof value==='number'&&Number.isFinite(value)&&Math.abs(value-q.answer)<1e-7:['coordinate','dm-coordinate'].includes(q.type)?Array.isArray(value)&&value.length===2&&q.answer.every((n,i)=>Number.isFinite(value[i])&&value[i]===n):q.type==='route'||value===q.answer;
+   const correct=q.type==='map-measure'?I.inspect(value,q):q.type==='street-route'?!!F.inspect(value,q).complete:q.type==='number'?typeof value==='number'&&Number.isFinite(value)&&Math.abs(value-q.answer)<1e-7:['coordinate','dm-coordinate','dms-coordinate'].includes(q.type)?Array.isArray(value)&&value.length===2&&q.answer.every((n,i)=>Number.isFinite(value[i])&&value[i]===n):q.type==='route'||value===q.answer;
    return finish(correct,value);
   }
   function finish(correct,value){const q=question();if(!correct){state.attempts++;state.mistakes++;state.route=[];cursor();}
