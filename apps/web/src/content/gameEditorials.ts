@@ -620,7 +620,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "map-master-africa": {
     "category": "Educational",
-    "summary": "Practise Grades 4–10 geography through 84 missions and 504 tasks, then explore South Africa’s nine provinces and the world. All seven grade paths are available.",
+    "summary": "Practise Grades 4–10 geography through 84 missions and 504 tasks, then explore South Africa’s nine provinces and the world. All seven grade paths include revision and local learning summaries.",
     "overview": [
       "Seven playable learning paths provide topic practice for Grades 4–10. Grades 4, 6, 7, 8 and 9 each have 12 missions; Grade 5 has eight and Grade 10 has sixteen. Each mission has six tasks, a field note, explanations, hints and an earned badge. Grade 10 adds 16 missions across advanced skills, atmosphere, geomorphology, population and water resources.",
       "Grade 4 combines the original five Map Academy expeditions with settlements, provincial geography, food and farming, and water investigations. Grade 5 introduces African neighbours and directions, physical features, weather and climate evidence, vegetation, minerals and mining. Grade 6 adds world coordinates, word and line scales, trade, climate and vegetation comparisons, population and settlement investigations. Grade 7 adds a street-route planner, Earth structure, historical hazard cases, population graphs and conservation investigations. Grade 8 adds coordinates in degrees and minutes, ratio scale, world time, seasons, climate graphs, settlements and transport. Grade 9 adds contour interpretation, a metric distance tool, a historical USGS orthoimage, development indicators, erosion, food security and resource sustainability. Grade 10 adds exact seconds entry, compass bearings, GIS layer inspection, terrain profiles, age-sex diagrams, weather interpretation and water investigations. These are original practice activities, not a complete school course or an official assessment.",
@@ -636,6 +636,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "For a route, tap neighbouring squares in order. Coordinate tasks use labelled latitude and longitude controls; a map tap previews a 30-degree intersection before Check point records your answer. The Grade 7 street planner accepts connected open routes within the stated distance limit. Add junctions, use Undo or Start again freely, then Check route. Grade 8 coordinates use degree, minute and hemisphere controls; numeric answers show their unit. Ratio-scale tasks supply paper measurements rather than screen centimetres. On the Grade 9 metric plan, select two endpoints and Check measurement; Reset edits the draft freely. The historical web image has no ground ruler. Grade 10 coordinate tasks include seconds. Compass, GIS and profile inspection are free; Check records the task answer. Dragging only pans the map.",
       "Use Map key freely. Hint provides guidance; Find opens a searchable country close-up and counts as a hint during a mission.",
       "Read the explanation, then choose Continue. Mistakes allow another attempt without losing the whole expedition.",
+      "From the menu, choose focus-topic or mixed revision to revisit up to six tasks you have tried. Fifty-six alternate activities change selected values, evidence or map targets. Resume an unfinished set, and use Learning summary to review or print grade/topic progress. Revision records practice separately; replay campaign missions to improve Atlas XP and stars.",
       "Complete a mission to unlock the next within its grade. Open either free atlas at any time, and use the atlas selector to switch between world countries and South African provinces."
     ],
     "desktop": [
@@ -649,6 +650,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Rotation or interruptions pause the expedition. Resume explicitly when ready."
     ],
     "systems": [
+      {
+        "title": "Revision and learning summaries",
+        "body": "Short focus sets prioritise recent mistakes, hints and supported answers; mixed sets revisit earlier tasks. Some use one of 56 authored alternatives. An independent revision answer clears its focus flag. Grade/topic summaries show tasks tried, best independent campaign answers and next practice, with a printable view. Revision resumes on the same browser and preserves the campaign cursor, XP, stars and unlocks."
+      },
       {
         "title": "Grades 4–10 learning paths",
         "body": "Eighty-four missions contain 504 tasks. Each grade progresses independently, so learners can begin Grade 5, 6, 7, 8, 9 or 10 without clearing earlier grades."
@@ -698,6 +703,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Use provincial outlines, capitals, country boundaries, compass directions, symbols, grids and routes. All seven grade paths include original topic practice."
     ],
     "faqs": [
+      {
+        "q": "How does revision affect my campaign progress?",
+        "a": "Revision uses a separate local practice record. It can clear tasks from your focus list, while campaign XP, stars, unlocks and your saved campaign position remain intact. Replay a campaign mission to improve its best result. Existing saves seed focus from supported results and pending mistakes; detailed recent history begins with the learning tools."
+      },
       {
         "q": "Which grades and missions can I play?",
         "a": "Grades 4, 6, 7, 8 and 9 each have 12 missions; Grade 5 has eight and Grade 10 has sixteen: 84 missions and 504 tasks in total. You can begin any of these grades. Each path unlocks its later missions through completion, and both atlases are available freely."

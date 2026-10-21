@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Practise geography through all seven Grades 4\u201310 paths: 84 missions and 504 tasks. Explore world and South African atlases, exact coordinates, terrain profiles, compass bearings, GIS, atmosphere, population and water investigations. Original topic practice with saved progress.",
+  "description": "Practise Grades 4–10 geography through 84 missions and 504 campaign tasks. Revisit focus topics in short revision sets, try 56 alternate activities and explore world and South African atlases. Local grade/topic summaries track your practice.",
   "tags": [
     "geography",
     "world",
@@ -29,7 +29,7 @@
       "action": "Pan the map; arrows move focus within the town grid"
     },
     {
-      "key": "Pinch / + / \u2212",
+      "key": "Pinch / + / −",
       "action": "Zoom the map"
     },
     {
@@ -111,7 +111,12 @@
     "compassInspection": true,
     "gisLayerInvestigation": true,
     "populationStructure": true,
-    "terrainProfile": true
+    "terrainProfile": true,
+    "revisionPractice": true,
+    "revisionVariants": 56,
+    "gradeTopicSummaries": true,
+    "printableLearningSummary": true,
+    "resumableRevision": true
   },
-  "version": "5.6.0"
+  "version": "5.7.0"
 }

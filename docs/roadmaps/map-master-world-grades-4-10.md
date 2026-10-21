@@ -52,6 +52,14 @@ The first 68 mission definitions, all existing geographic/image assets and saved
 
 All seven grades now offer topic practice. Deeper question banks, suitably licensed South African map/photo extracts, richer synoptic maps, independent fieldwork and teacher review remain future work. This increment does not claim a complete school course, official assessment or DBE endorsement.
 
+## Revision and learning polish: v5.7.0
+
+The 84-mission / 504-task campaign is retained exactly. Short focus and mixed revision sets revisit tried tasks across Grades 4–10, with 56 authored alternatives (eight per grade). A separate local record tracks recent support/mistakes and independent revision; it preserves campaign XP, stars, unlocks and cursor. Grade/topic summaries distinguish tasks tried, best independent campaign answers and next practice, and support browser printing. Unfinished revision can resume; the menu explains the single saved-set model.
+
+Existing sources, images, geography and music are unchanged. Local tests and Chromium cover complete campaign/revision runs, all alternate activities, save compatibility, phone/landscape/desktop controls and the printed report. Detailed rules, units and limitations are in `docs/learning/map-master-revision-v5.7.md`.
+
+The next release step is user-run Cloudflare deployment and real-device/learner playtesting. Teacher dashboards, assignments, shared/cloud records, languages, narration and deeper reviewed mapwork remain optional expansion work. All seven grade paths now provide playable topic practice, with revision; this is not a complete school course or official assessment.
+
 ## Curriculum paths
 
 Each grade is a separate learning path with units, short skill lessons, applied missions and mixed revision. Country/capital recognition is enrichment within a much broader geography curriculum. Mission counts will follow the objective matrix and review, rather than stretching one activity into an arbitrary fixed number of levels.
@@ -85,7 +93,8 @@ The world overview is equirectangular and is not an equal-distance or equal-area
 5. **v5.4 — Grade 8 connections:** maps/globes, climate, settlement, transport and trade through comparative world cases.
 6. **v5.5 — Grade 9 interpretation:** topographic and orthophoto activities, development, surface processes and sustainability.
 7. **v5.6 — Grade 10 geography:** introductory practice across the topic areas above, applied investigations and new coordinate, bearing, GIS and profile tools; deeper map/photo/fieldwork coverage follows.
-8. **Following releases — Classroom use and polish:** teacher assignment/review tools, printable learning summaries, topic revision, language support, optional narration, reviewed cultural/landmark material, richer soundscapes and a world-focused cover. Use a question bank with meaningful variants and spaced topic return.
+8. **v5.7 — Revision and learning polish:** short focus/mixed sets, 56 alternate activities, local grade/topic summaries and printing, with campaign progress retained.
+9. **Following releases — Optional classroom use and expansion:** teacher assignment/review tools, printable learning summaries, topic revision, language support, optional narration, reviewed cultural/landmark material, richer soundscapes and a world-focused cover. Use a question bank with meaningful variants and spaced topic return.
 
 Every release contains only new/modified files, applies over the previous complete version, preserves existing save records and platform integration, and passes game/regression/local-build/asset checks before merge. Build locally, open a feature PR and merge after required GitHub checks pass, as authorised by the user. The user runs Cloudflare builds/deployments when ready; do not run Cloudflare release commands. Unsupported future units remain in this roadmap rather than appearing as inactive production buttons.
 
