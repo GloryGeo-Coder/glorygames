@@ -3,6 +3,7 @@
 
 export type GameEditorial = {
   category: string;
+  sponsor?: string;
   summary: string;
   overview: string[];
   story: string[];
@@ -1012,14 +1013,18 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "recycle-rush": {
     "category": "Educational",
+    "sponsor": "Fibre Circle",
     "summary": "Restore Verdale with Circuit in fifteen story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
     "overview": [
-      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Fifteen untimed story missions contain three saved areas and 18 recovery tasks each. Circuit and Grime use illustrated animation frames matching the game artwork, with a different original music theme for every story mission. Market and recovery-district missions add thirty saved community decisions with feedback and clues. Fifteen collection dispatch boards ask players to plan pickups and accepted deliveries, manage vehicle space and protect separate material streams. Three Grime showdowns bring the districts together.",
-      "Tap an object to inspect its material and condition. Fold empty boxes, tip and empty bottles, clear food scraps, check reusable goods or help Sam plan a qualified repair. Then tap or drag to an accepted destination. Wrong choices explain the reason and let you try again. The separate 20-mission arcade campaign retains its eight eco-hubs, Grime bosses, badges, powers and endless Loop Mode, with the new item art and animated Grime hazards."
+      "Bring colour back to Verdale in Recycle Rush: Restore Verdale, a recycling adventure sponsored by Fibre Circle. Join Circuit and Professor Loop as they help a community rebuild its collection points, share useful goods and connect everyday recovery choices to a cleaner town.",
+      "Explore fifteen story missions across the school, neighbourhood, market and recovery district. Inspect each object, prepare accepted packaging, share usable books and clothes, and refer electrical repairs to qualified experts. Solve community requests and plan collection rounds, choosing pickups and accepted deliveries while managing the vehicle’s available load space.",
+      "Choose community projects, build clean sorting streaks and use recovered energy to face Grime in three showdowns. Animated characters and original mission music accompany untimed story play, with clues, feedback and checkpoints saved on your device. For a faster challenge, enter the separate 20-mission Arcade Campaign, master its power-ups and bosses, and complete it to unlock endless Loop Mode."
     ],
     "story": [
-      "Circuit wakes in a neglected school workshop as Grime feeds on mixed rubbish. Professor Loop asks you to bring the school’s recovery station back to life.",
-      "Nandi helps protect clean materials, Sam assesses repairs, and Musa connects neighbourhood collection to a recovery centre. Asha organises the market, and Lebo connects Musa’s collections to the recovery district. Each completed mission shows another part of the community working again."
+      "Circuit awakens beneath a dusty workbench in Verdale’s neglected school workshop. Outside, mixed rubbish has stalled the recovery station, and Grime is growing stronger with every misplaced item. Professor Loop gives Circuit a first task: clear the courtyard and get the school’s collection system working again.",
+      "With Nandi, the school caretaker, Circuit learns why clean paper must stay away from food and wet waste. Sam, the repair technician, assesses broken devices while neighbours share readable books and wearable clothes at the exchange shelf. When Grime blocks the school gate, the community’s recovery work powers the first Loop Pulse showdown.",
+      "News reaches the market, where organiser Asha needs help with delivery boxes, lunch waste and a busy swap day. Circuit works with the traders to protect clean materials, prepare packaging and reopen the community station. As the festival approaches, Grime returns to the square, and the market team must restore its lights together.",
+      "The journey continues with Musa, the community collector, and Lebo, the recovery coordinator. Plan collection rounds, protect fibre from the rain, check accepted destinations and keep delivery records tied to completed visits. When Grime cuts off the recovery district, reconnect the network and bring the school, market and collection teams together to power The Loop."
     ],
     "howToPlay": [
       "Choose Begin Story or continue a saved story mission. New missions unlock in order.",

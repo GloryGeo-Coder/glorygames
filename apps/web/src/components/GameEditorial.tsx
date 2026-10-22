@@ -56,7 +56,9 @@ export default function GameEditorial({ slug, title }: Props) {
       <div className="sectionTitle">
         <div>
           <span className="badge">Complete game guide</span>
-          <h2 id={`guide-${slug}`}>Discover {title}</h2>
+          <h2 id={`guide-${slug}`}>
+            Discover {title}{guide.sponsor ? ` - Sponsored by ${guide.sponsor}` : ""}
+          </h2>
           <p>
             A practical guide to the game's premise, controls, objectives,
             progression and useful strategies.

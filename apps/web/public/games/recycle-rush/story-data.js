@@ -7,7 +7,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (P, D) {
   'use strict';
   const SAVE_KEY = 'wga_recycle_restore_v1';
-  const SOURCES = ['https://petco.co.za/consumers/'];
+  const SOURCES = ['https://fibrecircle.co.za/zithande_mzansi.html'];
   const routes = {
     paper: { label: 'Paper & card', icon: 'assets/sprites/item-newspaper.png', color: '#70d8ff' },
     containers: { label: 'Empty containers', icon: 'assets/sprites/item-plastic-bottle.png', color: '#74eda8' },

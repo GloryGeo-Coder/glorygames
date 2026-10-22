@@ -36,7 +36,7 @@ Arcade storage remains `wga_recycle_rush_2_save_v1` and `wga_recycle_rush_2_best
 
 The story's service boards describe a fictional community, not universal bin colours or acceptance rules. The player sees material, condition, required preparation and accepted destination. Cartons and glass explicitly use this service's recovery centre. A battery task asks a supervisor to arrange collection; electrical assessment is performed by a qualified repairer. Players are not instructed to open devices, handle damaged batteries or pick up broken glass. No invented real-world prices, carbon totals or curriculum certification are claimed.
 
-Petco's consumer guidance supports checking the packaging label and local collector, preventing contamination, preparing empty packaging, the role of collectors/buy-back centres and carton collection where infrastructure accepts it: <https://petco.co.za/consumers/>. This guidance is linked from the in-game service board.
+Current learning resource (updated after this release): Fibre Circle’s Zithande Mzansi programme, <https://fibrecircle.co.za/zithande_mzansi.html>. The in-game service board links to this resource. The mission acceptance rules describe Verdale’s fictional local services, and players are still directed to check their own collector’s current guidance.
 
 ## Validation
 
