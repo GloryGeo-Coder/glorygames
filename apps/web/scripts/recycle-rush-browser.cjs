@@ -77,7 +77,7 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
     }
    }
    if(m.dispatch){
-    assert.equal(await page.locator('#storyModalTitle').textContent(),'Collection dispatch');await noOverflow();const jobs=L.dispatch.jobs(m.dispatch[stop]);
+    assert.equal(await page.locator('#storyModalTitle').textContent(),'Collection dispatch');await noOverflow();if(m.dispatch[stop].separate)assert.match(await page.locator('.dispatch-capacity').textContent(),/Separate trips required/);const jobs=L.dispatch.jobs(m.dispatch[stop]);
     const visit=async id=>{const locator=page.locator(`[data-dispatch-job="${id}"]`);await locator.scrollIntoViewIfNeeded();await bounds(`[data-dispatch-job="${id}"]`);const b=await locator.boundingBox();assert.ok(b.width>=44&&b.height>=44);await activate(`[data-dispatch-job="${id}"]`);};
     if(mi===10&&stop===0){
      await visit(jobs[1].id);assert.match(await page.locator('#dispatchFeedback').textContent(),/Collect/);await named('Dispatch Clue');assert.match(await page.locator('#dispatchFeedback').textContent(),/Next useful stop/);

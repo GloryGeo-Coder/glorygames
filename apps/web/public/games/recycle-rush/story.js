@@ -349,7 +349,7 @@
     box.replaceChildren(); actions.replaceChildren(); $('storyModalTitle').textContent = 'Collection dispatch';
     box.append(paragraph(plan.title, 'eyebrow'), paragraph(plan.brief, 'dispatch-help'));
     const capacity = document.createElement('div'); capacity.className = 'dispatch-capacity';
-    capacity.append(paragraph(`Vehicle load spaces: ${state.used}/${plan.capacity} · Stops visited: ${state.done.length}/4`));
+    capacity.append(paragraph(`Vehicle load spaces: ${state.used}/${plan.capacity} · Stops visited: ${state.done.length}/4${plan.separate ? ' · Separate trips required' : ''}`));
     const meter = document.createElement('progress'); meter.max = plan.capacity; meter.value = state.used; meter.setAttribute('aria-label', 'Occupied vehicle load spaces'); capacity.append(meter); box.append(capacity);
     const cargo = document.createElement('div'); cargo.className = 'dispatch-cargo';
     if (!state.cargo.length) cargo.append(paragraph('Vehicle empty · choose a pickup.'));
