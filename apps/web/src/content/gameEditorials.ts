@@ -743,73 +743,94 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ]
   },
   "math-sprint-arena": {
-    "category": "Educational",
-    "summary": "Solve arithmetic, fraction, multiplication, geometry and algebra challenges in a neon-themed maths runner.",
-    "overview": [
-      "Math Sprint Arena combines mathematical questions with a fast-moving, neon-styled challenge. The game's curriculum themes include arithmetic, multiplication, fractions, geometry and introductory algebra, making it more varied than a single-operation flash-card quiz.",
-      "The central idea is to keep mathematical thinking active under the rhythm of a runner-style game. A problem might require identifying a numerical result, interpreting a fraction or recognising a simple relationship; a strong player combines accuracy with attention to the next challenge on screen."
-    ],
-    "story": [
-      "Inside a luminous mathematics arena, every new challenge asks you to think before you move. Numbers, fractions, shapes and simple algebraic patterns become part of a fast-paced contest where accuracy matters as much as timing.",
-      "Some gates demand quick arithmetic, while others require careful interpretation of fractions or geometric ideas. The excitement builds as you practise recognising patterns and checking answers under pressure."
-    ],
-    "howToPlay": [
-      "Start the current arena challenge and identify the maths question being presented.",
-      "Work out the answer before committing to an option or passing through a response gate.",
-      "Use the movement or selection controls displayed inside the game to make your choice.",
-      "Pay attention when the subject changes from whole-number arithmetic to fractions, shapes or algebra.",
-      "Review what caused an incorrect choice and try another run with a slower, more deliberate calculation."
-    ],
-    "desktop": [
-      "Read each maths prompt and use the keyboard or pointer controls shown inside the arena to choose your answer."
-    ],
-    "mobile": [
-      "Use the on-screen answer or steering controls shown by the current game version.",
-      "Give yourself time to read the whole question before making a gesture."
-    ],
-    "systems": [
-      {
-        "title": "Multiple mathematics topics",
-        "body": "The curriculum areas are arithmetic, multiplication, fractions, geometry and algebra."
-      },
-      {
-        "title": "Answer gates",
-        "body": "Mathematical decisions are built into a runner-like environment, so reading and timing interact."
-      },
-      {
-        "title": "Repeatable practice",
-        "body": "Trying a new attempt after a mistake helps reveal which topics need review."
-      }
-    ],
-    "progression": [
-      "Move through mathematics challenges spanning arithmetic, multiplication, fractions, geometry and introductory algebra. Correct reasoning and increasingly confident answer choices are the heart of the progression.",
-      "The important progress measure is whether you can solve questions accurately as the format or subject changes."
-    ],
-    "tips": [
-      "Compute the answer before focusing on the on-screen response positions.",
-      "For fractions, first check whether the denominators are equal and whether simplification is needed.",
-      "For geometry questions, identify the relevant shape or measurement before calculating.",
-      "Use estimation as a quick check for clearly impossible answers.",
-      "After a missed question, work through the method rather than memorising only the displayed answer."
-    ],
-    "learning": [
-      "Practise core school mathematics across different topics.",
-      "Develop quick checking, estimation and error-correction habits."
-    ],
-    "faqs": [
-      {
-        "q": "What maths topics are included?",
-        "a": "The game features arithmetic, multiplication, fractions, geometry and algebra."
-      },
-      {
-        "q": "Which keys control the runner?",
-        "a": "Use the on-screen instructions to move between answer options. The challenge is to choose the right maths result before passing through the gate."
-      },
-      {
-        "q": "Is this a formal maths assessment?",
-        "a": "No. It is a game-based practice activity, not a diagnostic assessment of mathematical ability."
-      }
-    ]
+      "category": "Educational",
+      "summary": "Restore Number City through ten untimed Grade 4 maths missions with visual puzzles, saved checkpoints and progressive hints, or take on the 52-level Sprint.",
+      "overview": [
+          "Math Sprint Arena turns selected Grade 4 mathematics skills into a journey through Number City. Build four-digit numbers, navigate number lines, calculate workshop supplies, arrange equal groups, share energy, discover patterns, handle money and repair fraction bridges.",
+          "Adventure contains ten missions and 50 activities. Learn mode lets you practise any of these missions without a timer or an unlock requirement. The separate Sprint retains 52 timed levels across arithmetic, fractions, multiplication, geometry and algebra."
+      ],
+      "story": [
+          "Number City has lost power, and Pi-Bot needs a resourceful partner to restore it. Each neighbourhood has a different problem: power columns need their numbers rebuilt, generators need equal shares, tram signals need their patterns repaired, and bridges need the right fraction of light.",
+          "Your work reconnects the workshop, station, market and bridges. The final Number City Champion mission combines several skills before the city celebrates its restoration."
+      ],
+      "howToPlay": [
+          "Choose Adventure to follow the ten-mission route, Learn & Practise to work freely on a topic, or Play Sprint for the timed challenge.",
+          "In Adventure and Learn, read the task and use its controls. Build place values with + and −, tap equal bridge parts, or enter a number on the keypad.",
+          "Select Check answer. A mistake is recoverable: use the feedback, request a hint and try again.",
+          "After a correct answer, read the explanation and select Next activity. Complete all five activities to finish a mission.",
+          "Adventure unlocks the next mission after completion. Use Menu & sound to adjust volumes, read the mission strategy or return home."
+      ],
+      "desktop": [
+          "Use the pointer to operate the place-value columns, fraction pieces and keypad. For numerical entry tasks, you can also type digits, a decimal point or comma, and Backspace.",
+          "In Sprint, choose an answer tile or press 1–4. Arrow keys or A/D change lanes; Space pauses or resumes."
+      ],
+      "mobile": [
+          "Tap the large on-screen controls. The built-in number pad keeps the task visible while you enter an answer.",
+          "Portrait and landscape layouts keep the learning controls together. Menu & sound contains the mission strategy, volume controls and Enter Fullscreen where the browser supports it."
+      ],
+      "systems": [
+          {
+              "title": "Ten untimed learning missions",
+              "body": "Number City contains 50 activities across selected Grade 4 skills. Adventure follows a progressive route; Learn allows free topic practice."
+          },
+          {
+              "title": "Visual mathematics",
+              "body": "Place-value columns, equal fraction parts, number lines, arrays and labelled diagrams connect the question to a mathematical model."
+          },
+          {
+              "title": "Progressive support",
+              "body": "Each activity offers three stages of help. Correct answers stay visible with their explanation until you choose to continue."
+          },
+          {
+              "title": "Separate learning and Sprint progress",
+              "body": "Learning records independent answers separately from answers completed with hints or retries. Learn mode does not unlock Adventure or submit Sprint scores."
+          },
+          {
+              "title": "Level music and sound",
+              "body": "All ten learning missions and 52 Sprint levels have distinct original musical arrangements. Music and effects have separate volume controls."
+          }
+      ],
+      "progression": [
+          "Each Adventure mission requires five completed activities before the next mission unlocks. Independent answers earn stronger mission results; supported completion still lets you continue learning. Replaying with support does not erase a better previous result.",
+          "Learning checkpoints and Sprint checkpoints save separately on the same browser when local storage is available. The earlier Sprint best-score record is retained. Refreshing does not require restarting a saved mission."
+      ],
+      "tips": [
+          "Read the complete task and identify what it asks you to find.",
+          "Use the visual model or break a calculation into smaller steps before entering an answer.",
+          "Ask for a hint when you need one. Supported practice is part of learning.",
+          "For money, check that rands and cents are in the right columns.",
+          "Try Sprint after practising a topic at a comfortable pace."
+      ],
+      "learning": [
+          "Practise selected Grade 4 CAPS skills: place value, whole-number calculations, number patterns, money contexts, common fractions and perimeter.",
+          "Use models, explanations and retries to connect a method with its result. This chapter is a practice resource rather than a complete Grade 4 course or a formal assessment."
+      ],
+      "faqs": [
+          {
+              "q": "Which grades does the learning chapter cover?",
+              "a": "Number City currently practises selected Grade 4 CAPS mathematics skills. Its ten missions do not claim complete Grade 4 curriculum coverage. Sprint has mixed-topic questions and is not a grade assessment."
+          },
+          {
+              "q": "Do I have to race against a timer?",
+              "a": "No. Adventure and Learn are untimed, with hints and recoverable mistakes. Sprint is the optional timed mode."
+          },
+          {
+              "q": "Can I practise a locked Adventure topic?",
+              "a": "Yes. Choose Learn & Practise, or enable Browse all missions for free practice on the home screen. Practice does not unlock Adventure missions."
+          },
+          {
+              "q": "How are independent and assisted answers recorded?",
+              "a": "An independent answer is correct without a previous mistake or hint on that activity. Hints and retries mark the answer as completed with support. Both can complete an Adventure mission."
+          },
+          {
+              "q": "Will progress survive a refresh?",
+              "a": "Yes, when browser storage is available. Checkpoints save on the same browser and device. If storage is blocked, the game remains playable and shows that saving is unavailable."
+          },
+          {
+              "q": "Will my previous best Sprint score remain?",
+              "a": "Yes. The existing best-score key is retained, while the learning chapter and new Sprint checkpoint use separate save records."
+          }
+      ]
   },
   "neon-hover-runner": {
     "category": "Racing",

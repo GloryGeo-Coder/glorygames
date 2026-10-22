@@ -3,6 +3,12 @@
 
   const GAME_SLUG = 'math-sprint-arena';
   const BEST_KEY = 'wga_math_sprint_arena_v3_best';
+  const SAVE_KEY = 'wga_math_sprint_arena_v4_sprint';
+  const read = key => { try { return localStorage.getItem(key); } catch { return null; } };
+  const write = (key,value) => { try { localStorage.setItem(key,value); return true; } catch { return false; } };
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  let pending = null, assetsReady = false, assetPromise = null;
+
 
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
@@ -199,7 +205,7 @@
     coins: 0,
     gems: 0,
     stars: 0,
-    best: Number(localStorage.getItem(BEST_KEY) || 0),
+    best: Math.max(0, Math.min(1000000000, Number(read(BEST_KEY)) || 0)),
     question: null,
     options: [],
     timeLeft: 20,
@@ -220,9 +226,7 @@
   };
 
   let last = performance.now();
-  let AC = null;
-  let master = null;
-  let musicTimer = null;
+
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
@@ -278,7 +282,7 @@
     ];
     const lane = state.lanes[state.playerLane] || state.lanes[1];
     state.playerX = lane.x;
-    state.playerY = lane.y - 78;
+    state.playerY = lane.y - 30 * Math.max(.55, Math.min(1,w/650,h/430));
   }
 
   function generateQuestion() {
@@ -317,11 +321,12 @@
         ['1/5', 0.2], ['2/5', 0.4], ['4/5', 0.8], ['1/10', 0.1], ['7/10', 0.7]
       ];
       if (local <= 4) {
-        const [f, val] = pairs[randInt(0, Math.min(5, pairs.length - 1))];
-        q = `Which is equal to ${f}?`;
-        answer = val;
+        const [f] = pairs[randInt(0, pairs.length - 1)];
+        const [n,d] = f.split('/').map(Number);
+        q = `Which fraction equals ${f}?`;
+        answer = `${n*2}/${d*2}`;
         topic = 'Fractions';
-        explanation = `${f} can be written as ${val}.`;
+        explanation = `Multiply both parts of ${f} by 2 to get ${answer}.`;
       } else if (local <= 7) {
         const a = randInt(1, 5);
         const b = [2, 3, 4, 5, 6, 8, 10][randInt(0, 6)];
@@ -379,19 +384,20 @@
       } else if (local <= 6) {
         const l = randInt(3, 14);
         const w = randInt(2, 10);
-        q = `Area: ${l} × ${w}`;
+        q = `Rectangle ${l} cm × ${w} cm: area in cm²?`;
         answer = l * w;
         explanation = `Rectangle area is length × width.`;
       } else if (local <= 9) {
         const l = randInt(3, 15);
         const w = randInt(2, 12);
-        q = `Perimeter: ${l}, ${w}`;
+        q = `Rectangle ${l} cm × ${w} cm: perimeter in cm?`;
         answer = 2 * (l + w);
         explanation = `Rectangle perimeter is 2 × (${l}+${w}).`;
       } else {
         const a = randInt(20, 80);
-        q = `Triangle angles: ${a}° + ? + ${100-a}° = 180°`;
-        answer = 80;
+        const b = randInt(20,80);
+        q = `Triangle: ${a}° + ${b}° + ? = 180°`;
+        answer = 180-a-b;
         explanation = `Angles in a triangle add to 180°.`;
       }
     }
@@ -419,6 +425,8 @@
       }
     }
 
+    if (world.key === 'algebra') q = `Solve for x: ${q}`;
+    else if (!q.includes('?')) q += ' = ?';
     const options = makeOptions(answer, world.key);
     state.question = { text: q, answer, topic, explanation };
     state.options = options;
@@ -433,7 +441,7 @@
     if (typeof answer === 'string') {
       const [n, d] = answer.split('/').map(Number);
       const wrong = new Set([`${n+1}/${d}`, `${Math.max(1,n-1)}/${d}`, `${n}/${d+1}`, `${n+2}/${d}`]);
-      return shuffle([answer, ...[...wrong].filter(x => x !== answer).slice(0, 3)]);
+      return shuffle([answer, ...[...wrong].filter(x => !window.MathLearning.equivalent(x, answer)).slice(0, 3)]);
     }
     if (type === 'fractions' && answer < 1) {
       const options = new Set([answer]);
@@ -498,17 +506,17 @@
       toast(`Correct! +${earned}. ${state.question.explanation}`, 'good');
       sfx('good');
 
-      setTimeout(nextRound, 650);
+      pending = { kind: 'round', remaining: .65 };
     } else {
       state.lives -= 1;
       state.streak = 0;
       makeParticles('#ff496e', 28);
       toast(`Not quite. Correct answer: ${state.question.answer}. ${state.question.explanation}`, 'bad');
       sfx('bad');
-      if (state.lives <= 0) setTimeout(gameOver, 900);
-      else setTimeout(() => { state.answered = false; syncUI(); }, 900);
+      pending = { kind: state.lives <= 0 ? 'over' : 'retry', remaining: .9 };
     }
     syncUI();
+    saveSprint();
     postScore('live');
   }
 
@@ -531,6 +539,7 @@
       generateQuestion();
       syncUI();
     }
+    saveSprint();
   }
 
   function completeLevel() {
@@ -541,7 +550,7 @@
     state.score += 400 + levelStars * 125;
     state.levelResults[state.level] = levelStars;
     state.best = Math.max(state.best, state.score);
-    localStorage.setItem(BEST_KEY, String(state.best));
+    write(BEST_KEY, String(state.best));
     sfx('level');
 
     const oldWorld = getWorldByLevel();
@@ -564,27 +573,32 @@
     } else {
       victory();
     }
+    saveSprint();
     postScore('level_complete');
   }
 
   function gameOver() {
     state.paused = true;
     state.best = Math.max(state.best, state.score);
-    localStorage.setItem(BEST_KEY, String(state.best));
+    write(BEST_KEY, String(state.best));
     showOverlay('Sprint Failed', `You ran out of lives. Final score: ${state.score}. Train again and beat your best.`, 'Restart');
+    saveSprint();
     postScore('game_over');
   }
 
   function victory() {
     state.paused = true;
-    state.best = Math.max(state.best, state.score);
-    localStorage.setItem(BEST_KEY, String(state.best));
     state.score += 1500;
+    state.best = Math.max(state.best, state.score);
+    write(BEST_KEY, String(state.best));
     showOverlay('Arena Champion!', `You cleared every Math Gate and became the Arena Champion. Final score: ${state.score}.`, 'Play Again');
+    saveSprint();
     postScore('game_won');
   }
 
   function showOverlay(title, text, button) {
+    state.paused = true;
+    stopMusic();
     ui.overlayTitle.textContent = title;
     ui.overlayText.textContent = text;
     ui.startBtn.textContent = button;
@@ -603,12 +617,14 @@
     state.paused = false;
     hideOverlay();
     startMusic();
-    generateQuestion();
+    if (!state.question) generateQuestion();
     syncUI();
+    saveSprint();
     toast('Sprint started. Choose the correct answer tile!', 'good');
   }
 
   function resetGame() {
+    pending = null;
     state.started = true;
     state.paused = false;
     state.level = 1;
@@ -630,22 +646,24 @@
 
   function hint() {
     if (!state.question) return;
-    const answer = state.question.answer;
-    toast(`Hint: Think step by step. This one is about ${state.question.topic}.`, 'warn');
+    if (!state.started || state.paused || state.answered) return;
+    toast(`Hint: ${state.question.explanation}`, 'warn');
     state.score = Math.max(0, state.score - 20);
     syncUI();
   }
 
   function skip() {
-    if (!state.started || state.paused) return;
+    if (!state.started || state.paused || state.answered) return;
     state.score = Math.max(0, state.score - 50);
     state.streak = 0;
-    toast(`Skipped. Answer was ${state.question.answer}. -50 points.`, 'warn');
-    nextRound();
+    toast(`New question. Previous answer: ${state.question.answer}. -50 points.`, 'warn');
+    generateQuestion();
+    saveSprint();
     syncUI();
   }
 
   function moveLane(delta) {
+    if (!state.started || state.paused) return;
     state.playerLane = clamp(state.playerLane + delta, 0, 2);
     sfx('tap');
   }
@@ -674,7 +692,7 @@
     ui.starValue.textContent = state.stars;
     ui.gateCount.textContent = `${world.index + 1} / ${WORLDS.length}`;
     ui.questionTopic.textContent = world.name;
-    ui.questionText.textContent = state.question ? `${state.question.text} = ?` : 'Ready?';
+    ui.questionText.textContent = state.question ? state.question.text : 'Ready?';
     ui.timerText.textContent = `${Math.ceil(state.timeLeft)}s`;
     ui.muteBtn.textContent = state.muted ? 'Sound Off' : 'Sound On';
     ui.pauseBtn.textContent = state.paused && state.started ? 'Resume' : 'Pause';
@@ -788,6 +806,8 @@
   function drawPlatform(x, y, width, height, color, active) {
     ctx.save();
     ctx.translate(x, y);
+    const scale = Math.max(.55, Math.min(1,getW()/650,getH()/430));
+    ctx.scale(scale,scale);
     ctx.shadowColor = color;
     ctx.shadowBlur = active ? 28 : 13;
     const grd = ctx.createLinearGradient(-width/2, -height/2, width/2, height/2);
@@ -886,23 +906,25 @@
   function drawPlayer(world) {
     const lane = state.lanes[state.playerLane] || state.lanes[1];
     state.playerX += (lane.x - state.playerX) * .16;
-    state.playerY += (lane.y - 102 - state.playerY) * .14;
+    const scale = Math.max(.55, Math.min(1, getW()/650, getH()/430));
+    state.playerY += (lane.y - 30*scale - state.playerY) * .14;
     state.playerBob += .12;
 
-    const runFrame = Math.floor(state.time * 10) % 2 ? ASSETS.player.run1 : ASSETS.player.run2;
+    const runFrame = reducedMotion ? ASSETS.player.idle : Math.floor(state.time * 10) % 2 ? ASSETS.player.run1 : ASSETS.player.run2;
     let src = runFrame;
     if (!state.started) src = ASSETS.player.idle;
     if (state.answered && state.streak > 0) src = ASSETS.player.celebrate;
     if (state.timeLeft < 5 && !state.answered) src = ASSETS.player.think;
 
     ctx.save();
-    ctx.translate(state.playerX, state.playerY + Math.sin(state.playerBob)*5);
+    ctx.translate(state.playerX, state.playerY + (reducedMotion ? 0 : Math.sin(state.playerBob)*5));
+    ctx.scale(scale, scale);
     ctx.shadowColor = '#42e6ff';
     ctx.shadowBlur = 20;
 
     ctx.fillStyle = 'rgba(0,0,0,.34)';
     ctx.beginPath();
-    ctx.ellipse(0, 122, 52, 15, 0, 0, Math.PI*2);
+    ctx.ellipse(0, 32, 52, 9, 0, 0, Math.PI*2);
     ctx.fill();
 
     if (drawAsset(src, -62, -142, 124, 172)) {
@@ -961,7 +983,7 @@
   function drawBot(world) {
     const w = getW(), h = getH();
     const x = w * .88;
-    const y = h * .64 + Math.sin(state.time*2.2)*12;
+    const y = h * .64 + (reducedMotion ? 0 : Math.sin(state.time*2.2)*12);
 
     let src = ASSETS.bot.idle;
     if (state.round === 0) src = ASSETS.bot.wave;
@@ -971,6 +993,8 @@
 
     ctx.save();
     ctx.translate(x, y);
+    const scale = Math.max(.45, Math.min(1,w/800,h/430));
+    ctx.scale(scale,scale);
     ctx.shadowColor = '#42e6ff';
     ctx.shadowBlur = 22;
 
@@ -1008,7 +1032,8 @@
   }
 
   function drawForegroundHud(w, h, world) {
-    if (state.comboFlash > 0) {
+    if(w < 850) return;
+    if (state.comboFlash > 0 && !reducedMotion) {
       ctx.save();
       ctx.globalAlpha = state.comboFlash;
       ctx.fillStyle = hexToRgba(world.color, .10);
@@ -1051,6 +1076,7 @@
   }
 
   function makeParticles(color, n = 22, x = getW()/2, y = getH()/2) {
+    if(reducedMotion) return;
     for (let i = 0; i < n; i++) {
       state.particles.push({
         x: x + Math.random()*80 - 40,
@@ -1138,17 +1164,18 @@
   }
 
   function update(dt) {
-    if (!state.started || state.paused) return;
+    if (!state.started || state.paused || document.hidden || document.body.dataset.view !== 'sprint') return;
     state.time += dt;
-    state.timeLeft -= dt;
+    if(pending){pending.remaining -= dt;if(pending.remaining <= 0){const kind=pending.kind;pending=null;if(kind==='round')nextRound();else if(kind==='over')gameOver();else {state.answered=false;syncUI();saveSprint();}}return;}
+    if (!state.answered) state.timeLeft = Math.max(0, state.timeLeft - dt);
     if (!state.answered && state.timeLeft <= 0) {
       state.answered = true;
       state.lives--;
       state.streak = 0;
       toast(`Time up! Answer: ${state.question.answer}`, 'bad');
       sfx('bad');
-      if (state.lives <= 0) setTimeout(gameOver, 850);
-      else setTimeout(nextRound, 700);
+      pending={kind:state.lives<=0?'over':'round',remaining:.85};
+      saveSprint();
       syncUI();
     }
     const lane = state.lanes[state.playerLane] || state.lanes[1];
@@ -1158,8 +1185,7 @@
   function loop(now) {
     const dt = Math.min(.05, Math.max(.001, (now - last)/1000));
     last = now;
-    update(dt);
-    draw();
+    if (document.body.dataset.view === 'sprint' && assetsReady) { update(dt); draw(); }
     if (state.question) {
       ui.timerText.textContent = `${Math.max(0, Math.ceil(state.timeLeft))}s`;
     }
@@ -1182,6 +1208,8 @@
       state.paused = !state.paused;
       if (state.paused) showOverlay('Paused', 'Take a quick breather. Your arena run is waiting.', 'Continue');
       else hideOverlay();
+      if(state.paused) stopMusic(); else startMusic();
+      saveSprint();
       syncUI();
     });
     ui.hintBtn.addEventListener('click', hint);
@@ -1189,6 +1217,8 @@
     ui.restartBtn.addEventListener('click', () => {
       resetGame();
       hideOverlay();
+      startMusic();
+      saveSprint();
       toast('Sprint restarted.', 'warn');
     });
     ui.submitBtn.addEventListener('click', () => postScore('manual_submit'));
@@ -1200,6 +1230,7 @@
     });
 
     window.addEventListener('keydown', (e) => {
+      if(document.body.dataset.view !== 'sprint' || e.repeat || e.altKey || e.ctrlKey || e.metaKey || document.getElementById('arenaMenu').open || e.target?.tagName === 'INPUT') return;
       if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') moveLane(-1);
       if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') moveLane(1);
       if (/^[1-4]$/.test(e.key)) {
@@ -1209,19 +1240,20 @@
       }
       if (e.key === ' ') {
         e.preventDefault();
-        state.paused = !state.paused;
-        syncUI();
+        ui.pauseBtn.click();
       }
     });
 
-    let startX = 0;
-    canvas.addEventListener('pointerdown', (e) => { startX = e.clientX; });
-    canvas.addEventListener('pointerup', (e) => {
-      const dx = e.clientX - startX;
-      if (Math.abs(dx) > 35) moveLane(dx > 0 ? 1 : -1);
-    });
+    let gesture = null;
+    canvas.addEventListener('pointerdown', e => {if(gesture || state.paused || !state.started)return;gesture={id:e.pointerId,x:e.clientX};canvas.setPointerCapture?.(e.pointerId);});
+    const cancel = e => {if(gesture?.id!==e.pointerId)return;gesture=null;if(canvas.hasPointerCapture?.(e.pointerId))canvas.releasePointerCapture(e.pointerId);};
+    canvas.addEventListener('pointerup', e => {if(gesture?.id!==e.pointerId)return;const dx=e.clientX-gesture.x;cancel(e);if(Math.abs(dx)>35)moveLane(dx>0?1:-1);});
+    canvas.addEventListener('pointercancel',cancel);canvas.addEventListener('lostpointercapture',cancel);
+    window.addEventListener('pagehide',saveSprint);
+
 
     window.addEventListener('message', ev => {
+      if(document.body.dataset.view !== 'sprint' || ev.source !== window || ev.origin !== window.location.origin) return;
       const data = ev.data || {};
       const type = data.type || data.event;
       if (type === 'GG_RESTART') {
@@ -1263,67 +1295,49 @@
     try { window.parent?.postMessage?.({ type: 'gg:score', ...payload, payload }, '*'); } catch {}
   }
 
-  function ensureAudio() {
-    if (state.muted) return null;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return null;
-    if (!AC) {
-      AC = new Ctx();
-      master = AC.createGain();
-      master.gain.value = .13;
-      master.connect(AC.destination);
-    }
-    if (AC.state === 'suspended') AC.resume().catch(() => {});
-    return AC;
-  }
-
-  function tone(freq, dur=.08, type='sine', gain=.04, delay=0) {
-    const ac = ensureAudio();
-    if (!ac) return;
-    const t = ac.currentTime + delay;
-    const osc = ac.createOscillator();
-    const g = ac.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t);
-    g.gain.setValueAtTime(.0001, t);
-    g.gain.exponentialRampToValueAtTime(gain, t + .015);
-    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    osc.connect(g);
-    g.connect(master);
-    osc.start(t);
-    osc.stop(t + dur + .04);
-  }
-
-  function sfx(kind) {
-    if (kind === 'good') { tone(520,.06,'triangle',.05); tone(820,.09,'sine',.035,.05); }
-    if (kind === 'bad') tone(145,.16,'sawtooth',.05);
-    if (kind === 'level') { tone(392,.08,'triangle',.05); tone(554,.11,'triangle',.04,.08); tone(784,.15,'sine',.03,.18); }
-    if (kind === 'tap') tone(330,.045,'square',.018);
-  }
-
+  function sfx(kind) { if(!state.muted) window.MathSound?.effect(({good:'correct',bad:'wrong',level:'complete',tap:'tap'})[kind]||kind); }
   function startMusic() {
-    if (state.muted || musicTimer) return;
-    let step = 0;
-    const notes = [196,247,294,330,392,440,392,330,294,247,262,330];
-    musicTimer = setInterval(() => {
-      if (!state.started || state.paused || state.muted || document.hidden) return;
-      const n = notes[step++ % notes.length];
-      tone(n,.08,'triangle',.007);
-      if (step % 2 === 0) tone(n/2,.13,'sine',.004,.03);
-    }, 250);
+    if(state.muted || state.paused || !state.started || document.body.dataset.view!=='sprint') return;
+    window.MathSound?.start(9+state.level);
+    const title=document.getElementById('songTitle');if(title)title.textContent=`Music: ${window.MathSound?.themes[9+state.level]?.title || 'Sprint'}`;
   }
-
-  function stopMusic() {
-    if (musicTimer) clearInterval(musicTimer);
-    musicTimer = null;
+  function stopMusic() {window.MathSound?.pause();}
+  function saveSprint() {
+    if(!state.started)return;
+    const keys=['level','round','score','xp','streak','lives','coins','gems','stars','playerLane','levelResults','question','options','timeLeft','maxTime','answered','muted'];
+    const data={version:1,pending};for(const k of keys)data[k]=state[k];
+    data.round=Math.min(4,data.round);
+    const saved=write(SAVE_KEY,JSON.stringify(data));
+    if(!saved){const status=document.getElementById('saveStatus');if(status)status.textContent='Saving unavailable · keep this tab open';}
   }
-
-  loadGameAssets().finally(() => {
-    resizeCanvas();
-    bindEvents();
-    buildLanes();
-    generateQuestion();
-    syncUI();
-    requestAnimationFrame(loop);
-  });
+  function restoreSprint() {
+    let v;try{v=JSON.parse(read(SAVE_KEY));}catch{return false;}
+    if(!v || v.version!==1 || !Number.isInteger(v.level) || v.level<1 || v.level>LEVEL_COUNT || !Number.isInteger(v.round) || v.round<0 || v.round>4) return false;
+    for(const k of ['score','xp','streak','coins','gems','stars'])if(!Number.isFinite(v[k])||v[k]<0||v[k]>1000000000)return false;
+    if(!Number.isInteger(v.lives)||v.lives<0||v.lives>3||!Number.isInteger(v.playerLane)||v.playerLane<0||v.playerLane>2||typeof v.muted!=='boolean'||typeof v.answered!=='boolean')return false;
+    if(!v.question||typeof v.question.text!=='string'||v.question.text.length>240||typeof v.question.explanation!=='string'||v.question.explanation.length>400||!['string','number'].includes(typeof v.question.answer)||!window.MathLearning.rational(v.question.answer))return false;
+    if(!Array.isArray(v.options)||v.options.length!==4||!v.options.every(x=>window.MathLearning.rational(x))||v.options.filter(x=>String(x)===String(v.question.answer)).length!==1)return false;
+    if(!Number.isFinite(v.timeLeft)||v.timeLeft<0||!Number.isFinite(v.maxTime)||v.maxTime<8||v.maxTime>22||v.timeLeft>v.maxTime)return false;
+    if(v.pending!==null&&(!v.pending||!['round','retry','over'].includes(v.pending.kind)||!Number.isFinite(v.pending.remaining)||v.pending.remaining<0||v.pending.remaining>1))return false;
+    const results={};if(v.levelResults&&typeof v.levelResults==='object')for(const[k,r]of Object.entries(v.levelResults))if(/^\d+$/.test(k)&&Number(k)>=1&&Number(k)<=52&&[1,2,3].includes(r))results[k]=r;
+    for(const k of ['level','round','score','xp','streak','lives','coins','gems','stars','playerLane','question','options','timeLeft','maxTime','answered','muted'])state[k]=v[k];
+    state.levelResults=results;pending=v.pending;state.started=true;state.paused=true;renderAnswers();spawnPickups();return true;
+  }
+  window.MathSprintLegacy = {
+    get ready(){return assetsReady;},
+    async enter(){
+      ui.startBtn.disabled=true;ui.startBtn.textContent='Loading assets…';
+      if(!assetPromise)assetPromise=loadGameAssets().then(()=>{assetsReady=true;resizeCanvas();if(!state.started){if(!restoreSprint())generateQuestion();}syncUI();});
+      await assetPromise;if(document.body.dataset.view!=='sprint')return;resizeCanvas();ui.startBtn.disabled=false;
+      if(state.started&&state.lives<=0){state.best=Math.max(state.best,state.score);write(BEST_KEY,String(state.best));pending=null;saveSprint();showOverlay('Sprint Failed',`Final score: ${state.score}. Try another Sprint when you are ready.`,'Restart');}
+      else if(state.started&&state.level===52&&state.levelResults[52])showOverlay('Arena Champion!',`You cleared every Sprint level. Final score: ${state.score}.`,'Play Again');
+      else if(state.started)showOverlay('Resume Sprint',`Level ${state.level} · your question and score are saved.`,'Continue');
+      else showOverlay('Math Sprint Arena','Solve five rounds per level across five neon worlds. Choose an answer tile, or press 1–4. Swipe or use arrow keys to change lanes.','Start Sprint');
+    },
+    leave(){if(state.started){state.paused=true;saveSprint();}stopMusic();},
+    pauseForVisibility(){if(document.body.dataset.view==='sprint'&&state.started&&!state.paused){showOverlay('Paused','Your Sprint is paused. Continue when you are ready.','Continue');saveSprint();}}
+  };
+  bindEvents();
+  resizeCanvas();
+  requestAnimationFrame(loop);
 })();
