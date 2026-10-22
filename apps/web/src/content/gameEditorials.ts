@@ -744,91 +744,95 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "math-sprint-arena": {
       "category": "Educational",
-      "summary": "Restore Number City through ten untimed Grade 4 maths missions with visual puzzles, saved checkpoints and progressive hints, or take on the 52-level Sprint.",
+      "summary": "Explore twenty untimed Grade 4 maths missions with 200 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
       "overview": [
-          "Math Sprint Arena turns selected Grade 4 mathematics skills into a journey through Number City. Build four-digit numbers, navigate number lines, calculate workshop supplies, arrange equal groups, share energy, discover patterns, handle money and repair fraction bridges.",
-          "Adventure contains ten missions and 50 activities. Learn mode lets you practise any of these missions without a timer or an unlock requirement. The separate Sprint retains 52 timed levels across arithmetic, fractions, multiplication, geometry and algebra."
+          "Math Sprint Arena turns selected Grade 4 mathematics skills into a journey through Number City. Build numbers, navigate number lines, power equal groups, handle money and repair fractions before exploring shapes, symmetry, measurement, time and data.",
+          "Adventure now contains twenty missions and 100 core activities. Learn offers these activities plus 100 alternate practice activities. Review with Pi-Bot revisits practised questions, prioritising activities previously completed with hints or retries. The separate 52-level Sprint retains its timed arithmetic, fraction, multiplication, geometry and algebra challenges."
       ],
       "story": [
-          "Number City has lost power, and Pi-Bot needs a resourceful partner to restore it. Each neighbourhood has a different problem: power columns need their numbers rebuilt, generators need equal shares, tram signals need their patterns repaired, and bridges need the right fraction of light.",
-          "Your work reconnects the workshop, station, market and bridges. The final Number City Champion mission combines several skills before the city celebrates its restoration."
+          "Number City has lost power, and Pi-Bot needs a resourceful partner to restore it. Rebuild the Number Gates, reconnect the workshop and station, and bring the market and fraction bridges back to life.",
+          "The next district is preparing a city exhibition. Design shape signs, reflect illuminated patterns, measure strips and floors, label deliveries, read water levels and organise tram journeys. Finally, collect a shape survey and interpret travel data to prepare the City Showcase."
       ],
       "howToPlay": [
-          "Choose Adventure to follow the ten-mission route, Learn & Practise to work freely on a topic, or Play Sprint for the timed challenge.",
-          "In Adventure and Learn, read the task and use its controls. Build place values with + and −, tap equal bridge parts, or enter a number on the keypad.",
-          "Select Check answer. A mistake is recoverable: use the feedback, request a hint and try again.",
-          "After a correct answer, read the explanation and select Next activity. Complete all five activities to finish a mission.",
-          "Adventure unlocks the next mission after completion. Use Menu & sound to adjust volumes, read the mission strategy or return home."
+          "Choose Adventure for the ordered twenty-mission route, Learn & Practise for any topic, Review with Pi-Bot for a saved revision session, or Play Sprint for the timed challenge.",
+          "Read each activity and its model. Use place-value columns, shape choices, mirror squares, floor tiles, tally counters or the built-in number pad.",
+          "Tap a diagram to enlarge it when you need a closer look at a scale, graph or clock. Close the diagram to enter your answer.",
+          "Select Check answer, read the feedback and request a hint when needed. Mistakes are recoverable and the explanations stay until you continue.",
+          "Complete all five activities to finish an Adventure mission and unlock the next one. After a set, Try a fresh practice set switches to the alternate bank without changing Adventure results."
       ],
       "desktop": [
           "Use the pointer to operate the place-value columns, fraction pieces and keypad. For numerical entry tasks, you can also type digits, a decimal point or comma, and Backspace.",
           "In Sprint, choose an answer tile or press 1–4. Arrow keys or A/D change lanes; Space pauses or resumes."
       ],
       "mobile": [
-          "Tap the large on-screen controls. The built-in number pad keeps the task visible while you enter an answer.",
-          "Portrait and landscape layouts keep the learning controls together. Menu & sound contains the mission strategy, volume controls and Enter Fullscreen where the browser supports it."
+          "Tap the large on-screen tools and keypad. Reflection squares and tally counts retain their saved state when you refresh.",
+          "Portrait and landscape layouts keep questions and response controls together. Tap a mathematical diagram to enlarge it; Menu & sound contains the current mission strategy, volumes and supported-browser fullscreen control."
       ],
       "systems": [
           {
-              "title": "Ten untimed learning missions",
-              "body": "Number City contains 50 activities across selected Grade 4 skills. Adventure follows a progressive route; Learn allows free topic practice."
+              "title": "Twenty untimed missions",
+              "body": "Explore 100 Adventure activities across selected Grade 4 number, shape, measurement and data skills. Learn also offers 100 alternate practice activities."
           },
           {
-              "title": "Visual mathematics",
-              "body": "Place-value columns, equal fraction parts, number lines, arrays and labelled diagrams connect the question to a mathematical model."
+              "title": "Hands-on mathematical tools",
+              "body": "Build place values, select equal fraction parts, reflect a pattern, cover a floor with squares and record shape tallies. Rulers, jugs, clocks, bar graphs and one-picture-per-learner pictographs provide labelled models."
           },
           {
-              "title": "Progressive support",
-              "body": "Each activity offers three stages of help. Correct answers stay visible with their explanation until you choose to continue."
+              "title": "Focused revision",
+              "body": "Five-question Review sessions prioritise previously completed activities that used support, then mix practised topics. Review has its own saved checkpoint and does not change Adventure results or Sprint scores."
           },
           {
-              "title": "Separate learning and Sprint progress",
-              "body": "Learning records independent answers separately from answers completed with hints or retries. Learn mode does not unlock Adventure or submit Sprint scores."
+              "title": "Progressive support and fresh practice",
+              "body": "Each activity has three stages of help and a persistent worked explanation. Alternate practice sets change the questions while retaining the same topic and learning controls."
           },
           {
-              "title": "Level music and sound",
-              "body": "All ten learning missions and 52 Sprint levels have distinct original musical arrangements. Music and effects have separate volume controls."
+              "title": "Music for every mission",
+              "body": "The twenty learning missions and 52 Sprint levels have distinct original musical arrangements, with an additional Review theme. Music and effects have separate controls."
           }
       ],
       "progression": [
-          "Each Adventure mission requires five completed activities before the next mission unlocks. Independent answers earn stronger mission results; supported completion still lets you continue learning. Replaying with support does not erase a better previous result.",
-          "Learning checkpoints and Sprint checkpoints save separately on the same browser when local storage is available. The earlier Sprint best-score record is retained. Refreshing does not require restarting a saved mission."
+          "Each Adventure mission requires five completed activities. Earlier Number City results and checkpoints remain intact; completing the original ten missions opens Shape Workshop as the next stage. Independent and supported answers stay separate, and weaker replays do not erase better results.",
+          "Learn and Review are available without a timer. Their checkpoints, hints, drafts and practice history save separately from Adventure and Sprint on the same browser when storage is available. They do not unlock Adventure or submit learning results to the Sprint leaderboard."
       ],
       "tips": [
-          "Read the complete task and identify what it asks you to find.",
-          "Use the visual model or break a calculation into smaller steps before entering an answer.",
-          "Ask for a hint when you need one. Supported practice is part of learning.",
-          "For money, check that rands and cents are in the right columns.",
-          "Try Sprint after practising a topic at a comfortable pace."
+          "Identify what a question asks, then inspect the relevant labels, units and scale.",
+          "For a ruler that starts above zero, subtract the start reading from the end reading.",
+          "For reflections, match the row and distance from the dotted mirror line.",
+          "Count area using equal squares, mass using grams or kilograms, and time using 60 minutes per hour.",
+          "Use a fresh set to practise a method with different values. Review can help revisit activities previously completed with support."
       ],
       "learning": [
-          "Practise selected Grade 4 CAPS skills: place value, whole-number calculations, number patterns, money contexts, common fractions and perimeter.",
-          "Use models, explanations and retries to connect a method with its result. This chapter is a practice resource rather than a complete Grade 4 course or a formal assessment."
+          "Practise selected Grade 4 CAPS skills: place value, calculations, patterns, money, common fractions, 2-D shape properties, line symmetry, length, area by counting squares, mass, liquid measures, time intervals, tallies and graph interpretation.",
+          "Number City is a practice resource rather than a complete Grade 4 course or a formal assessment. The grade and topic are visible during each activity."
       ],
       "faqs": [
           {
-              "q": "Which grades does the learning chapter cover?",
-              "a": "Number City currently practises selected Grade 4 CAPS mathematics skills. Its ten missions do not claim complete Grade 4 curriculum coverage. Sprint has mixed-topic questions and is not a grade assessment."
+              "q": "Which grades and topics are included?",
+              "a": "Number City currently practises selected Grade 4 CAPS mathematics skills across twenty missions. It includes numbers, shapes, symmetry, measurement, time and data. It does not claim complete Grade 4 course coverage. Sprint remains a separate mixed-topic timed game."
           },
           {
-              "q": "Do I have to race against a timer?",
-              "a": "No. Adventure and Learn are untimed, with hints and recoverable mistakes. Sprint is the optional timed mode."
+              "q": "What does Review with Pi-Bot do?",
+              "a": "It creates a saved five-activity revision session from practised topics, prioritising completed questions where hints or retries were used. A new player begins with number-building review. Review does not change Adventure results or submit Sprint scores."
           },
           {
-              "q": "Can I practise a locked Adventure topic?",
-              "a": "Yes. Choose Learn & Practise, or enable Browse all missions for free practice on the home screen. Practice does not unlock Adventure missions."
+              "q": "How can I get different practice questions?",
+              "a": "After completing a set, choose Try a fresh practice set. Every mission has a guided bank and an alternate bank of five activities. Practice keeps its own checkpoint and does not unlock Adventure."
           },
           {
-              "q": "How are independent and assisted answers recorded?",
-              "a": "An independent answer is correct without a previous mistake or hint on that activity. Hints and retries mark the answer as completed with support. Both can complete an Adventure mission."
+              "q": "Will my original ten-mission progress remain?",
+              "a": "Yes. Existing results, hints, drafts, checkpoints, settings and the earlier Sprint best-score record are retained. Players who completed the original ten missions can continue with Shape Workshop."
+          },
+          {
+              "q": "Can I enlarge a graph or measuring diagram on my phone?",
+              "a": "Yes. Tap the diagram or focus it with a keyboard and press Enter or Space. The enlarged view retains the same data and labels. Close it to answer the activity."
+          },
+          {
+              "q": "Do mistakes end my learning session?",
+              "a": "No. Adventure, Learn and Review are untimed and allow retries. Answers completed after a hint or mistake are recorded as supported. Sprint is the optional mode with a timer and lives."
           },
           {
               "q": "Will progress survive a refresh?",
-              "a": "Yes, when browser storage is available. Checkpoints save on the same browser and device. If storage is blocked, the game remains playable and shows that saving is unavailable."
-          },
-          {
-              "q": "Will my previous best Sprint score remain?",
-              "a": "Yes. The existing best-score key is retained, while the learning chapter and new Sprint checkpoint use separate save records."
+              "a": "Yes, when browser storage is available. Each mode retains its own checkpoint on the same browser and device. If storage is blocked, the game remains playable and shows that saving is unavailable."
           }
       ]
   },

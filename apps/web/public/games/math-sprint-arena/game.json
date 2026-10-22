@@ -4,16 +4,22 @@
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "category": "Educational",
-  "description": "Restore Number City through ten untimed Grade 4 maths missions with visual puzzles, saved checkpoints and progressive hints, or play the 52-level Sprint.",
-  "version": "4.0.0",
+  "description": "Explore twenty untimed Grade 4 maths missions with 200 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
+  "version": "4.1.0",
   "features": {
-    "learningMissions": 10,
-    "learningActivities": 50,
+    "learningMissions": 20,
+    "learningActivities": 100,
     "learningGrade": 4,
     "curriculumScope": "Selected CAPS Grade 4 skills; not a complete course",
     "sprintLevels": 52,
-    "originalLevelArrangements": 62,
+    "originalLevelArrangements": 72,
     "savedCheckpoints": true,
-    "untimedLearning": true
+    "untimedLearning": true,
+    "alternatePracticeActivities": 100,
+    "activityBankTotal": 200,
+    "revisionMusicTracks": 1,
+    "originalMusicArrangements": 73,
+    "focusedRevision": true,
+    "enlargeDiagrams": true
   }
 }
