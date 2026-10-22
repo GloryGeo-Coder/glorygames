@@ -38,7 +38,7 @@ button{touch-action:manipulation}
 .story-destinations{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #storyRoot .story-destination{display:flex;gap:7px;align-items:center;text-align:left;min-height:56px;border-left:4px solid var(--route-color)}.story-destination img{width:28px;height:28px;object-fit:contain}.story-destination span{font-size:12px}
 .story-tools{display:flex;flex-wrap:wrap;gap:6px}.story-tools button{flex:1;font-size:12px!important}
-.story-board{color:#b1d9c8;font:12px/1.45 system-ui;border-top:1px solid #9ef2c133;padding-top:10px}.story-board summary{cursor:pointer;min-height:30px;font-weight:700}.story-board p{margin:6px 0}.story-board a{color:#a3e4ff}
+.story-board{color:#b1d9c8;font:12px/1.45 system-ui;border-top:1px solid #9ef2c133;padding-top:10px}.story-board summary{cursor:pointer;min-height:30px;font-weight:700}.story-board p{margin:6px 0}.story-board a,.story-modal a{color:#a3e4ff}
 .story-footer{display:flex;gap:6px;align-items:center;justify-content:space-between;min-height:44px}.story-footer>span{font-size:12px;color:#acd1c1}.story-footer-actions{display:flex;gap:6px}.story-footer-actions button{font-size:12px!important}
 .story-modal-shade{position:absolute;inset:0;z-index:10;background:#021317e8;display:grid;place-items:center;padding:12px;overflow:auto}
 .story-modal{width:min(600px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;border:1px solid #83e9bc88;background:linear-gradient(150deg,#17443d,#102631);border-radius:22px;padding:24px;box-shadow:0 15px 60px #0008}

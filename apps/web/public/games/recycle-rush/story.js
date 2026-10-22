@@ -190,7 +190,7 @@
         box.append(paragraph(`${L.routes[id].label}: ${examples.join(', ')}.`));
       }
       box.append(paragraph('In real life, check your packaging label and collector’s current acceptance list. Ask an adult or trained worker about batteries, electronics, chemicals or broken glass. Never open or dismantle them.', 'story-help'));
-      const link = document.createElement('a'); link.href = L.SOURCES[0]; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'Recycling guidance · Petco'; box.append(link);
+      const link = document.createElement('a'); link.href = L.SOURCES[0]; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'Fibre Circle · Zithande Mzansi'; box.append(link);
       actions.append(button('Back to Mission', backFromMenu, true));
     } else {
       title.textContent = 'Mission paused';
