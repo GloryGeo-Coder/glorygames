@@ -1,0 +1,12 @@
+# Recycle Rush v3.4 — chapter background prompts
+
+Generated with the built-in image_gen tool. Existing backgrounds and all character atlases are unchanged. Final assets are 1600×900 WebP, quality 82, encoded with sharp. Source and final hashes are recorded in `apps/web/public/games/recycle-rush/assets/backgrounds/finale-art.json`.
+
+## workshop
+
+Use case: stylized-concept. Asset type: full-bleed 16:9 browser game background for Recycle Rush: Restore Verdale. Primary request: Sam's welcoming community repair courtyard in a fictional South African township. Polished colourful painterly 3D-animation style, soft rounded forms and crisp textured brick, turquoise metal workshop doors, warm sun, lush trees and raised planters, hopeful sustainable community. Eye-level view across a broad clear paved courtyard, workshop bays along the left and rear, neat repair benches safely inside the bays, shelves of books and wearable clothes for sharing, a small closed specialist collection office to the right, blank noticeboards. No people or characters, no foreground tools or loose items, no rubbish piles, no text, brands, logos, watermark or user interface. Keep the centre and lower 60% open and low in visual clutter for six interactive objects and a robot. Scene extends naturally to every edge, rich attractive environment, landscape 1600x900 composition. Existing art has warm red brick, teal green railings, golden sunlight and detailed leafy greenery; match that aesthetic.
+
+## city
+
+Use case: stylized-concept. Asset type: full-bleed 16:9 browser game background for Recycle Rush: Restore Verdale. Primary request: Verdale's restored civic square at a joyful golden-hour community celebration in a fictional South African town. Polished colourful painterly 3D-animation style, soft rounded forms, textured warm brick and teal-green architecture, lush trees, tidy raised flower beds, a school and library at the back, a market arcade and community collection pavilion at the sides. Cheerful small colourful bunting high above, warm lights beginning to glow. Eye-level view, broad clear paved square occupying centre and lower 60% for interactive game objects and a robot. No people, characters, text, logos, brands, watermark or user interface. No rubbish piles or large objects in the foreground. A hopeful achieved-restoration feeling, scene extends to every edge with no frame. Landscape 1600x900 composition, warm red brick, turquoise shutters, golden sunlight, detailed leafy greenery.
+

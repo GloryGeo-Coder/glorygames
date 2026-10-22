@@ -20,7 +20,17 @@
     { title: 'Under the Canopy', bpm: 94, root: 130.81, bass: [0, 9, 5, 2], notes: [12, 16, 21, 19, 17, 16, 14, 9, 12, 17, 21, 24, 21, 19, 16, 14], rhythm: [0, 3, 4, 8, 10, 12, 15], wave: 'sine' },
     { title: 'Connected Streams', bpm: 118, root: 164.81, bass: [0, 7, 2, 5], notes: [12, 19, 26, 24, 19, 16, 17, 21, 24, 26, 28, 24, 21, 17, 16, 19], rhythm: [0, 1, 5, 6, 8, 12, 13, 15], wave: 'triangle' },
     { title: 'Load by Load', bpm: 114, root: 116.54, bass: [0, 3, 7, 10], notes: [12, 15, 22, 19, 24, 22, 19, 17, 15, 19, 22, 27, 26, 22, 19, 12], rhythm: [0, 2, 5, 7, 9, 11, 13, 14], wave: 'triangle' },
-    { title: 'Recovery Rising', bpm: 130, root: 196, bass: [0, 5, 2, 9], notes: [12, 16, 19, 26, 24, 21, 28, 26, 24, 19, 21, 29, 28, 26, 24, 16], rhythm: [0, 1, 2, 6, 8, 9, 10, 13, 15], wave: 'sine' }
+    { title: 'Recovery Rising', bpm: 130, root: 196, bass: [0, 5, 2, 9], notes: [12, 16, 19, 26, 24, 21, 28, 26, 24, 19, 21, 29, 28, 26, 24, 16], rhythm: [0, 1, 2, 6, 8, 9, 10, 13, 15], wave: 'sine' },
+    {"title": "Repair Row Rhythm", "bpm": 102, "root": 146.83, "bass": [0, 2, 5, 7], "notes": [12, 14, 19, 17, 21, 24, 19, 14, 17, 21, 26, 24, 19, 17, 14, 12], "rhythm": [0, 2, 4, 6, 9, 13, 15], "wave": "triangle"},
+    {"title": "Passing the Story On", "bpm": 97, "root": 174.61, "bass": [0, 9, 7, 5], "notes": [12, 21, 19, 16, 14, 19, 24, 28, 26, 21, 19, 16, 17, 21, 24, 19], "rhythm": [0, 3, 5, 7, 10, 12, 14], "wave": "sine"},
+    {"title": "Keep It Working", "bpm": 109, "root": 123.47, "bass": [0, 5, 2, 10], "notes": [12, 17, 14, 19, 22, 26, 24, 19, 17, 14, 12, 19, 22, 24, 19, 17], "rhythm": [0, 1, 4, 7, 8, 10, 14], "wave": "triangle"},
+    {"title": "Careful Connections", "bpm": 93, "root": 155.56, "bass": [0, 3, 10, 5], "notes": [12, 15, 22, 20, 17, 15, 12, 10, 15, 20, 24, 22, 20, 17, 15, 12], "rhythm": [0, 4, 6, 9, 12, 13, 15], "wave": "sine"},
+    {"title": "Workshop Beacon", "bpm": 126, "root": 164.81, "bass": [0, 7, 9, 5], "notes": [12, 19, 21, 24, 28, 26, 21, 19, 17, 21, 24, 31, 28, 24, 21, 17], "rhythm": [0, 1, 3, 5, 8, 10, 12, 15], "wave": "triangle"},
+    {"title": "From the Courtyard", "bpm": 111, "root": 130.81, "bass": [0, 2, 9, 7], "notes": [12, 14, 21, 19, 24, 28, 26, 21, 19, 16, 14, 19, 24, 26, 21, 12], "rhythm": [0, 2, 4, 5, 8, 11, 13, 15], "wave": "sine"},
+    {"title": "Promise in the Square", "bpm": 115, "root": 196, "bass": [0, 5, 7, 9], "notes": [12, 17, 19, 24, 21, 19, 26, 28, 24, 21, 17, 16, 19, 24, 28, 26], "rhythm": [0, 1, 5, 7, 9, 10, 12, 14], "wave": "triangle"},
+    {"title": "Every Stream Connected", "bpm": 119, "root": 138.59, "bass": [0, 3, 5, 7], "notes": [12, 15, 17, 19, 24, 27, 26, 22, 19, 17, 15, 20, 24, 26, 22, 19], "rhythm": [0, 2, 3, 5, 8, 11, 12, 15], "wave": "sine"},
+    {"title": "Shelter for Tomorrow", "bpm": 104, "root": 110, "bass": [0, 8, 5, 3], "notes": [12, 20, 17, 15, 19, 22, 24, 20, 17, 15, 12, 17, 20, 24, 22, 19], "rhythm": [0, 3, 6, 7, 10, 11, 14, 15], "wave": "triangle"},
+    {"title": "Verdale Together", "bpm": 132, "root": 174.61, "bass": [0, 5, 9, 2], "notes": [12, 17, 21, 24, 29, 28, 26, 24, 21, 19, 24, 28, 31, 29, 28, 24], "rhythm": [0, 1, 2, 4, 6, 9, 11, 13, 15], "wave": "sine"}
   ];
   function create(environment, settings) {
     let ac, music, effects, timer, step = 0, index = 0, intensity = 0, muted = false;
@@ -88,6 +98,7 @@
       if (kind === 'collect') { note(440, .09, 'triangle', .06, effects); note(660, .08, 'sine', .04, effects, .06); }
       if (kind === 'wisp') { note(720, .1, 'sine', .05, effects, 0, 330); }
       if (kind === 'pulse') { note(180, .22, 'triangle', .08, effects, 0, 720); note(1046, .18, 'sine', .04, effects, .12); }
+      if (kind === 'order') { note(330, .1, 'triangle', .05, effects); note(660, .15, 'sine', .04, effects, .07); }
       if (kind === 'dispatch') { note(392, .12, 'triangle', .05, effects); note(587, .15, 'sine', .04, effects, .08); }
       if (kind === 'build') [392, 523, 659, 784].forEach((n, i) => note(n, .17, 'triangle', .04, effects, i * .07));
       if (kind === 'prepare') { note(260, .1, 'triangle', .06, effects); note(520, .13, 'triangle', .04, effects, .07); }

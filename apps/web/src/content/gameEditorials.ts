@@ -1014,17 +1014,19 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "recycle-rush": {
     "category": "Educational",
     "sponsor": "Fibre Circle",
-    "summary": "Restore Verdale with Circuit in fifteen story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
+    "summary": "Restore Verdale with Circuit in 25 story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
     "overview": [
       "Bring colour back to Verdale in Recycle Rush: Restore Verdale, a recycling adventure sponsored by Fibre Circle. Join Circuit and Professor Loop as they help a community rebuild its collection points, share useful goods and connect everyday recovery choices to a cleaner town.",
-      "Explore fifteen story missions across the school, neighbourhood, market and recovery district. Inspect each object, prepare accepted packaging, share usable books and clothes, and refer electrical repairs to qualified experts. Solve community requests and plan collection rounds, choosing pickups and accepted deliveries while managing the vehicle’s available load space.",
-      "Choose community projects, build clean sorting streaks and use recovered energy to face Grime in three showdowns. Animated characters and original mission music accompany untimed story play, with clues, feedback and checkpoints saved on your device. For a faster challenge, enter the separate 20-mission Arcade Campaign, master its power-ups and bosses, and complete it to unlock endless Loop Mode."
+      "Explore 25 story missions across the school, neighbourhood, market, recovery district, repair quarter and civic square. Inspect each object, prepare accepted packaging, share usable books and clothes, and refer electrical repairs to qualified experts. Solve community requests, complete saved community work orders and plan collection rounds, choosing pickups and accepted deliveries while managing the vehicle’s available load space.",
+      "Choose community projects, build clean sorting streaks and use recovered energy to face Grime in five showdowns. Animated characters and original mission music accompany untimed story play, with clues, feedback and checkpoints saved on your device. For a faster challenge, enter the separate 20-mission Arcade Campaign, master its power-ups and bosses, and complete it to unlock endless Loop Mode."
     ],
     "story": [
       "Circuit awakens beneath a dusty workbench in Verdale’s neglected school workshop. Outside, mixed rubbish has stalled the recovery station, and Grime is growing stronger with every misplaced item. Professor Loop gives Circuit a first task: clear the courtyard and get the school’s collection system working again.",
       "With Nandi, the school caretaker, Circuit learns why clean paper must stay away from food and wet waste. Sam, the repair technician, assesses broken devices while neighbours share readable books and wearable clothes at the exchange shelf. When Grime blocks the school gate, the community’s recovery work powers the first Loop Pulse showdown.",
       "News reaches the market, where organiser Asha needs help with delivery boxes, lunch waste and a busy swap day. Circuit works with the traders to protect clean materials, prepare packaging and reopen the community station. As the festival approaches, Grime returns to the square, and the market team must restore its lights together.",
-      "The journey continues with Musa, the community collector, and Lebo, the recovery coordinator. Plan collection rounds, protect fibre from the rain, check accepted destinations and keep delivery records tied to completed visits. When Grime cuts off the recovery district, reconnect the network and bring the school, market and collection teams together to power The Loop."
+      "The journey continues with Musa, the community collector, and Lebo, the recovery coordinator. Plan collection rounds, protect fibre from the rain, check accepted destinations and keep delivery records tied to completed visits. When Grime cuts off the recovery district, reconnect its network and reopen the collection gates.",
+      "Sam then opens the repair quarter, where Circuit helps plan qualified assessments, checked exchanges and supervised specialist appointments. Complete the workshop’s work orders and restore its beacon before joining the city team at the civic square.",
+      "The final chapter connects all five districts. Nandi protects the school link, Asha organises the market celebration, Musa and Lebo confirm deliveries, and Sam brings the repair team. As rain approaches and Grime makes a final stand, the community’s checked plans power The Loop. Verdale’s restored square celebrates what its neighbours can keep building together."
     ],
     "howToPlay": [
       "Choose Begin Story or continue a saved story mission. New missions unlock in order.",
@@ -1032,7 +1034,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "If an activity action appears, open it and use its touch buttons or swipe across the item to fold, empty, scrape, check or assess it before routing.",
       "Choose a destination by its label and icon. Use Other routes when a mission has more than four destinations.",
       "Use a clue or the Service Board to review the local rules. Mistakes can be corrected without restarting the story mission.",
-      "Complete six tasks per area and answer any community request. In recovery-district missions, visit the pickup and delivery stops on the dispatch board, checking vehicle space and any separate-load rule. Then install a community project between areas. Each Grime showdown needs all recovery tasks and its district objectives before three charged Loop Pulses. Each action saves on this device when storage is available."
+      "Complete six tasks per area and answer any community request. Complete any work order by checking its conditions and service arrangements, getting the team’s approval and recording the outcome. On dispatch boards, visit the pickup and delivery stops, checking vehicle space and any separate-load rule. Then install a community project between areas. Each Grime showdown needs all recovery tasks and its district objectives before three charged Loop Pulses. Each action saves on this device when storage is available."
     ],
     "desktop": [
       "Use the pointer or keyboard Tab and Enter to collect items and choose story actions. Escape opens the mission menu.",
@@ -1044,6 +1046,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Pause / Menu includes audio sliders, reduced motion and a retry for the current story area. Enter Fullscreen is available where the browser supports it."
     ],
     "systems": [
+      {
+        "title": "Community work orders",
+        "body": "Complete two independent checks in either order, ask the team to approve the job, then record the outcome. Every action saves. Feedback explains unsafe shortcuts, and qualified experts perform specialist work."
+      },
       {
         "title": "Collection dispatch",
         "body": "Plan each load’s pickup before its accepted delivery. Delivering frees vehicle space, while separate-load rounds keep the listed streams apart. Each visited stop saves; clues and retries support learning."
@@ -1062,7 +1068,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Fifteen story missions contain 270 recovery tasks in total. The 20-mission arcade campaign offers a separate, faster challenge across eight themed eco-hubs.",
+      "Twenty-five story missions contain 450 recovery tasks in total. Five chapters end in Grime showdowns, and the final mission celebrates all five restored districts. The 20-mission arcade campaign offers a separate, faster challenge across eight themed eco-hubs.",
       "All story missions are untimed. Arcade difficulty rises through more material categories, wind, power-ups, hazards and bosses. A boss mission requires both its sorting target and the boss defeat."
     ],
     "tips": [
@@ -1080,7 +1086,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels are in Recycle Rush?",
-        "a": "There are fifteen story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
+        "a": "There are 25 story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
       },
       {
         "q": "Is the story timed?",

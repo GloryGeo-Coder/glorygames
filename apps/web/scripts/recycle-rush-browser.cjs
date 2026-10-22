@@ -2,7 +2,7 @@
 const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright-core');const assert=require('node:assert/strict'),fs=require('node:fs'),http=require('node:http'),path=require('node:path'),os=require('node:os');
 const L=require('../public/games/recycle-rush/story-data.js');const root=path.resolve(__dirname,'../public'),output=process.env.RECYCLE_QA_OUTPUT||fs.mkdtempSync(path.join(os.tmpdir(),'recycle-qa-'));fs.mkdirSync(output,{recursive:true});
 const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.url.split('?')[0]);const file=path.resolve(root,'.'+route,route.endsWith('/')?'index.html':'');if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}try{res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.json':'application/json'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
-(async()=>{let browser;const results=[];try{await new Promise(r=>server.listen(0,'127.0.0.1',r));browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox','--disable-dev-shm-usage']});for(const[width,height,touch]of ([[320,568,true],[390,844,true],[844,390,true],[768,1024,true],[1024,768,true],[1160,700,false],[1280,600,false],[1440,900,false]].filter(s=>!process.env.RECYCLE_QA_WIDTH||s[0]===Number(process.env.RECYCLE_QA_WIDTH)))){
+(async()=>{let browser;const results=[];try{await new Promise(r=>server.listen(0,'127.0.0.1',r));browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE,args:['--no-sandbox','--disable-dev-shm-usage']});for(const[width,height,touch]of ([[320,568,true],[390,844,true],[844,390,true],[768,1024,true],[1024,768,true],[1160,700,false],[1280,600,false],[1440,900,false]].filter(s=>!process.env.RECYCLE_QA_WIDTH||process.env.RECYCLE_QA_WIDTH.split(',').map(Number).includes(s[0])))){
  console.log(`Checking ${width}x${height}`);const context=await browser.newContext({viewport:{width,height},hasTouch:touch,isMobile:touch,reducedMotion:'reduce'}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url());});page.on('requestfailed',r=>errors.push(r.url()+' '+r.failure()?.errorText));
  await context.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(...args){const ctx=get.apply(this,args);if(ctx&&args[0]==='2d'&&!ctx.__recorded){ctx.__recorded=true;const draw=ctx.drawImage;ctx.drawImage=function(image,...a){const src=image.src||'';if(src.includes('/backgrounds/'))window.__recyclePaint=[];if(a.length===4&&(src.includes('/sprites/')||src.includes('/animated/'))){const t=ctx.getTransform(),dpr=window.devicePixelRatio||1;window.__recyclePaint??=[];window.__recyclePaint.push({src,x:t.e/dpr,y:t.f/dpr,w:a[2],h:a[3]});}return draw.call(this,image,...a);};}return ctx;};});
@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
  await page.screenshot({path:path.join(output,`${width}-${height}-story.png`)});
  if(width===390&&await page.locator('#storyFullscreen .wga-tab-fullscreen').count()){await activate('#storyFullscreen .wga-tab-fullscreen');await page.waitForFunction(()=>document.fullscreenElement);await activate('#storyFullscreen .wga-tab-fullscreen');await page.waitForFunction(()=>!document.fullscreenElement);}
 
- await activate('#storyBoardBtn');assert.match(await page.locator('#storyModalTitle').textContent(),/service/i);assert.match(await page.locator('#storyModalContent').textContent(),/fictional/);await named('Back to Mission');
+ await activate('#storyBoardBtn');assert.match(await page.locator('#storyModalTitle').textContent(),/service/i);assert.match(await page.locator('#storyModalContent').textContent(),/fictional/);const source=page.locator('#storyModalContent a');assert.equal(await source.textContent(),'Fibre Circle · Zithande Mzansi');assert.equal(await source.getAttribute('href'),L.SOURCES[0]);await named('Back to Mission');
  await activate('#storyPauseBtn');await page.keyboard.press('Tab');assert.equal(await page.locator('#storyModal').evaluate(el=>el.contains(document.activeElement)),true);await named('Resume');
  if(width===390){await page.setViewportSize({width:844,height:390});await noOverflow();await bounds('[data-route="paper"]');assert.match(await page.locator('#storyItemName').textContent(),/newspaper/i);await page.setViewportSize({width,height});await bounds('#storyPauseBtn');}
  if(width===390){
@@ -30,14 +30,14 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
  }
  // Ordinary touch/click actions complete the mission, including preparation and destination paging.
  const full=width===390||width===1440;
- for(const mi of (full ? L.missions.map((_, i) => i) : [0,10])){
-  if(!full&&mi===10){
+ for(const mi of (full ? L.missions.map((_, i) => i) : [0,10,15,20,24])){
+  if(!full&&mi>0){
    await named('World Map');
-   // An existing completed-market save is a supported starting point for the new district.
+   // Supported old completion saves unlock the next mission without repeating previous chapters.
    const old={version:1,unlocked:mi,stars:{},results:{},session:null,practice:false};for(const m of L.missions.slice(0,mi)){old.stars[m.id]=3;old.results[m.id]={score:2000};}
    await page.evaluate(({key,old})=>localStorage.setItem(key,JSON.stringify(old)),{key:L.SAVE_KEY,old});await page.reload();await page.waitForFunction(()=>window.__wgaGameTab);await activate('#storyStartBtn');await named('Start Mission');
   }
-  console.log(`  Playing mission ${mi+1}: ${L.missions[mi].id}`);const m=L.missions[mi];assert.equal(await page.locator('#storyTitle').textContent(),m.title);if(mi===5||mi===10){
+  console.log(`  Playing mission ${mi+1}: ${L.missions[mi].id}`);const m=L.missions[mi];assert.equal(await page.locator('#storyTitle').textContent(),m.title);if([5,10,15,20].includes(mi)){
    await page.screenshot({path:path.join(output,`${width}-${height}-district-${mi+1}.png`)});
    for(let i=0;i<6;i++){const geometry=await page.locator('#story-item-'+i).evaluate(el=>({button:el.getBoundingClientRect().toJSON(),label:el.querySelector('span').getBoundingClientRect().toJSON(),banner:document.querySelector('#storyRestored').getBoundingClientRect().toJSON()}));assert.ok(geometry.label.bottom<=geometry.button.bottom,`object ${i} label stays inside its target at ${width}px`);if(width===320)assert.ok(geometry.label.bottom<=geometry.banner.top,`object ${i} label does not sit behind scene status`);}
   }
@@ -60,8 +60,24 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
     await page.screenshot({path:path.join(output,`${width}-${height}-mission${mi+1}-request${stop+1}.png`)});await bounds(`[data-decision="${q.answer}"]`);await activate(`[data-decision="${q.answer}"]`);
     if(mi===5&&stop===0){await page.reload();await page.waitForFunction(()=>window.__wgaGameTab);await activate('#storyStartBtn');assert.equal(await page.locator('#storyModalTitle').textContent(),'Area restored');}
    }
+   if(m.orders){
+    assert.equal(await page.locator('#storyModalTitle').textContent(),'Community work order');await noOverflow();
+    const use=async id=>{const locator=page.locator(`[data-order-action="${id}"]`);await locator.scrollIntoViewIfNeeded();await bounds(`[data-order-action="${id}"]`);const rect=await locator.boundingBox();assert.ok(rect.width>=44&&rect.height>=44);await activate(`[data-order-action="${id}"]`);};
+    if(mi===15&&stop===0){
+     await use('team');assert.match(await page.locator('#orderFeedback').textContent(),/both/);await use('unsafe');assert.match(await page.locator('#orderFeedback').textContent(),/qualified|Sam/);await named('Work-order Clue');assert.match(await page.locator('#orderFeedback').textContent(),/Next useful action/);
+     await named('Pause Work Order');await page.keyboard.press('Tab');assert.ok(await page.locator('#storyModal').evaluate(el=>el.contains(document.activeElement)));await named('Resume');assert.equal(await page.locator('#storyModalTitle').textContent(),'Community work order');
+    }
+    for(const id of ['confirm','check','team','record']){
+     await use(id);
+     if(id==='confirm'&&stop===0&&[15,20,24].includes(mi)){
+      await page.screenshot({path:path.join(output,`${width}-${height}-mission${mi+1}-work-order.png`)});
+      await page.reload();await page.waitForFunction(()=>window.__wgaGameTab);await activate('#storyStartBtn');assert.equal(await page.locator('#storyModalTitle').textContent(),'Community work order');assert.equal(await page.locator('[data-order-action="confirm"]').isDisabled(),true);
+      if(width===390){await page.setViewportSize({width:844,height:390});await noOverflow();await page.locator('[data-order-action="check"]').scrollIntoViewIfNeeded();await bounds('[data-order-action="check"]');await page.setViewportSize({width,height});}
+     }
+    }
+   }
    if(m.dispatch){
-    assert.equal(await page.locator('#storyModalTitle').textContent(),'Collection dispatch');await noOverflow();const jobs=L.dispatch.jobs(m.dispatch[stop]);
+    assert.equal(await page.locator('#storyModalTitle').textContent(),'Collection dispatch');await noOverflow();if(m.dispatch[stop].separate)assert.match(await page.locator('.dispatch-capacity').textContent(),/Separate trips required/);const jobs=L.dispatch.jobs(m.dispatch[stop]);
     const visit=async id=>{const locator=page.locator(`[data-dispatch-job="${id}"]`);await locator.scrollIntoViewIfNeeded();await bounds(`[data-dispatch-job="${id}"]`);const b=await locator.boundingBox();assert.ok(b.width>=44&&b.height>=44);await activate(`[data-dispatch-job="${id}"]`);};
     if(mi===10&&stop===0){
      await visit(jobs[1].id);assert.match(await page.locator('#dispatchFeedback').textContent(),/Collect/);await named('Dispatch Clue');assert.match(await page.locator('#dispatchFeedback').textContent(),/Next useful stop/);
@@ -95,13 +111,13 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
     if(width===390&&wave===0){await page.reload();await page.waitForFunction(()=>window.__wgaGameTab);await activate('#storyStartBtn');assert.match(await page.locator('#storyModalTitle').textContent(),/Power The Loop/);}
    }
   }
-  assert.equal(await page.locator('#storyModalTitle').textContent(),'Mission restored!');await noOverflow();
+  assert.equal(await page.locator('#storyModalTitle').textContent(),mi===24?'Verdale restored!':'Mission restored!');if(mi===24){assert.equal(await page.locator('.story-districts li').count(),5);assert.match(await page.locator('.story-ending-summary').textContent(),/25 missions restored/);}await noOverflow();
   if(full&&mi<L.missions.length-1){await named('Next Mission');await named('Start Mission');}
  }
  await page.screenshot({path:path.join(output,`${width}-${height}-restored.png`)});
- if(full){const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),L.SAVE_KEY);assert.equal(saved.unlocked,L.missions.length);assert.equal(Object.keys(saved.stars).length,L.missions.length);assert.equal(saved.stars['school-tomorrow'],3);assert.equal(saved.stars['market-lights'],3);assert.equal(saved.stars['market-morning'],2);assert.equal(saved.stars['collection-round'],2);assert.equal(saved.stars['dry-store'],2);assert.equal(saved.stars['recovery-rise'],3);}
+ if(full){const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),L.SAVE_KEY);assert.equal(saved.unlocked,L.missions.length);assert.equal(Object.keys(saved.stars).length,L.missions.length);assert.equal(saved.stars['school-tomorrow'],3);assert.equal(saved.stars['market-lights'],3);assert.equal(saved.stars['market-morning'],2);assert.equal(saved.stars['collection-round'],2);assert.equal(saved.stars['dry-store'],2);assert.equal(saved.stars['recovery-rise'],3);assert.equal(saved.stars['repair-row'],2);assert.equal(saved.stars['workshop-beacon'],3);assert.equal(saved.stars['verdale-together'],3);}
  // The existing arcade remains reachable from the same map.
- await named(full?'Return to Verdale':'World Map');await activate('#startNextBtn');await activate('#comicContinueBtn');await bounds('#gameCanvas');await bounds('#pauseBtn');await noOverflow();
+ await named('Return to Verdale');assert.match(await page.locator('#storySummary').textContent(),/Verdale is restored/);assert.equal(await page.locator('#storyMissionList button:disabled').count(),0);await activate('#startNextBtn');await activate('#comicContinueBtn');await bounds('#gameCanvas');await bounds('#pauseBtn');await noOverflow();
  await page.waitForFunction(()=>window.__recyclePaint?.some(p=>p.w===50&&p.y>30&&/\/(newspaper|bottle|peel)\.webp$/.test(p.src)));
  const item=await page.evaluate(()=>window.__recyclePaint.find(p=>p.w===50&&p.y>30&&/\/(newspaper|bottle|peel)\.webp$/.test(p.src)));
  const bin=await page.evaluate(src=>window.__recyclePaint.find(p=>p.w===28&&p.src===src),item.src);assert.ok(bin);
@@ -109,7 +125,7 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
  if(touch){await page.touchscreen.tap(area.x+item.x,area.y+item.y);await page.touchscreen.tap(area.x+bin.x,area.y+bin.y);}else{await page.mouse.click(area.x+item.x,area.y+item.y);await page.mouse.click(area.x+bin.x,area.y+bin.y);}
  await page.waitForFunction(()=>Number(document.getElementById('scoreValue').textContent)>0);
  await activate('#pauseBtn');assert.equal(await page.locator('#pauseBtn').textContent(),'Resume');await activate('#pauseBtn');await activate('#muteBtn');assert.equal(await page.locator('#muteBtn').textContent(),'Unmute');await activate('#restartBtn');
- assert.deepEqual(errors,[]);results.push({width,height,touch,storyMissionsCompleted:full?L.missions.length:2,errors});await context.close();
+ assert.deepEqual(errors,[]);results.push({width,height,touch,storyMissionsCompleted:full?L.missions.length:5,errors});await context.close();
  }
  // Storage and audio failures must still allow learning and a clear save status.
  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});await context.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw Error('blocked');}});window.AudioContext=class{constructor(){throw Error('blocked');}};window.webkitAudioContext=undefined;});const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(`http://127.0.0.1:${server.address().port}/games/recycle-rush/?scores=0`);await page.locator('#storyStartBtn').tap();await page.getByRole('button',{name:'Start Mission',exact:true}).tap();await page.locator('#story-item-0').tap();await page.locator('[data-route="paper"]').tap();assert.match(await page.locator('#storySaveStatus').textContent(),/unavailable/);assert.equal(await page.locator('#storyScore').textContent(),'100');assert.deepEqual(errors,[]);await context.close();

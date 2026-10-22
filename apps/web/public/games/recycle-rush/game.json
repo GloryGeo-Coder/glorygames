@@ -1,6 +1,6 @@
 {
   "title": "Recycle Rush: Restore Verdale",
-  "description": "Restore Verdale\u2019s school, market and recovery district with animated characters, hands-on activities, saved community decisions and interactive collection dispatch. Fifteen untimed story missions have distinct original music, saved progress and three Grime showdowns, alongside the preserved 20-mission arcade campaign.",
+  "description": "Restore five connected districts with Circuit in 25 untimed story missions. Animated characters, hands-on recovery, community work orders, collection dispatch, distinct original music and five Grime showdowns complete Verdale’s story, alongside the 20-mission arcade campaign.",
   "tags": [
     "education",
     "environment",
@@ -38,7 +38,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "levels": 35,
+    "levels": 45,
     "educational": true,
     "missions": true,
     "backgrounds": [
@@ -51,15 +51,17 @@
       "bg-ewaste-dropoff.png",
       "bg-circular-challenge.png",
       "bg-market-square.webp",
-      "bg-recovery-district.webp"
+      "bg-recovery-district.webp",
+      "bg-repair-courtyard.webp",
+      "bg-verdale-square.webp"
     ],
-    "storyMissions": 15,
+    "storyMissions": 25,
     "arcadeMissions": 20,
     "storyAreasPerMission": 3,
     "storyTasksPerMission": 18,
     "savedStoryCheckpoints": true,
     "untimedStory": true,
-    "originalStoryMusicTracks": 15,
+    "originalStoryMusicTracks": 25,
     "animatedCircuitFrames": 16,
     "animatedGrimeFrames": 8,
     "newItemSprites": 20,
@@ -73,10 +75,13 @@
     "communityProjects": 3,
     "storyDragSorting": true,
     "interactiveFinale": true,
-    "communityRequests": 30,
-    "storyShowdowns": 3,
-    "collectionDispatchBoards": 15,
-    "collectionDispatchVisits": 60
+    "communityRequests": 60,
+    "storyShowdowns": 5,
+    "collectionDispatchBoards": 30,
+    "collectionDispatchVisits": 120,
+    "communityWorkOrders": 30,
+    "communityWorkOrderActions": 120,
+    "completeStoryEnding": true
   },
-  "version": "3.3.1"
+  "version": "3.4.0"
 }
