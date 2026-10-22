@@ -19,7 +19,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "kasi-quest": { category: "ADVENTURE", description: "Jump through township-inspired platform missions, meet NPCs, collect coins, unlock upgrades and face bosses." },
   "lost-jungle-3d-temple-of-the-sun": { category: "ADVENTURE", description: "Search for Sun Relics and keys, cross dangerous jungle platforms, solve temple puzzles and face guardians." },
   "map-master-africa": { category: "EDUCATIONAL", description: "Practise Grades 4–10 geography through 84 missions and 504 tasks, with a world atlas and all nine South African provinces. All seven paths include revision and printable grade/topic learning summaries." },
-  "math-sprint-arena": { category: "EDUCATIONAL", description: "Solve arithmetic, fractions, multiplication, geometry and algebra questions in a fast-moving neon maths arena." },
+  "math-sprint-arena": { category: "EDUCATIONAL", description: "Restore Number City through ten untimed Grade 4 maths missions with visual puzzles, saved checkpoints and progressive hints, or play the 52-level Sprint." },
   "neon-hover-runner": { category: "RACING", description: "Steer a futuristic hover runner around hazards, jump barriers and collect energy, shields, magnets and boosts." },
   "neon-orb-defender": { category: "DEFENSE", description: "Defend a futuristic Neon Orb, rescue friendly AI units and repel rogue robots and drones across 25 missions with animated combat and original level music." },
   "physics-force-lab": { category: "EDUCATIONAL", description: "Follow a young physicist through 12 educational missions about forces, gravity, energy, circuits and other concepts." },

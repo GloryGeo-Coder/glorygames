@@ -2,13 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#09072e" />
   <title>Math Sprint Arena</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=4" />
+  <link rel="stylesheet" href="./learning.css?v=4" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
-<body>
+<body data-view="home">
+  <header class="arena-header">
+    <button id="arenaHome" aria-label="Math Sprint Arena home">π <span>Math Sprint Arena</span></button>
+    <span id="saveStatus" role="status">Progress saves on this browser</span>
+    <details id="arenaMenu">
+      <summary>Menu &amp; sound</summary>
+      <div id="arenaMenuBody">
+        <label>Music <input id="musicVolume" type="range" min="0" max="100" step="5" /></label>
+        <label>Effects <input id="effectsVolume" type="range" min="0" max="100" step="5" /></label>
+        <p id="songTitle">Choose a mission to hear its music.</p>
+        <details id="missionHelp"><summary>Mission &amp; strategy</summary><p id="menuMissionStory">Join Pi-Bot in Adventure or choose a topic in Learn mode.</p></details>
+        <button id="returnHome">Save &amp; return home</button>
+      </div>
+    </details>
+  </header>
+  <main id="learningHome" class="academy-home">
+    <section class="welcome-panel">
+      <p class="eyebrow">Grade 4 · Number City</p>
+      <h1>Small steps.<br /><span>Big discoveries.</span></h1>
+      <p>Join Pi-Bot to restore Number City. Build numbers, power engines and repair bridges through maths.</p>
+      <div class="welcome-characters" aria-hidden="true">
+        <img src="./assets/sprites/player/player-idle.png" alt="" />
+        <img class="bot-floating" src="./assets/sprites/bot/bot-wave.png" alt="" />
+      </div>
+      <div class="mode-actions">
+        <button id="adventureStart" class="primary">Start Adventure</button>
+        <button id="learnStart">Learn &amp; Practise</button>
+        <button id="sprintStart">Play Sprint · 52 levels</button>
+      </div>
+      <p class="mode-note">Adventure and Learn are untimed. Sprint is an optional timed challenge.</p>
+    </section>
+    <section class="chapter-panel">
+      <div class="chapter-heading"><div><p class="eyebrow">Your learning path</p><h2>Restore Number City</h2></div><b id="chapterProgress">0 / 10</b></div>
+      <label class="practice-toggle"><input id="practiceBrowse" type="checkbox" /> Browse all missions for free practice</label>
+      <div id="missionList" class="mission-list"></div>
+      <details class="curriculum-note"><summary>What will I learn?</summary><p>This chapter practises selected Grade 4 CAPS skills: place value, whole-number calculations, patterns, money, common fractions and perimeter. Each mission has five activities with hints and worked explanations. It is a practice resource, rather than a complete Grade 4 course or a formal assessment.</p><p>Progress shows independent and assisted answers separately. You can repeat any unlocked Adventure mission or practise any topic in Learn mode.</p></details>
+    </section>
+  </main>
+  <main id="learningPlay" class="learning-play" hidden>
+    <header class="mission-bar"><span id="learningMode">Adventure · Untimed</span><strong id="learningTitle">Place Value Power</strong><span id="taskCount">1 / 5</span><progress id="taskProgress" max="5" value="0" aria-label="Activities completed"></progress></header>
+    <section class="learning-question"><small id="learningSkill">Grade 4 · Place value</small><h1 id="learningPrompt" tabindex="-1"></h1><p id="learningLesson"></p></section>
+    <section id="problemGrid" class="problem-grid">
+      <div id="visualPanel" class="visual-panel"><div class="coach"><img id="coachSprite" src="./assets/sprites/bot/bot-teach.png" alt="Pi-Bot" /><span id="coachText">Take your time. You can do this.</span></div><div id="visualContent"></div></div>
+      <div id="responsePanel" class="response-panel"></div>
+    </section>
+    <section id="learningFeedback" class="learning-feedback" aria-label="Learning feedback">
+      <p id="feedbackText" role="status" aria-live="polite"></p>
+      <div class="learning-actions"><button id="learningHint">Show a hint</button><button id="learningCheck" class="primary">Check answer</button><button id="learningNext" class="primary" hidden>Continue</button></div>
+    </section>
+  </main>
+  <section id="learningSummary" class="learning-summary" hidden aria-labelledby="summaryTitle"><div class="summary-card"><img src="./assets/sprites/bot/bot-celebrate.png" alt="Pi-Bot celebrating" /><p class="eyebrow" id="summaryMode"></p><h1 id="summaryTitle">Mission restored!</h1><p id="summaryMessage"></p><p id="summaryResult"></p><div class="summary-actions"><button id="nextMission" class="primary">Next mission</button><button id="retryMission">Practise again</button><button id="summaryHome">Back to city</button></div></div></section>
+
   <main class="game-shell">
     <header class="topbar">
       <div class="brand">
@@ -81,9 +133,9 @@
                 and become the Arena Champion.
               </p>
               <div class="overlay-tags">
-                <span>45+ Levels</span>
-                <span>Story Mode</span>
-                <span>Curriculum Path</span>
+                <span>52 Sprint Levels</span>
+                <span>Five Worlds</span>
+                <span>Timed Challenge</span>
                 <span>Rewards</span>
               </div>
               <div class="overlay-actions">
@@ -108,7 +160,10 @@
     </section>
   </main>
 
-  <script src="./game.js"></script>
+  <script src="./learning-data.js?v=4"></script>
+  <script src="./arena-audio.js?v=4"></script>
+  <script src="./game.js?v=4"></script>
+  <script src="./learning-ui.js?v=4"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

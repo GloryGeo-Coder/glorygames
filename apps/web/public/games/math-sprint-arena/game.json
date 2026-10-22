@@ -4,6 +4,16 @@
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "category": "Educational",
-  "description": "Neon math curriculum runner with arithmetic, fractions, multiplication, geometry and algebra gates.",
-  "version": "3.1.0-asset-ready"
+  "description": "Restore Number City through ten untimed Grade 4 maths missions with visual puzzles, saved checkpoints and progressive hints, or play the 52-level Sprint.",
+  "version": "4.0.0",
+  "features": {
+    "learningMissions": 10,
+    "learningActivities": 50,
+    "learningGrade": 4,
+    "curriculumScope": "Selected CAPS Grade 4 skills; not a complete course",
+    "sprintLevels": 52,
+    "originalLevelArrangements": 62,
+    "savedCheckpoints": true,
+    "untimedLearning": true
+  }
 }
