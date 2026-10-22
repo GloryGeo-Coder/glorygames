@@ -1,10 +1,10 @@
 /* Recycle Rush: Restore Verdale. Pure mission rules; also used by regression tests. */
 (function (root, factory) {
   const common = typeof module === 'object' && module.exports;
-  const api = factory(common ? require('./story-play.js') : root.RecyclePlay, common ? require('./story-dispatch.js') : root.RecycleDispatch);
+  const api = factory(common ? require('./story-play.js') : root.RecyclePlay, common ? require('./story-dispatch.js') : root.RecycleDispatch, common ? require('./story-orders.js') : root.RecycleOrders, common ? require('./story-finale.js') : root.RecycleFinale);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.RecycleLearning = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (P, D) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (P, D, O, F) {
   'use strict';
   const SAVE_KEY = 'wga_recycle_restore_v1';
   const SOURCES = ['https://fibrecircle.co.za/zithande_mzansi.html'];
@@ -1667,6 +1667,7 @@
       ]
     }
   ];
+  missions.push(...F);
   const clone = value => JSON.parse(JSON.stringify(value));
   const integer = (v, max) => Number.isSafeInteger(v) && v >= 0 && v <= max;
   function fresh(id) { return { mission: id, stop: 0, done: [], prepared: [], selected: null, mistakes: 0, hints: 0, score: 0, checkpointScore: 0, checkpointMistakes: 0, checkpointHints: 0, elapsed: 0, complete: false, play: P.initial() }; }
@@ -1677,7 +1678,7 @@
     if (![value.done, value.prepared].every(a => new Set(a).size === a.length && a.every(v => ids.includes(v)))) return false;
     if (!['score', 'checkpointScore', 'mistakes', 'hints', 'elapsed', 'checkpointMistakes', 'checkpointHints'].every(k => Number.isFinite(value[k]) && value[k] >= 0 && value[k] <= 1e8)) return false;
     if (value.done.some(i => items[m.sets[value.stop][i]].prep && !value.prepared.includes(i))) return false;
-    if (!D.valid(value, m)) return false;
+    if (!D.valid(value, m) || !O.valid(value, m)) return false;
     const decisions = value.play?.decisions || {};
     if (Object.entries(decisions).some(([stop, answer]) => !m.requests?.[Number(stop)] || answer !== m.requests[Number(stop)].answer || Number(stop) > value.stop || Number(stop) === value.stop && value.done.length !== ids.length)) return false;
     if (m.requests && m.requests.slice(0, value.stop).some((q, i) => decisions[i] !== q.answer)) return false;
@@ -1710,10 +1711,11 @@
     const m = missions.find(m => m.id === session.mission);
     const set = m.sets[session.stop];
     const play = P.hydrate(session);
+    if (action === 'order' || action === 'order-hint') return orderAction(session, m, action, value);
     if (action === 'dispatch' || action === 'dispatch-hint') return dispatchAction(session, m, action, value);
     if (action === 'decision' || action === 'decision-hint') return decide(session, action, value);
-    if (action === 'restore') { if (requestReady(session) || D.pending(session, m)) return { ok: false, text: 'Complete the community request and collection dispatch first.' }; return P.restore(session, value); }
-    if (action === 'wisp' || action === 'pulse') { if (requestReady(session) || D.pending(session, m)) return { ok: false, text: 'Complete the request and deliveries before powering The Loop.' }; return P.battle(session, action, value); }
+    if (action === 'restore') { if (requestReady(session) || O.pending(session, m) || D.pending(session, m)) return { ok: false, text: 'Complete the community request, work order and collection dispatch first.' }; return P.restore(session, value); }
+    if (action === 'wisp' || action === 'pulse') { if (requestReady(session) || O.pending(session, m) || D.pending(session, m)) return { ok: false, text: 'Complete the request, work order and deliveries before powering The Loop.' }; return P.battle(session, action, value); }
     if (action === 'select') {
       if (!integer(value, set.length - 1) || session.done.includes(value)) return { ok: false, text: 'Choose an item still in the area.' };
       session.selected = value;
@@ -1767,13 +1769,27 @@
   function areaKind(session) {
     const m = missions.find(m => m.id === session.mission);
     const finished = session.stop === m.sets.length - 1;
-    const kind = requestReady(session) ? 'request' : D.pending(session, m) ? 'dispatch' : finished ? P.isBattle(m.id) ? 'battle' : 'complete' : 'checkpoint';
+    const kind = requestReady(session) ? 'request' : O.pending(session, m) ? 'order' : D.pending(session, m) ? 'dispatch' : finished ? P.isBattle(m.id) ? 'battle' : 'complete' : 'checkpoint';
     session.complete = kind === 'complete';
     return kind;
   }
+  function orderReady(session) {
+    const m = missions.find(m => m.id === session?.mission);
+    return !!m && !requestReady(session) && O.pending(session, m);
+  }
+  function orderAction(session, m, action, id) {
+    if (!orderReady(session)) return { ok: false, text: 'Finish this area and its community request before starting the work order.' };
+    const plan = m.orders[session.stop], record = session.play.orders?.[session.stop];
+    if (action === 'order-hint') { session.hints++; return { ok: true, kind: 'hint', text: `Next useful action: ${O.next(plan, record).label}. Complete both checks before team approval, then record the outcome.` }; }
+    if (![...plan.steps, ...plan.pitfalls].some(step => step.id === id) || record?.done.includes(id)) return { ok: false, text: 'Choose an unfinished work-order action.' };
+    const result = O.act(session, m, id);
+    if (!result.ok) { session.mistakes++; session.play.streak = 0; return { ...result, kind: 'retry' }; }
+    session.score += 25;
+    return { ...result, kind: O.pending(session, m) ? 'order' : areaKind(session) };
+  }
   function dispatchReady(session) {
     const m = missions.find(m => m.id === session?.mission);
-    return !!m && !requestReady(session) && D.pending(session, m);
+    return !!m && !requestReady(session) && !O.pending(session, m) && D.pending(session, m);
   }
   function dispatchAction(session, m, action, id) {
     if (!dispatchReady(session)) return { ok: false, text: 'Complete this area and its community request before planning dispatch.' };
@@ -1790,7 +1806,7 @@
     if (!validSession(session) || session.complete) return false;
     const m = missions.find(m => m.id === session.mission);
     if (session.done.length !== m.sets[session.stop].length || session.stop + 1 >= m.sets.length) return false;
-    if (requestReady(session) || D.pending(session, m)) return false;
+    if (requestReady(session) || O.pending(session, m) || D.pending(session, m)) return false;
     if (session.play && !session.play.restored[session.stop]) return false;
     session.stop++; session.done = []; session.prepared = []; session.selected = null;
     session.checkpointScore = session.score; session.checkpointMistakes = session.mistakes; session.checkpointHints = session.hints;
@@ -1800,7 +1816,7 @@
     if (!validSession(session)) return false;
     const m = missions.find(m => m.id === session.mission);
     session.score = session.checkpointScore; session.mistakes = session.checkpointMistakes; session.hints = session.checkpointHints;
-    if (session.play) { for (const key of Object.keys(session.play.work)) if (key.startsWith(`${session.stop}-`)) delete session.play.work[key]; delete session.play.restored[session.stop]; if (session.play.dispatch) delete session.play.dispatch[session.stop]; if (session.play.decisions) delete session.play.decisions[session.stop]; session.play.streak = 0; session.play.energy = m.sets.slice(0, session.stop).reduce((n, set) => n + set.length, 0); session.play.bossHits = 0; session.play.wisps = []; }
+    if (session.play) { for (const key of Object.keys(session.play.work)) if (key.startsWith(`${session.stop}-`)) delete session.play.work[key]; delete session.play.restored[session.stop]; if (session.play.dispatch) delete session.play.dispatch[session.stop]; if (session.play.orders) delete session.play.orders[session.stop]; if (session.play.decisions) delete session.play.decisions[session.stop]; session.play.streak = 0; session.play.energy = m.sets.slice(0, session.stop).reduce((n, set) => n + set.length, 0); session.play.bossHits = 0; session.play.wisps = []; }
     session.done = []; session.prepared = []; session.selected = null; session.complete = false;
     return true;
   }
@@ -1819,5 +1835,5 @@
     const done = m.sets.slice(0, session.stop).reduce((n, s) => n + s.length, 0) + session.done.length;
     return { done, total, fraction: done / total };
   }
-  return { SAVE_KEY, SOURCES, routes, items, preparations, play: P, dispatch: D, missions, fresh, normalize, validSession, requestReady, dispatchReady, selectedItem, act, nextStop, retryStop, finish, progress };
+  return { SAVE_KEY, SOURCES, routes, items, preparations, play: P, dispatch: D, orders: O, missions, fresh, normalize, validSession, requestReady, orderReady, dispatchReady, selectedItem, act, nextStop, retryStop, finish, progress };
 });

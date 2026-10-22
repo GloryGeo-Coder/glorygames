@@ -33,7 +33,7 @@
   }
   function renderMenu() {
     const count = Object.keys(store.stars).length;
-    $('storySummary').textContent = `${count}/${L.missions.length} story missions restored · 18 recovery tasks and three saved areas per mission. Your 20 arcade missions remain available below.`;
+    $('storySummary').textContent = `${count === L.missions.length ? 'Verdale is restored! ' : ''}${count}/${L.missions.length} story missions restored · 18 recovery tasks and three saved areas per mission. Your 20 arcade missions remain available below.`;
     $('storyStartBtn').textContent = session && !session.complete ? 'Continue Story' : count === L.missions.length ? 'Replay Story' : count ? 'Next Story Mission' : 'Begin Story';
     const list = $('storyMissionList'); list.replaceChildren();
     L.missions.forEach((m, i) => {
@@ -54,7 +54,7 @@
     sound.volumes(preferences());
     mountFullscreen();
     render(); persist();
-    modal(L.requestReady(session) ? 'request' : L.dispatchReady(session) ? 'dispatch' : battleReady() ? 'battle' : session.done.length === mission().sets[session.stop].length ? 'checkpoint' : 'briefing');
+    modal(L.requestReady(session) ? 'request' : L.orderReady(session) ? 'order' : L.dispatchReady(session) ? 'dispatch' : battleReady() ? 'battle' : session.done.length === mission().sets[session.stop].length ? 'checkpoint' : 'briefing');
   }
   function exit() {
     cancelDrag(); clearTimeout(walkTimer); sound.pause(); active = false; paused = true; persist();
@@ -88,6 +88,7 @@
     if (result.kind === 'complete') {
       L.finish(store, session); persist(); publish('level_clear'); renderMenu(); modal('complete'); sound.effect('complete');
     } else if (result.kind === 'request') { modal('request'); }
+    else if (result.kind === 'order') { modal('order'); }
     else if (result.kind === 'dispatch') { modal('dispatch'); }
     else if (result.kind === 'battle') { modal('battle'); }
     else if (result.kind === 'checkpoint') { modal('checkpoint'); sound.effect('checkpoint'); }
@@ -157,8 +158,11 @@
     if (kind === 'briefing') {
       title.textContent = m.title;
       box.append(paragraph(m.subtitle, 'eyebrow'), paragraph(m.intro), paragraph(`${m.ally}: ${m.goal}`), ...(m.requests ? [paragraph('Community requests: after each area, help a neighbour choose a plan. Read the feedback, retry or use a clue. Each choice saves.', 'story-help')] : []), paragraph('Three areas · 18 tasks · no time limit. Tap to collect, or drag to sort. Prepare items with short hands-on activities, choose community upgrades and power The Loop. Each action saves; mistakes can be corrected.', 'story-help'));
+      if (m.orders) box.append(paragraph('Community work orders: complete the two checks in either order, ask the team to approve the job, then record the outcome. Every completed action saves. Specialist work stays with the trained team.', 'story-help'));
       if (m.dispatch) box.append(paragraph('After each community request, plan Musa’s pickup and delivery visits. Watch the load spaces; deliver to free room. The collection team handles the physical loads. Every visited stop saves.', 'story-help'));
       actions.append(button(session.done.length || session.stop || session.selected !== null || Object.keys(session.play.work).length ? 'Continue Mission' : 'Start Mission', () => { announce(m.goal); resume(); }, true));
+    } else if (kind === 'order') {
+      renderOrders($('storyStatus').textContent); return;
     } else if (kind === 'dispatch') {
       renderDispatch($('storyStatus').textContent); return;
     } else if (kind === 'request') {
@@ -180,7 +184,17 @@
       title.textContent = 'Mission restored!';
       box.append(paragraph('★'.repeat(store.stars[m.id] || 1), 'story-stars'), paragraph(m.restoration), paragraph(`${session.score} points · ${session.mistakes} corrections · ${session.hints} clues. ${session.mistakes === 0 && session.hints === 0 ? 'A clean recovery run!' : 'Replay for three stars by finishing without corrections or clues.'}`));
       if (index() < L.missions.length - 1) actions.append(button('Next Mission', () => open(index() + 1), true));
-      else actions.append(button('Return to Verdale', exit, true));
+      else {
+        if (L.missions.every(mission => store.stars[mission.id])) {
+          title.textContent = 'Verdale restored!';
+          const totalStars = Object.values(store.stars).reduce((sum, stars) => sum + stars, 0);
+          box.append(paragraph(`25 missions restored · ${totalStars}/75 stars. Replay any mission to improve your recovery run.`, 'story-ending-summary'));
+          const districts = document.createElement('ul'); districts.className = 'story-districts'; districts.setAttribute('aria-label', 'Restored districts');
+          for (const [name, detail] of [['School', 'Nandi keeps fibre dry and learning alive.'], ['Market', 'Asha connects reuse and separate collections.'], ['Recovery district', 'Musa and Lebo link loads to accepted destinations.'], ['Repair quarter', 'Sam gives useful goods a qualified second chance.'], ['Civic square', 'The whole community keeps The Loop working.']]) { const item = document.createElement('li'); const heading = document.createElement('strong'); heading.textContent = name; item.append(heading, document.createTextNode(detail)); districts.append(item); }
+          box.append(districts);
+        }
+        actions.append(button('Return to Verdale', exit, true));
+      }
       actions.append(button('Replay Mission', () => { session = L.fresh(m.id); open(index()); }));
     } else if (kind === 'board') {
       title.textContent = 'Local service board';
@@ -214,12 +228,13 @@
   function backFromMenu() {
     if (session.complete) modal('complete');
     else if (L.requestReady(session)) modal('request');
+    else if (L.orderReady(session)) modal('order');
     else if (L.dispatchReady(session)) modal('dispatch');
     else if (battleReady()) modal('battle');
     else if (session.done.length === mission().sets[session.stop].length) modal('checkpoint');
     else resume();
   }
-  function battleReady() { return session && P.isBattle(session.mission) && !session.complete && !L.requestReady(session) && !L.dispatchReady(session) && L.progress(session).fraction === 1; }
+  function battleReady() { return session && P.isBattle(session.mission) && !session.complete && !L.requestReady(session) && !L.orderReady(session) && !L.dispatchReady(session) && L.progress(session).fraction === 1; }
   function moveCircuit(value) {
     clearTimeout(walkTimer);
     const target = $('story-item-' + value).getBoundingClientRect(), area = $('storyScene').getBoundingClientRect();
@@ -297,6 +312,36 @@
     status.id = 'requestFeedback'; status.setAttribute('role', 'status'); box.append(status);
     actions.append(button('Request Clue', () => { const result = L.act(session, 'decision-hint'); persist(); $('requestFeedback').textContent = result.text; }), button('Pause Request', () => modal('pause')), button('Save & World Map', exit));
     $('storyModalShade').hidden = false; $('storyModal').focus();
+  }
+  function renderOrders(feedback = '') {
+    const m = mission(), O = L.orders, plan = m.orders[session.stop], state = O.read(plan, session.play.orders?.[session.stop] || { done: [] });
+    const box = $('storyModalContent'), actions = $('storyModalActions'); box.replaceChildren(); actions.replaceChildren();
+    $('storyModalTitle').textContent = 'Community work order';
+    box.append(paragraph(plan.title, 'eyebrow'), paragraph(plan.brief, 'dispatch-help'));
+    const progress = document.createElement('div'); progress.className = 'order-progress';
+    const art = document.createElement('img'); art.src = L.items[plan.item].icon; art.alt = '';
+    const meter = document.createElement('progress'); meter.max = plan.steps.length; meter.value = state.done.length; meter.setAttribute('aria-label', 'Work-order actions completed');
+    progress.append(art, paragraph(`${state.done.length}/${plan.steps.length} actions saved`), meter); box.append(progress);
+    const record = document.createElement('ol'); record.className = 'order-record'; record.setAttribute('aria-label', 'Completed work-order actions');
+    for (const id of state.done) { const item = document.createElement('li'); item.textContent = plan.steps.find(step => step.id === id).label; record.append(item); }
+    if (state.done.length) box.append(record);
+    const grid = document.createElement('div'); grid.className = 'order-actions';
+    for (const id of plan.actions) {
+      const step = [...plan.steps, ...plan.pitfalls].find(step => step.id === id), done = state.done.includes(id);
+      const b = button(`${done ? '✓ ' : ''}${step.label}`, () => {
+        const result = L.act(session, 'order', id); persist(); render();
+        if (!result.ok) { renderOrders(result.text); sound.effect('retry'); return; }
+        announce(result.text, result.kind); publish('live');
+        if (result.kind === 'order') { renderOrders(result.text); sound.effect('order'); }
+        else if (result.kind === 'complete') { L.finish(store, session); persist(); publish('level_clear'); renderMenu(); modal('complete'); sound.effect('complete'); }
+        else { modal(result.kind); sound.effect(result.kind); }
+      });
+      b.dataset.orderAction = id; b.disabled = done; grid.append(b);
+    }
+    box.append(grid);
+    const status = paragraph(feedback || 'Choose a useful next action. Both checks must be complete before team approval. There is no time limit.', 'request-feedback'); status.id = 'orderFeedback'; status.setAttribute('role', 'status'); box.append(status);
+    actions.append(button('Work-order Clue', () => { const result = L.act(session, 'order-hint'); persist(); $('orderFeedback').textContent = result.text; }), button('Pause Work Order', () => modal('pause')), button('Save & World Map', exit));
+    $('storyModalShade').hidden = false; $('storyModal').focus(); sound.start(index());
   }
   function renderDispatch(feedback = '') {
     const m = mission(), D = L.dispatch, plan = m.dispatch[session.stop], record = session.play.dispatch?.[session.stop] || { done: [] };

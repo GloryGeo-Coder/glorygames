@@ -5,15 +5,16 @@ const freshSave=()=>L.normalize(null);
 function prepareItem(s,item){const kind=L.play.kind(item);if(!kind)return;for(const[id]of L.play.activities[kind].steps)assert.ok(L.act(s,'work',id).ok);assert.ok(L.act(s,'prepare',kind).ok);}
 function answerRequest(s){if(L.requestReady(s)){const m=L.missions.find(m=>m.id===s.mission);assert.ok(L.act(s,'decision',m.requests[s.stop].answer).ok);}}
 function finishDispatch(s){const m=L.missions.find(m=>m.id===s.mission);while(L.dispatchReady(s)){const plan=m.dispatch[s.stop];const job=L.dispatch.next(plan,s.play.dispatch?.[s.stop]);assert.ok(job);assert.ok(L.act(s,'dispatch',job.id).ok);}}
-function advance(s){answerRequest(s);finishDispatch(s);assert.ok(L.act(s,'restore','canopy').ok);return L.nextStop(s);}
+function finishOrders(s){while(L.orderReady(s)){const m=L.missions.find(m=>m.id===s.mission),step=L.orders.next(m.orders[s.stop],s.play.orders?.[s.stop]);assert.ok(step);assert.ok(L.act(s,'order',step.id).ok);}}
+function advance(s){answerRequest(s);finishOrders(s);finishDispatch(s);assert.ok(L.act(s,'restore','canopy').ok);return L.nextStop(s);}
 function winBattle(s){for(let wave=0;wave<3;wave++){assert.ok(L.act(s,'wisp',wave*2).ok);assert.ok(L.act(s,'wisp',wave*2+1).ok);assert.ok(L.act(s,'pulse').ok);}}
 function completeArea(s){const m=L.missions.find(m=>m.id===s.mission);for(const [i,id]of m.sets[s.stop].entries()){const item=L.items[id];assert.ok(L.act(s,'select',i).ok);prepareItem(s,item);assert.ok(L.act(s,'route',item.route).ok);}}
-test('all fifteen missions require 270 recovery tasks, thirty community requests, fifteen dispatch boards and three showdowns',()=>{const save=freshSave();let count=0;for(const m of L.missions){const s=L.fresh(m.id);assert.equal(L.finish(save,s),false);for(let area=0;area<3;area++){assert.equal(s.stop,area);completeArea(s);answerRequest(s);finishDispatch(s);count+=6;if(area<2){assert.equal(s.complete,false);assert.equal(L.finish(save,s),false);assert.ok(advance(s));}}if(L.play.isBattle(m.id)){assert.equal(s.complete,false);winBattle(s);}assert.equal(L.progress(s).fraction,1);assert.equal(L.finish(save,s),3);const score=s.score;assert.equal(L.finish(save,s),3);assert.equal(save.results[m.id].score,score);assert.equal(L.act(s,'route','paper').ok,false);assert.equal(L.nextStop(s),false);}assert.equal(count,270);assert.equal(save.unlocked,15);assert.equal(Object.keys(save.stars).length,15);assert.deepEqual(L.normalize(save),save);});
+test('all 25 missions require 450 recovery tasks, 60 community requests, 30 work orders, 30 dispatch boards and five showdowns',()=>{const save=freshSave();let count=0;for(const m of L.missions){const s=L.fresh(m.id);assert.equal(L.finish(save,s),false);for(let area=0;area<3;area++){assert.equal(s.stop,area);completeArea(s);answerRequest(s);finishOrders(s);finishDispatch(s);count+=6;if(area<2){assert.equal(s.complete,false);assert.equal(L.finish(save,s),false);assert.ok(advance(s));}}if(L.play.isBattle(m.id)){assert.equal(s.complete,false);winBattle(s);}assert.equal(L.progress(s).fraction,1);assert.equal(L.finish(save,s),3);const score=s.score;assert.equal(L.finish(save,s),3);assert.equal(save.results[m.id].score,score);assert.equal(L.act(s,'route','paper').ok,false);assert.equal(L.nextStop(s),false);}assert.equal(count,450);assert.equal(save.unlocked,25);assert.equal(Object.keys(save.stars).length,25);assert.deepEqual(L.normalize(save),save);});
 test('mistakes are recoverable, hints explain condition, and repeated preparation cannot farm points',()=>{const s=L.fresh('lunch');L.act(s,'select',0);assert.equal(L.act(s,'route','containers').ok,false);assert.equal(s.done.length,0);assert.equal(s.mistakes,1);assert.match(L.act(s,'hint').text,/empty/i);assert.equal(s.hints,1);assert.equal(L.act(s,'prepare','flatten').ok,false);prepareItem(s,L.items.juice);const score=s.score;assert.equal(L.act(s,'prepare','empty').ok,false);assert.equal(s.score,score);assert.ok(L.act(s,'route','containers').ok);assert.equal(L.act(s,'route','containers').ok,false);assert.equal(s.score,125);});
 test('each stop saves/resumes partial work and retry rolls back only the current area',()=>{const save=freshSave(),s=L.fresh('workshop');completeArea(s);advance(s);const checkpoint=s.score;L.act(s,'select',0);L.act(s,'route','containers');L.act(s,'select',1);L.act(s,'route','paper');L.act(s,'hint');save.session=s;const loaded=L.normalize(JSON.parse(JSON.stringify(save)));assert.deepEqual(loaded.session,s);L.retryStop(loaded.session);assert.equal(loaded.session.stop,1);assert.equal(loaded.session.score,checkpoint);assert.equal(loaded.session.mistakes,0);assert.equal(loaded.session.hints,0);assert.deepEqual(loaded.session.done,[]);assert.equal(L.progress(loaded.session).done,6);});
 test('corrupt saves and out-of-order unlocks are bounded without reading or deleting arcade saves',()=>{for(const raw of [null,[],42,{version:8},{version:1,unlocked:99},{version:1,unlocked:5,stars:{'school-tomorrow':3}}])assert.equal(L.normalize(raw).unlocked,0);const save=freshSave();save.session=L.fresh('school-tomorrow');assert.equal(L.normalize(save).session,null);const s=L.fresh('workshop');for(const bad of [{...s,stop:-1},{...s,done:[9]},{...s,score:NaN},{...s,selected:9},{...s,complete:true},{...s,done:[0,0]}])assert.equal(L.validSession(bad),false);const old={wga_recycle_rush_2_save_v1:{unlockedLevel:18,stars:{0:3},loopUnlocked:false}};L.normalize(old);assert.equal(old.wga_recycle_rush_2_save_v1.unlockedLevel,18);});
 test('all mission item/route/preparation/asset references and source guidance are valid',()=>{const refs=new Set();for(const m of L.missions){refs.add(m.background);assert.equal(m.sets.length,3);assert.equal(new Set(m.destinations).size,m.destinations.length);for(const set of m.sets){assert.equal(set.length,6);for(const id of set){const item=L.items[id];assert.ok(item);assert.ok(m.destinations.includes(item.route),`${m.id}: ${id}`);assert.ok(item.fact.length>35);if(item.prep)assert.ok(L.preparations[item.prep]);refs.add(item.icon);}}}for(const route of Object.values(L.routes))refs.add(route.icon);for(const ref of refs)assert.ok(fs.existsSync(path.join(root,ref)),ref);assert.match(L.items.battery.fact,/supervisor/);assert.match(L.items.radio.fact,/qualified/);assert.match(L.items.carton.fact,/accept/);assert.equal(L.SOURCES[0],'https://fibrecircle.co.za/zithande_mzansi.html');});
-test('all fifteen songs have distinct melodies, rhythm and titles; unavailable audio stays playable',()=>{assert.equal(S.themes.length,L.missions.length);assert.equal(new Set(S.themes.map(t=>t.title)).size,L.missions.length);assert.equal(new Set(S.themes.map(t=>JSON.stringify(t.notes))).size,L.missions.length);assert.equal(new Set(S.themes.map(t=>JSON.stringify(t.rhythm))).size,L.missions.length);const audio=S.create({setInterval,clearInterval},{music:.5,sfx:.5});audio.start(4);audio.effect('sort');audio.pause();assert.equal(audio.available,false);const blocked=S.create({AudioContext:class{constructor(){throw Error('blocked');}},setInterval,clearInterval},{music:1,sfx:1});assert.doesNotThrow(()=>blocked.start(0));});
+test('all 25 songs have distinct melodies, rhythm and titles; unavailable audio stays playable',()=>{assert.equal(S.themes.length,L.missions.length);assert.equal(new Set(S.themes.map(t=>t.title)).size,L.missions.length);assert.equal(new Set(S.themes.map(t=>JSON.stringify(t.notes))).size,L.missions.length);assert.equal(new Set(S.themes.map(t=>JSON.stringify(t.rhythm))).size,L.missions.length);const audio=S.create({setInterval,clearInterval},{music:.5,sfx:.5});audio.start(4);audio.effect('sort');audio.pause();assert.equal(audio.available,false);const blocked=S.create({AudioContext:class{constructor(){throw Error('blocked');}},setInterval,clearInterval},{music:1,sfx:1});assert.doesNotThrow(()=>blocked.start(0));});
 test('real arcade boots with all assets, existing stars/settings and no missing boss sprites',async()=>{const saved=new Map([['wga_recycle_rush_2_save_v1',JSON.stringify({unlockedLevel:19,stars:{0:3,18:2},badges:{boss:true},loopUnlocked:true,settings:{music:0,sfx:0}})]]);const r=await boot({saved});assert.equal(r.probe.save.unlockedLevel,19);assert.equal(r.probe.save.stars[18],2);assert.equal(r.probe.save.loopUnlocked,true);for(const ref of r.requests)assert.ok(fs.existsSync(path.join(root,ref)),ref);r.probe.startLoop();assert.equal(r.probe.state.loop,true);r.probe.draw();assert.ok(r.draws>0);});
 test('all eight destinations fit narrow portrait and short landscape canvases',async()=>{for(const [width,height]of [[320,330],[390,500],[832,190],[1000,500]]){const r=await boot({width,height});r.probe.initLevel(19);assert.equal(r.probe.state.bins.length,8);for(const b of r.probe.state.bins){assert.ok(b.x>=0&&b.y>=0);assert.ok(b.x+b.w<=width+1);assert.ok(b.y+b.h<=height+1,`${width}x${height} ${JSON.stringify(b)}`);assert.ok(b.w>=44&&b.h>=44);}}});
 test('correct material choice succeeds even far from the physical bin; wrong choice explains material',async()=>{const r=await boot();const p=r.probe;p.initLevel(0);const it={kind:'item',cat:'paper',x:380,y:0,w:50,h:50};p.state.items.push(it);p.handleCatch(it,0);assert.equal(p.state.sorted,1);assert.equal(p.state.wrong,0);const bad={...it,cat:'organic'};p.state.items.push(bad);p.handleCatch(bad,0);assert.equal(p.state.sorted,1);assert.equal(p.state.lives,2);assert.match(r.elements.get('professorBubble').textContent,/Organic/);});
@@ -88,7 +89,7 @@ function dispatchArea(s){completeArea(s);answerRequest(s);assert.equal(L.dispatc
 test('every collection plan has feasible visits, respects capacity and supports either load first',()=>{
  const D=L.dispatch;let boards=0;
  const permutations=values=>values.length?values.flatMap((v,i)=>permutations(values.filter((_,j)=>i!==j)).map(rest=>[v,...rest])):[[]];
- for(const m of L.missions.slice(10))for(const plan of m.dispatch){
+ for(const m of L.missions.filter(m=>m.dispatch))for(const plan of m.dispatch){
   boards++;assert.equal(plan.loads.length,2);assert.ok(plan.loads.every(load=>load.spaces<=plan.capacity&&L.items[load.item]&&L.routes[load.route]&&m.destinations.includes(load.route)));
   const jobs=D.jobs(plan);assert.equal(new Set(jobs.map(j=>j.id)).size,4);
   const valid=permutations(jobs.map(j=>j.id)).filter(order=>D.read(plan,{done:order}));assert.ok(valid.length>=2,plan.title);
@@ -97,14 +98,14 @@ test('every collection plan has feasible visits, respects capacity and supports 
   assert.equal(D.read(plan,{done:[jobs[1].id]}),null);assert.equal(D.read(plan,{done:[jobs[0].id,jobs[0].id]}),null);
   if(plan.capacity<4||plan.separate)assert.equal(D.read(plan,{done:[jobs[0].id,jobs[2].id]}),null);
  }
- assert.equal(boards,15);
+ assert.equal(boards,30);
 });
 test('dispatch gates progress, gives recoverable feedback and saves each real visit without duplicate score',()=>{
- for(const m of L.missions.slice(10)){
+ for(const m of L.missions.filter(m=>m.dispatch)){
   const s=L.fresh(m.id),save=unlockedSave(L.missions.indexOf(m));
   assert.equal(L.act(s,'dispatch','pickup-paper').ok,false);
   for(let stop=0;stop<3;stop++){
-   completeArea(s);const plan=m.dispatch[stop],jobs=L.dispatch.jobs(plan);assert.equal(L.act(s,'dispatch',jobs[0].id).ok,false);answerRequest(s);
+   completeArea(s);const plan=m.dispatch[stop],jobs=L.dispatch.jobs(plan);assert.equal(L.act(s,'dispatch',jobs[0].id).ok,false);answerRequest(s);finishOrders(s);
    assert.equal(L.nextStop(s),false);assert.equal(L.act(s,'restore','canopy').ok,false);assert.equal(L.act(s,'pulse').ok,false);assert.equal(s.complete,false);
    let score=s.score;const wrong=L.act(s,'dispatch',jobs[1].id);assert.equal(wrong.ok,false);assert.match(wrong.text,/Collect/);assert.equal(s.score,score);assert.equal(s.mistakes,stop+1);
    assert.ok(L.act(s,'dispatch-hint').ok);assert.equal(s.hints,stop+1);
@@ -142,10 +143,69 @@ test('forged or corrupt dispatch sequences cannot skip requests, capacity or ear
  const f=L.fresh('recovery-rise');for(let stop=0;stop<3;stop++){completeArea(f);answerRequest(f);if(stop<2){finishDispatch(f);advance(f);}}
  assert.equal(L.act(f,'pulse').ok,false);assert.equal(L.validSession({...f,complete:true}),false);finishDispatch(f);winBattle(f);assert.equal(f.complete,true);
  delete f.play.dispatch[1];assert.equal(L.validSession(f),false);
- const metadata=JSON.parse(fs.readFileSync(path.join(root,'game.json')));assert.equal(metadata.features.collectionDispatchBoards,15);assert.equal(metadata.features.collectionDispatchVisits,60);assert.equal(metadata.features.storyShowdowns,Object.keys(L.play.battles).length);
+ const metadata=JSON.parse(fs.readFileSync(path.join(root,'game.json')));assert.equal(metadata.features.collectionDispatchBoards,30);assert.equal(metadata.features.collectionDispatchVisits,120);assert.equal(metadata.features.storyShowdowns,Object.keys(L.play.battles).length);
 });
 
 test('recovery-district art decodes as bounded WebP bytes with a matching provenance record',()=>{
  const crypto=require('node:crypto'),dir=path.join(root,'assets/backgrounds'),manifest=JSON.parse(fs.readFileSync(path.join(dir,'recovery-art.json'))),data=fs.readFileSync(path.join(dir,manifest.asset));
  assert.equal(data.toString('ascii',0,4),'RIFF');assert.equal(data.toString('ascii',8,12),'WEBP');assert.equal(crypto.createHash('sha256').update(data).digest('hex'),manifest.sha256);assert.equal(data.length,manifest.bytes);assert.ok(data.length<350000);assert.equal(manifest.width,1600);assert.equal(manifest.height,900);
+});
+
+
+test('all 30 work orders support both check orders and reject premature approval, skipped handovers and shortcuts',()=>{
+ const O=L.orders;let boards=0;
+ for(const m of L.missions.filter(m=>m.orders))for(const plan of m.orders){
+  boards++;assert.equal(plan.steps.length,4);assert.equal(plan.pitfalls.length,2);assert.deepEqual(new Set(plan.actions),new Set([...plan.steps,...plan.pitfalls].map(s=>s.id)));assert.ok(L.items[plan.item]);
+  for(const checks of [['check','confirm'],['confirm','check']]){
+   const order=[...checks,'team','record'];for(let n=0;n<=4;n++){const record={done:order.slice(0,n)};assert.ok(O.read(plan,record));assert.equal(O.complete(plan,record),n===4);if(n<4)assert.ok(O.next(plan,record));else assert.equal(O.next(plan,record),undefined);}
+  }
+  for(const done of [['team'],['record'],['check','team'],['confirm','team'],['check','check'],['unsafe'],['skip'],['constructor']])assert.equal(O.read(plan,{done}),null);
+ }
+ assert.equal(boards,30);
+});
+test('work-order actions gate progress, save partial checks, teach recoverable mistakes and reward each action once',()=>{
+ for(const m of L.missions.filter(m=>m.orders)){
+  const save=unlockedSave(L.missions.indexOf(m)),s=L.fresh(m.id);
+  assert.equal(L.act(s,'order','check').ok,false);
+  for(let stop=0;stop<3;stop++){
+   completeArea(s);assert.equal(L.act(s,'order','check').ok,false);answerRequest(s);assert.equal(L.orderReady(s),true);
+   assert.equal(L.act(s,'restore','canopy').ok,false);assert.equal(L.nextStop(s),false);assert.equal(L.act(s,'pulse').ok,false);if(m.dispatch)assert.equal(L.act(s,'dispatch',L.dispatch.jobs(m.dispatch[stop])[0].id).ok,false);
+   const score=s.score;assert.match(L.act(s,'order','team').text,/both/);assert.equal(s.score,score);assert.equal(s.mistakes,stop+1);assert.ok(L.act(s,'order-hint').ok);assert.equal(s.hints,stop+1);
+   for(const id of ['confirm','check','team','record']){
+    const before=s.score;assert.ok(L.act(s,'order',id).ok);assert.equal(s.score,before+25);assert.equal(L.act(s,'order',id).ok,false);assert.equal(s.score,before+25);
+    save.session=s;assert.deepEqual(L.normalize(JSON.parse(JSON.stringify(save))).session,s);
+   }
+   assert.equal(L.orderReady(s),false);finishDispatch(s);if(stop<2)assert.ok(advance(s));
+  }
+  if(L.play.isBattle(m.id))winBattle(s);assert.equal(L.finish(save,s),2);
+ }
+});
+test('work-order retry resets only current checks, decisions and dispatch, preserving earlier projects and checkpoints',()=>{
+ const s=L.fresh('school-to-square');completeArea(s);advance(s);const checkpoint=s.score,previous=JSON.stringify(s.play);
+ completeArea(s);answerRequest(s);L.act(s,'order','unsafe');L.act(s,'order-hint');finishOrders(s);L.act(s,'dispatch',L.dispatch.jobs(L.missions[20].dispatch[1])[0].id);
+ assert.ok(s.score>checkpoint);assert.ok(L.retryStop(s));assert.equal(s.score,checkpoint);assert.equal(s.mistakes,0);assert.equal(s.hints,0);assert.equal(s.play.orders[1],undefined);assert.equal(s.play.dispatch[1],undefined);assert.equal(s.play.decisions[1],undefined);
+ const earlier=JSON.parse(previous);assert.deepEqual(s.play.orders[0],earlier.orders[0]);assert.deepEqual(s.play.dispatch[0],earlier.dispatch[0]);assert.equal(s.play.restored[0],earlier.restored[0]);assert.ok(L.validSession(s));
+ completeArea(s);answerRequest(s);finishOrders(s);finishDispatch(s);assert.ok(advance(s));
+});
+test('v3.3 finished and partial recovery saves retain progress and unlock Repair Row without repeating old objectives',()=>{
+ const save=unlockedSave(15),s=L.fresh('recovery-rise');for(let i=0;i<3;i++){completeArea(s);answerRequest(s);finishDispatch(s);if(i<2)advance(s);}winBattle(s);save.session=s;
+ const loaded=L.normalize(JSON.parse(JSON.stringify(save)));assert.equal(loaded.unlocked,15);assert.equal(L.missions[loaded.unlocked].id,'repair-row');assert.deepEqual(loaded.session,s);assert.deepEqual(loaded.stars,save.stars);assert.deepEqual(loaded.results,save.results);
+ loaded.session=L.fresh('repair-row');assert.ok(L.normalize(loaded).session);loaded.session=L.fresh('sharing-shelves');assert.equal(L.normalize(loaded).session,null);
+ const old=L.fresh('load-by-load');completeArea(old);answerRequest(old);const job=L.dispatch.jobs(L.missions[13].dispatch[0])[0];L.act(old,'dispatch',job.id);save.session=old;assert.deepEqual(L.normalize(save).session,old);
+});
+test('forged work orders cannot skip checks, requests, prior areas, final deliveries or the last Grime showdown',()=>{
+ const s=L.fresh('verdale-together');completeArea(s);answerRequest(s);
+ for(const orders of [null,[],{0:{done:['team']}},{0:{done:['check','check']}},{0:{done:['constructor']}},{1:{done:[]}},{0:{done:'bad'}},JSON.parse('{"__proto__":{"done":[]}}')]){const altered=JSON.parse(JSON.stringify(s));altered.play.orders=orders;assert.equal(L.validSession(altered),false);}
+ const early=L.fresh('repair-row');early.play.orders={0:{done:['check']}};assert.equal(L.validSession(early),false);
+ const delivery=JSON.parse(JSON.stringify(s));delivery.play.dispatch={0:{done:[]}};assert.equal(L.validSession(delivery),false);
+ for(let stop=0;stop<3;stop++){
+  if(stop) {completeArea(s);answerRequest(s);}
+  assert.equal(L.act(s,'wisp',0).ok,false);assert.equal(L.validSession({...s,complete:true}),false);finishOrders(s);assert.equal(L.act(s,'pulse').ok,false);finishDispatch(s);if(stop<2)advance(s);
+ }
+ assert.equal(s.complete,false);assert.equal(L.act(s,'pulse').ok,false);winBattle(s);assert.equal(s.complete,true);assert.ok(L.validSession(s));const save=unlockedSave(24);assert.equal(L.finish(save,s),3);assert.equal(L.normalize(save).unlocked,25);assert.equal(Object.keys(save.stars).length,25);
+ for(const key of ['orders','dispatch']){const broken=JSON.parse(JSON.stringify(s));delete broken.play[key][1];assert.equal(L.validSession(broken),false);}
+});
+test('work-order metadata and two final chapter backgrounds match the shipped assets and bounded art budget',()=>{
+ const metadata=JSON.parse(fs.readFileSync(path.join(root,'game.json'))),boards=L.missions.reduce((n,m)=>n+(m.orders?.length||0),0);assert.equal(metadata.features.communityWorkOrders,boards);assert.equal(metadata.features.communityWorkOrderActions,boards*4);assert.equal(metadata.features.completeStoryEnding,true);assert.equal(L.missions.at(-1).id,'verdale-together');assert.match(L.missions.at(-1).restoration,/whole|everyone/);
+ const crypto=require('node:crypto'),dir=path.join(root,'assets/backgrounds'),manifest=JSON.parse(fs.readFileSync(path.join(dir,'finale-art.json')));let bytes=0;for(const[file,entry]of Object.entries(manifest.assets)){const data=fs.readFileSync(path.join(dir,file));assert.equal(data.toString('ascii',0,4),'RIFF');assert.equal(data.toString('ascii',8,12),'WEBP');assert.equal(crypto.createHash('sha256').update(data).digest('hex'),entry.sha256);assert.equal(data.length,entry.bytes);assert.equal(entry.width,1600);assert.equal(entry.height,900);assert.ok(data.length<350000);bytes+=data.length;}assert.equal(Object.keys(manifest.assets).length,2);assert.ok(bytes<700000);
 });

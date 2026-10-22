@@ -17,7 +17,7 @@
     shelf: { title: 'Community exchange', icon: 'assets/animated/book.webp', fact: 'A reuse shelf lets usable books and clothes serve another person before becoming waste.' },
     caddy: { title: 'Food-compost caddy', icon: 'assets/animated/compost-caddy.webp', fact: 'A labelled caddy keeps the listed food scraps separate from packaging and dry paper.' }
   };
-  const battles = { 'school-tomorrow': 'The school recovery station is restored.', 'market-lights': 'The market square shines again.', 'recovery-rise': 'The recovery district is connected again.' };
+  const battles = { 'school-tomorrow': 'The school recovery station is restored.', 'market-lights': 'The market square shines again.', 'recovery-rise': 'The recovery district is connected again.', 'workshop-beacon': 'The workshop beacon shines again.', 'verdale-together': 'All five districts are connected. Verdale is restored, together.' };
   const isBattle = id => Object.hasOwn(battles, id);
   function kind(item) { return item?.prep || (item?.route === 'repair' ? 'repair' : item?.route === 'reuse' ? 'reuse' : null); }
   function initial(complete = false) { return { version: 1, work: {}, restored: {}, decisions: {}, streak: 0, bestStreak: 0, energy: 0, bossHits: complete ? 3 : 0, wisps: [] }; }
@@ -63,8 +63,9 @@
   function battle(session, action, value) {
     const play = hydrate(session);
     const requestPending = session.mission !== 'school-tomorrow' && !play.decisions?.[2];
-    const deliveryPending = session.mission === 'recovery-rise' && play.dispatch?.[2]?.done?.length !== 4;
-    if (!isBattle(session.mission) || session.stop !== 2 || session.done.length !== 6 || session.complete || requestPending || deliveryPending) return { ok: false, text: 'Complete every recovery task to expose Grime.' };
+    const orderPending = ['workshop-beacon', 'verdale-together'].includes(session.mission) && play.orders?.[2]?.done?.length !== 4;
+    const deliveryPending = ['recovery-rise', 'verdale-together'].includes(session.mission) && play.dispatch?.[2]?.done?.length !== 4;
+    if (!isBattle(session.mission) || session.stop !== 2 || session.done.length !== 6 || session.complete || requestPending || orderPending || deliveryPending) return { ok: false, text: 'Complete every recovery task to expose Grime.' };
     if (action === 'wisp') {
       if (!Number.isSafeInteger(value) || value < play.bossHits * 2 || value >= (play.bossHits + 1) * 2 || play.wisps.includes(value)) return { ok: false, text: 'Clear the two visible Grime clouds first.' };
       play.wisps.push(value);

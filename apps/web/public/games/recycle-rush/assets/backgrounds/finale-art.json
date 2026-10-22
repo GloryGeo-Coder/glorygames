@@ -1,0 +1,22 @@
+{
+  "generator": "built-in image_gen",
+  "promptRecord": "docs/art/recycle-rush-v3.4-prompts.md",
+  "assets": {
+    "bg-repair-courtyard.webp": {
+      "width": 1600,
+      "height": 900,
+      "bytes": 332630,
+      "sha256": "6df7fd1cfaa392da5a835bb164fc6e4ec4e10964be554ec602e53b83309a5b3e",
+      "sourceSha256": "e161c16f53e88cb0e8d7009254acec9ceb67fb9abb73434c8f1b0b764dd38704",
+      "encoding": "sharp WebP quality 82; resize to 1600x900"
+    },
+    "bg-verdale-square.webp": {
+      "width": 1600,
+      "height": 900,
+      "bytes": 338176,
+      "sha256": "2a9ec57020afc6dc80609ae596f5fd40b99134a95ec39de9b495c04b077a63c4",
+      "sourceSha256": "18bbf33f4995b571b69e83cb51801e8183123811e75ee081cdf088456db6470a",
+      "encoding": "sharp WebP quality 82; resize to 1600x900"
+    }
+  }
+}
