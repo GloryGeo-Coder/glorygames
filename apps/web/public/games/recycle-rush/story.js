@@ -54,7 +54,7 @@
     sound.volumes(preferences());
     mountFullscreen();
     render(); persist();
-    modal(L.requestReady(session) ? 'request' : battleReady() ? 'battle' : session.done.length === mission().sets[session.stop].length ? 'checkpoint' : 'briefing');
+    modal(L.requestReady(session) ? 'request' : L.dispatchReady(session) ? 'dispatch' : battleReady() ? 'battle' : session.done.length === mission().sets[session.stop].length ? 'checkpoint' : 'briefing');
   }
   function exit() {
     cancelDrag(); clearTimeout(walkTimer); sound.pause(); active = false; paused = true; persist();
@@ -88,6 +88,7 @@
     if (result.kind === 'complete') {
       L.finish(store, session); persist(); publish('level_clear'); renderMenu(); modal('complete'); sound.effect('complete');
     } else if (result.kind === 'request') { modal('request'); }
+    else if (result.kind === 'dispatch') { modal('dispatch'); }
     else if (result.kind === 'battle') { modal('battle'); }
     else if (result.kind === 'checkpoint') { modal('checkpoint'); sound.effect('checkpoint'); }
     else if (result.ok) publish('live');
@@ -156,7 +157,10 @@
     if (kind === 'briefing') {
       title.textContent = m.title;
       box.append(paragraph(m.subtitle, 'eyebrow'), paragraph(m.intro), paragraph(`${m.ally}: ${m.goal}`), ...(m.requests ? [paragraph('Community requests: after each area, help a neighbour choose a plan. Read the feedback, retry or use a clue. Each choice saves.', 'story-help')] : []), paragraph('Three areas · 18 tasks · no time limit. Tap to collect, or drag to sort. Prepare items with short hands-on activities, choose community upgrades and power The Loop. Each action saves; mistakes can be corrected.', 'story-help'));
+      if (m.dispatch) box.append(paragraph('After each community request, plan Musa’s pickup and delivery visits. Watch the load spaces; deliver to free room. The collection team handles the physical loads. Every visited stop saves.', 'story-help'));
       actions.append(button(session.done.length || session.stop || session.selected !== null || Object.keys(session.play.work).length ? 'Continue Mission' : 'Start Mission', () => { announce(m.goal); resume(); }, true));
+    } else if (kind === 'dispatch') {
+      renderDispatch($('storyStatus').textContent); return;
     } else if (kind === 'request') {
       renderRequest(); return;
     } else if (kind === 'activity') {
@@ -210,11 +214,12 @@
   function backFromMenu() {
     if (session.complete) modal('complete');
     else if (L.requestReady(session)) modal('request');
+    else if (L.dispatchReady(session)) modal('dispatch');
     else if (battleReady()) modal('battle');
     else if (session.done.length === mission().sets[session.stop].length) modal('checkpoint');
     else resume();
   }
-  function battleReady() { return session && P.isBattle(session.mission) && !session.complete && !L.requestReady(session) && L.progress(session).fraction === 1; }
+  function battleReady() { return session && P.isBattle(session.mission) && !session.complete && !L.requestReady(session) && !L.dispatchReady(session) && L.progress(session).fraction === 1; }
   function moveCircuit(value) {
     clearTimeout(walkTimer);
     const target = $('story-item-' + value).getBoundingClientRect(), area = $('storyScene').getBoundingClientRect();
@@ -292,6 +297,46 @@
     status.id = 'requestFeedback'; status.setAttribute('role', 'status'); box.append(status);
     actions.append(button('Request Clue', () => { const result = L.act(session, 'decision-hint'); persist(); $('requestFeedback').textContent = result.text; }), button('Pause Request', () => modal('pause')), button('Save & World Map', exit));
     $('storyModalShade').hidden = false; $('storyModal').focus();
+  }
+  function renderDispatch(feedback = '') {
+    const m = mission(), D = L.dispatch, plan = m.dispatch[session.stop], record = session.play.dispatch?.[session.stop] || { done: [] };
+    const state = D.read(plan, record), jobs = D.jobs(plan), box = $('storyModalContent'), actions = $('storyModalActions');
+    box.replaceChildren(); actions.replaceChildren(); $('storyModalTitle').textContent = 'Collection dispatch';
+    box.append(paragraph(plan.title, 'eyebrow'), paragraph(plan.brief, 'dispatch-help'));
+    const capacity = document.createElement('div'); capacity.className = 'dispatch-capacity';
+    capacity.append(paragraph(`Vehicle load spaces: ${state.used}/${plan.capacity} · Stops visited: ${state.done.length}/4`));
+    const meter = document.createElement('progress'); meter.max = plan.capacity; meter.value = state.used; meter.setAttribute('aria-label', 'Occupied vehicle load spaces'); capacity.append(meter); box.append(capacity);
+    const cargo = document.createElement('div'); cargo.className = 'dispatch-cargo';
+    if (!state.cargo.length) cargo.append(paragraph('Vehicle empty · choose a pickup.'));
+    for (const id of state.cargo) { const load = plan.loads.find(load => load.id === id), chip = document.createElement('span'), img = document.createElement('img'); img.src = L.items[load.item].icon; img.alt = ''; chip.append(img, document.createTextNode(load.label)); cargo.append(chip); }
+    box.append(cargo);
+    const map = document.createElement('div'); map.className = 'dispatch-map'; map.setAttribute('aria-label', 'Collection pickup and delivery stops');
+    const points = [[25,25],[75,25],[25,75],[75,75]], visited = [[50,50], ...state.done.map(id => points[jobs.findIndex(job => job.id === id)])];
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 100 100'); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('aria-hidden', 'true');
+    const line = document.createElementNS(svg.namespaceURI, 'polyline'); line.setAttribute('points', visited.map(p => p.join(',')).join(' ')); svg.append(line); map.append(svg);
+    for (const job of jobs) {
+      const load = plan.loads.find(load => load.id === job.load), done = state.done.includes(job.id);
+      const b = button('', () => {
+        const result = L.act(session, 'dispatch', job.id); persist(); render();
+        if (!result.ok) { renderDispatch(result.text); sound.effect(result.kind); return; }
+        announce(result.text, result.kind); publish('live');
+        if (result.kind === 'dispatch') { renderDispatch(result.text); sound.effect('dispatch'); }
+        else if (result.kind === 'complete') { L.finish(store, session); persist(); publish('level_clear'); renderMenu(); modal('complete'); sound.effect('complete'); }
+        else { modal(result.kind); sound.effect(result.kind); }
+      });
+      b.className = 'dispatch-stop'; b.dataset.dispatchJob = job.id; b.dataset.done = String(done); b.disabled = done;
+      b.style.setProperty('--load-color', L.routes[load.route].color);
+      const img = document.createElement('img'); img.src = L.items[load.item].icon; img.alt = '';
+      const text = document.createElement('span'); text.textContent = `${done ? '✓ ' : ''}${job.label}`;
+      const detail = document.createElement('small'); detail.textContent = `${load.label} · ${load.spaces} spaces`;
+      b.append(img, text, detail);
+      if (state.done.at(-1) === job.id) { const marker = document.createElement('img'); marker.className = 'dispatch-circuit'; marker.src = 'assets/animated/circuit-idle.webp'; marker.alt = 'Current stop'; b.append(marker); }
+      map.append(b);
+    }
+    box.append(map);
+    const status = paragraph(feedback || (plan.separate ? 'Separate trips: deliver the current stream before collecting the next.' : 'Pickups add a load. Deliveries free room. Choose your next visit.'), 'request-feedback'); status.id = 'dispatchFeedback'; status.setAttribute('role', 'status'); box.append(status);
+    actions.append(button('Dispatch Clue', () => { const result = L.act(session, 'dispatch-hint'); persist(); $('dispatchFeedback').textContent = result.text; }), button('Pause Route', () => modal('pause')), button('Save & World Map', exit));
+    $('storyModalShade').hidden = false; $('storyModal').focus(); sound.start(index());
   }
   function renderBattle() {
     const play = P.hydrate(session), box = $('storyModalContent'), actions = $('storyModalActions'); box.replaceChildren(); actions.replaceChildren();

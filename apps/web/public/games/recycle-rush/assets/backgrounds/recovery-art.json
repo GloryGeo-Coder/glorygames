@@ -1,0 +1,11 @@
+{
+  "asset": "bg-recovery-district.webp",
+  "width": 1600,
+  "height": 900,
+  "bytes": 332042,
+  "sha256": "bbc04ed88b7852ec655cfb0afddabd7b6ed523599c0fd286d40b9544f3246f5b",
+  "sourceSha256": "d21dbb16fa90062e8ce136e7ef6442aeeb34732ba2a29949c33efd964f476ade",
+  "generator": "built-in image_gen",
+  "promptRecord": "docs/art/recycle-rush-v3.3-prompts.md",
+  "encoding": "WebP quality 82; resize to 1600px wide with sharp; existing assets unchanged"
+}
