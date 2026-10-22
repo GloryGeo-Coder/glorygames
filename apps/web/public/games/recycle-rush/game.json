@@ -1,6 +1,6 @@
 {
   "title": "Recycle Rush: Restore Verdale",
-  "description": "Restore Verdale\u2019s school and market with animated Circuit and Grime, hands-on recovery activities, saved community decisions, project choices and two energy-powered showdowns. Ten untimed story missions with distinct original music and saved progress sit alongside the preserved 20-mission arcade campaign.",
+  "description": "Restore Verdale\u2019s school, market and recovery district with animated characters, hands-on activities, saved community decisions and interactive collection dispatch. Fifteen untimed story missions have distinct original music, saved progress and three Grime showdowns, alongside the preserved 20-mission arcade campaign.",
   "tags": [
     "education",
     "environment",
@@ -38,7 +38,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "levels": 30,
+    "levels": 35,
     "educational": true,
     "missions": true,
     "backgrounds": [
@@ -50,15 +50,16 @@
       "bg-landfill-diversion.png",
       "bg-ewaste-dropoff.png",
       "bg-circular-challenge.png",
-      "bg-market-square.webp"
+      "bg-market-square.webp",
+      "bg-recovery-district.webp"
     ],
-    "storyMissions": 10,
+    "storyMissions": 15,
     "arcadeMissions": 20,
     "storyAreasPerMission": 3,
     "storyTasksPerMission": 18,
     "savedStoryCheckpoints": true,
     "untimedStory": true,
-    "originalStoryMusicTracks": 10,
+    "originalStoryMusicTracks": 15,
     "animatedCircuitFrames": 16,
     "animatedGrimeFrames": 8,
     "newItemSprites": 20,
@@ -72,8 +73,10 @@
     "communityProjects": 3,
     "storyDragSorting": true,
     "interactiveFinale": true,
-    "communityRequests": 15,
-    "storyShowdowns": 2
+    "communityRequests": 30,
+    "storyShowdowns": 3,
+    "collectionDispatchBoards": 15,
+    "collectionDispatchVisits": 60
   },
-  "version": "3.2.0"
+  "version": "3.3.0"
 }

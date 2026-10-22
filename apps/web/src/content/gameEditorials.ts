@@ -1012,14 +1012,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "recycle-rush": {
     "category": "Educational",
-    "summary": "Restore Verdale with Circuit in ten story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
+    "summary": "Restore Verdale with Circuit in fifteen story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
     "overview": [
-      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Ten untimed story missions contain three saved areas and 18 recovery tasks each. Circuit and Grime use illustrated animation frames matching the game artwork, with a different original music theme for every story mission. Market and community missions add fifteen saved decisions with feedback, clues and recoverable retries, building toward a second Grime showdown.",
+      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Fifteen untimed story missions contain three saved areas and 18 recovery tasks each. Circuit and Grime use illustrated animation frames matching the game artwork, with a different original music theme for every story mission. Market and recovery-district missions add thirty saved community decisions with feedback and clues. Fifteen collection dispatch boards ask players to plan pickups and accepted deliveries, manage vehicle space and protect separate material streams. Three Grime showdowns bring the districts together.",
       "Tap an object to inspect its material and condition. Fold empty boxes, tip and empty bottles, clear food scraps, check reusable goods or help Sam plan a qualified repair. Then tap or drag to an accepted destination. Wrong choices explain the reason and let you try again. The separate 20-mission arcade campaign retains its eight eco-hubs, Grime bosses, badges, powers and endless Loop Mode, with the new item art and animated Grime hazards."
     ],
     "story": [
       "Circuit wakes in a neglected school workshop as Grime feeds on mixed rubbish. Professor Loop asks you to bring the school’s recovery station back to life.",
-      "Nandi helps protect clean materials, Sam assesses repairs, and Musa connects neighbourhood collection to a recovery centre. Each completed mission shows another part of the community working again."
+      "Nandi helps protect clean materials, Sam assesses repairs, and Musa connects neighbourhood collection to a recovery centre. Asha organises the market, and Lebo connects Musa’s collections to the recovery district. Each completed mission shows another part of the community working again."
     ],
     "howToPlay": [
       "Choose Begin Story or continue a saved story mission. New missions unlock in order.",
@@ -1027,7 +1027,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "If an activity action appears, open it and use its touch buttons or swipe across the item to fold, empty, scrape, check or assess it before routing.",
       "Choose a destination by its label and icon. Use Other routes when a mission has more than four destinations.",
       "Use a clue or the Service Board to review the local rules. Mistakes can be corrected without restarting the story mission.",
-      "Complete six tasks per area, then install a dry-paper shelter, exchange shelf or food-compost caddy. In the finale, finish every recovery task, clear two Grime clouds per wave and fire three charged Loop Pulses. Each action saves on this device when storage is available."
+      "Complete six tasks per area and answer any community request. In recovery-district missions, visit the pickup and delivery stops on the dispatch board, checking vehicle space and any separate-load rule. Then install a community project between areas. Each Grime showdown needs all recovery tasks and its district objectives before three charged Loop Pulses. Each action saves on this device when storage is available."
     ],
     "desktop": [
       "Use the pointer or keyboard Tab and Enter to collect items and choose story actions. Escape opens the mission menu.",
@@ -1039,6 +1039,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Pause / Menu includes audio sliders, reduced motion and a retry for the current story area. Enter Fullscreen is available where the browser supports it."
     ],
     "systems": [
+      {
+        "title": "Collection dispatch",
+        "body": "Plan each load’s pickup before its accepted delivery. Delivering frees vehicle space, while separate-load rounds keep the listed streams apart. Each visited stop saves; clues and retries support learning."
+      },
       {
         "title": "Material and condition",
         "body": "The item card distinguishes a usable book, empty packaging, food scraps and materials that need preparation or specialist attention."
@@ -1053,13 +1057,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Ten story missions contain 180 recovery tasks in total. The 20-mission arcade campaign offers a separate, faster challenge across eight themed eco-hubs.",
+      "Fifteen story missions contain 270 recovery tasks in total. The 20-mission arcade campaign offers a separate, faster challenge across eight themed eco-hubs.",
       "All story missions are untimed. Arcade difficulty rises through more material categories, wind, power-ups, hazards and bosses. A boss mission requires both its sorting target and the boss defeat."
     ],
     "tips": [
       "Read the material and condition together; a usable book has a different first destination from unwanted paper.",
       "Prepare an item before routing when a preparation button is shown.",
       "Read the service board rather than treating bin colours as a universal code.",
+      "On the dispatch board, deliver the load on board when another pickup will not fit. Check whether the round requires separate trips.",
       "Use clues to learn, then replay a mission to improve its star rating.",
       "Ask an adult or trained worker about batteries, electronics, chemicals or broken glass. Do not open or dismantle them."
     ],
@@ -1070,7 +1075,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels are in Recycle Rush?",
-        "a": "There are ten story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
+        "a": "There are fifteen story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
       },
       {
         "q": "Is the story timed?",

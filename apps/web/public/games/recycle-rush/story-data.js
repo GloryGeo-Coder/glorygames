@@ -1,9 +1,10 @@
 /* Recycle Rush: Restore Verdale. Pure mission rules; also used by regression tests. */
 (function (root, factory) {
-  const api = factory(typeof module === 'object' && module.exports ? require('./story-play.js') : root.RecyclePlay);
+  const common = typeof module === 'object' && module.exports;
+  const api = factory(common ? require('./story-play.js') : root.RecyclePlay, common ? require('./story-dispatch.js') : root.RecycleDispatch);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.RecycleLearning = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (P) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (P, D) {
   'use strict';
   const SAVE_KEY = 'wga_recycle_restore_v1';
   const SOURCES = ['https://petco.co.za/consumers/'];
@@ -586,7 +587,7 @@
           "can"
         ]
       ],
-      "restoration": "Warm lights return to the market square. The school and market teams now share a working recovery loop. Replay for a cleaner run, or try the faster arcade challenge.",
+      "restoration": "Warm lights return to the market square. The school and market teams now share a working recovery loop. Musa invites Circuit onto the collection routes next.",
       "requests": [
         {
           "prompt": "Festival visitors want to help but do not know this market’s services. What should Asha show them?",
@@ -655,6 +656,1015 @@
           "success": "Every recovery choice counts. The market team is ready to power The Loop together."
         }
       ]
+    },
+    {
+      "id": "collection-round",
+      "title": "Musa’s Collection Round",
+      "subtitle": "Recovery district · pickups & deliveries",
+      "ally": "Musa · community collector",
+      "intro": "With the school and market restored, Musa invites Circuit on his collection round. The community points need a reliable route into the recovery district. Help him pick up prepared loads and deliver them before the vehicle runs out of room.",
+      "goal": "Recover the area, help your neighbour, then plan the pickups and accepted deliveries on Musa’s dispatch board.",
+      "background": "assets/backgrounds/bg-community-day.png",
+      "stops": [
+        "The library collection point",
+        "The market return lane",
+        "The recovery district gate"
+      ],
+      "destinations": [
+        "paper",
+        "containers",
+        "reuse",
+        "compost"
+      ],
+      "sets": [
+        [
+          "box",
+          "newspaper",
+          "book",
+          "bottle",
+          "peel",
+          "juice"
+        ],
+        [
+          "can",
+          "box",
+          "tray",
+          "book",
+          "apple",
+          "newspaper"
+        ],
+        [
+          "juice",
+          "newspaper",
+          "box",
+          "peel",
+          "bottle",
+          "book"
+        ]
+      ],
+      "restoration": "Musa’s first district round is working. The school, library and market can now send prepared loads to the services that accept them.",
+      "requests": [
+        {
+          "prompt": "Musa’s vehicle has space for one more collection load. What makes the next pickup possible?",
+          "answer": "deliver",
+          "choices": [
+            {
+              "id": "squash",
+              "label": "Push every stream into one mixed load",
+              "feedback": "Mixed food, dry paper and special items need different routes."
+            },
+            {
+              "id": "deliver",
+              "label": "Deliver the current load to its listed destination",
+              "feedback": "Unloading the completed delivery frees collection space."
+            },
+            {
+              "id": "forget",
+              "label": "Mark the next pickup done without collecting it",
+              "feedback": "The dispatch record should match the visits actually completed."
+            }
+          ],
+          "success": "A completed delivery frees room for the next collection."
+        },
+        {
+          "prompt": "The library has both readable books and dry, unwanted newspapers. Which plan fits their condition?",
+          "answer": "split",
+          "choices": [
+            {
+              "id": "split",
+              "label": "Share the books and collect newspaper separately",
+              "feedback": "Reuse keeps a usable item in service; unwanted dry paper has its own route."
+            },
+            {
+              "id": "tear",
+              "label": "Tear up every readable book",
+              "feedback": "Check whether a book can be shared before recycling its fibres."
+            },
+            {
+              "id": "mixed",
+              "label": "Mix both with the food-compost load",
+              "feedback": "Food scraps and clean paper should remain separate."
+            }
+          ],
+          "success": "Musa’s route can support both reuse and paper recovery without mixing their purposes."
+        },
+        {
+          "prompt": "A collection point has changed its accepted materials. What should Circuit use when planning the round?",
+          "answer": "current",
+          "choices": [
+            {
+              "id": "memory",
+              "label": "The colours used by a different town",
+              "feedback": "Bin colours do not give a universal acceptance rule."
+            },
+            {
+              "id": "old",
+              "label": "An old list even if the service has changed",
+              "feedback": "Acceptance lists can differ and should be checked."
+            },
+            {
+              "id": "current",
+              "label": "The current service board and labels",
+              "feedback": "Use the current local guidance for each destination."
+            }
+          ],
+          "success": "The route follows the service that is available here, rather than guessing from a colour."
+        }
+      ],
+      "dispatch": [
+        {
+          "title": "Round 1 · The library collection point",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 4,
+          "separate": false,
+          "loads": [
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            },
+            {
+              "id": "containers",
+              "label": "Empty accepted containers",
+              "item": "bottle",
+              "route": "containers",
+              "pickup": "Container collection point",
+              "delivery": "Container intake",
+              "spaces": 2,
+              "fact": "This service accepts these empty containers."
+            }
+          ]
+        },
+        {
+          "title": "Round 2 · The market return lane",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "reuse",
+              "label": "Readable books for sharing",
+              "item": "book",
+              "route": "reuse",
+              "pickup": "Library exchange point",
+              "delivery": "Community reuse shelf",
+              "spaces": 2,
+              "fact": "Usable books can serve another reader."
+            },
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            }
+          ]
+        },
+        {
+          "title": "Round 3 · The recovery district gate",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "containers",
+              "label": "Empty accepted containers",
+              "item": "bottle",
+              "route": "containers",
+              "pickup": "Container collection point",
+              "delivery": "Container intake",
+              "spaces": 2,
+              "fact": "This service accepts these empty containers."
+            },
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dry-store",
+      "title": "Keep the Fibre Dry",
+      "subtitle": "Recovery district · quality under cover",
+      "ally": "Nandi & Musa",
+      "intro": "A rain front is closing in on the covered loading bays. Nandi has protected the dry-paper store, but the route must keep wet food caddies away from the clean fibre loads.",
+      "goal": "Prepare the packaging, protect dry paper and complete separate-load dispatch rounds before reopening the store.",
+      "background": "assets/backgrounds/bg-recovery-district.webp",
+      "stops": [
+        "The covered paper bay",
+        "The separate food round",
+        "The dry-store entrance"
+      ],
+      "destinations": [
+        "paper",
+        "compost",
+        "containers",
+        "residual"
+      ],
+      "sets": [
+        [
+          "box",
+          "wetpaper",
+          "peel",
+          "newspaper",
+          "tray",
+          "juice"
+        ],
+        [
+          "apple",
+          "box",
+          "newspaper",
+          "tray",
+          "peel",
+          "wetpaper"
+        ],
+        [
+          "juice",
+          "box",
+          "wetpaper",
+          "can",
+          "apple",
+          "newspaper"
+        ]
+      ],
+      "restoration": "The paper store is sheltered and the separate collection rounds are running. Nandi can keep the food caddies away from the clean fibre store.",
+      "requests": [
+        {
+          "prompt": "Rain is approaching the loading bay. Which load should be protected from moisture?",
+          "answer": "paper",
+          "choices": [
+            {
+              "id": "food",
+              "label": "Mix the paper into the food caddy",
+              "feedback": "Food and moisture can contaminate the dry paper stream."
+            },
+            {
+              "id": "paper",
+              "label": "The clean, dry paper and cardboard",
+              "feedback": "Covered, labelled storage helps keep paper useful."
+            },
+            {
+              "id": "wet",
+              "label": "Soak the cardboard before collection",
+              "feedback": "This paper service expects clean, dry materials."
+            }
+          ],
+          "success": "The dry-paper shelter protects the fibre collection while the team prepares the route."
+        },
+        {
+          "prompt": "Why does today’s quality round deliver the food caddy before collecting the dry paper?",
+          "answer": "apart",
+          "choices": [
+            {
+              "id": "apart",
+              "label": "This round keeps food and dry paper loads apart",
+              "feedback": "Separate handling helps protect the clean paper from wet food."
+            },
+            {
+              "id": "same",
+              "label": "Food and paper should always be mixed",
+              "feedback": "Wet scraps can contaminate clean paper."
+            },
+            {
+              "id": "colour",
+              "label": "One universal bin colour requires it",
+              "feedback": "Follow the local project’s handling guidance, not a universal colour."
+            }
+          ],
+          "success": "The dispatch board asks for separate loads so the paper stays away from wet scraps."
+        },
+        {
+          "prompt": "A wet, greasy wrapper is placed beside clean cardboard. Which guidance applies here?",
+          "answer": "residual",
+          "choices": [
+            {
+              "id": "dry",
+              "label": "Call it clean paper because it has dried",
+              "feedback": "Food-soiling can remain even after moisture has gone."
+            },
+            {
+              "id": "compost",
+              "label": "Put it into any compost project",
+              "feedback": "This supervised food-compost project does not accept that wrapper."
+            },
+            {
+              "id": "residual",
+              "label": "Use this service’s residual-waste route",
+              "feedback": "Our service excludes this food-soiled wrapper from its paper and compost streams."
+            }
+          ],
+          "success": "Condition matters: this wrapper follows the local residual guidance, while clean cardboard stays separate."
+        }
+      ],
+      "dispatch": [
+        {
+          "title": "Round 1 · The covered paper bay",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room. This round keeps its two material streams on separate trips.",
+          "capacity": 4,
+          "separate": true,
+          "loads": [
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            },
+            {
+              "id": "food",
+              "label": "Listed food-scrap caddy",
+              "item": "apple",
+              "route": "compost",
+              "pickup": "Supervised food point",
+              "delivery": "Food-compost project",
+              "spaces": 2,
+              "fact": "The project accepts listed food scraps, without packaging."
+            }
+          ]
+        },
+        {
+          "title": "Round 2 · The separate food round",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room. This round keeps its two material streams on separate trips.",
+          "capacity": 4,
+          "separate": true,
+          "loads": [
+            {
+              "id": "food",
+              "label": "Listed food-scrap caddy",
+              "item": "apple",
+              "route": "compost",
+              "pickup": "Supervised food point",
+              "delivery": "Food-compost project",
+              "spaces": 2,
+              "fact": "The project accepts listed food scraps, without packaging."
+            },
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            }
+          ]
+        },
+        {
+          "title": "Round 3 · The dry-store entrance",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "containers",
+              "label": "Empty accepted containers",
+              "item": "bottle",
+              "route": "containers",
+              "pickup": "Container collection point",
+              "delivery": "Container intake",
+              "spaces": 2,
+              "fact": "This service accepts these empty containers."
+            },
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "centre-connections",
+      "title": "The Right Destination",
+      "subtitle": "Recovery district · service connections",
+      "ally": "Lebo · recovery coordinator",
+      "intro": "Lebo welcomes Circuit at the recovery centre. Some packaging accepted here is not collected by Musa’s street service. The team needs clear labels and deliveries that match the current acceptance board.",
+      "goal": "Read each item’s condition and this centre’s acceptance list, then connect the collected loads to their listed destinations.",
+      "background": "assets/backgrounds/bg-buyback-centre.png",
+      "stops": [
+        "Lebo’s welcome desk",
+        "The acceptance board",
+        "The centre delivery bays"
+      ],
+      "destinations": [
+        "paper",
+        "containers",
+        "centre",
+        "special"
+      ],
+      "sets": [
+        [
+          "carton",
+          "glass",
+          "box",
+          "juice",
+          "battery",
+          "can"
+        ],
+        [
+          "bottle",
+          "carton",
+          "glass",
+          "newspaper",
+          "box",
+          "battery"
+        ],
+        [
+          "glass",
+          "juice",
+          "carton",
+          "can",
+          "newspaper",
+          "box"
+        ]
+      ],
+      "restoration": "Lebo’s service board connects the collection points to accepted recovery routes. Intact glass, empty cartons, paper and containers reach their listed services.",
+      "requests": [
+        {
+          "prompt": "Lebo finds an empty drink carton in the street-container load. What should happen here?",
+          "answer": "centre",
+          "choices": [
+            {
+              "id": "paper",
+              "label": "Treat it as ordinary paper without checking",
+              "feedback": "Different services accept different packaging types."
+            },
+            {
+              "id": "centre",
+              "label": "Send it to the centre that lists cartons",
+              "feedback": "Our recovery centre accepts these empty cartons; this street service does not."
+            },
+            {
+              "id": "any",
+              "label": "Leave it in whichever load is closest",
+              "feedback": "Follow the accepted route on the local board."
+            }
+          ],
+          "success": "Lebo’s accepted-material list gives the carton a recovery route at this centre."
+        },
+        {
+          "prompt": "A bottle’s symbol alone does not tell Circuit whether the local service collects it. What else should be checked?",
+          "answer": "list",
+          "choices": [
+            {
+              "id": "list",
+              "label": "The collector’s accepted-material list",
+              "feedback": "Packaging information and local acceptance should be checked together."
+            },
+            {
+              "id": "guess",
+              "label": "The nearest bin colour only",
+              "feedback": "Bin colours do not give a universal acceptance rule."
+            },
+            {
+              "id": "speed",
+              "label": "Whichever destination is quickest to tap",
+              "feedback": "The accepted route matters more than rushing."
+            }
+          ],
+          "success": "A recovery route depends on the facilities and collection service available here."
+        },
+        {
+          "prompt": "An intact glass bottle and a broken one arrive at the centre. Which action is appropriate?",
+          "answer": "help",
+          "choices": [
+            {
+              "id": "bare",
+              "label": "Collect the broken pieces with bare hands",
+              "feedback": "Do not handle broken glass."
+            },
+            {
+              "id": "mix",
+              "label": "Hide the pieces in a paper bundle",
+              "feedback": "Keep broken glass out of the dry paper stream and ask for trained help."
+            },
+            {
+              "id": "help",
+              "label": "Ask a trained worker to handle the broken glass",
+              "feedback": "The playable glass items are intact; broken glass needs appropriate adult or trained help."
+            }
+          ],
+          "success": "Lebo arranges trained help and keeps the ordinary collection streams clear."
+        }
+      ],
+      "dispatch": [
+        {
+          "title": "Round 1 · Lebo’s welcome desk",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "cartons",
+              "label": "Empty drink cartons",
+              "item": "carton",
+              "route": "centre",
+              "pickup": "Carton holding point",
+              "delivery": "Listed carton recovery bay",
+              "spaces": 2,
+              "fact": "This centre lists these empty cartons on its acceptance board."
+            },
+            {
+              "id": "containers",
+              "label": "Empty accepted containers",
+              "item": "bottle",
+              "route": "containers",
+              "pickup": "Container collection point",
+              "delivery": "Container intake",
+              "spaces": 2,
+              "fact": "This service accepts these empty containers."
+            }
+          ]
+        },
+        {
+          "title": "Round 2 · The acceptance board",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "glass",
+              "label": "Intact glass bottles",
+              "item": "glass",
+              "route": "centre",
+              "pickup": "Supervised glass point",
+              "delivery": "Listed intact-glass bay",
+              "spaces": 2,
+              "fact": "Trained staff handle the physical delivery; do not handle broken glass."
+            },
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            }
+          ]
+        },
+        {
+          "title": "Round 3 · The centre delivery bays",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "cartons",
+              "label": "Empty drink cartons",
+              "item": "carton",
+              "route": "centre",
+              "pickup": "Carton holding point",
+              "delivery": "Listed carton recovery bay",
+              "spaces": 2,
+              "fact": "This centre lists these empty cartons on its acceptance board."
+            },
+            {
+              "id": "glass",
+              "label": "Intact glass bottles",
+              "item": "glass",
+              "route": "centre",
+              "pickup": "Supervised glass point",
+              "delivery": "Listed intact-glass bay",
+              "spaces": 2,
+              "fact": "Trained staff handle the physical delivery; do not handle broken glass."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "load-by-load",
+      "title": "Load by Load",
+      "subtitle": "Recovery district · space & records",
+      "ally": "Lebo & Musa",
+      "intro": "The recovery district is busy again. A confused intake record and bulky collection loads are slowing the team down. Circuit helps verify what arrived and plans deliveries that make room for the next pickup.",
+      "goal": "Keep the intake record honest, flatten bulky packaging and finish each dispatch round within its vehicle-space limit.",
+      "background": "assets/backgrounds/bg-material-recovery-facility.png",
+      "stops": [
+        "The intake record",
+        "The prepared-load shelter",
+        "The dispatch desk"
+      ],
+      "destinations": [
+        "paper",
+        "containers",
+        "reuse",
+        "centre"
+      ],
+      "sets": [
+        [
+          "box",
+          "book",
+          "carton",
+          "juice",
+          "newspaper",
+          "glass"
+        ],
+        [
+          "box",
+          "tray",
+          "bottle",
+          "book",
+          "can",
+          "carton"
+        ],
+        [
+          "newspaper",
+          "glass",
+          "box",
+          "juice",
+          "carton",
+          "shirt"
+        ]
+      ],
+      "restoration": "The intake record matches the completed visits. Musa and Lebo can see which prepared loads arrived and where they were delivered.",
+      "requests": [
+        {
+          "prompt": "Lebo’s intake list says two paper bundles arrived, but only one is visible. What should the team do?",
+          "answer": "check",
+          "choices": [
+            {
+              "id": "invent",
+              "label": "Count an extra bundle to match the list",
+              "feedback": "Records should describe the actual collection."
+            },
+            {
+              "id": "check",
+              "label": "Check the delivery with Musa before recording it",
+              "feedback": "Verify the load before confirming its arrival."
+            },
+            {
+              "id": "delete",
+              "label": "Remove the whole route without checking",
+              "feedback": "A discrepancy can be checked and corrected."
+            }
+          ],
+          "success": "Musa and Lebo check the delivery so the intake record reflects what actually arrived."
+        },
+        {
+          "prompt": "A bulky empty box occupies room on the collection trolley. What helps before dispatch?",
+          "answer": "flat",
+          "choices": [
+            {
+              "id": "flat",
+              "label": "Flatten it and keep it clean and dry",
+              "feedback": "Flat cardboard uses less collection space."
+            },
+            {
+              "id": "food",
+              "label": "Fill it with wet food to save a caddy",
+              "feedback": "Wet food can contaminate clean cardboard."
+            },
+            {
+              "id": "glass",
+              "label": "Hide glass pieces in it",
+              "feedback": "Broken glass needs trained handling and must not be hidden in paper."
+            }
+          ],
+          "success": "Prepared cardboard makes better use of the collection space."
+        },
+        {
+          "prompt": "The route is complete. Which record helps the collection team follow its work?",
+          "answer": "visits",
+          "choices": [
+            {
+              "id": "guess",
+              "label": "A guessed weight and payment",
+              "feedback": "The game does not measure real weights or calculate payments."
+            },
+            {
+              "id": "colour",
+              "label": "Only the colour of a bin",
+              "feedback": "A colour alone does not identify the load and destination."
+            },
+            {
+              "id": "visits",
+              "label": "The actual pickups and accepted deliveries",
+              "feedback": "The visit record shows which loads reached their listed destinations."
+            }
+          ],
+          "success": "A clear dispatch record connects a collected load with its actual delivery."
+        }
+      ],
+      "dispatch": [
+        {
+          "title": "Round 1 · The intake record",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            },
+            {
+              "id": "reuse",
+              "label": "Readable books for sharing",
+              "item": "book",
+              "route": "reuse",
+              "pickup": "Library exchange point",
+              "delivery": "Community reuse shelf",
+              "spaces": 2,
+              "fact": "Usable books can serve another reader."
+            }
+          ]
+        },
+        {
+          "title": "Round 2 · The prepared-load shelter",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "containers",
+              "label": "Empty accepted containers",
+              "item": "bottle",
+              "route": "containers",
+              "pickup": "Container collection point",
+              "delivery": "Container intake",
+              "spaces": 2,
+              "fact": "This service accepts these empty containers."
+            },
+            {
+              "id": "cartons",
+              "label": "Empty drink cartons",
+              "item": "carton",
+              "route": "centre",
+              "pickup": "Carton holding point",
+              "delivery": "Listed carton recovery bay",
+              "spaces": 2,
+              "fact": "This centre lists these empty cartons on its acceptance board."
+            }
+          ]
+        },
+        {
+          "title": "Round 3 · The dispatch desk",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 4,
+          "separate": false,
+          "loads": [
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            },
+            {
+              "id": "glass",
+              "label": "Intact glass bottles",
+              "item": "glass",
+              "route": "centre",
+              "pickup": "Supervised glass point",
+              "delivery": "Listed intact-glass bay",
+              "spaces": 2,
+              "fact": "Trained staff handle the physical delivery; do not handle broken glass."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "recovery-rise",
+      "title": "The Recovery District Rises",
+      "subtitle": "Recovery district · Grime showdown",
+      "ally": "Circuit & the collection team",
+      "intro": "Grime coils around the district gate, breaking the connection between collection points and recovery services. The community joins Musa and Lebo for one final round. Correct recovery tasks and completed deliveries will reopen the network.",
+      "goal": "Complete all recovery tasks, community requests and dispatch rounds, then clear Grime with three charged Loop Pulses.",
+      "background": "assets/backgrounds/bg-recovery-district.webp",
+      "stops": [
+        "The blocked collection gate",
+        "Reconnect the services",
+        "The district restoration station"
+      ],
+      "destinations": [
+        "paper",
+        "containers",
+        "compost",
+        "reuse",
+        "repair",
+        "special",
+        "centre",
+        "residual"
+      ],
+      "sets": [
+        [
+          "box",
+          "juice",
+          "book",
+          "peel",
+          "battery",
+          "carton"
+        ],
+        [
+          "radio",
+          "wetpaper",
+          "glass",
+          "shirt",
+          "tray",
+          "newspaper"
+        ],
+        [
+          "box",
+          "apple",
+          "radio",
+          "bottle",
+          "carton",
+          "can"
+        ]
+      ],
+      "restoration": "The recovery district is connected again. The school and market now have reliable collection links and accepted delivery points. Sam’s workshop is next to ask for Circuit’s help.",
+      "requests": [
+        {
+          "prompt": "Grime blocks the recovery district. What gives Circuit a working route through the problem?",
+          "answer": "team",
+          "choices": [
+            {
+              "id": "solo",
+              "label": "Mix every load and send it to one machine",
+              "feedback": "The recovery loop depends on separate accepted routes."
+            },
+            {
+              "id": "team",
+              "label": "Prepare, separate and deliver with the team",
+              "feedback": "Musa’s collections and Lebo’s accepted destinations work together."
+            },
+            {
+              "id": "skip",
+              "label": "Skip all preparation and dispatch checks",
+              "feedback": "Unprepared or misrouted material can spoil the recovery loop."
+            }
+          ],
+          "success": "Circuit brings the neighbourhood’s collection and recovery work together."
+        },
+        {
+          "prompt": "Sam offers to assess a silent radio while Lebo receives packaging. Which plan fits those roles?",
+          "answer": "sam",
+          "choices": [
+            {
+              "id": "sam",
+              "label": "Give the radio to Sam’s qualified repair service",
+              "feedback": "Electrical assessment and testing belong with a qualified repairer."
+            },
+            {
+              "id": "open",
+              "label": "Open the radio on the collection route",
+              "feedback": "Do not dismantle electronics yourself."
+            },
+            {
+              "id": "can",
+              "label": "Place it in the empty-can load",
+              "feedback": "An electrical device is not accepted packaging for that stream."
+            }
+          ],
+          "success": "The recovery district connects people to the right service, including qualified repair."
+        },
+        {
+          "prompt": "The final load has reached its listed destination. What powers the district’s restoration?",
+          "answer": "loop",
+          "choices": [
+            {
+              "id": "all",
+              "label": "Calling every discarded item recyclable everywhere",
+              "feedback": "Acceptance depends on material, condition and available services."
+            },
+            {
+              "id": "hazard",
+              "label": "Opening batteries to make more energy cells",
+              "feedback": "Never open batteries or handle damaged ones."
+            },
+            {
+              "id": "loop",
+              "label": "The correctly prepared, separated and delivered materials",
+              "feedback": "Circuit’s Loop Pulse is powered by the recovery tasks completed with the community."
+            }
+          ],
+          "success": "The district is ready. Clear Grime’s clouds and power The Loop together."
+        }
+      ],
+      "dispatch": [
+        {
+          "title": "Round 1 · The blocked collection gate",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 2,
+          "separate": false,
+          "loads": [
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            },
+            {
+              "id": "containers",
+              "label": "Empty accepted containers",
+              "item": "bottle",
+              "route": "containers",
+              "pickup": "Container collection point",
+              "delivery": "Container intake",
+              "spaces": 2,
+              "fact": "This service accepts these empty containers."
+            }
+          ]
+        },
+        {
+          "title": "Round 2 · Reconnect the services",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "reuse",
+              "label": "Readable books for sharing",
+              "item": "book",
+              "route": "reuse",
+              "pickup": "Library exchange point",
+              "delivery": "Community reuse shelf",
+              "spaces": 2,
+              "fact": "Usable books can serve another reader."
+            },
+            {
+              "id": "cartons",
+              "label": "Empty drink cartons",
+              "item": "carton",
+              "route": "centre",
+              "pickup": "Carton holding point",
+              "delivery": "Listed carton recovery bay",
+              "spaces": 2,
+              "fact": "This centre lists these empty cartons on its acceptance board."
+            }
+          ]
+        },
+        {
+          "title": "Round 3 · The district restoration station",
+          "brief": "Musa and the trained collection team handle the loads. Choose each pickup and its listed delivery. Load spaces show the vehicle’s available room.",
+          "capacity": 3,
+          "separate": false,
+          "loads": [
+            {
+              "id": "containers",
+              "label": "Empty accepted containers",
+              "item": "bottle",
+              "route": "containers",
+              "pickup": "Container collection point",
+              "delivery": "Container intake",
+              "spaces": 2,
+              "fact": "This service accepts these empty containers."
+            },
+            {
+              "id": "paper",
+              "label": "Dry paper bundles",
+              "item": "newspaper",
+              "route": "paper",
+              "pickup": "Covered paper point",
+              "delivery": "Dry paper store",
+              "spaces": 2,
+              "fact": "Keep clean fibre away from food and moisture."
+            }
+          ]
+        }
+      ]
     }
   ];
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -667,6 +1677,7 @@
     if (![value.done, value.prepared].every(a => new Set(a).size === a.length && a.every(v => ids.includes(v)))) return false;
     if (!['score', 'checkpointScore', 'mistakes', 'hints', 'elapsed', 'checkpointMistakes', 'checkpointHints'].every(k => Number.isFinite(value[k]) && value[k] >= 0 && value[k] <= 1e8)) return false;
     if (value.done.some(i => items[m.sets[value.stop][i]].prep && !value.prepared.includes(i))) return false;
+    if (!D.valid(value, m)) return false;
     const decisions = value.play?.decisions || {};
     if (Object.entries(decisions).some(([stop, answer]) => !m.requests?.[Number(stop)] || answer !== m.requests[Number(stop)].answer || Number(stop) > value.stop || Number(stop) === value.stop && value.done.length !== ids.length)) return false;
     if (m.requests && m.requests.slice(0, value.stop).some((q, i) => decisions[i] !== q.answer)) return false;
@@ -699,9 +1710,10 @@
     const m = missions.find(m => m.id === session.mission);
     const set = m.sets[session.stop];
     const play = P.hydrate(session);
+    if (action === 'dispatch' || action === 'dispatch-hint') return dispatchAction(session, m, action, value);
     if (action === 'decision' || action === 'decision-hint') return decide(session, action, value);
-    if (action === 'restore') { if (requestReady(session)) return { ok: false, text: 'Help your neighbour with the community request first.' }; return P.restore(session, value); }
-    if (action === 'wisp' || action === 'pulse') { if (requestReady(session)) return { ok: false, text: 'Complete the community request before powering The Loop.' }; return P.battle(session, action, value); }
+    if (action === 'restore') { if (requestReady(session) || D.pending(session, m)) return { ok: false, text: 'Complete the community request and collection dispatch first.' }; return P.restore(session, value); }
+    if (action === 'wisp' || action === 'pulse') { if (requestReady(session) || D.pending(session, m)) return { ok: false, text: 'Complete the request and deliveries before powering The Loop.' }; return P.battle(session, action, value); }
     if (action === 'select') {
       if (!integer(value, set.length - 1) || session.done.includes(value)) return { ok: false, text: 'Choose an item still in the area.' };
       session.selected = value;
@@ -733,11 +1745,7 @@
       session.selected = null;
       session.score += 100;
       const checkpoint = session.done.length === set.length;
-      const finished = checkpoint && session.stop === m.sets.length - 1;
-      const request = requestReady(session);
-      const battle = finished && P.isBattle(m.id);
-      session.complete = finished && !battle && !request;
-      return { ok: true, kind: request ? 'request' : battle ? 'battle' : finished ? 'complete' : checkpoint ? 'checkpoint' : 'sort', text: item.fact, route: value };
+      return { ok: true, kind: checkpoint ? areaKind(session) : 'sort', text: item.fact, route: value };
     }
     return { ok: false, text: 'Select an item to inspect before choosing a destination.' };
   }
@@ -754,15 +1762,35 @@
     const play = P.hydrate(session);
     if (answer !== q.answer) { session.mistakes++; play.streak = 0; return { ok: false, kind: 'retry', text: choice.feedback + ' Try another plan.' }; }
     play.decisions ||= {}; play.decisions[session.stop] = answer; session.score += 50;
-    const finished = session.stop === m.sets.length - 1;
-    session.complete = finished && !P.isBattle(m.id);
-    return { ok: true, kind: finished ? session.complete ? 'complete' : 'battle' : 'checkpoint', text: q.success };
+    return { ok: true, kind: areaKind(session), text: q.success };
   }
+  function areaKind(session) {
+    const m = missions.find(m => m.id === session.mission);
+    const finished = session.stop === m.sets.length - 1;
+    const kind = requestReady(session) ? 'request' : D.pending(session, m) ? 'dispatch' : finished ? P.isBattle(m.id) ? 'battle' : 'complete' : 'checkpoint';
+    session.complete = kind === 'complete';
+    return kind;
+  }
+  function dispatchReady(session) {
+    const m = missions.find(m => m.id === session?.mission);
+    return !!m && !requestReady(session) && D.pending(session, m);
+  }
+  function dispatchAction(session, m, action, id) {
+    if (!dispatchReady(session)) return { ok: false, text: 'Complete this area and its community request before planning dispatch.' };
+    const plan = m.dispatch[session.stop], record = session.play.dispatch?.[session.stop];
+    if (action === 'dispatch-hint') { session.hints++; return { ok: true, kind: 'hint', text: `Next useful stop: ${D.next(plan, record).label}. Check the load spaces and the listed destination.` }; }
+    if (!D.jobs(plan).some(job => job.id === id) || record?.done.includes(id)) return { ok: false, text: 'Choose a stop that still needs a visit.' };
+    const result = D.act(session, m, id);
+    if (!result.ok) { session.mistakes++; session.play.streak = 0; return { ...result, kind: 'retry' }; }
+    session.score += 25;
+    return { ...result, kind: D.pending(session, m) ? 'dispatch' : areaKind(session) };
+  }
+
   function nextStop(session) {
     if (!validSession(session) || session.complete) return false;
     const m = missions.find(m => m.id === session.mission);
     if (session.done.length !== m.sets[session.stop].length || session.stop + 1 >= m.sets.length) return false;
-    if (requestReady(session)) return false;
+    if (requestReady(session) || D.pending(session, m)) return false;
     if (session.play && !session.play.restored[session.stop]) return false;
     session.stop++; session.done = []; session.prepared = []; session.selected = null;
     session.checkpointScore = session.score; session.checkpointMistakes = session.mistakes; session.checkpointHints = session.hints;
@@ -772,7 +1800,7 @@
     if (!validSession(session)) return false;
     const m = missions.find(m => m.id === session.mission);
     session.score = session.checkpointScore; session.mistakes = session.checkpointMistakes; session.hints = session.checkpointHints;
-    if (session.play) { for (const key of Object.keys(session.play.work)) if (key.startsWith(`${session.stop}-`)) delete session.play.work[key]; delete session.play.restored[session.stop]; if (session.play.decisions) delete session.play.decisions[session.stop]; session.play.streak = 0; session.play.energy = m.sets.slice(0, session.stop).reduce((n, set) => n + set.length, 0); session.play.bossHits = 0; session.play.wisps = []; }
+    if (session.play) { for (const key of Object.keys(session.play.work)) if (key.startsWith(`${session.stop}-`)) delete session.play.work[key]; delete session.play.restored[session.stop]; if (session.play.dispatch) delete session.play.dispatch[session.stop]; if (session.play.decisions) delete session.play.decisions[session.stop]; session.play.streak = 0; session.play.energy = m.sets.slice(0, session.stop).reduce((n, set) => n + set.length, 0); session.play.bossHits = 0; session.play.wisps = []; }
     session.done = []; session.prepared = []; session.selected = null; session.complete = false;
     return true;
   }
@@ -791,5 +1819,5 @@
     const done = m.sets.slice(0, session.stop).reduce((n, s) => n + s.length, 0) + session.done.length;
     return { done, total, fraction: done / total };
   }
-  return { SAVE_KEY, SOURCES, routes, items, preparations, play: P, missions, fresh, normalize, validSession, requestReady, selectedItem, act, nextStop, retryStop, finish, progress };
+  return { SAVE_KEY, SOURCES, routes, items, preparations, play: P, dispatch: D, missions, fresh, normalize, validSession, requestReady, dispatchReady, selectedItem, act, nextStop, retryStop, finish, progress };
 });
