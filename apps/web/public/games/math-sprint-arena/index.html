@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#09072e" />
   <title>Math Sprint Arena</title>
-  <link rel="stylesheet" href="./styles.css?v=4" />
-  <link rel="stylesheet" href="./learning.css?v=4" />
+  <link rel="stylesheet" href="./styles.css?v=4.1" />
+  <link rel="stylesheet" href="./learning.css?v=4.1" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
 <body data-view="home">
@@ -36,15 +36,17 @@
       <div class="mode-actions">
         <button id="adventureStart" class="primary">Start Adventure</button>
         <button id="learnStart">Learn &amp; Practise</button>
+        <button id="reviewStart">Review with Pi-Bot</button>
         <button id="sprintStart">Play Sprint · 52 levels</button>
       </div>
-      <p class="mode-note">Adventure and Learn are untimed. Sprint is an optional timed challenge.</p>
+      <p id="reviewFocus" class="mode-note">Review revisits skills you have practised.</p>
+      <p class="mode-note">Adventure, Learn and Review are untimed. Sprint is an optional timed challenge.</p>
     </section>
     <section class="chapter-panel">
-      <div class="chapter-heading"><div><p class="eyebrow">Your learning path</p><h2>Restore Number City</h2></div><b id="chapterProgress">0 / 10</b></div>
+      <div class="chapter-heading"><div><p class="eyebrow">Your learning path</p><h2>Restore Number City</h2></div><b id="chapterProgress">0 / 20</b></div>
       <label class="practice-toggle"><input id="practiceBrowse" type="checkbox" /> Browse all missions for free practice</label>
       <div id="missionList" class="mission-list"></div>
-      <details class="curriculum-note"><summary>What will I learn?</summary><p>This chapter practises selected Grade 4 CAPS skills: place value, whole-number calculations, patterns, money, common fractions and perimeter. Each mission has five activities with hints and worked explanations. It is a practice resource, rather than a complete Grade 4 course or a formal assessment.</p><p>Progress shows independent and assisted answers separately. You can repeat any unlocked Adventure mission or practise any topic in Learn mode.</p></details>
+      <details class="curriculum-note"><summary>What will I learn?</summary><p>This chapter practises selected Grade 4 CAPS skills: place value, whole-number calculations, patterns, money, common fractions, shapes, symmetry, length, area, mass, capacity, time, tallies and graphs. The twenty missions contain 100 Adventure activities and 100 alternate practice activities. Each set has five tasks with hints and worked explanations. It is a practice resource, rather than a complete Grade 4 course or a formal assessment.</p><p>Progress shows independent and assisted answers separately. You can repeat any unlocked Adventure mission or practise any topic in Learn mode.</p></details>
     </section>
   </main>
   <main id="learningPlay" class="learning-play" hidden>
@@ -160,10 +162,17 @@
     </section>
   </main>
 
-  <script src="./learning-data.js?v=4"></script>
-  <script src="./arena-audio.js?v=4"></script>
-  <script src="./game.js?v=4"></script>
-  <script src="./learning-ui.js?v=4"></script>
+  <dialog id="diagramDialog" class="diagram-dialog" aria-labelledby="diagramTitle">
+    <header><h2 id="diagramTitle">Activity diagram</h2><button id="closeDiagram">Close diagram</button></header>
+    <div id="diagramContent" class="diagram-content"></div>
+    <p>Read the labels and scale. Close the diagram to enter your answer.</p>
+  </dialog>
+  <script src="./learning-extension.js?v=4.1"></script>
+  <script src="./learning-data.js?v=4.1"></script>
+  <script src="./arena-audio.js?v=4.1"></script>
+  <script src="./game.js?v=4.1"></script>
+  <script src="./learning-tools.js?v=4.1"></script>
+  <script src="./learning-ui.js?v=4.1"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

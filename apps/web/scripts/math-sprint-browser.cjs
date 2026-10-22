@@ -13,19 +13,25 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
   const tap=async sel=>touch?page.locator(sel).tap():page.locator(sel).click();
   const bounds=async selector=>{const b=await page.locator(selector).boundingBox();assert.ok(b&&b.width>0&&b.height>0,`${width} ${selector} visible`);assert.ok(b.x>=-1&&b.y>=-1&&b.x+b.width<=width+1&&b.y+b.height<=page.viewportSize().height+1,`${width} ${selector}: ${JSON.stringify(b)}`);};
   const noOverflow=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight+1),`${width}: page overflow`);
+  const current=()=>page.evaluate(()=>{const p=window.MathArenaApp.profile;return window.MathLearning.current(p.sessions[p.activeMode]);});
   const enter=async t=>{
+   if(await page.locator('#learningNext').isVisible()){assert.match(await page.locator('#feedbackText').textContent(),/Solved/);return;}
    if(t.kind==='place'){const digits=String(t.value).padStart(4,'0').split('').map(Number),current=String(await page.locator('#entryValue').textContent()).padStart(4,'0').split('').map(Number);for(let i=0;i<4;i++){const delta=(digits[i]-current[i]+10)%10,dir=delta<=5?0:1,count=Math.min(delta,10-delta);for(let n=0;n<count;n++)await tap(`.place-column:nth-child(${i+1}) button:nth-of-type(${dir+1})`);}}
-   else if(t.kind==='fraction'){for(let i=0;i<t.take;i++)await tap(`.fraction-parts button:nth-child(${i+1})`);}
+   else if(t.kind==='fraction'){for(let i=0;i<t.parts;i++){const selector=`.fraction-parts button:nth-child(${i+1})`,on=await page.locator(selector).getAttribute('aria-pressed')==='true';if(on!==(i<t.take))await tap(selector);}}
+   else if(t.kind==='choice')await tap(`[data-choice="${t.answer}"]`);
+   else if(t.kind==='mirror'){for(let i=0;i<6;i++){const selector=`[data-bit="${i}"]`,on=await page.locator(selector).getAttribute('aria-pressed')==='true';if(on!==!!(Number(t.answer)&(1<<i)))await tap(selector);}}
+   else if(t.kind==='tile'){for(let i=0;i<t.rows*t.columns;i++){const selector=`[data-tile="${i}"]`;if(await page.locator(selector).getAttribute('aria-pressed')!=='true')await tap(selector);}}
+   else if(t.kind==='tally'){for(let i=0;i<3;i++){const n=Number(await page.locator(`.tally-column:nth-child(${i+1}) strong`).textContent()),delta=t.counts[i]-n;for(let j=0;j<Math.abs(delta);j++)await tap(`[data-tally="${i}"][data-delta="${delta>0?1:-1}"]`);}}
    else{const old=await page.locator('#entryValue').textContent();if(old!=='…')for(let i=0;i<old.length;i++)await tap('[data-key="delete"]');for(const key of t.answer)await tap(`[data-key="${key}"]`);}
    await tap('#learningCheck');assert.match(await page.locator('#feedbackText').textContent(),/Solved/);await bounds('#learningNext');
   };
-  await page.goto(url);await page.waitForFunction(()=>window.__wgaGameTab&&window.MathArenaApp);assert.equal(await page.locator('.mission-choice:disabled').count(),9);await page.screenshot({path:path.join(output,`${width}-home.png`)});
+  await page.goto(url);await page.waitForFunction(()=>window.__wgaGameTab&&window.MathArenaApp);assert.equal(await page.locator('.mission-choice:disabled').count(),19);await page.screenshot({path:path.join(output,`${width}-home.png`)});
   await tap('#adventureStart');await noOverflow();await bounds('#learningPrompt');await bounds('#learningCheck');await bounds('#responsePanel');
   await tap('#learningCheck');assert.match(await page.locator('#feedbackText').textContent(),/Not quite/);await tap('#learningHint');assert.match(await page.locator('#feedbackText').textContent(),/Hint 1\/3/);await page.screenshot({path:path.join(output,`${width}-place.png`)});
   // An in-progress manipulative and hint checkpoint survives a real reload.
   await tap('.place-column:nth-child(1) button:first-of-type');await page.reload();await tap('#adventureStart');assert.equal(await page.locator('#entryValue').textContent(),'1000');assert.match(await page.locator('#feedbackText').textContent(),/Hint 1\/3/);
   for(const t of L.missions[0].tasks){await enter(t);await tap('#learningNext');}
-  assert.match(await page.locator('#summaryResult').textContent(),/4 independent · 1 with support/);await tap('#summaryHome');assert.equal(await page.locator('.mission-choice:disabled').count(),8);
+  assert.match(await page.locator('#summaryResult').textContent(),/4 independent · 1 with support/);await tap('#summaryHome');assert.equal(await page.locator('.mission-choice:disabled').count(),18);
   const full=width===390;
   if(full){
    for(let m=1;m<L.missions.length;m++){
@@ -37,21 +43,29 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
     }
     if(m===8)await page.screenshot({path:path.join(output,'390-fraction-complete.png')});await tap('#summaryHome');
    }
-   assert.equal(await page.locator('.mission-choice:disabled').count(),0);assert.equal(await page.locator('#chapterProgress').textContent(),'10 / 10');
+   assert.equal(await page.locator('.mission-choice:disabled').count(),0);assert.equal(await page.locator('#chapterProgress').textContent(),'20 / 20');
   }
   // Every visual type must fit the current viewport, including the longest word problems.
   await page.locator('#practiceBrowse').check();
-  for(const [m,task]of [[1,0],[2,0],[4,4],[5,0],[6,0],[7,4],[8,0],[9,4]]){
+  for(const [m,task]of [[1,0],[2,0],[4,4],[5,0],[6,0],[7,4],[8,0],[9,4],[10,0],[10,1],[11,0],[12,0],[13,4],[14,0],[15,2],[16,0],[17,0],[18,0],[18,4],[19,4]]){
    await tap(`.mission-choice[data-mission="${m}"]`);
-   for(let j=0;j<task;j++){await enter(L.missions[m].tasks[j]);await tap('#learningNext');}
+   for(let j=0;j<task;j++){await enter(await current());await tap('#learningNext');}
    await noOverflow();await bounds('#learningPrompt');await bounds('#learningCheck');await bounds('#responsePanel');
    for(const b of await page.locator('#responsePanel button').all()){const box=await b.boundingBox();assert.ok(box.y>=0&&box.y+box.height<=height+1&&box.width>=43&&box.height>=43,`${width}: touch target ${JSON.stringify(box)}`);}
-   await page.screenshot({path:path.join(output,`${width}-mission-${m+1}.png`)});await tap('#arenaHome');await page.locator('#practiceBrowse').check();
+   if(await page.locator('#visualPanel').getAttribute('data-essential')==='true'){await bounds('#visualPanel');await tap('#visualPanel');assert.equal(await page.locator('#diagramDialog').evaluate(e=>e.open),true);await bounds('#closeDiagram');await bounds('#diagramContent');if(m===18)await page.screenshot({path:path.join(output,`${width}-expanded-data.png`)});await tap('#closeDiagram');}
+   if(m>=10){
+    if(m===11||m===17){const selector=m===11?'[data-bit="0"]':'[data-tally="0"][data-delta="1"]';await tap(selector);const checkpoint=await page.evaluate(()=>window.MathArenaApp.profile.sessions.learn);await page.reload();await tap('#learnStart');assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.sessions.learn),checkpoint);}
+    await enter(await current());
+   }
+   await page.screenshot({path:path.join(output,`${width}-mission-${m+1}-${task}.png`)});await tap('#arenaHome');await page.locator('#practiceBrowse').check();
   }
   // Practice has separate checkpoints and never submits learning results to the score bridge.
   const before=await page.evaluate(()=>({results:window.MathArenaApp.profile.results,best:window.__wgaGameTab.scoreBridge.state().best}));
-  await tap('.mission-choice[data-mission="8"]');for(const t of L.missions[8].tasks){await enter(t);await tap('#learningNext');}
-  assert.match(await page.locator('#summaryMode').textContent(),/Learn/);assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.results),before.results);assert.equal(await page.evaluate(()=>window.__wgaGameTab.scoreBridge.state().best),before.best);await tap('#summaryHome');
+  await tap('.mission-choice[data-mission="8"]');for(let i=0;i<5;i++){await enter(await current());await tap('#learningNext');}
+  assert.match(await page.locator('#summaryMode').textContent(),/Learn/);assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.results),before.results);assert.equal(await page.evaluate(()=>window.__wgaGameTab.scoreBridge.state().best),before.best);
+  const oldBank=await page.evaluate(()=>window.MathArenaApp.profile.sessions.learn.bank||0);await tap('#retryMission');assert.equal(await page.evaluate(()=>window.MathArenaApp.profile.sessions.learn.bank),oldBank===0?1:0);for(let i=0;i<5;i++){await enter(await current());await tap('#learningNext');}assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.results),before.results);await tap('#summaryHome');
+  // Revision saves its plan and leaves the exact active Adventure draft intact.
+  await page.locator('#practiceBrowse').uncheck();await tap('.mission-choice[data-mission="1"]');await tap('[data-key="5"]');await tap('#arenaHome');const adventure=await page.evaluate(()=>window.MathArenaApp.profile.sessions.adventure);await tap('#reviewStart');const plan=await page.evaluate(()=>window.MathArenaApp.profile.sessions.revision.plan);assert.equal(plan.length,5);await enter(await current());await tap('#learningNext');await page.reload();await tap('#reviewStart');assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.sessions.revision.plan),plan);assert.equal(await page.locator('#taskCount').textContent(),'2 / 5');for(let i=1;i<5;i++){await enter(await current());await tap('#learningNext');}assert.match(await page.locator('#summaryMode').textContent(),/Review/);assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.results),before.results);await tap('#summaryHome');await tap('#adventureStart');assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.sessions.adventure),adventure);assert.equal(await page.locator('#entryValue').textContent(),'5');await tap('#arenaHome');
   // Actual audio unlock, independent volumes and one platform fullscreen control.
   await tap('#arenaMenu > summary');await page.locator('#musicVolume').focus();await page.keyboard.press('Home');for(let n=0;n<4;n++)await page.keyboard.press('ArrowRight');await page.locator('#effectsVolume').focus();await page.keyboard.press('Home');for(let n=0;n<10;n++)await page.keyboard.press('ArrowRight');assert.deepEqual(await page.evaluate(()=>window.MathArenaApp.profile.settings),{music:.2,sfx:.5});
   if(await page.locator('.wga-tab-fullscreen').count()){assert.equal(await page.locator('#arenaMenuBody .wga-tab-fullscreen').count(),1);await tap('.wga-tab-fullscreen');await page.waitForFunction(()=>document.fullscreenElement);await tap('.wga-tab-fullscreen');await page.waitForFunction(()=>!document.fullscreenElement);}
@@ -62,6 +76,12 @@ const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.ur
  }
  // Storage and Web Audio can both be denied without preventing learning or Sprint.
  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});await context.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw Error('blocked');}});window.AudioContext=class{constructor(){throw Error('blocked');}};window.webkitAudioContext=undefined;});const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(url);await page.locator('#adventureStart').tap();await page.locator('#learningHint').tap();assert.match(await page.locator('#saveStatus').textContent(),/unavailable/);await page.locator('#arenaHome').tap();await page.locator('#sprintStart').tap();await page.waitForFunction(()=>window.MathSprintLegacy.ready);await page.locator('#startBtn').tap();assert.deepEqual(errors,[]);await context.close();
+ // A genuine v4.0-shaped save opens the new district without resetting old records.
+ const legacy={version:1,results:{},sessions:{adventure:{mode:'adventure',mission:9,index:5,steps:Array.from({length:5},()=>({done:true,mistakes:0,hints:0})),draft:'',feedback:''},learn:{mode:'learn',mission:8,index:2,steps:Array.from({length:5},(_,i)=>({done:i<2,mistakes:0,hints:i===2?1:0})),draft:'2/6',feedback:'hint'}},activeMode:'adventure',settings:{music:.2,sfx:.5}};
+ for(const m of L.missions.slice(0,10))legacy.results[m.id]={independent:5,assisted:0};
+ const migrated=await browser.newContext({viewport:{width:844,height:390},hasTouch:true,isMobile:true});await migrated.addInitScript(({key,legacy})=>{if(!localStorage.getItem(key)){localStorage.setItem(key,JSON.stringify(legacy));localStorage.setItem('wga_math_sprint_arena_v3_best','7654');}},{key:L.KEY,legacy});const migration=await migrated.newPage();await migration.goto(url);assert.equal(await migration.locator('#chapterProgress').textContent(),'10 / 20');await migration.locator('#adventureStart').tap();assert.equal(await migration.locator('#learningTitle').textContent(),'Shape Workshop');
+ for(const t of L.missions[10].tasks){if(t.kind==='choice')await migration.locator(`[data-choice="${t.answer}"]`).tap();else for(const key of t.answer)await migration.locator(`[data-key="${key}"]`).tap();await migration.locator('#learningCheck').tap();await migration.locator('#learningNext').tap();}
+ await migration.locator('#nextMission').tap();await migration.locator('[data-bit="1"]').tap();await migration.reload();await migration.locator('#adventureStart').tap();assert.equal(await migration.locator('[data-bit="1"]').getAttribute('aria-pressed'),'true');const migratedProfile=await migration.evaluate(()=>window.MathArenaApp.profile);for(const m of L.missions.slice(0,10))assert.deepEqual(migratedProfile.results[m.id],legacy.results[m.id]);assert.deepEqual(migratedProfile.sessions.learn,legacy.sessions.learn);assert.deepEqual(migratedProfile.settings,legacy.settings);assert.equal(await migration.evaluate(()=>localStorage.getItem('wga_math_sprint_arena_v3_best')),'7654');await migration.locator('#arenaHome').tap();await migration.locator('#learnStart').tap();assert.equal(await migration.locator('.fraction-parts button[aria-pressed="true"]').count(),2);assert.match(await migration.locator('#learningPrompt').textContent(),/4\/6/);await migrated.close();results.push({check:'v4.0 results, partial fractions, new-district unlock and mirror checkpoint migration',passed:true});
  // Normal-motion animation, real Web Audio unlock and live orientation changes retain the task.
  const rotating=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});const rotated=await rotating.newPage();await rotated.goto(url);await rotated.locator('#adventureStart').tap();await rotated.locator('#learningHint').tap();await rotated.waitForFunction(()=>document.getElementById('coachSprite').naturalWidth>0);assert.equal(await rotated.evaluate(()=>window.MathSound.available),true);assert.equal(await rotated.locator('#coachSprite').evaluate(e=>getComputedStyle(e).animationName),'float-bot');await rotated.locator('.place-column:first-child button:first-of-type').tap();
  for(const size of [{width:844,height:390},{width:568,height:320},{width:320,height:568}]){await rotated.setViewportSize(size);assert.equal(await rotated.locator('#entryValue').textContent(),'1000');assert.equal(await rotated.locator('#taskCount').textContent(),'1 / 5');for(const selector of ['#learningPrompt','#learningCheck','#learningHint']){const b=await rotated.locator(selector).boundingBox();assert.ok(b.x>=0&&b.y>=0&&b.x+b.width<=size.width+1&&b.y+b.height<=size.height+1);}}

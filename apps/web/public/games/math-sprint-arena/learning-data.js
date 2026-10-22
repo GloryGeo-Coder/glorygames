@@ -1,14 +1,15 @@
 /* Number City: selected CAPS Grade 4 skills. Learning state is independent of Sprint scores. */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === 'object' && module.exports ? require('./learning-extension.js') : root.MathLearningExtension);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.MathLearning = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (extension) {
   'use strict';
   const KEY = 'wga_math_sprint_learning_v1';
   const SOURCES = [
     'https://www.education.gov.za/Curriculum/CurriculumAssessmentPolicyStatements%28CAPS%29/CAPSIntermediate/tabid/572/Default.aspx',
-    'https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20IP%20%20MATHEMATICS%20GR%204-6%20web.pdf'
+    'https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20IP%20%20MATHEMATICS%20GR%204-6%20web.pdf',
+    'https://www.education.gov.za/LinkClick.aspx?fileticket=HINtK497f94%3D&mid=10739&portalid=0&tabid=3207'
   ];
   const task = (kind, prompt, answer, hints, detail = {}) => ({ kind, prompt, answer: String(answer), hints, ...detail });
   const place = n => task('place', `Build ${n.toLocaleString('en-ZA').replace(/,/g, ' ')} using place value.`, n,
@@ -50,7 +51,16 @@
     { id:'fraction-bridge',title:'Fraction Bridge',skill:'Common fractions',background:'fractions',story:'Restore the bridge with equal sections of light. Pi-Bot will cross when the right fraction is ready.',lesson:'A fraction describes equal parts of a whole. The bottom number counts all parts; the top counts selected parts.',tasks:[[4,2],[3,1],[6,4],[8,3],[10,7]].map(v=>fraction(...v)) },
     { id:'city-champion',title:'Number City Champion',skill:'Mixed application',background:'geometry',story:'The final gate combines everything you have practised. Restore the city and celebrate with Pi-Bot.',lesson:'Choose a strategy for each task. Take your time, use a hint if needed, and check your reasoning.',tasks:[place(8064),array(7,12),money('A replacement part costs R46.50. You pay R100.00. Find your change in rands.',5350,'R100.00 − R46.50 = R53.50'),fraction(8,6),task('perimeter','A rectangular platform is 8 m long and 5 m wide. What is its perimeter in metres?',26,['Perimeter is the distance all the way around the outside.','A rectangle has two lengths and two widths. Add all four sides.','8 + 5 + 8 + 5 = 26 m.'],{length:8,width:5,explanation:'8 + 5 + 8 + 5 = 26 m. Perimeter uses units of length, not square units.',worked:'2 × (8 + 5) = 26 m'})] }
   ];
-  missions.forEach((m,i)=>{m.grade=4;m.number=i+1;m.tasks.forEach((t,j)=>{t.id=`${m.id}-${j+1}`;});});
+  const expansion=extension.create({task,place,line,calc,array,share,pattern,money,fraction});
+  missions.push(...expansion.missions);
+  missions.forEach((m,i)=>{
+    m.grade=4;m.number=i+1;m.music=i<10?i:62+i-10;
+    if(i<10)m.practice=expansion.firstPractice[i];
+    m.tasks.forEach((t,j)=>{t.id=`${m.id}-${j+1}`;});
+    m.practice.forEach((t,j)=>{t.id=`${m.id}-practice-${j+1}`;});
+  });
+  const allTasks=missions.flatMap(m=>[...m.tasks,...m.practice]);
+  const taskIds=new Set(allTasks.map(t=>t.id));
   const object = v => v && typeof v==='object' && !Array.isArray(v);
   const integer = (v,a,b) => Number.isInteger(v)&&v>=a&&v<=b;
   function rational(raw) {
@@ -63,26 +73,36 @@
     return {n:BigInt(m[1])*d+sign*BigInt(m[2]||'0'),d};
   }
   function equivalent(a,b){const x=rational(a),y=rational(b);return !!(x&&y&&x.n*y.d===y.n*x.d);}
-  function fresh(mode='adventure',mission=0){return {mode,mission,index:0,steps:missions[mission].tasks.map(()=>({done:false,mistakes:0,hints:0})),draft:'',feedback:''};}
+  const taskAt=ref=>ref&&missions[ref.mission]?.[ref.bank===1?'practice':'tasks']?.[ref.index]||null;
+  const reference=s=>s.mode==='revision'?s.plan[Math.min(s.index,4)]:{mission:s.mission,bank:s.bank||0,index:Math.min(s.index,4)};
+  const current=s=>s.index<5?taskAt(reference(s)):null;
+  const origin=s=>missions[reference(s).mission];
+  const music=s=>s.mode==='revision'?72:origin(s).music;
+  function fresh(mode='adventure',mission=0,bank=0){return {mode,mission,bank:mode==='adventure'?0:bank,index:0,steps:Array.from({length:5},()=>({done:false,mistakes:0,hints:0})),draft:'',feedback:''};}
   function valid(s){
-    if(!object(s)||!['learn','adventure'].includes(s.mode)||!integer(s.mission,0,missions.length-1)||!integer(s.index,0,5)||!Array.isArray(s.steps)||s.steps.length!==5)return false;
+    if(!object(s)||!['learn','adventure','revision'].includes(s.mode)||!integer(s.mission,0,missions.length-1)||!integer(s.index,0,5)||!Array.isArray(s.steps)||s.steps.length!==5)return false;
+    if(s.bank!==undefined&&(!integer(s.bank,0,1)||(s.mode==='adventure'&&s.bank!==0)))return false;
+    if(s.mode==='revision'){
+      if(!Array.isArray(s.plan)||s.plan.length!==5||!s.plan.every(r=>object(r)&&integer(r.mission,0,missions.length-1)&&integer(r.bank,0,1)&&integer(r.index,0,4)))return false;
+      if(new Set(s.plan.map(r=>taskAt(r).id)).size!==5)return false;
+    }
     if(!s.steps.every((v,i)=>object(v)&&typeof v.done==='boolean'&&integer(v.mistakes,0,1000)&&integer(v.hints,0,3)&&(i<s.index?v.done:i>s.index?!v.done:true)))return false;
     if(typeof s.draft!=='string'||s.draft.length>24||!['','wrong','correct','hint'].includes(s.feedback))return false;
     return s.index<5||s.steps.every(v=>v.done);
   }
-  const empty = ()=>({version:1,results:{},sessions:{adventure:null,learn:null},activeMode:'adventure',settings:{music:.35,sfx:.65}});
+  const empty=()=>({version:1,results:{},sessions:{adventure:null,learn:null,revision:null},activeMode:'adventure',settings:{music:.35,sfx:.65},practiceVisits:{},review:{}});
   function unlocked(p){let n=0;while(n<missions.length-1&&p.results[missions[n].id])n++;return n;}
   function normalize(raw){
     const p=empty();if(!object(raw)||raw.version!==1)return p;
     if(object(raw.results))for(const m of missions){const r=raw.results[m.id];if(object(r)&&integer(r.independent,0,5)&&integer(r.assisted,0,5)&&r.independent+r.assisted===5)p.results[m.id]={independent:r.independent,assisted:r.assisted};}
-    // Completed chapters must form a contiguous path. Never invent missing completion.
     let gap=false;for(const m of missions){if(!p.results[m.id])gap=true;if(gap)delete p.results[m.id];}
-    if(object(raw.sessions))for(const mode of ['adventure','learn']){const s=raw.sessions[mode];if(valid(s)&&s.mode===mode&&(mode==='learn'||s.mission<=unlocked(p)))p.sessions[mode]=JSON.parse(JSON.stringify(s));}
-    if(['adventure','learn'].includes(raw.activeMode))p.activeMode=raw.activeMode;
+    if(object(raw.sessions))for(const mode of ['adventure','learn','revision']){const s=raw.sessions[mode];if(valid(s)&&s.mode===mode&&(mode!=='adventure'||s.mission<=unlocked(p)))p.sessions[mode]=JSON.parse(JSON.stringify(s));}
+    if(['adventure','learn','revision'].includes(raw.activeMode))p.activeMode=raw.activeMode;
     if(object(raw.settings))for(const key of ['music','sfx'])if(Number.isFinite(raw.settings[key]))p.settings[key]=Math.max(0,Math.min(1,raw.settings[key]));
+    if(object(raw.practiceVisits))for(const m of missions)if(integer(raw.practiceVisits[m.id],0,10000))p.practiceVisits[m.id]=raw.practiceVisits[m.id];
+    if(object(raw.review))for(const [id,r]of Object.entries(raw.review))if(taskIds.has(id)&&object(r)&&integer(r.independent,0,10000)&&integer(r.assisted,0,10000)&&r.independent+r.assisted>0&&typeof r.lastSupported==='boolean')p.review[id]={independent:r.independent,assisted:r.assisted,lastSupported:r.lastSupported};
     return p;
   }
-  const current=s=>s.index<5?missions[s.mission].tasks[s.index]:null;
   function submit(s,value){
     if(!valid(s)||s.index>=5||s.steps[s.index].done)return {ok:false,ignored:true};
     const t=current(s);if(!rational(value))return {ok:false,empty:true};
@@ -93,6 +113,8 @@
   function hint(s){if(!valid(s)||s.index>=5||s.steps[s.index].done)return null;const p=s.steps[s.index];p.hints=Math.min(3,p.hints+1);s.feedback='hint';return current(s).hints[p.hints-1];}
   function advance(profile,s){
     if(!valid(s)||s.index>=5||!s.steps[s.index].done)return false;
+    const t=current(s),step=s.steps[s.index],supported=step.mistakes>0||step.hints>0,oldReview=profile.review[t.id]||{independent:0,assisted:0};
+    profile.review[t.id]={independent:Math.min(10000,oldReview.independent+(supported?0:1)),assisted:Math.min(10000,oldReview.assisted+(supported?1:0)),lastSupported:supported};
     s.index++;s.draft='';s.feedback='';
     if(s.index===5&&s.mode==='adventure'){
       const independent=s.steps.filter(p=>p.mistakes===0&&p.hints===0).length,m=missions[s.mission],old=profile.results[m.id];
@@ -100,6 +122,19 @@
     }
     return true;
   }
+  function reviewPlan(profile){
+    const candidates=[];
+    missions.forEach((m,mission)=>{for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,index)=>{const r=profile.review[t.id];if(r||bank===0&&(profile.results[m.id]||mission===0))candidates.push({mission,bank,index});});});
+    const topicSeen=missions.map(m=>[...m.tasks,...m.practice].reduce((n,t)=>{const h=profile.review[t.id];return n+(h?h.independent+h.assisted:0);},0));
+    const rank=r=>{const h=profile.review[taskAt(r).id];return [h?.lastSupported?0:1,topicSeen[r.mission],h?h.independent+h.assisted:0,r.mission,r.bank,r.index];};
+    candidates.sort((a,b)=>{const x=rank(a),y=rank(b);for(let i=0;i<x.length;i++)if(x[i]!==y[i])return x[i]-y[i];return 0;});
+    const plan=[],ids=new Set(),topics=new Set();
+    const add=r=>{if(plan.length<5&&!ids.has(taskAt(r).id)){plan.push(r);ids.add(taskAt(r).id);topics.add(r.mission);}};
+    candidates.filter(r=>profile.review[taskAt(r).id]?.lastSupported).slice(0,2).forEach(add);
+    for(const r of candidates)if(!topics.has(r.mission))add(r);
+    candidates.forEach(add);return plan;
+  }
+  function freshReview(profile){const plan=reviewPlan(profile),s=fresh('revision',plan[0].mission,plan[0].bank);s.plan=plan;return s;}
   function stars(r){return !r?0:r.independent===5?3:r.independent>=3?2:1;}
-  return {KEY,SOURCES,missions,rational,equivalent,fresh,valid,normalize,unlocked,current,submit,hint,advance,stars};
+  return {KEY,SOURCES,missions,allTasks,rational,equivalent,fresh,valid,normalize,unlocked,current,reference,origin,music,taskAt,submit,hint,advance,stars,reviewPlan,freshReview};
 });
