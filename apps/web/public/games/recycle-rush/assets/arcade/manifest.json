@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "generator": "built-in image_gen",
+  "promptRecord": "docs/art/recycle-rush-v3.5-prompts.md",
+  "packing": "Equal-cell extraction; alpha bounds above 32; constant scale per character row and shared 244px ground baseline; icons fit 112px within 128px cells. No art is redrawn.",
+  "sources": {
+    "bosses-a": {
+      "sha256": "cd4e196813bae5751f89657bda077a207bae3feee834c62fe3cbdb234bbf0a23",
+      "columns": 4,
+      "rows": 4
+    },
+    "bosses-b": {
+      "sha256": "27b042a08c068c6e666a1dc6f60735a3e80cafb2e889853c514ef230b0cd6c1a",
+      "columns": 4,
+      "rows": 4
+    },
+    "icons": {
+      "sha256": "47954e3618a2b5e62a077d05344defa4f9985b9a39576ebeb53c8cab65738c59",
+      "columns": 4,
+      "rows": 2
+    }
+  },
+  "assets": {
+    "bosses-a.webp": {
+      "width": 1024,
+      "height": 1024,
+      "columns": 4,
+      "rows": 4,
+      "cellSize": 256,
+      "frames": 16,
+      "bytes": 384044,
+      "sha256": "1f2136e98888d4ce1a3fe9217f6911b2bd763f76c6ee32e21bb640208f44fefe"
+    },
+    "bosses-b.webp": {
+      "width": 1024,
+      "height": 1024,
+      "columns": 4,
+      "rows": 4,
+      "cellSize": 256,
+      "frames": 16,
+      "bytes": 377488,
+      "sha256": "4b52a25671b0b8d7d73965bafaf49c2efb9f35dafde9728f86954763f36c30a8"
+    },
+    "magnet.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 5830,
+      "sha256": "d307b8aca3b485d27a1b017bdd128d68951449ee303f3332e3379841316c0db0"
+    },
+    "slow.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 6296,
+      "sha256": "40d11506be722a0a70537534005bda78b7d50c1f3516a0bc849ffde9a2905458"
+    },
+    "shield.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 5820,
+      "sha256": "e2cd822c7116aafd17e5fa3205a378222e47e1b8d4d2c091e68f513055090e34"
+    },
+    "double.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 5968,
+      "sha256": "a9e85c62125eee906ca3e6159395eba64e2492eafd7c2dc7f1881b431d457d62"
+    },
+    "life.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 4576,
+      "sha256": "8d99b314f2b4335b1e14c5cd7141fdb79d70001f40102207dc513b03109ec798"
+    },
+    "star.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 5920,
+      "sha256": "80a3368da21df0e39c8ca0840c1df68653d52c4606f2c71aaa20d855a7136a38"
+    },
+    "combo.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 9130,
+      "sha256": "5971dbcf1615e5e2dd2342126b499789723e7feb447911586bfbba765ea0e628"
+    },
+    "medal.webp": {
+      "width": 128,
+      "height": 128,
+      "bytes": 5742,
+      "sha256": "a1a4eb4bb85cb2c75bdd184eacb8a66dc27531f377955418d8c10ea1beac81e4"
+    }
+  }
+}

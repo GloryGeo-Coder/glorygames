@@ -15,16 +15,16 @@
       <section class="identity">
         <span class="arcade-circuit"><img id="circuitAvatar" src="assets/sprites/circuit-neutral.svg" alt="Circuit" /></span>
         <div>
-          <h1>Recycle Rush: Restore Verdale</h1>
+          <h1>Recycle Rush <span class="arcade-subtitle">Restore Verdale</span></h1>
           <p id="objectiveText">Sort • Build • Save Verdale</p>
         </div>
       </section>
       <section class="stats" aria-label="Game statistics">
         <div><span>Level</span><strong id="levelValue">1/20</strong></div>
         <div><span>Score</span><strong id="scoreValue">0</strong></div>
-        <div><span>Lives</span><strong id="livesValue">3</strong></div>
-        <div><span>Combo</span><strong id="comboValue">0</strong></div>
-        <div><span>Stars</span><strong id="starsValue">0</strong></div>
+        <div><span><img class="arcade-stat-icon" src="assets/arcade/life.webp" alt=""/>Lives</span><strong id="livesValue">3</strong></div>
+        <div><span><img class="arcade-stat-icon" src="assets/arcade/combo.webp" alt=""/>Combo</span><strong id="comboValue">0</strong></div>
+        <div><span><img class="arcade-stat-icon" src="assets/arcade/star.webp" alt=""/>Stars</span><strong id="starsValue">0</strong></div>
       </section>
     </header>
 
@@ -41,7 +41,7 @@
     <section class="progress-strip">
       <div id="progressText">Hub progress: 0%</div>
       <div class="progress-bar"><div id="progressFill"></div></div>
-      <div id="powerSlot">Power: None</div>
+      <div id="powerSlot"><img id="powerIcon" alt="" hidden/><span id="powerSlotText">Power: None</span></div>
     </section>
 
     <canvas id="gameCanvas" aria-label="Recycle Rush: Restore Verdale game canvas"></canvas>
@@ -128,6 +128,7 @@
   <script src="story-data.js"></script>
   <script src="story-sprites.js"></script>
   <script src="story-audio.js"></script>
+  <script src="arcade-art.js"></script>
   <script src="game.js"></script>
   <script src="story.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>

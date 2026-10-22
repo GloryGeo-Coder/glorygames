@@ -5,7 +5,8 @@
   const SAVE_KEY = 'wga_recycle_rush_2_save_v1';
   const BEST_KEY = 'wga_recycle_rush_2_best';
   const THUMBNAIL_SRC = 'thumb.png';
-  const BRAND_TAGLINE = 'Sort • Build • Save Verdale';
+  const AR = window.RecycleArcadeArt;
+  let visualSerial = 0;
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
@@ -13,7 +14,7 @@
   const ui = {
     score: $('scoreValue'), level: $('levelValue'), lives: $('livesValue'), combo: $('comboValue'), stars: $('starsValue'),
     objective: $('objectiveText'), professor: $('professorBubble'), circuit: $('circuitAvatar'), bossPanel: $('bossPanel'),
-    bossName: $('bossName'), bossFill: $('bossFill'), progressText: $('progressText'), progressFill: $('progressFill'), powerSlot: $('powerSlot'),
+    bossName: $('bossName'), bossFill: $('bossFill'), progressText: $('progressText'), progressFill: $('progressFill'), powerSlot: $('powerSlotText'), powerIcon: $('powerIcon'),
     overlay: $('screenOverlay'), mapScreen: $('mapScreen'), mapGrid: $('mapGrid'), comicScreen: $('comicScreen'), comicTitle: $('comicTitle'),
     comicPanels: $('comicPanels'), comicContinue: $('comicContinueBtn'), settingsScreen: $('settingsScreen'), badgesScreen: $('badgesScreen'), badgeGrid: $('badgeGrid'),
     startNext: $('startNextBtn'), loopBtn: $('loopBtn'), settingsBtn: $('settingsBtn'), badgesBtn: $('badgesBtn'),
@@ -54,7 +55,7 @@
 
   const artFallbacks = {};
   const artIds = {paper:'newspaper',plastic:'bottle',organic:'peel',glass:'glass',metal:'can',ewaste:'radio',hazmat:'battery',textiles:'shirt'};
-  for(const [cat,id] of Object.entries(artIds)){const source='assets/animated/'+id+'.webp';artFallbacks[source]=CATS[cat].icon;CATS[cat].icon=source;}
+  for(const [cat,id] of Object.entries(artIds)){const source='assets/animated/'+id+'.webp';artFallbacks[source]=CATS[cat].icon;CATS[cat].fallback=CATS[cat].icon;CATS[cat].icon=source;}
 
   const POWERS = {
     magnet: { label:'Magnet', color:'#ff5f9f', icon:'assets/sprites/power-magnet.svg' },
@@ -62,6 +63,8 @@
     shield: { label:'Shield', color:'#53ffb3', icon:'assets/sprites/power-shield.svg' },
     double: { label:'Double Points', color:'#ffd86b', icon:'assets/sprites/power-double.svg' }
   };
+
+  for(const [id,power] of Object.entries(POWERS)){power.fallback=power.icon;power.icon=AR.icons[id];artFallbacks[power.icon]=power.fallback;}
 
   const CHAPTERS = [
     { name:'Greenwood Elementary', bg:'assets/backgrounds/bg-school-cleanup.png', theme:'school', boss:'Hallway Sludge', bossIcon:'assets/bosses/hallway-sludge.png', start:0, end:2, color:'#4bdcff', intro:['Professor Loop activates Circuit in a bright classroom lab.','The Loop is weak. Mis-sorted items have created Hallway Sludge.','Sort the basics: paper, plastic and organic waste.'] },
@@ -152,17 +155,22 @@
   }
 
   async function loadAssets(){
-    const paths = new Set([THUMBNAIL_SRC,'assets/animated/circuit-atlas.webp','assets/animated/grime-atlas.webp',...Object.values(artFallbacks)]);
-    CHAPTERS.forEach(c => { paths.add(c.bg); paths.add(c.bossIcon); });
+    const paths = new Set([...AR.assetPaths,THUMBNAIL_SRC,'assets/animated/circuit-idle.webp','assets/animated/circuit-atlas.webp','assets/animated/grime-atlas.webp']);
+    CHAPTERS.forEach(c => paths.add(c.bg));
     Object.values(CATS).forEach(c => paths.add(c.icon));
     Object.values(POWERS).forEach(p => paths.add(p.icon));
     ['assets/sprites/circuit-neutral.svg','assets/sprites/circuit-happy.svg','assets/sprites/circuit-worried.svg','assets/sprites/professor-loop.svg','assets/sprites/grime-blob.svg'].forEach(p => paths.add(p));
     const list = Array.from(paths);
     const loaded = await Promise.all(list.map(loadImage));
     list.forEach((p,i) => state.images[p] = loaded[i]);
+    // Legacy high-resolution art stays available without occupying memory when packed art loads.
+    const fallbackPaths=new Set(Object.entries(artFallbacks).filter(([source])=>!img(source)).map(([,fallback])=>fallback));
+    CHAPTERS.forEach((ch,i)=>{if(!img(AR.bosses[i].sheet))fallbackPaths.add(ch.bossIcon);});
+    await Promise.all([...fallbackPaths].map(async source=>{state.images[source]=await loadImage(source);}));
   }
 
   function img(src){ return state.images[src] || null; }
+  const visuals = AR.create(ctx, img, () => save.settings, () => window.RecycleSprites);
 
   function applySettings(){
     ui.musicVolume.value = save.settings.music;
@@ -188,7 +196,7 @@
     buildBins();
     const travelScale=(catchLine()+30)/(oldLine+30);
     for(const it of [...state.items,...state.hazards]) { it.x *= state.W/oldW; it.y=(it.y+it.h+30)*travelScale-it.h-30;it.vy*=travelScale; }
-    if(state.boss){state.boss.x=state.W*.68;state.boss.y=state.H*.12;state.boss.size=Math.min(150,state.W*.28);}
+    if(state.boss) Object.assign(state.boss,AR.bossLayout(state.W,state.H,catchLine()));
     cancelPointer();
   }
 
@@ -325,7 +333,7 @@
     ui.pauseBtn.textContent="Pause"; showOnly(ui.mapScreen);
     ui.mapGrid.innerHTML = '';
     const heroStatus = document.getElementById('heroStatusText');
-    if(heroStatus) heroStatus.textContent = `Arcade campaign: ${Object.keys(save.stars || {}).length}/20 missions restored. The new story follows Circuit and the neighbours rebuilding the school station.`;
+    if(heroStatus) heroStatus.textContent = `Arcade campaign: ${Object.keys(save.stars || {}).length}/20 missions restored. The story follows Circuit and the neighbours restoring five connected districts.`;
     const totalStars = Object.values(save.stars || {}).reduce((a,b)=>a+(Number(b)||0),0);
     state.totalStars = totalStars;
     ui.stars.textContent = totalStars;
@@ -336,7 +344,8 @@
       const card = document.createElement('article');
       card.className = 'hub-card ' + (unlocked ? 'unlocked' : 'locked');
       card.style.setProperty('--thumb', `linear-gradient(160deg, rgba(0,0,0,.1), rgba(0,0,0,.74)), url(${ch.bg})`);
-      card.innerHTML = `<small>Hub ${idx+1} • ${completeCount}/${ch.end-ch.start+1} missions</small><h3>${ch.name}</h3><div class="stars">${'★'.repeat(starCount).padEnd(9,'☆')}</div><small>Boss: ${ch.boss}</small>`;
+      const portrait = AR.bosses[idx], portraitArt = img(portrait.sheet) ? `background-image:url('${portrait.sheet}');background-size:400% 400%;background-position:0 ${portrait.row/3*100}%` : `background-image:url('${ch.bossIcon}');background-size:contain`;
+      card.innerHTML = `<span class="arcade-boss-preview" style="${portraitArt}" aria-hidden="true"></span><small>Hub ${idx+1} • ${completeCount}/${ch.end-ch.start+1} missions</small><h3>${ch.name}</h3><div class="stars">${'★'.repeat(starCount).padEnd(9,'☆')}</div><small>Boss: ${ch.boss}</small>`;
       const btn = document.createElement('button');
       btn.textContent = unlocked ? (completeCount ? 'Replay Hub' : 'Start Hub') : 'Locked';
       btn.disabled = !unlocked;
@@ -361,7 +370,7 @@
     BADGES.forEach(b => {
       const div = document.createElement('div');
       div.className = 'badge ' + (save.badges[b.id] ? '' : 'locked');
-      div.innerHTML = `<strong>${save.badges[b.id] ? '🏅 '+b.name : '🔒 '+b.name}</strong><span>${b.desc}</span>`;
+      div.innerHTML = `<img class="arcade-medal" src="${AR.icons.medal}" alt=""/><strong>${b.name}</strong><span>${b.desc}</span><small>${save.badges[b.id] ? 'Earned' : 'Locked'}</small>`;
       ui.badgeGrid.appendChild(div);
     });
   }
@@ -376,7 +385,8 @@
       { title:'Professor Loop', text: lv.fact || ch.intro[1] },
       { title: lv.kind === 'boss' || lv.kind === 'finale' ? 'Grime Taunt' : 'Circuit Mission', text: lv.kind === 'boss' || lv.kind === 'finale' ? `${ch.boss} blocks this hub. Sort clean items and tap Grime hazards to drain its health.` : `Target: ${lv.target} correct sorts. Tap an item and its matching bin, or drag it there. Wind will not change a correct destination choice.` }
     ];
-    ui.comicPanels.innerHTML = panels.map(p => `<div class="comic-frame"><h3>${p.title}</h3><p>${p.text}</p></div>`).join('');
+    const bossArt = AR.bosses[lv.chapter];
+    ui.comicPanels.innerHTML = panels.map((p,i) => `<div class="comic-frame arcade-comic" style="--chapter-scene:url('${ch.bg}')">${i===2 && (lv.kind==='boss'||lv.kind==='finale') ? `<span class="arcade-comic-boss" style="background-image:url('${bossArt.sheet}');background-position:0 ${bossArt.row/3*100}%" aria-hidden="true"></span>` : `<img class="arcade-comic-figure" src="${i===0?'assets/animated/circuit-idle.webp':CATS[lv.cats[0]].icon}" alt=""/>`}<h3>${p.title}</h3><p>${p.text}</p></div>`).join('');
     ui.comicContinue.onclick = () => { ui.overlay.classList.remove('active'); onDone(); };
   }
 
@@ -402,7 +412,7 @@
   function checkpointLevel(){ return CHAPTERS[level().chapter].start; }
 
   function initLevel(index){
-    clearTimeout(state.rebootTimer); cancelPointer(); state.completed=false; ui.pauseBtn.textContent="Pause";
+    clearTimeout(state.rebootTimer); cancelPointer(); visuals.reset(); visualSerial=0; state.completed=false; ui.pauseBtn.textContent="Pause";
     state.running = true; state.paused = false; state.levelIndex = index; state.time = 0; state.lives = 3; state.startLives = 3;
     state.combo = 0; state.maxCombo = 0; state.sorted = 0; state.wrong = 0; state.noHit = true; state.items = []; state.hazards = []; state.particles = [];
     state.spawnTimer = .55; state.bossTimer = 2.4; state.selectedBin = 0; state.power = null; state.powerTime = 0; state.magnetCharges = 0; state.shield = 0;
@@ -501,7 +511,7 @@
     } else if(isGrime){
       state.items.push({ kind:'grime', cat:'grime', x, y:-s-30, w:s*1.1, h:s*1.1, vx:vx*.7, vy:baseV*.9, spin:0, age:0, tapped:false });
     } else {
-      state.items.push({ kind:'item', cat, x, y:-s-30, w:s, h:s, vx, vy:baseV, spin:0, age:0 });
+      state.items.push({ kind:'item', cat, art:AR.itemArt(cat,visualSerial++), x, y:-s-30, w:s, h:s, vx, vy:baseV, spin:0, age:0 });
     }
   }
 
@@ -513,6 +523,7 @@
       const y=rand(0,Math.max(1,catchLine()-s-90));
       state.hazards.push({ x:rand(10,Math.max(11,state.W-s-10)), y, w:s, h:s, life:5.5, vx:rand(-20,20), vy:Math.min(rand(25,80),Math.max(10,(catchLine()-y-s)/2)), split:lv.attack === 'split', damage: lv.attack === 'final' ? 16 : 12, age:0 });
     }
+    visuals.emit('attack',{},state.time);
     professor(level().attack === 'storm' ? 'Static wave! Tap the Grime swarm before it reaches the bins.' : 'Boss attack! Clear the Grime hazards to protect The Loop.', 'worried');
   }
 
@@ -525,6 +536,7 @@
   function usePower(){
     if(!state.running || state.paused || !state.power) return;
     const p = state.power;
+    visuals.emit('power',{x:state.W*.5,y:Math.max(32,catchLine()*.5),color:POWERS[p].color,text:POWERS[p].label},state.time);
     state.power = null;
     sfx('power');
     if(p === 'magnet'){ state.magnetCharges += 6; professor('Magnet active: I will pull the next items toward their correct bins.', 'happy'); }
@@ -553,6 +565,7 @@
       save.categoryCounts[item.cat] = (save.categoryCounts[item.cat] || 0) + 1;
       if(save.categoryCounts.glass >= 30) unlockBadge('glass');
       if(state.maxCombo >= 15) unlockBadge('combo15');
+      visuals.emit('sort',{x:clamp(cx,35,state.W-35),y:Math.max(20,item.y),toX:selected.x+selected.w/2,toY:selected.y+selected.h/2,color:CATS[item.cat].color,text:'+'+((100+comboBonus)*mult)},state.time);
       selected.lid = .22; selected.fill = clamp(state.sorted / Math.max(1, level().target), 0, 1);
       addParticles(cx, item.y, CATS[item.cat].color, 18 + Math.min(14,state.combo));
       sfx('catch', item.cat);
@@ -568,6 +581,7 @@
 
   function activatePower(power){
     state.power = power;
+    visuals.emit('power',{x:state.W*.5,y:32,color:POWERS[power].color,text:POWERS[power].label+' ready'},state.time);
     state.score += 75;
     professor(`${POWERS[power].label} collected. Press Space or Use Power when ready.`, 'happy');
     sfx('power');
@@ -583,6 +597,7 @@
     if(state.shield > 0){ state.shield--; professor('Shield absorbed the mistake. Keep sorting!', 'happy'); sfx('power'); return; }
     state.wrong++; state.noHit = false; state.combo = 0; state.intensity = Math.max(0,state.intensity-.35);
     state.lives--;
+    visuals.emit('mistake',{x:35,y:Math.max(35,catchLine()-40),color:'#ffb3a3'},state.time);
     addSludgePuddle();
     sfx('wrong');
     professor(msg, 'worried');
@@ -659,6 +674,8 @@
     dt = Math.min(.05, dt);
     const lv = level();
     state.time += dt;
+    visuals.advance(state.time);
+    for(const bin of state.bins) bin.lid=Math.max(0,bin.lid-dt);
     state.doubleTime = Math.max(0, state.doubleTime - dt);
     state.slowTime = Math.max(0, state.slowTime - dt);
     const slowFactor = state.slowTime > 0 ? .48 : 1;
@@ -709,6 +726,7 @@
 
   function addParticles(x,y,color,count=16){
     if(save.settings.reducedMotion) count = Math.min(6,count);
+    count=Math.min(count,Math.max(0,180-state.particles.length));
     for(let i=0;i<count;i++){
       const a = rand(0,Math.PI*2), sp = rand(40,210);
       state.particles.push({ type:'spark', x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, r:rand(2,5), age:0, life:rand(.35,.85), color });
@@ -731,8 +749,7 @@
   function drawCover(src, grimeAlpha){
     const W = state.W, H = state.H; const im = img(src) || img(THUMBNAIL_SRC);
     ctx.save();
-    const gray = Math.round(grimeAlpha*90);
-    ctx.filter = `grayscale(${gray}%) brightness(${1 - grimeAlpha*.32}) saturate(${1.15 - grimeAlpha*.45})`;
+    ctx.filter = 'none';
     if(im){
       const r = Math.max(W/im.naturalWidth, H/im.naturalHeight);
       const dw = im.naturalWidth*r, dh = im.naturalHeight*r;
@@ -743,167 +760,19 @@
     ctx.restore();
   }
 
-  function drawParallax(){
-    const W=state.W,H=state.H, lv=level(), ch=chapter();
-    ctx.save();
-    ctx.globalAlpha = .55;
-    for(let i=0;i<18;i++){
-      const x = (i*97 + state.time*(12+i%3*6)) % (W+140) - 70;
-      const y = 40 + (i*43 % Math.floor(H*.55));
-      if(ch.theme === 'park'){
-        ctx.fillStyle = i%2 ? 'rgba(83,255,179,.42)' : 'rgba(255,216,107,.34)';
-        ctx.beginPath(); ctx.ellipse(x,y,10,4,Math.sin(state.time+i)*2,0,Math.PI*2); ctx.fill();
-      } else if(ch.theme === 'ewaste' || ch.theme === 'mrf'){
-        ctx.strokeStyle = i%2 ? 'rgba(75,220,255,.34)' : 'rgba(255,95,159,.28)'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+35,y+Math.sin(state.time+i)*12); ctx.stroke();
-      } else {
-        ctx.fillStyle = ch.color + '55';
-        ctx.beginPath(); ctx.arc(x,y,2+(i%4),0,Math.PI*2); ctx.fill();
-      }
-    }
-    if(lv.wind){
-      ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=2;
-      for(let i=0;i<6;i++){ const y=120+i*52+Math.sin(state.time+i)*16; ctx.beginPath(); ctx.moveTo(40,y); ctx.bezierCurveTo(W*.3,y-30,W*.55,y+30,W-80,y); ctx.stroke(); }
-    }
-    ctx.restore();
-  }
-
-
-  function drawVerdaleEnergy(progressValue, grimeAlpha){
-    const W = state.W, H = state.H;
-    ctx.save();
-
-    // Thumbnail-inspired sorting trails: Circuit sends items toward the bins
-    // while Verdale heals from green/cyan light and Grime recedes.
-    const centerX = W * 0.50;
-    const centerY = H * 0.54;
-    const trailCount = save.settings.reducedMotion ? 2 : 5;
-    for(let i=0;i<trailCount;i++){
-      const t = (state.time * (0.45 + i*.06) + i*.18) % 1;
-      const x = W * (0.18 + t * 0.68);
-      const y = centerY + Math.sin(t*Math.PI*2 + i) * H*.075;
-      const hue = i % 3 === 0 ? '#53ffb3' : i % 3 === 1 ? '#4bdcff' : '#ffd86b';
-      const g = ctx.createLinearGradient(centerX,centerY,x,y);
-      g.addColorStop(0,'rgba(75,220,255,0)');
-      g.addColorStop(.32,hue+'55');
-      g.addColorStop(1,hue+'00');
-      ctx.strokeStyle = g;
-      ctx.lineWidth = 8 - i;
-      ctx.beginPath();
-      ctx.moveTo(centerX,centerY);
-      ctx.quadraticCurveTo(W*.48, H*(.24+i*.055), x, y);
-      ctx.stroke();
-
-      ctx.globalAlpha = .55;
-      ctx.fillStyle = hue;
-      ctx.beginPath();
-      ctx.arc(x,y,Math.max(2,7-i),0,Math.PI*2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-
-    // Small recycle-loop badge in the playfield.
-    const r = Math.min(W,H)*.055;
-    const bx = 26 + r, by = 26 + r;
-    ctx.strokeStyle = 'rgba(83,255,179,.55)';
-    ctx.lineWidth = Math.max(3,r*.13);
-    ctx.beginPath();
-    ctx.arc(bx,by,r,Math.PI*.18,Math.PI*1.55);
-    ctx.stroke();
-    ctx.fillStyle = 'rgba(83,255,179,.7)';
-    ctx.beginPath();
-    ctx.moveTo(bx + r*.15, by - r*1.12);
-    ctx.lineTo(bx + r*.92, by - r*.62);
-    ctx.lineTo(bx + r*.25, by - r*.36);
-    ctx.closePath();
-    ctx.fill();
-
-    // Progress-based healing glow.
-    const heal = clamp(progressValue,0,1);
-    const glow = ctx.createRadialGradient(W*.28,H*.75,0,W*.28,H*.75,Math.max(W,H)*.72);
-    glow.addColorStop(0,`rgba(83,255,179,${0.08 + heal*.16})`);
-    glow.addColorStop(.42,`rgba(75,220,255,${0.04 + heal*.10})`);
-    glow.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle = glow;
-    ctx.fillRect(0,0,W,H);
-
-    // Grime side shadow pulled from the thumbnail's villain area.
-    const grime = clamp(grimeAlpha,0,1);
-    const sludge = ctx.createRadialGradient(W*.86,H*.28,0,W*.86,H*.28,W*.48);
-    sludge.addColorStop(0,`rgba(20,7,24,${0.36*grime})`);
-    sludge.addColorStop(.42,`rgba(62,30,78,${0.22*grime})`);
-    sludge.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle = sludge;
-    ctx.fillRect(0,0,W,H);
-
-    ctx.restore();
-  }
-
-  function drawVerdaleWatermark(){
-    const W = state.W, H = state.H;
-    if(W < 620 || H < 390) return;
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.font = `900 ${Math.max(16, Math.min(30, W*.018))}px system-ui`;
-    ctx.shadowColor = 'rgba(83,255,179,.65)';
-    ctx.shadowBlur = 14;
-    ctx.fillStyle = 'rgba(235,255,240,.85)';
-    ctx.fillText(BRAND_TAGLINE, W*.5, H - bottomSafeZone() - 22);
-    ctx.restore();
-  }
-
-  function drawGrimeOverlay(alpha){
-    if(alpha <= .02) return;
-    const W=state.W,H=state.H;
-    ctx.save(); ctx.globalAlpha = alpha;
-    ctx.fillStyle='rgba(7,11,15,.42)'; ctx.fillRect(0,0,W,H);
-    ctx.fillStyle='rgba(56,120,57,.44)';
-    for(let i=0;i<9;i++){
-      const x = (i%2?W-80:80) + Math.sin(state.time*.6+i)*50;
-      const y = 70 + i*(H/8.5);
-      ctx.beginPath(); ctx.ellipse(x,y,rand(35,90),rand(24,66),Math.sin(i),0,Math.PI*2); ctx.fill();
-    }
-    ctx.restore();
-  }
-
   function drawBins(){
-    const target = Math.max(1, level().target);
-    for(let i=0;i<state.bins.length;i++){
-      const b=state.bins[i], cat=CATS[b.cat];
-      b.lid = Math.max(0,b.lid-.02);
-      const selected = i === state.selectedBin;
-      ctx.save();
-      ctx.shadowColor = selected ? cat.color : 'transparent'; ctx.shadowBlur = selected ? 22 : 0;
-      ctx.fillStyle='rgba(3,10,20,.86)'; ctx.strokeStyle=selected ? cat.color : 'rgba(255,255,255,.18)'; ctx.lineWidth=selected?4:2;
-      roundRect(b.x,b.y,b.w,b.h,16,true,true);
-      ctx.fillStyle=cat.color; ctx.globalAlpha=.18; ctx.fillRect(b.x+8,b.y+b.h-12-(b.h-24)*clamp(state.sorted/target,0,1),b.w-16,(b.h-24)*clamp(state.sorted/target,0,1)); ctx.globalAlpha=1;
-      const lidLift = b.lid>0 ? -14 : 0;
-      ctx.fillStyle=cat.color; roundRect(b.x+8,b.y-10+lidLift,b.w-16,14,7,true,false);
-      drawImage(cat.icon,b.x+b.w/2-14,b.y+5,28,28,1);
-      ctx.fillStyle='#f4ffff'; ctx.font='900 12px system-ui'; ctx.textAlign='center'; ctx.fillText(cat.label,b.x+b.w/2,b.y+b.h-8);
-      if(selected){ ctx.fillStyle=cat.color; ctx.font='900 13px system-ui'; ctx.fillText('✓', b.x+b.w-14, b.y+18); }
-      ctx.restore();
-    }
+    const progressValue=clamp(state.sorted/Math.max(1,level().target),0,1);
+    state.bins.forEach((bin,i)=>visuals.bin(bin,CATS[bin.cat],i===state.selectedBin,progressValue));
   }
-
   function drawItems(){
-    for(const it of state.items){
-      if(it===state.selectedItem){ctx.save();ctx.strokeStyle='#ffe299';ctx.lineWidth=3;ctx.strokeRect(it.x-4,it.y-4,it.w+8,it.h+8);ctx.restore();}
-      const bob = Math.sin(it.age*8)*2;
-      if(it.kind === 'item') drawImage(CATS[it.cat].icon,it.x,it.y+bob,it.w,it.h,1,Math.sin(it.spin)*.08);
-      if(it.kind === 'power') drawImage(POWERS[it.power].icon,it.x,it.y+bob,it.w,it.h,1,Math.sin(it.spin)*.12);
-      if(it.kind === 'grime') drawGrimeSprite(it.x,it.y+bob,it.w,it.h);
+    for(const item of state.items){
+      if(item.kind==='grime')drawGrimeSprite(item.x,item.y,item.w,item.h);
+      else visuals.tile(item,item.kind==='power'?POWERS[item.power]:CATS[item.cat],item===state.selectedItem,item.kind==='power'?POWERS[item.power].fallback:artFallbacks[CATS[item.cat].icon]);
     }
-    for(const h of state.hazards) drawGrimeSprite(h.x,h.y,h.w,h.h,'idle',h.age);
+    for(const hazard of state.hazards)drawGrimeSprite(hazard.x,hazard.y,hazard.w,hazard.h,'idle',hazard.age);
   }
-
   function drawBoss(){
-    if(!state.boss) return;
-    const b=state.boss, icon=chapter().bossIcon;
-    const pulse = Math.sin(state.time*3)*6 + (b.hurt>0?14:0);
-    if(state.levelIndex===19)drawGrimeSprite(b.x-b.size/2,b.y,b.size,b.size,b.hurt>0?'hurt':'idle');
-    else drawImage(icon,b.x-b.size/2-pulse/2,b.y-pulse/2,b.size+pulse,b.size+pulse,1,Math.sin(state.time)*.04);
-    ctx.save(); ctx.fillStyle='rgba(255,255,255,.9)'; ctx.font='900 16px system-ui'; ctx.textAlign='center'; ctx.fillText(chapter().boss,b.x,b.y+b.size*.62); ctx.restore();
+    if(state.boss)visuals.boss(level().chapter,state.boss,chapter().color,state.time,chapter().bossIcon);
   }
 
   function drawParticles(){
@@ -938,18 +807,14 @@
     const prog = progress();
     const grime = state.running ? 1 - prog : .35;
     drawCover(chapter().bg, grime);
-    drawVerdaleEnergy(prog, grime);
-    drawParallax();
-    drawGrimeOverlay(grime*.62);
-    if(lv.attack === 'storm' && state.boss && state.boss.phase >= 2 && !save.settings.reducedMotion){
-      ctx.save(); ctx.globalAlpha=.08 + Math.sin(state.time*40)*.04; ctx.fillStyle='#fff'; ctx.fillRect(0,0,state.W,state.H); ctx.restore();
-    }
+    visuals.backdrop(state.W,state.H,prog,chapter().color,state.time);
+    visuals.circuit(state.W,state.H,catchLine(),state.time);
     drawCatchLine();
     drawBoss();
     drawItems();
-    drawParticles();
+    if(!save.settings.reducedMotion)drawParticles();
     drawBins();
-    drawVerdaleWatermark();
+    visuals.feedback(state.time);
     if(!state.running && !ui.overlay.classList.contains('active')){
       ctx.save(); ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,state.W,state.H); ctx.restore();
     }
@@ -967,6 +832,9 @@
     ui.progressFill.style.width = `${Math.round(p*100)}%`;
     ui.progressText.textContent = state.loop ? `Loop clean stream: ${state.sorted} sorts` : `Hub healing: ${Math.round(p*100)}% • ${lv.cats.map(c=>CATS[c].label).join(' / ')}`;
     ui.powerSlot.textContent = `Power: ${state.power ? POWERS[state.power].label : state.shield>0 ? 'Shield Ready' : state.slowTime>0 ? 'Slow-Mo Active' : state.doubleTime>0 ? 'Double Points Active' : state.magnetCharges>0 ? `Magnet ${state.magnetCharges}` : 'None'}`;
+    const powerIcon=state.power || (state.shield>0?'shield':state.slowTime>0?'slow':state.doubleTime>0?'double':state.magnetCharges>0?'magnet':null);
+    ui.powerIcon.hidden=!powerIcon; if(powerIcon)ui.powerIcon.src=img(AR.icons[powerIcon])?AR.icons[powerIcon]:POWERS[powerIcon].fallback;
+    ui.powerBtn.disabled=!state.running||state.paused||!state.power;
     if(state.boss){ ui.bossPanel.hidden = false; ui.bossFill.style.width = `${clamp(state.boss.hp/state.boss.max*100,0,100)}%`; }
     else ui.bossPanel.hidden = true;
     postScore('live');
@@ -998,7 +866,7 @@
     for(let i=state.items.length-1;i>=0;i--){
       const it=state.items[i]; if(!hit(p.x,p.y,it)) continue;
       if(it.kind==='grime'){removeItem(it);state.score+=30;damageBoss(3,it.x,it.y);sfx('bossHit');return;}
-      state.selectedItem=it;return;
+      state.selectedItem=it;visuals.emit('collect',{},state.time);return;
     }
   }
 
