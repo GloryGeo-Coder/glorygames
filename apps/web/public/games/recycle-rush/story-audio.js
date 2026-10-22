@@ -10,7 +10,12 @@
     { title: 'Clean Stream', bpm: 108, root: 146.83, bass: [0, 7, 9, 5], notes: [12, 19, 16, 14, 21, 19, 16, 12, 14, 16, 19, 26, 24, 21, 19, 14], rhythm: [0, 2, 5, 8, 10, 13, 15], wave: 'sine' },
     { title: 'Second Life Swing', bpm: 100, root: 110, bass: [0, 5, 3, 7], notes: [12, 15, 19, 22, 19, 15, 17, 19, 24, 22, 19, 17, 15, 12, 10, 7], rhythm: [0, 3, 7, 8, 11, 14], wave: 'triangle' },
     { title: 'Neighbourhood Circuit', bpm: 116, root: 123.47, bass: [0, 3, 8, 5], notes: [12, 19, 15, 22, 24, 19, 17, 15, 12, 15, 20, 24, 22, 20, 19, 15], rhythm: [0, 2, 4, 7, 8, 11, 12, 14], wave: 'sine' },
-    { title: 'The Loop Returns', bpm: 124, root: 130.81, bass: [0, 5, 9, 7], notes: [12, 16, 19, 24, 28, 24, 21, 19, 17, 21, 24, 29, 28, 24, 19, 16], rhythm: [0, 2, 3, 6, 8, 10, 11, 14], wave: 'triangle' }
+    { title: 'The Loop Returns', bpm: 124, root: 130.81, bass: [0, 5, 9, 7], notes: [12, 16, 19, 24, 28, 24, 21, 19, 17, 21, 24, 29, 28, 24, 19, 16], rhythm: [0, 2, 3, 6, 8, 10, 11, 14], wave: 'triangle' },
+    { title: 'Market Morning Groove', bpm: 112, root: 174.61, bass: [0, 5, 2, 7], notes: [12, 17, 21, 19, 14, 17, 24, 21, 19, 14, 12, 17, 26, 24, 21, 19], rhythm: [0, 1, 4, 6, 9, 12, 14], wave: 'triangle' },
+    { title: 'Garden Table', bpm: 92, root: 164.81, bass: [0, 3, 5, 10], notes: [12, 15, 17, 22, 24, 22, 17, 15, 19, 17, 15, 12, 10, 15, 17, 19], rhythm: [0, 3, 5, 9, 11, 15], wave: 'sine' },
+    { title: 'Swap Day Shuffle', bpm: 106, root: 196, bass: [0, 7, 5, 9], notes: [12, 19, 24, 21, 16, 19, 26, 24, 21, 16, 14, 19, 24, 28, 26, 21], rhythm: [0, 2, 6, 7, 10, 12, 15], wave: 'triangle' },
+    { title: 'Shelter Before Rain', bpm: 98, root: 138.59, bass: [0, 8, 3, 7], notes: [12, 15, 20, 19, 22, 20, 15, 12, 15, 19, 24, 22, 20, 19, 15, 10], rhythm: [0, 4, 5, 8, 11, 13, 14], wave: 'sine' },
+    { title: 'Verdale Afterglow', bpm: 128, root: 146.83, bass: [0, 5, 7, 2], notes: [12, 19, 24, 26, 21, 24, 28, 26, 24, 19, 17, 21, 26, 28, 31, 24], rhythm: [0, 1, 3, 4, 8, 9, 11, 12, 14], wave: 'triangle' }
   ];
   function create(environment, settings) {
     let ac, music, effects, timer, step = 0, index = 0, intensity = 0, muted = false;

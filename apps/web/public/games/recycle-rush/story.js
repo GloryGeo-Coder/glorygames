@@ -33,8 +33,8 @@
   }
   function renderMenu() {
     const count = Object.keys(store.stars).length;
-    $('storySummary').textContent = `${count}/5 story missions restored · 18 recovery tasks and three saved areas per mission. Your 20 arcade missions remain available below.`;
-    $('storyStartBtn').textContent = session && !session.complete ? 'Continue Story' : count === 5 ? 'Replay Story' : count ? 'Next Story Mission' : 'Begin Story';
+    $('storySummary').textContent = `${count}/${L.missions.length} story missions restored · 18 recovery tasks and three saved areas per mission. Your 20 arcade missions remain available below.`;
+    $('storyStartBtn').textContent = session && !session.complete ? 'Continue Story' : count === L.missions.length ? 'Replay Story' : count ? 'Next Story Mission' : 'Begin Story';
     const list = $('storyMissionList'); list.replaceChildren();
     L.missions.forEach((m, i) => {
       const b = document.createElement('button'); b.type = 'button'; b.disabled = i > store.unlocked;
@@ -54,7 +54,7 @@
     sound.volumes(preferences());
     mountFullscreen();
     render(); persist();
-    modal(battleReady() ? 'battle' : session.done.length === mission().sets[session.stop].length ? 'checkpoint' : 'briefing');
+    modal(L.requestReady(session) ? 'request' : battleReady() ? 'battle' : session.done.length === mission().sets[session.stop].length ? 'checkpoint' : 'briefing');
   }
   function exit() {
     cancelDrag(); clearTimeout(walkTimer); sound.pause(); active = false; paused = true; persist();
@@ -87,14 +87,15 @@
     render(); persist();
     if (result.kind === 'complete') {
       L.finish(store, session); persist(); publish('level_clear'); renderMenu(); modal('complete'); sound.effect('complete');
-    } else if (result.kind === 'battle') { modal('battle'); }
+    } else if (result.kind === 'request') { modal('request'); }
+    else if (result.kind === 'battle') { modal('battle'); }
     else if (result.kind === 'checkpoint') { modal('checkpoint'); sound.effect('checkpoint'); }
     else if (result.ok) publish('live');
     if (kind === 'select' && result.ok) (session.prepared.includes(value) || !P.kind(L.selectedItem(session)) ? $('storyHintBtn') : $('storyPrepareBtn')).focus({ preventScroll: true });
   }
   function render() {
     const m = mission(), item = L.selectedItem(session), progress = L.progress(session);
-    $('storyMissionNumber').textContent = `Restore Verdale · Mission ${index() + 1}/5`;
+    $('storyMissionNumber').textContent = `Restore Verdale · Mission ${index() + 1}/${L.missions.length}`;
     $('storyTitle').textContent = m.title; $('storyScore').textContent = session.score;
     $('storyProgress').value = progress.done; $('storyProgress').max = progress.total;
     const play = P.hydrate(session);
@@ -102,8 +103,8 @@
     $('storyPlace').textContent = m.stops[session.stop];
     $('storyScene').style.backgroundImage = `url("${m.background}")`;
     $('storyScene').style.setProperty('--healing', .35 + progress.fraction * .65);
-    $('storyRestored').textContent = progress.done === 0 ? 'The recovery station needs your help.' : `${progress.done} items recovered · ${m.id === 'school-tomorrow' ? 'Grime shield: ' + Math.round((1 - progress.fraction) * 100) + '%' : 'The neighbourhood is coming back to life.'}`;
-    $('storyGrime').hidden = m.id !== 'school-tomorrow' || session.complete;
+    $('storyRestored').textContent = progress.done === 0 ? 'The recovery station needs your help.' : `${progress.done} items recovered · ${P.isBattle(m.id) ? 'Grime shield: ' + Math.round((1 - progress.fraction) * 100) + '%' : 'The neighbourhood is coming back to life.'}`;
+    $('storyGrime').hidden = !P.isBattle(m.id) || session.complete;
     $('storyGrime').style.opacity = String(1 - progress.fraction * .8);
     const objects = $('storyObjects');
     if (objects.dataset.area !== `${m.id}-${session.stop}`) {
@@ -154,8 +155,10 @@
     const title = $('storyModalTitle'); const actions = $('storyModalActions'); actions.replaceChildren();
     if (kind === 'briefing') {
       title.textContent = m.title;
-      box.append(paragraph(m.subtitle, 'eyebrow'), paragraph(m.intro), paragraph(`${m.ally}: ${m.goal}`), paragraph('Three areas · 18 tasks · no time limit. Tap to collect, or drag to sort. Prepare items with short hands-on activities, choose community upgrades and power The Loop. Each action saves; mistakes can be corrected.', 'story-help'));
+      box.append(paragraph(m.subtitle, 'eyebrow'), paragraph(m.intro), paragraph(`${m.ally}: ${m.goal}`), ...(m.requests ? [paragraph('Community requests: after each area, help a neighbour choose a plan. Read the feedback, retry or use a clue. Each choice saves.', 'story-help')] : []), paragraph('Three areas · 18 tasks · no time limit. Tap to collect, or drag to sort. Prepare items with short hands-on activities, choose community upgrades and power The Loop. Each action saves; mistakes can be corrected.', 'story-help'));
       actions.append(button(session.done.length || session.stop || session.selected !== null || Object.keys(session.play.work).length ? 'Continue Mission' : 'Start Mission', () => { announce(m.goal); resume(); }, true));
+    } else if (kind === 'request') {
+      renderRequest(); return;
     } else if (kind === 'activity') {
       renderWork(); return;
     } else if (kind === 'battle') {
@@ -206,11 +209,12 @@
   }
   function backFromMenu() {
     if (session.complete) modal('complete');
+    else if (L.requestReady(session)) modal('request');
     else if (battleReady()) modal('battle');
     else if (session.done.length === mission().sets[session.stop].length) modal('checkpoint');
     else resume();
   }
-  function battleReady() { return session?.mission === 'school-tomorrow' && !session.complete && L.progress(session).done === 18; }
+  function battleReady() { return session && P.isBattle(session.mission) && !session.complete && !L.requestReady(session) && L.progress(session).fraction === 1; }
   function moveCircuit(value) {
     clearTimeout(walkTimer);
     const target = $('story-item-' + value).getBoundingClientRect(), area = $('storyScene').getBoundingClientRect();
@@ -267,10 +271,32 @@
       announce(prepared.text, prepared.kind); pose('prepare'); render(); persist(); publish('live'); resume();
     } else { persist(); renderWork(); $('workFeedback').textContent = result.text; }
   }
+  function renderRequest(feedback = '') {
+    const m = mission(), q = m.requests[session.stop], box = $('storyModalContent'), actions = $('storyModalActions');
+    box.replaceChildren(); actions.replaceChildren();
+    $('storyModalTitle').textContent = 'Community request';
+    box.append(paragraph(`${m.ally} · ${m.stops[session.stop]}`, 'eyebrow'), paragraph(q.prompt, 'request-prompt'));
+    const choices = document.createElement('div'); choices.className = 'community-choices';
+    for (const choice of q.choices) {
+      const b = button(choice.label, () => {
+        const result = L.act(session, 'decision', choice.id);
+        persist();
+        if (!result.ok) { renderRequest(result.text); sound.effect('retry'); return; }
+        announce(result.text, result.kind); render();
+        if (result.kind === 'complete') { L.finish(store, session); persist(); publish('level_clear'); renderMenu(); modal('complete'); sound.effect('complete'); }
+        else { modal(result.kind); sound.effect(result.kind); }
+      }); b.dataset.decision = choice.id; choices.append(b);
+    }
+    box.append(choices);
+    const status = paragraph(feedback || 'Choose a plan. There is no time limit; feedback helps you try again.', 'request-feedback');
+    status.id = 'requestFeedback'; status.setAttribute('role', 'status'); box.append(status);
+    actions.append(button('Request Clue', () => { const result = L.act(session, 'decision-hint'); persist(); $('requestFeedback').textContent = result.text; }), button('Pause Request', () => modal('pause')), button('Save & World Map', exit));
+    $('storyModalShade').hidden = false; $('storyModal').focus();
+  }
   function renderBattle() {
     const play = P.hydrate(session), box = $('storyModalContent'), actions = $('storyModalActions'); box.replaceChildren(); actions.replaceChildren();
     $('storyModalTitle').textContent = 'Clear Grime · Power The Loop';
-    box.append(paragraph('Your correctly recovered materials have removed Grime’s shield. Clear two purple clouds, then fire a Loop Pulse. Repeat three times to reopen the station.', 'battle-help'));
+    box.append(paragraph('Your correctly recovered materials have removed Grime’s shield. Clear two purple clouds, then fire a Loop Pulse. Repeat three times to restore the community station.', 'battle-help'));
     const field = document.createElement('div'); field.className = 'battle-field'; field.innerHTML = '<span id="battleMonster" class="battle-monster" data-pose="idle"><canvas id="battleGrimeCanvas" aria-hidden="true"></canvas><img class="sprite-fallback" src="assets/bosses/great-grime.png" alt="Grime"/></span>';
     field.style.setProperty('--boss-scale', String(1 - play.bossHits * .12));
     for (let i = play.bossHits * 2; i < (play.bossHits + 1) * 2; i++) {
