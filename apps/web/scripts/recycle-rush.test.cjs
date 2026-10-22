@@ -209,3 +209,36 @@ test('work-order metadata and two final chapter backgrounds match the shipped as
  const metadata=JSON.parse(fs.readFileSync(path.join(root,'game.json'))),boards=L.missions.reduce((n,m)=>n+(m.orders?.length||0),0);assert.equal(metadata.features.communityWorkOrders,boards);assert.equal(metadata.features.communityWorkOrderActions,boards*4);assert.equal(metadata.features.completeStoryEnding,true);assert.equal(L.missions.at(-1).id,'verdale-together');assert.match(L.missions.at(-1).restoration,/whole|everyone/);
  const crypto=require('node:crypto'),dir=path.join(root,'assets/backgrounds'),manifest=JSON.parse(fs.readFileSync(path.join(dir,'finale-art.json')));let bytes=0;for(const[file,entry]of Object.entries(manifest.assets)){const data=fs.readFileSync(path.join(dir,file));assert.equal(data.toString('ascii',0,4),'RIFF');assert.equal(data.toString('ascii',8,12),'WEBP');assert.equal(crypto.createHash('sha256').update(data).digest('hex'),entry.sha256);assert.equal(data.length,entry.bytes);assert.equal(entry.width,1600);assert.equal(entry.height,900);assert.ok(data.length<350000);bytes+=data.length;}assert.equal(Object.keys(manifest.assets).length,2);assert.ok(bytes<700000);
 });
+
+test('all eight arcade bosses use bounded idle, attack and hurt frames with reduced-motion stills',()=>{
+ const A=require('../public/games/recycle-rush/arcade-art.js');assert.equal(A.bosses.length,8);assert.equal(new Set(A.bosses.map(b=>b.id)).size,8);
+ for(let i=0;i<8;i++)for(const pose of ['idle','attack','hurt']){const frames=new Set();for(let t=0;t<3;t+=.07){const r=A.bossFrame(i,pose,t);frames.add(r.frame);assert.ok(r.x>=0&&r.x+256<=1024&&r.y===i%4*256&&r.y+256<=1024);assert.equal(r.src,A.bosses[i].sheet);assert.deepEqual(A.bossFrame(i,pose,t,true),A.bossFrame(i,pose,0,true));}assert.ok(pose==='hurt'?frames.size===1:frames.size>=2);}
+ for(const[width,height,line]of[[320,180,90],[390,450,290],[844,150,90],[1440,650,540]]){const b=A.bossLayout(width,height,line);assert.ok(b.x-b.size/2>=0&&b.x+b.size/2<=width);assert.ok(b.y>=0&&b.y+b.size<=height);}
+});
+test('arcade drawing is read-only, consumes no gameplay randomness and keeps every boss on its own atlas row',async()=>{
+ for(const level of [2,5,8,11,14,16,18,19]){
+  const r=await boot(),p=r.probe;p.initLevel(level);p.spawnItem();const snapshot=JSON.stringify(p.state),random=r.randomCalls;r.paints.length=0;p.draw();p.draw();assert.equal(JSON.stringify(p.state),snapshot);assert.equal(r.randomCalls,random);
+  const A=require('../public/games/recycle-rush/arcade-art.js'),boss=r.paints.find(paint=>paint.src===A.bosses[[2,5,8,11,14,16,18,19].indexOf(level)].sheet);assert.ok(boss);assert.equal(boss.args.length,8);assert.equal(boss.args[1],[2,5,8,11,14,16,18,19].indexOf(level)%4*256);
+ }
+});
+test('arcade effects stay bounded, expire on simulation time and reset without touching gameplay or saves',()=>{
+ const A=require('../public/games/recycle-rush/arcade-art.js');const context=new Proxy({},{get:()=>()=>{}}),settings={reducedMotion:false},art=A.create(context,()=>null,()=>settings,()=>null);
+ for(let i=0;i<300;i++)art.emit('sort',{x:20,y:20,toX:40,toY:80,color:'#ffffff',text:'+108'},1);assert.equal(art.eventCount,16);art.advance(1.3);assert.equal(art.eventCount,16);art.advance(2);assert.equal(art.eventCount,0);settings.reducedMotion=true;art.emit('sort',{},3);art.advance(3.3);assert.equal(art.eventCount,0);art.emit('attack',{},4);art.reset();assert.equal(art.eventCount,0);
+});
+test('all four power sprites preserve pickup points, single activation and their original effects',async()=>{
+ const A=require('../public/games/recycle-rush/arcade-art.js');for(const power of ['magnet','slow','shield','double']){
+  const r=await boot(),p=r.probe;p.initLevel(9);const item={kind:'power',power,x:30,y:20,w:50,h:50,age:0,spin:0};p.state.items.push(item);p.handleCatch(item);assert.equal(p.state.score,75);assert.equal(p.state.power,power);p.update(.001);assert.equal(r.elements.get('powerIcon').src,A.icons[power]);assert.equal(r.elements.get('powerIcon').hidden,false);assert.equal(r.elements.get('powerBtn').disabled,false);
+  p.usePower();assert.equal(p.state.power,null);const key={magnet:'magnetCharges',slow:'slowTime',shield:'shield',double:'doubleTime'}[power],amount=p.state[key];assert.equal(amount,{magnet:6,slow:8,shield:1,double:8}[power]);p.usePower();assert.equal(p.state[key],amount);p.update(.001);assert.equal(r.elements.get('powerBtn').disabled,true);
+ }
+});
+test('sprite variations keep their original material and failed new art falls back without blocking arcade or story',async()=>{
+ const A=require('../public/games/recycle-rush/arcade-art.js');assert.notEqual(A.itemArt('paper',0),A.itemArt('paper',1));assert.notEqual(A.itemArt('organic',0),A.itemArt('organic',1));assert.notEqual(A.itemArt('plastic',0),A.itemArt('plastic',1));assert.equal(A.itemArt('unknown'),null);
+ for(const[category,list]of Object.entries(A.variants))for(let i=0;i<list.length;i++){const src=A.itemArt(category,i);assert.ok(fs.existsSync(path.join(root,src)));assert.match(src,/assets\/animated\//);}
+ const normal=await boot();assert.equal(normal.requests.filter(src=>src.startsWith('assets/bosses/')).length,0);const r=await boot({failAssets:src=>src.startsWith('assets/arcade/')});assert.ok(r.requests.includes('assets/bosses/great-grime.png'));r.probe.initLevel(19);assert.doesNotThrow(()=>r.probe.draw());assert.ok(r.paints.some(p=>p.src==='assets/bosses/great-grime.png'));r.document.emit('recycle:story-open');assert.equal(r.probe.state.running,false);r.document.emit('recycle:story-exit');assert.equal(r.elements.get('levelValue').textContent,'Map');
+});
+test('new arcade art provenance, entry references and budget cover 32 boss frames and eight HUD/power icons',()=>{
+ const A=require('../public/games/recycle-rush/arcade-art.js'),crypto=require('node:crypto'),dir=path.join(root,'assets/arcade'),manifest=JSON.parse(fs.readFileSync(path.join(dir,'manifest.json')));let bytes=0;
+ for(const[file,entry]of Object.entries(manifest.assets)){const data=fs.readFileSync(path.join(dir,file));assert.equal(data.toString('ascii',0,4),'RIFF');assert.equal(data.toString('ascii',8,12),'WEBP');assert.equal(data.length,entry.bytes);assert.equal(crypto.createHash('sha256').update(data).digest('hex'),entry.sha256);bytes+=data.length;}
+ assert.equal(Object.keys(manifest.assets).length,10);assert.ok(bytes<1024*1024);assert.equal(manifest.assets['bosses-a.webp'].frames+manifest.assets['bosses-b.webp'].frames,32);for(const src of A.assetPaths)assert.ok(fs.existsSync(path.join(root,src)));
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.ok(html.indexOf('arcade-art.js')<html.indexOf('src="game.js"'));assert.ok(html.includes('id="powerSlotText"'));const metadata=JSON.parse(fs.readFileSync(path.join(root,'game.json')));assert.equal(metadata.features.arcadeBossFrames,32);assert.equal(metadata.features.arcadeBosses,8);assert.equal(metadata.features.arcadePowerSprites,4);
+});

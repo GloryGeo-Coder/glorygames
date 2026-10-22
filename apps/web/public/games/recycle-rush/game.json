@@ -81,7 +81,14 @@
     "collectionDispatchVisits": 120,
     "communityWorkOrders": 30,
     "communityWorkOrderActions": 120,
-    "completeStoryEnding": true
+    "completeStoryEnding": true,
+    "arcadeBosses": 8,
+    "arcadeBossFrames": 32,
+    "arcadePowerSprites": 4,
+    "arcadeHudSprites": 4,
+    "arcadeMaterialVariants": true,
+    "arcadeReducedMotion": true,
+    "arcadeVisualFeedback": true
   },
-  "version": "3.4.0"
+  "version": "3.5.0"
 }

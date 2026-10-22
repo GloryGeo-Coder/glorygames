@@ -5,6 +5,7 @@ on:
       - 'apps/web/public/games/recycle-rush/**'
       - 'apps/web/scripts/recycle-rush*'
       - 'apps/web/scripts/recycle-sprite-pack.cjs'
+      - 'apps/web/scripts/recycle-arcade-pack.cjs'
       - 'apps/web/scripts/helpers/recycle-runtime.cjs'
       - '.github/workflows/recycle-rush.yml'
   push:
@@ -13,6 +14,7 @@ on:
       - 'apps/web/public/games/recycle-rush/**'
       - 'apps/web/scripts/recycle-rush*'
       - 'apps/web/scripts/recycle-sprite-pack.cjs'
+      - 'apps/web/scripts/recycle-arcade-pack.cjs'
       - 'apps/web/scripts/helpers/recycle-runtime.cjs'
       - '.github/workflows/recycle-rush.yml'
 permissions:
