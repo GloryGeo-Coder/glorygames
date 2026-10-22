@@ -1012,9 +1012,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "recycle-rush": {
     "category": "Educational",
-    "summary": "Restore Verdale with Circuit in five story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
+    "summary": "Restore Verdale with Circuit in ten story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
     "overview": [
-      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Five untimed story missions contain three saved areas and 18 recovery tasks each. Circuit and Grime use illustrated animation frames matching the game artwork, with a different original music theme for every story mission.",
+      "Recycle Rush: Restore Verdale follows Circuit and Professor Loop as they rebuild a community recovery station. Ten untimed story missions contain three saved areas and 18 recovery tasks each. Circuit and Grime use illustrated animation frames matching the game artwork, with a different original music theme for every story mission. Market and community missions add fifteen saved decisions with feedback, clues and recoverable retries, building toward a second Grime showdown.",
       "Tap an object to inspect its material and condition. Fold empty boxes, tip and empty bottles, clear food scraps, check reusable goods or help Sam plan a qualified repair. Then tap or drag to an accepted destination. Wrong choices explain the reason and let you try again. The separate 20-mission arcade campaign retains its eight eco-hubs, Grime bosses, badges, powers and endless Loop Mode, with the new item art and animated Grime hazards."
     ],
     "story": [
@@ -1053,7 +1053,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Five story missions contain 90 recovery tasks in total. The 20-mission arcade campaign offers a separate, faster challenge across eight themed eco-hubs.",
+      "Ten story missions contain 180 recovery tasks in total. The 20-mission arcade campaign offers a separate, faster challenge across eight themed eco-hubs.",
       "All story missions are untimed. Arcade difficulty rises through more material categories, wind, power-ups, hazards and bosses. A boss mission requires both its sorting target and the boss defeat."
     ],
     "tips": [
@@ -1070,7 +1070,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels are in Recycle Rush?",
-        "a": "There are five story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
+        "a": "There are ten story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
       },
       {
         "q": "Is the story timed?",

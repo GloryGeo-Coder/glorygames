@@ -17,14 +17,17 @@
     shelf: { title: 'Community exchange', icon: 'assets/animated/book.webp', fact: 'A reuse shelf lets usable books and clothes serve another person before becoming waste.' },
     caddy: { title: 'Food-compost caddy', icon: 'assets/animated/compost-caddy.webp', fact: 'A labelled caddy keeps the listed food scraps separate from packaging and dry paper.' }
   };
+  const battles = { 'school-tomorrow': 'The school recovery station is restored.', 'market-lights': 'The market square shines again.' };
+  const isBattle = id => Object.hasOwn(battles, id);
   function kind(item) { return item?.prep || (item?.route === 'repair' ? 'repair' : item?.route === 'reuse' ? 'reuse' : null); }
-  function initial(complete = false) { return { version: 1, work: {}, restored: {}, streak: 0, bestStreak: 0, energy: 0, bossHits: complete ? 3 : 0, wisps: [] }; }
+  function initial(complete = false) { return { version: 1, work: {}, restored: {}, decisions: {}, streak: 0, bestStreak: 0, energy: 0, bossHits: complete ? 3 : 0, wisps: [] }; }
   function valid(value) {
     if (value === undefined) return true; // v3.0 sessions are migrated without losing work.
     if (!value || value.version !== 1 || !value.work || !value.restored || typeof value.work !== 'object' || typeof value.restored !== 'object' || Array.isArray(value.work) || Array.isArray(value.restored)) return false;
     if (!['streak', 'bestStreak', 'energy', 'bossHits'].every(k => Number.isSafeInteger(value[k]) && value[k] >= 0 && value[k] <= (k === 'bossHits' ? 3 : 1000))) return false;
     if (!Array.isArray(value.wisps) || new Set(value.wisps).size !== value.wisps.length || value.wisps.some(v => !Number.isSafeInteger(v) || v < 0 || v > 5)) return false;
     if (Object.entries(value.restored).some(([k, v]) => !/^[0-2]$/.test(k) || !Object.hasOwn(projects, v))) return false;
+    if (value.decisions !== undefined && (!value.decisions || typeof value.decisions !== 'object' || Array.isArray(value.decisions) || Object.entries(value.decisions).some(([k, v]) => !/^[0-2]$/.test(k) || typeof v !== 'string' || !/^[a-z-]{1,32}$/.test(v)))) return false;
     return Object.entries(value.work).every(([key, entry]) => /^[0-2]-[0-5]$/.test(key) && Object.hasOwn(activities, entry?.type) && Array.isArray(entry.done) && new Set(entry.done).size === entry.done.length && entry.done.every(id => activities[entry.type].steps.some(s => s[0] === id)));
   }
   function hydrate(session) {
@@ -59,7 +62,7 @@
   }
   function battle(session, action, value) {
     const play = hydrate(session);
-    if (session.mission !== 'school-tomorrow' || session.stop !== 2 || session.done.length !== 6 || session.complete) return { ok: false, text: 'Complete every recovery task to expose Grime.' };
+    if (!isBattle(session.mission) || session.stop !== 2 || session.done.length !== 6 || session.complete || session.mission === 'market-lights' && !play.decisions?.[2]) return { ok: false, text: 'Complete every recovery task to expose Grime.' };
     if (action === 'wisp') {
       if (!Number.isSafeInteger(value) || value < play.bossHits * 2 || value >= (play.bossHits + 1) * 2 || play.wisps.includes(value)) return { ok: false, text: 'Clear the two visible Grime clouds first.' };
       play.wisps.push(value);
@@ -69,9 +72,9 @@
       if (play.energy < 6 || play.wisps.length < (play.bossHits + 1) * 2) return { ok: false, text: 'Clear both clouds, then fire six recovered energy cells.' };
       play.energy -= 6; play.bossHits++;
       session.complete = play.bossHits === 3;
-      return { ok: true, kind: session.complete ? 'complete' : 'pulse', text: session.complete ? 'Grime clears! The school recovery station is restored.' : 'Loop Pulse lands! Clear the next two Grime clouds.' };
+      return { ok: true, kind: session.complete ? 'complete' : 'pulse', text: session.complete ? 'Grime clears! ' + battles[session.mission] : 'Loop Pulse lands! Clear the next two Grime clouds.' };
     }
     return { ok: false, text: 'Choose a Grime cloud or the Loop Pulse control.' };
   }
-  return { activities, projects, kind, initial, valid, hydrate, entry, work, ready, restore, battle };
+  return { activities, projects, battles, isBattle, kind, initial, valid, hydrate, entry, work, ready, restore, battle };
 });

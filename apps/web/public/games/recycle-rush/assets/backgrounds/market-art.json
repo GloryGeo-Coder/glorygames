@@ -1,0 +1,11 @@
+{
+  "asset": "bg-market-square.webp",
+  "width": 1600,
+  "height": 900,
+  "bytes": 306384,
+  "sha256": "e29e4261cbb2a3753d2dd20cc88570c75a359859b86a162a2637e2680f60dc02",
+  "sourceSha256": "7b19cfb380186e4ae1f90c0057da95883b5d1c7f42a88733d96924a2a03eb118",
+  "generator": "built-in image_gen",
+  "promptRecord": "docs/art/recycle-rush-v3.2-prompts.md",
+  "encoding": "WebP quality 82; resize to 1600px wide with sharp; original backgrounds unchanged"
+}

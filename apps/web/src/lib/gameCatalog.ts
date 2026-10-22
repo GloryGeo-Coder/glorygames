@@ -23,7 +23,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "neon-hover-runner": { category: "RACING", description: "Steer a futuristic hover runner around hazards, jump barriers and collect energy, shields, magnets and boosts." },
   "neon-orb-defender": { category: "DEFENSE", description: "Defend a futuristic Neon Orb, rescue friendly AI units and repel rogue robots and drones across 25 missions with animated combat and original level music." },
   "physics-force-lab": { category: "EDUCATIONAL", description: "Follow a young physicist through 12 educational missions about forces, gravity, energy, circuits and other concepts." },
-  "recycle-rush": { category: "EDUCATIONAL", description: "Restore Verdale with animated characters, hands-on recovery activities and a Grime showdown across five story missions, plus 20 arcade missions." },
+  "recycle-rush": { category: "EDUCATIONAL", description: "Restore Verdale with animated characters, hands-on recovery activities, community decisions and two Grime showdowns across ten story missions, plus 20 arcade missions." },
   "science-lab-dash": { category: "EDUCATIONAL", description: "Restore Nova Science Academy by completing 20 science missions, collecting evidence and solving challenges." },
   "sky-temple-3d-rise-of-the-relic-master": { category: "ADVENTURE", description: "Explore floating islands and ancient temples, gather relics, unlock powers and challenge fantasy guardians." },
   "space-dodger": { category: "ACTION", description: "Pilot a 3D spacecraft through asteroid fields, engage enemy ships, activate boosts and complete story missions." },
