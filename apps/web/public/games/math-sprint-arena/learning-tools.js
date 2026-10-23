@@ -22,8 +22,8 @@
     panel.className=`response-panel tool-panel ${t.kind}-panel`;
     const change=value=>{onChange(value);effect('move');};
     if(t.kind==='choice'){
-      const grid=node('div',undefined,'shape-options'),status=output('Choose a shape.','Selected shape');
-      const buttons=[];for(const o of t.options){const b=node('button');b.type='button';b.dataset.choice=o.value;const img=shapeImage(o.shape);img.setAttribute('aria-hidden','true');b.append(img,node('span',o.label));b.setAttribute('aria-pressed',String(String(o.value)===s.draft));b.addEventListener('click',()=>{change(o.value);for(const other of buttons)other.setAttribute('aria-pressed',String(other===b));status.textContent=`Selected: ${o.label}`;});buttons.push(b);grid.append(b);if(String(o.value)===s.draft)status.textContent=`Selected: ${o.label}`;}panel.append(grid,status);
+      const grid=node('div',undefined,'shape-options'),status=output('Choose an answer.','Selected answer');
+      const buttons=[];for(const o of t.options){const b=node('button');b.type='button';b.dataset.choice=o.value;if(o.shape){const img=shapeImage(o.shape);img.setAttribute('aria-hidden','true');b.append(img);}b.append(node('span',o.label));b.setAttribute('aria-pressed',String(String(o.value)===s.draft));b.addEventListener('click',()=>{change(o.value);for(const other of buttons)other.setAttribute('aria-pressed',String(other===b));status.textContent=`Selected: ${o.label}`;});buttons.push(b);grid.append(b);if(String(o.value)===s.draft)status.textContent=`Selected: ${o.label}`;}panel.append(grid,status);
     }else if(t.kind==='mirror'){
       let mask=(Number(s.draft)||0)&63;const grid=node('div',undefined,'mirror-grid');const status=output('Complete the right half.','Reflection progress');
       for(let r=0;r<3;r++)for(let c=0;c<4;c++){
@@ -50,8 +50,30 @@
     const time=`${String(Math.floor(total/60)).padStart(2,'0')}:${String(minute).padStart(2,'0')}`,wrap=node('div',undefined,'clock-unit');wrap.append(svg(markup,`Clock showing ${time}`,'0 0 120 110'),node('b',time));return wrap;
   }
   function draw(t,v){
-    if(!['choice','shape','mirror','ruler','tile','mass','jug','elapsed','tally','chart'].includes(t.kind))return false;
-    if(t.kind==='choice'||t.kind==='shape'){
+    if(!['choice','shape','mirror','ruler','tile','mass','jug','elapsed','tally','chart','placeRead','round','readout','product','growing','fractionMath','solid','areaGrid','volume'].includes(t.kind))return false;
+    if(t.kind==='placeRead'){
+      const table=node('div',undefined,'digit-chart');const labels=['100 000','10 000','1 000','100','10','1'];String(t.value).padStart(6,'0').split('').forEach((digit,i)=>{const col=node('div');col.dataset.focus=String(5-i===t.power);col.append(node('small',labels[i]),node('b',digit));table.append(col);});v.append(table,node('p','Column values'));
+    }else if(t.kind==='round'){
+      const x=30+(t.value-t.low)/t.unit*300;v.append(svg(`<path d="M30 65H330 M30 55V75 M180 55V75 M330 55V75" stroke="#91e8f7" stroke-width="3"/><circle cx="${x}" cy="65" r="7" fill="#ffe38a"/><g fill="white" text-anchor="middle" font-size="17"><text x="55" y="104">${t.low}</text><text x="180" y="33">Halfway</text><text x="305" y="104">${t.high}</text><text x="180" y="140">${t.value}</text></g>`,`Rounding number line from ${t.low} to ${t.high}. Marked number: ${t.value}.`));
+    }else if(t.kind==='readout')v.append(node('p',t.display,'math-readout'));
+    else if(t.kind==='product')v.append(node('p',`${t.a} ${t.op} ${t.b}`,'math-readout'));
+    else if(t.kind==='growing'){
+      let markup='';t.values.forEach((count,i)=>{markup+=`<text x="${60+i*120}" y="24" text-anchor="middle" fill="white" font-size="16">Stage ${i+1}</text>`;for(let n=0;n<count;n++)markup+=`<circle cx="${22+i*120+n%4*24}" cy="${49+Math.floor(n/4)*26}" r="8" fill="#ffe38a"/>`;});v.append(svg(markup,`Dot patterns: stages 1, 2, 3 contain ${t.values.join(', ')} dots.`));
+    }else if(t.kind==='fractionMath'||t.kind==='choice'&&t.bars){
+      let markup='';t.bars.forEach((bar,i)=>{const y=22+i*65,w=250/bar.d;for(let n=0;n<bar.d;n++)markup+=`<rect x="${85+n*w}" y="${y}" width="${w}" height="35" fill="${n<bar.n?'#56d6c8':'#193752'}" stroke="#dcfff8"/>`;markup+=`<text x="10" y="${y+25}" fill="white" font-size="22">${bar.label}</text>`;});v.append(svg(markup,t.bars.map(b=>`${b.n} out of ${b.d} equal parts`).join('; ')));
+    }else if(t.kind==='choice'&&t.angle!==undefined){
+      const a=t.angle*Math.PI/180,cx=130,cy=114,r=78,x=cx+r*Math.cos(a),y=cy-r*Math.sin(a),arc=38;v.append(svg(`<path d="M${x} ${y}L${cx} ${cy}H${cx+r}" fill="none" stroke="#a5effc" stroke-width="5"/><path d="M${cx+arc} ${cy}A${arc} ${arc} 0 0 0 ${cx+arc*Math.cos(a)} ${cy-arc*Math.sin(a)}" fill="none" stroke="#ffe38a" stroke-width="4"/><circle cx="${cx}" cy="${cy}" r="4" fill="white"/>`,`Angle with highlighted interior region; compare with a square corner.`));
+    }else if(t.kind==='solid'){
+      const common='stroke="#cafff3" stroke-width="2.5" stroke-linejoin="round"';let markup;
+      if(t.solid==='Square pyramid')markup=`<path d="M180 15L75 104 180 138Z" fill="#47adbb" ${common}/><path d="M180 15L285 104 180 138Z" fill="#268294" ${common}/><path d="M75 104L180 74 285 104 M180 74V15" fill="none" stroke="#cafff3" stroke-dasharray="5 4"/>`;
+      else if(t.solid==='Triangular prism')markup=`<path d="M70 115L120 35 170 115Z" fill="#53cabb" ${common}/><path d="M120 35L250 20 300 100 170 115Z" fill="#268294" ${common}/><path d="M70 115L200 100 250 20 M200 100L300 100" stroke="#cafff3" stroke-dasharray="5 4" fill="none"/>`;
+      else{const right=t.solid==='Cube'?245:290;markup=`<path d="M95 48L145 18 ${right} 18 ${right-50} 48Z" fill="#79e4ce" ${common}/><path d="M95 48H${right-50}V132H95Z" fill="#47adbb" ${common}/><path d="M${right-50} 48L${right} 18V102L${right-50} 132Z" fill="#268294" ${common}/><path d="M95 132L145 102H${right} M145 102V18" stroke="#cafff3" stroke-dasharray="5 4" fill="none"/>`;}
+      v.append(svg(markup,`${t.solid}. Dashed edges show hidden parts.`));
+    }else if(t.kind==='areaGrid'){
+      const rows=t.cells.length,columns=t.cells[0].length,size=100/rows;let markup='';t.cells.forEach((row,r)=>row.forEach((on,c)=>{markup+=`<rect x="${90+c*size}" y="${10+r*size}" width="${size}" height="${size}" fill="${on?'#55d5c4':'#12263c'}" stroke="#b1e6f3" stroke-width="2"/>`;}));markup+='<text x="180" y="143" text-anchor="middle" fill="white" font-size="17">1 lit cell = 1 square unit</text>';v.append(svg(markup,`Floor grid, rows from top: ${t.cells.map(row=>row.map(on=>on?'lit':'empty').join(', ')).join('; ')}. Each lit cell is one square unit.`));
+    }else if(t.kind==='volume'){
+      let markup='';for(let layer=0;layer<t.layers;layer++){const left=12+layer*(336/t.layers);markup+=`<text x="${left+48}" y="24" text-anchor="middle" fill="white" font-size="17">Layer ${layer+1}</text>`;for(let r=0;r<t.rows;r++)for(let c=0;c<t.columns;c++){const x=left+c*24+r*5,y=50+r*32;markup+=`<path d="M${x} ${y}l6 -6h22l-6 6Z" fill="#88edd2" stroke="#d4fff5"/><path d="M${x} ${y}h22v22h-22Z" fill="#42b7b2" stroke="#d4fff5"/><path d="M${x+22} ${y}l6 -6v22l-6 6Z" fill="#247d93" stroke="#d4fff5"/>`;}}v.append(svg(markup,`${t.layers} separately shown layers; each layer has ${t.rows} rows of ${t.columns} unit cubes.`));
+    }else if(t.kind==='choice'||t.kind==='shape'){
       if(t.shape)v.append(shapeImage(t.shape,t.kind==='choice'?'Shape to identify':'Shape with straight sides'));else v.append(node('p','Compare each shape’s sides and corners.'));
     }else if(t.kind==='mirror')v.append(node('p','The dotted line is the mirror. Match distance and row.'));
     else if(t.kind==='tile')v.append(node('div','1 square = 1 square unit','unit-tile'),node('p','Cover the surface without gaps or overlaps.'));
@@ -69,7 +91,7 @@
       const items=node('ul',undefined,'survey-items');const remaining=[...t.counts];let turn=0;while(remaining.some(n=>n>0)){const category=turn++%3;if(!remaining[category])continue;remaining[category]--;const item=node('li');item.setAttribute('aria-label',names[category]);const image=shapeImage(names[category]);image.setAttribute('aria-hidden','true');item.append(image);items.append(item);}v.append(items);
     }else if(t.pictograph){
       const chart=node('div',undefined,'pictograph');chart.setAttribute('role','img');chart.setAttribute('aria-label',t.labels.map((l,i)=>`${l}: ${t.values[i]} learners`).join('; '));
-      for(let i=0;i<t.values.length;i++){const row=node('div');row.append(node('b',t.labels[i]),node('span','★'.repeat(t.values[i])));chart.append(row);}v.append(chart,node('p','Each ★ represents one learner.'));
+      for(let i=0;i<t.values.length;i++){const row=node('div');row.append(node('b',t.labels[i]),node('span','★'.repeat(t.values[i]/(t.scale||1))));chart.append(row);}v.append(chart,node('p',`Each ★ represents ${t.scale||'one'} ${t.scale>1?'learners':'learner'}.`));
     }else{
       const chart=node('div',undefined,'bar-chart'),max=Math.ceil(Math.max(...t.values)/2)*2;chart.setAttribute('role','img');chart.setAttribute('aria-label',`Travel survey, number of learners. ${t.labels.map((l,i)=>`${l}: ${t.values[i]}`).join('; ')}`);
       const axis=node('div',undefined,'bar-axis');for(const n of [max,max/2,0])axis.append(node('span',String(n)));
@@ -77,6 +99,6 @@
     }
     return true;
   }
-  const essential=t=>['shape','ruler','mass','jug','elapsed','tally','chart'].includes(t.kind)||(t.kind==='choice'&&!!t.shape);
+  const essential=t=>['shape','ruler','mass','jug','elapsed','tally','chart','growing','solid','areaGrid','volume'].includes(t.kind)||(t.kind==='choice'&&(!!t.shape||!!t.bars||t.angle!==undefined));
   window.MathLearningTools={renderResponse,draw,essential};
 })();

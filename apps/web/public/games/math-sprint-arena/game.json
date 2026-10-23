@@ -4,22 +4,27 @@
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "category": "Educational",
-  "description": "Explore twenty untimed Grade 4 maths missions with 200 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
-  "version": "4.1.0",
+  "description": "Explore separate Grade 4 and Grade 5 maths paths with 40 untimed missions, 400 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
+  "version": "4.2.0",
   "features": {
-    "learningMissions": 20,
-    "learningActivities": 100,
-    "learningGrade": 4,
-    "curriculumScope": "Selected CAPS Grade 4 skills; not a complete course",
+    "learningMissions": 40,
+    "learningActivities": 200,
+    "curriculumScope": "Selected CAPS Grade 4 and Grade 5 skills; not complete courses",
     "sprintLevels": 52,
-    "originalLevelArrangements": 72,
+    "originalLevelArrangements": 92,
     "savedCheckpoints": true,
     "untimedLearning": true,
-    "alternatePracticeActivities": 100,
-    "activityBankTotal": 200,
-    "revisionMusicTracks": 1,
-    "originalMusicArrangements": 73,
+    "alternatePracticeActivities": 200,
+    "activityBankTotal": 400,
+    "revisionMusicTracks": 2,
+    "originalMusicArrangements": 94,
     "focusedRevision": true,
-    "enlargeDiagrams": true
+    "enlargeDiagrams": true,
+    "learningGrades": [
+      4,
+      5
+    ],
+    "learningMissionsPerGrade": 20,
+    "independentGradeProgress": true
   }
 }
