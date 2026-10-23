@@ -13,9 +13,9 @@
   function home(){window.MathSprintLegacy?.leave();audio.pause();view('home');renderHome();$('learningHome').scrollTop=0;}
   function renderHome(){
     const route=path(),done=L.pathMissions(route.grade).filter(m=>profile.results[m.id]).length,practice=$('practiceBrowse').checked;
-    $('gradeSelect').value=String(route.grade);$('pathEyebrow').textContent=`Grade ${route.grade} · ${route.title}`;$('pathTitle').textContent=route.grade===4?'Restore Number City':route.grade===5?'Explore Discovery District':'Launch Innovation Harbour';
-    $('pathIntroduction').textContent=route.grade===4?'Join Pi-Bot to restore Number City. Build numbers, power engines and repair bridges through maths.':route.grade===5?'Join Pi-Bot in Discovery District. Connect signal towers, plan deliveries and build the discovery festival with maths.':'Build a research harbour with Pi-Bot. Plan cargo, investigate fractions and decimals, transform designs and explain what the data shows.';
-    $('curriculumScope').textContent=`This path practises selected Grade ${route.grade} CAPS skills: ${route.grade===4?'place value, whole-number calculations, patterns, money, common fractions, shapes, symmetry, length, area, mass, capacity, time, tallies and graphs':route.grade===5?'six-digit place value, rounding, five-digit calculations, multiplication and division, factors, patterns, common fractions, money and rates, angles, solid objects, symmetry, measurement, area, cubic units, time and scaled pictographs':'nine-digit place value, larger calculations, primes, ratio and rate, mixed fractions, decimals, percentages, rules, angles, transformations, nets, area, volume, units, time, data and chance'}. The twenty missions contain 100 Adventure activities and 100 alternate practice activities. Each set has five tasks with hints and worked explanations. It is a practice resource, rather than a complete Grade ${route.grade} course or a formal assessment.`;
+    $('gradeSelect').value=String(route.grade);$('pathEyebrow').textContent=`Grade ${route.grade} · ${route.title}`;$('pathTitle').textContent=route.grade===4?'Restore Number City':route.grade===5?'Explore Discovery District':route.grade===6?'Launch Innovation Harbour':'Open Research Ridge';
+    $('pathIntroduction').textContent=route.grade===4?'Join Pi-Bot to restore Number City. Build numbers, power engines and repair bridges through maths.':route.grade===5?'Join Pi-Bot in Discovery District. Connect signal towers, plan deliveries and build the discovery festival with maths.':route.grade===7?'Climb Research Ridge with Pi-Bot. Decode signed signals, balance equations and use data to open the observatory.':'Build a research harbour with Pi-Bot. Plan cargo, investigate fractions and decimals, transform designs and explain what the data shows.';
+    $('curriculumScope').textContent=`This path practises selected Grade ${route.grade} CAPS skills: ${route.grade===4?'place value, whole-number calculations, patterns, money, common fractions, shapes, symmetry, length, area, mass, capacity, time, tallies and graphs':route.grade===5?'six-digit place value, rounding, five-digit calculations, multiplication and division, factors, patterns, common fractions, money and rates, angles, solid objects, symmetry, measurement, area, cubic units, time and scaled pictographs':route.grade===7?'integers, exponents and roots, HCF and LCM, fraction operations, three-place decimals, percentages, simple interest, ratio and rate, geometric patterns, functions, variables, substitution, equations, global graphs, lines, angles, circle parts, enlargement, triangle area, surface area, volume, mean, median, range and sampling':'nine-digit place value, larger calculations, primes, ratio and rate, mixed fractions, decimals, percentages, rules, angles, transformations, nets, area, volume, units, time, data and chance'}. The twenty missions contain 100 Adventure activities and 100 alternate practice activities. Each set has five tasks with hints and worked explanations. It is a practice resource, rather than a complete Grade ${route.grade} course or a formal assessment.`;
     $('chapterProgress').textContent=`${done} / ${route.count}`;
     const checkpoint=sessions().adventure;
     $('adventureStart').textContent=checkpoint&&checkpoint.index<5?'Continue Adventure':done===route.count?'Replay Adventure':'Start Adventure';
@@ -66,15 +66,15 @@
     if(!session||document.body.dataset.view!=='learn'||session.index>=5)return;
     const t=L.current(session);if(['place','fraction','choice','mirror','tile','tally','coordinate'].includes(t.kind)||session.steps[session.index].done)return;
     let value=session.draft;
-    if(key==='delete')value=value.slice(0,-1);else if(/^\d$/.test(key)&&value.length<12)value+=key;else if(key==='/'&&t.fractionEntry&&!value.includes('/')&&!value.includes('.')&&value)value+='/';else if(key==='.'&&!value.includes('.')&&!value.includes('/'))value=(value||'0')+'.';else return;
+    if(key==='-'&&t.signedEntry)value=value.startsWith('-')?value.slice(1):'-'+value;else if(key==='delete')value=value.slice(0,-1);else if(/^\d$/.test(key)&&value.length<12)value+=key;else if(key==='/'&&t.fractionEntry&&!value.includes('/')&&!value.includes('.')&&value)value+='/';else if(key==='.'&&!t.signedEntry&&!value.includes('.')&&!value.includes('/'))value=(value||'0')+'.';else return;
     updateDraft(value);audio.effect('tap');
   }
   function renderEntry(t){
     const panel=$('responsePanel');panel.className='response-panel';
-    const label=el('span',t.kind==='money'?'Your answer in rands':t.fractionEntry?'Your fraction · use / between numbers':'Your answer','entry-label');
+    const label=el('span',t.kind==='money'?'Your answer in rands':t.fractionEntry?'Your fraction · use / between numbers':t.signedEntry?'Your integer · use − to change sign':'Your answer','entry-label');
     const out=el('output',session.draft||'…','entry-value');out.id='entryValue';out.setAttribute('aria-label','Your answer');
     const pad=el('div',undefined,'number-pad');
-    for(const key of ['1','2','3','delete','4','5','6',t.fractionEntry?'/':'.','7','8','9','0']){const b=el('button',key==='delete'?'⌫':key);b.type='button';b.dataset.key=key;b.setAttribute('aria-label',key==='delete'?'Delete last digit':key==='.'?'Decimal point':key==='/'?'Fraction bar':key);b.addEventListener('click',()=>numberKey(key));pad.append(b);}
+    for(const key of ['1','2','3','delete','4','5','6',t.fractionEntry?'/':t.signedEntry?'-':'.','7','8','9','0']){const b=el('button',key==='delete'?'⌫':key==='-'?'−':key);b.type='button';b.dataset.key=key;b.setAttribute('aria-label',key==='delete'?'Delete last digit':key==='.'?'Decimal point':key==='/'?'Fraction bar':key==='-'?'Change sign':key);b.addEventListener('click',()=>numberKey(key));pad.append(b);}
     panel.append(label,out,pad);
   }
   function renderPlace(){
@@ -151,8 +151,8 @@
       $('summaryTitle').textContent=`${title}: practice complete`;
       $('summaryMessage').textContent='Try a fresh set to practise with different questions, review familiar skills, or return to your saved Adventure.';
     }else{
-      $('summaryTitle').textContent=last?profile.activeGrade===6?'Innovation Harbour launched!':profile.activeGrade===5?'Discovery Festival ready!':'Number City exhibition ready!':`${title} restored!`;
-      $('summaryMessage').textContent=last?`The ${profile.activeGrade===6?'harbour launch':profile.activeGrade===5?'discovery festival':'city exhibition'} celebrates everything you have practised. Revisit a topic, try Review, or play the timed Sprint when you feel ready.`:session.mission===9?'The first Number Gates are restored! The next district has shapes, measurements, timetables and surveys to explore.':'Your maths has brought another part of the city to life. Try a fresh practice set or continue your journey.';
+      $('summaryTitle').textContent=last?profile.activeGrade===7?'Research Ridge observatory open!':profile.activeGrade===6?'Innovation Harbour launched!':profile.activeGrade===5?'Discovery Festival ready!':'Number City exhibition ready!':`${title} restored!`;
+      $('summaryMessage').textContent=last?`The ${profile.activeGrade===7?'observatory opening':profile.activeGrade===6?'harbour launch':profile.activeGrade===5?'discovery festival':'city exhibition'} celebrates everything you have practised. Revisit a topic, try Review, or play the timed Sprint when you feel ready.`:session.mission===9?'The first Number Gates are restored! The next district has shapes, measurements, timetables and surveys to explore.':'Your maths has brought another part of the city to life. Try a fresh practice set or continue your journey.';
     }
     $('summaryResult').textContent=`${independent} independent · ${5-independent} with support · 5 activities completed`;
     $('nextMission').hidden=!review&&last;
@@ -173,7 +173,7 @@
   document.addEventListener('keydown',e=>{
     if($('diagramDialog').open)return;
     if(document.body.dataset.view!=='learn'||e.altKey||e.ctrlKey||e.metaKey||$('arenaMenu').open||e.target?.tagName==='INPUT')return;
-    if(/^\d$/.test(e.key)||['Backspace','Delete','.',',','/'].includes(e.key)){playMusic();e.preventDefault();numberKey(['Backspace','Delete'].includes(e.key)?'delete':e.key===','?'.':e.key);}
+    if(/^\d$/.test(e.key)||['Backspace','Delete','.',',','/','-','−'].includes(e.key)){playMusic();e.preventDefault();numberKey(['Backspace','Delete'].includes(e.key)?'delete':e.key===','?'.':e.key==='−'?'-':e.key);}
     if(e.key==='Enter'&&e.target?.tagName!=='BUTTON'){e.preventDefault();if(!$('learningNext').hidden)$('learningNext').click();else $('learningCheck').click();}
   });
   $('arenaMenu').addEventListener('toggle',()=>{if($('arenaMenu').open)window.MathSprintLegacy?.pauseForVisibility();});
