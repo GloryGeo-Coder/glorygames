@@ -3,39 +3,45 @@
   const L=window.MathLearning,$=id=>document.getElementById(id);
   let profile=L.normalize(null),storageAvailable=true,mode='adventure',session=null,pausedByVisibility=false;
   try{profile=L.normalize(JSON.parse(localStorage.getItem(L.KEY)||'null'));}catch{storageAvailable=false;}
+  const sessions=()=>L.sessionsFor(profile,profile.activeGrade);
+  const path=()=>L.pathFor(profile.activeGrade);
   const audio=window.MathSound=window.MathArenaAudio.create(window,profile.settings);
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   function status(){ $('saveStatus').textContent=storageAvailable?'Progress saves on this browser':'Saving unavailable · keep this tab open'; }
   function save(){try{localStorage.setItem(L.KEY,JSON.stringify(profile));storageAvailable=true;}catch{storageAvailable=false;}status();}
   function view(name){document.body.dataset.view=name;for(const [id,v]of [['learningHome','home'],['learningPlay','learn'],['learningSummary','summary']])$(id).hidden=name!==v;$('arenaMenu').open=false;}
-  function home(){window.MathSprintLegacy?.leave();audio.pause();view('home');renderHome();}
+  function home(){window.MathSprintLegacy?.leave();audio.pause();view('home');renderHome();$('learningHome').scrollTop=0;}
   function renderHome(){
-    const done=Object.keys(profile.results).length,practice=$('practiceBrowse').checked;
-    $('chapterProgress').textContent=`${done} / ${L.missions.length}`;
-    const checkpoint=profile.sessions.adventure;
-    $('adventureStart').textContent=checkpoint&&checkpoint.index<5?'Continue Adventure':done===L.missions.length?'Replay Adventure':'Start Adventure';
-    $('reviewStart').textContent=profile.sessions.revision&&profile.sessions.revision.index<5?'Continue Review':'Review with Pi-Bot';
-    const supported=L.reviewPlan(profile).filter(r=>profile.review[L.taskAt(r).id]?.lastSupported).map(r=>L.missions[r.mission].skill);
+    const route=path(),done=L.pathMissions(route.grade).filter(m=>profile.results[m.id]).length,practice=$('practiceBrowse').checked;
+    $('gradeSelect').value=String(route.grade);$('pathEyebrow').textContent=`Grade ${route.grade} · ${route.title}`;$('pathTitle').textContent=route.grade===4?'Restore Number City':'Explore Discovery District';
+    $('pathIntroduction').textContent=route.grade===4?'Join Pi-Bot to restore Number City. Build numbers, power engines and repair bridges through maths.':'Join Pi-Bot in Discovery District. Connect signal towers, plan deliveries and build the discovery festival with maths.';
+    $('curriculumScope').textContent=`This path practises selected Grade ${route.grade} CAPS skills: ${route.grade===4?'place value, whole-number calculations, patterns, money, common fractions, shapes, symmetry, length, area, mass, capacity, time, tallies and graphs':'six-digit place value, rounding, five-digit calculations, multiplication and division, factors, patterns, common fractions, money and rates, angles, solid objects, symmetry, measurement, area, cubic units, time and scaled pictographs'}. The twenty missions contain 100 Adventure activities and 100 alternate practice activities. Each set has five tasks with hints and worked explanations. It is a practice resource, rather than a complete Grade ${route.grade} course or a formal assessment.`;
+    $('chapterProgress').textContent=`${done} / ${route.count}`;
+    const checkpoint=sessions().adventure;
+    $('adventureStart').textContent=checkpoint&&checkpoint.index<5?'Continue Adventure':done===route.count?'Replay Adventure':'Start Adventure';
+    $('reviewStart').textContent=sessions().revision&&sessions().revision.index<5?'Continue Review':'Review with Pi-Bot';
+    const supported=L.reviewPlan(profile,profile.activeGrade).filter(r=>profile.review[L.taskAt(r).id]?.lastSupported).map(r=>L.missions[r.mission].skill);
     $('reviewFocus').textContent=supported.length?`Review focus: ${[...new Set(supported)].slice(0,3).join(', ')}.`:'Review mixes skills you have practised, with extra help whenever you need it.';
     $('missionList').replaceChildren();
-    for(const [i,m]of L.missions.entries()){
-      const b=el('button',undefined,'mission-choice');b.type='button';b.dataset.mission=i;b.disabled=!practice&&i>L.unlocked(profile);
-      const n=el('span',String(i+1).padStart(2,'0'),'mission-number'),label=el('span',undefined,'mission-label');label.append(el('strong',m.title),el('small',m.skill));
+    for(const m of L.pathMissions(route.grade)){
+      const i=L.missions.indexOf(m);
+      const b=el('button',undefined,'mission-choice');b.type='button';b.dataset.mission=i;b.disabled=!practice&&i>L.unlocked(profile,profile.activeGrade);
+      const n=el('span',String(m.number).padStart(2,'0'),'mission-number'),label=el('span',undefined,'mission-label');label.append(el('strong',m.title),el('small',m.skill));
       const r=profile.results[m.id];b.append(n,label,el('span',r?`${L.stars(r)} ★`:b.disabled?'Locked':practice?'Practise':'Play','mission-result'));
       b.addEventListener('click',()=>start(practice?'learn':'adventure',i));$('missionList').append(b);
     }
   }
   function start(nextMode,index,force=false,bankOverride){
     window.MathSprintLegacy?.leave();mode=nextMode;profile.activeMode=mode;
-    const old=profile.sessions[mode];
-    if(mode==='revision')session=!force&&old&&old.index<5?old:L.freshReview(profile);
+    const old=sessions()[mode];
+    if(mode==='revision')session=!force&&old&&old.index<5?old:L.freshReview(profile,profile.activeGrade);
     else{
-      if(index===undefined)index=old&&old.index<5?old.mission:mode==='adventure'?L.unlocked(profile):0;
-      if(mode==='adventure'&&index>L.unlocked(profile))return;
+      if(index===undefined)index=old&&old.index<5?old.mission:mode==='adventure'?L.unlocked(profile,profile.activeGrade):path().start;
+      if(L.missions[index]?.grade!==profile.activeGrade||mode==='adventure'&&index>L.unlocked(profile,profile.activeGrade))return;
       if(!force&&old&&old.mission===index&&old.index<5)session=old;
       else{const id=L.missions[index].id,visits=profile.practiceVisits[id]||0,bank=mode==='learn'?(bankOverride===undefined?visits%2:bankOverride):0;session=L.fresh(mode,index,bank);if(mode==='learn')profile.practiceVisits[id]=Math.min(10000,visits+1);}
     }
-    profile.sessions[mode]=session;view('learn');playMusic();save();renderTask();
+    sessions()[mode]=session;view('learn');playMusic();save();renderTask();
   }
   function playMusic(){const index=L.music(session);audio.start(index);$('songTitle').textContent=`Music: ${audio.themes[index].title}`;}
   function feedback(){
@@ -60,15 +66,15 @@
     if(!session||document.body.dataset.view!=='learn'||session.index>=5)return;
     const t=L.current(session);if(['place','fraction','choice','mirror','tile','tally'].includes(t.kind)||session.steps[session.index].done)return;
     let value=session.draft;
-    if(key==='delete')value=value.slice(0,-1);else if(/^\d$/.test(key)&&value.length<12)value+=key;else if(key==='.'&&!value.includes('.'))value=(value||'0')+'.';else return;
+    if(key==='delete')value=value.slice(0,-1);else if(/^\d$/.test(key)&&value.length<12)value+=key;else if(key==='/'&&t.fractionEntry&&!value.includes('/')&&!value.includes('.')&&value)value+='/';else if(key==='.'&&!value.includes('.')&&!value.includes('/'))value=(value||'0')+'.';else return;
     updateDraft(value);audio.effect('tap');
   }
   function renderEntry(t){
     const panel=$('responsePanel');panel.className='response-panel';
-    const label=el('span',t.kind==='money'?'Your answer in rands':'Your answer','entry-label');
+    const label=el('span',t.kind==='money'?'Your answer in rands':t.fractionEntry?'Your fraction · use / between numbers':'Your answer','entry-label');
     const out=el('output',session.draft||'…','entry-value');out.id='entryValue';out.setAttribute('aria-label','Your answer');
     const pad=el('div',undefined,'number-pad');
-    for(const key of ['1','2','3','delete','4','5','6','.','7','8','9','0']){const b=el('button',key==='delete'?'⌫':key);b.type='button';b.dataset.key=key;b.setAttribute('aria-label',key==='delete'?'Delete last digit':key==='.'?'Decimal point':key);b.addEventListener('click',()=>numberKey(key));pad.append(b);}
+    for(const key of ['1','2','3','delete','4','5','6',t.fractionEntry?'/':'.','7','8','9','0']){const b=el('button',key==='delete'?'⌫':key);b.type='button';b.dataset.key=key;b.setAttribute('aria-label',key==='delete'?'Delete last digit':key==='.'?'Decimal point':key==='/'?'Fraction bar':key);b.addEventListener('click',()=>numberKey(key));pad.append(b);}
     panel.append(label,out,pad);
   }
   function renderPlace(){
@@ -124,7 +130,7 @@
     document.body.style.setProperty('--learning-backdrop',`url("./assets/backgrounds/bg-${m.background}.png")`);
     $('learningMode').textContent=`${mode==='revision'?'Review':mode==='learn'?'Learn':'Adventure'} · Untimed${mode==='learn'&&session.bank===1?' · Fresh set':''}`;$('learningTitle').textContent=m.title;$('taskCount').textContent=`${session.index+1} / 5`;$('taskProgress').value=session.steps.filter(p=>p.done).length;
     $('menuMissionStory').textContent=`${m.story} ${m.lesson}`;
-    $('learningSkill').textContent=`Grade 4 · ${m.skill}`;$('learningPrompt').textContent=t.prompt;$('learningLesson').textContent=session.index===0?m.story:m.lesson;
+    $('learningSkill').textContent=`Grade ${m.grade} · ${m.skill}`;$('learningPrompt').textContent=t.prompt;$('learningLesson').textContent=session.index===0?m.story:m.lesson;
     $('responsePanel').replaceChildren();drawVisual(t);
     const essential=window.MathLearningTools.essential(t);$('problemGrid').dataset.essential=String(essential);$('problemGrid').dataset.kind=t.kind;$('visualPanel').dataset.essential=String(essential);
     $('visualPanel').setAttribute('role',essential?'button':'group');$('visualPanel').tabIndex=essential?0:-1;$('visualPanel').setAttribute('aria-label',essential?'Enlarge the diagram for this activity':'Activity model');
@@ -135,7 +141,7 @@
   function summary(){
     view('summary');
     const independent=session.steps.filter(p=>p.mistakes===0&&p.hints===0).length;
-    const last=session.mission===L.missions.length-1,review=mode==='revision',practice=mode==='learn';
+    const last=session.mission===path().start+path().count-1,review=mode==='revision',practice=mode==='learn';
     const title=L.missions[session.mission].title;
     $('summaryMode').textContent=review?'Review · Session complete':practice?'Learn · Practice complete':'Adventure · Mission complete';
     if(review){
@@ -145,8 +151,8 @@
       $('summaryTitle').textContent=`${title}: practice complete`;
       $('summaryMessage').textContent='Try a fresh set to practise with different questions, review familiar skills, or return to your saved Adventure.';
     }else{
-      $('summaryTitle').textContent=last?'Number City exhibition ready!':`${title} restored!`;
-      $('summaryMessage').textContent=last?'The city exhibition celebrates everything you have practised. Revisit a topic, try Review, or play the timed Sprint when you feel ready.':session.mission===9?'The first Number Gates are restored! The next district has shapes, measurements, timetables and surveys to explore.':'Your maths has brought another part of the city to life. Try a fresh practice set or continue your journey.';
+      $('summaryTitle').textContent=last?profile.activeGrade===5?'Discovery Festival ready!':'Number City exhibition ready!':`${title} restored!`;
+      $('summaryMessage').textContent=last?`The ${profile.activeGrade===5?'discovery festival':'city exhibition'} celebrates everything you have practised. Revisit a topic, try Review, or play the timed Sprint when you feel ready.`:session.mission===9?'The first Number Gates are restored! The next district has shapes, measurements, timetables and surveys to explore.':'Your maths has brought another part of the city to life. Try a fresh practice set or continue your journey.';
     }
     $('summaryResult').textContent=`${independent} independent · ${5-independent} with support · 5 activities completed`;
     $('nextMission').hidden=!review&&last;
@@ -154,10 +160,11 @@
     $('retryMission').textContent='Try a fresh practice set';
     $('summaryTitle').tabIndex=-1;$('summaryTitle').focus({preventScroll:true});
   }
-  $('learningCheck').addEventListener('click',()=>{if(!session||session.index>=5)return;const t=L.current(session),value=session.draft||(['place','fraction','mirror','tile','tally'].includes(t.kind)?t.kind==='fraction'?`0/${t.parts}`:'0':'');const r=L.submit(session,value);if(r.ignored)return;if(r.empty){$('feedbackText').textContent=t.kind==='choice'?'Choose a shape, then check your answer.':'Enter a number using the keypad or your keyboard, then check it.';return;}audio.effect(r.ok?'correct':'wrong');save();feedback();if(r.ok){$('taskProgress').value=session.steps.filter(p=>p.done).length;$('learningNext').focus({preventScroll:true});}});
+  $('learningCheck').addEventListener('click',()=>{if(!session||session.index>=5)return;const t=L.current(session),value=session.draft||(['place','fraction','mirror','tile','tally'].includes(t.kind)?t.kind==='fraction'?`0/${t.parts}`:'0':'');const r=L.submit(session,value);if(r.ignored)return;if(r.empty){$('feedbackText').textContent=t.kind==='choice'?'Choose an answer, then check it.':'Enter a number using the keypad or your keyboard, then check it.';return;}audio.effect(r.ok?'correct':'wrong');save();feedback();if(r.ok){$('taskProgress').value=session.steps.filter(p=>p.done).length;$('learningNext').focus({preventScroll:true});}});
   $('learningHint').addEventListener('click',()=>{if(L.hint(session)){audio.effect('hint');save();feedback();}});
   $('learningNext').addEventListener('click',()=>{if(L.advance(profile,session)){save();if(session.index===5){audio.effect('complete');summary();}else renderTask();}});
   $('adventureStart').addEventListener('click',()=>start('adventure'));$('learnStart').addEventListener('click',()=>start('learn'));$('reviewStart').addEventListener('click',()=>start('revision'));
+  $('gradeSelect').addEventListener('change',()=>{profile.activeGrade=Number($('gradeSelect').value);$('practiceBrowse').checked=false;session=null;save();renderHome();});
   $('practiceBrowse').addEventListener('change',renderHome);
   $('nextMission').addEventListener('click',()=>mode==='revision'?start('revision',undefined,true):start(mode,session.mission+1,true));$('retryMission').addEventListener('click',()=>start('learn',L.reference(session).mission,true,(L.reference(session).bank||0)===0?1:0));
   for(const id of ['arenaHome','returnHome','summaryHome'])$(id).addEventListener('click',home);
@@ -166,7 +173,7 @@
   document.addEventListener('keydown',e=>{
     if($('diagramDialog').open)return;
     if(document.body.dataset.view!=='learn'||e.altKey||e.ctrlKey||e.metaKey||$('arenaMenu').open||e.target?.tagName==='INPUT')return;
-    if(/^\d$/.test(e.key)||['Backspace','Delete','.',','].includes(e.key)){playMusic();e.preventDefault();numberKey(['Backspace','Delete'].includes(e.key)?'delete':e.key===','?'.':e.key);}
+    if(/^\d$/.test(e.key)||['Backspace','Delete','.',',','/'].includes(e.key)){playMusic();e.preventDefault();numberKey(['Backspace','Delete'].includes(e.key)?'delete':e.key===','?'.':e.key);}
     if(e.key==='Enter'&&e.target?.tagName!=='BUTTON'){e.preventDefault();if(!$('learningNext').hidden)$('learningNext').click();else $('learningCheck').click();}
   });
   $('arenaMenu').addEventListener('toggle',()=>{if($('arenaMenu').open)window.MathSprintLegacy?.pauseForVisibility();});

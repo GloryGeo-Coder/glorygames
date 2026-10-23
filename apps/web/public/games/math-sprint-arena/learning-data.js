@@ -1,15 +1,16 @@
-/* Number City: selected CAPS Grade 4 skills. Learning state is independent of Sprint scores. */
+/* Number City: selected CAPS Grade 4–5 skills. Learning state is independent of Sprint scores. */
 (function (root, factory) {
-  const api = factory(typeof module === 'object' && module.exports ? require('./learning-extension.js') : root.MathLearningExtension);
+  const api = factory(typeof module === 'object' && module.exports ? require('./learning-extension.js') : root.MathLearningExtension, typeof module === 'object' && module.exports ? require('./learning-grade5.js') : root.MathGrade5);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.MathLearning = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (extension) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (extension, grade5) {
   'use strict';
   const KEY = 'wga_math_sprint_learning_v1';
   const SOURCES = [
     'https://www.education.gov.za/Curriculum/CurriculumAssessmentPolicyStatements%28CAPS%29/CAPSIntermediate/tabid/572/Default.aspx',
     'https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20IP%20%20MATHEMATICS%20GR%204-6%20web.pdf',
-    'https://www.education.gov.za/LinkClick.aspx?fileticket=HINtK497f94%3D&mid=10739&portalid=0&tabid=3207'
+    'https://www.education.gov.za/LinkClick.aspx?fileticket=HINtK497f94%3D&mid=10739&portalid=0&tabid=3207',
+    'https://www.education.gov.za/LinkClick.aspx?fileticket=Zcwzy598npw%3D&mid=10742&portalid=0&tabid=3207'
   ];
   const task = (kind, prompt, answer, hints, detail = {}) => ({ kind, prompt, answer: String(answer), hints, ...detail });
   const place = n => task('place', `Build ${n.toLocaleString('en-ZA').replace(/,/g, ' ')} using place value.`, n,
@@ -59,6 +60,13 @@
     m.tasks.forEach((t,j)=>{t.id=`${m.id}-${j+1}`;});
     m.practice.forEach((t,j)=>{t.id=`${m.id}-practice-${j+1}`;});
   });
+  const grade5Missions=grade5.create({task,calc,pattern,money});
+  grade5Missions.forEach((m,i)=>{m.grade=5;m.number=i+1;m.music=73+i;for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,j)=>{t.id=`${m.id}-${bank?'practice-':''}${j+1}`;});});
+  missions.push(...grade5Missions);
+  const paths=[{grade:4,title:'Number City',start:0,count:20,reviewMusic:72},{grade:5,title:'Discovery District',start:20,count:20,reviewMusic:93}];
+  const pathFor=grade=>paths.find(p=>p.grade===Number(grade))||paths[0];
+  const pathMissions=grade=>{const p=pathFor(grade);return missions.slice(p.start,p.start+p.count);};
+  const gradeOf=s=>missions[s.mission].grade;
   const allTasks=missions.flatMap(m=>[...m.tasks,...m.practice]);
   const taskIds=new Set(allTasks.map(t=>t.id));
   const object = v => v && typeof v==='object' && !Array.isArray(v);
@@ -77,26 +85,28 @@
   const reference=s=>s.mode==='revision'?s.plan[Math.min(s.index,4)]:{mission:s.mission,bank:s.bank||0,index:Math.min(s.index,4)};
   const current=s=>s.index<5?taskAt(reference(s)):null;
   const origin=s=>missions[reference(s).mission];
-  const music=s=>s.mode==='revision'?72:origin(s).music;
+  const music=s=>s.mode==='revision'?pathFor(gradeOf(s)).reviewMusic:origin(s).music;
   function fresh(mode='adventure',mission=0,bank=0){return {mode,mission,bank:mode==='adventure'?0:bank,index:0,steps:Array.from({length:5},()=>({done:false,mistakes:0,hints:0})),draft:'',feedback:''};}
   function valid(s){
     if(!object(s)||!['learn','adventure','revision'].includes(s.mode)||!integer(s.mission,0,missions.length-1)||!integer(s.index,0,5)||!Array.isArray(s.steps)||s.steps.length!==5)return false;
     if(s.bank!==undefined&&(!integer(s.bank,0,1)||(s.mode==='adventure'&&s.bank!==0)))return false;
     if(s.mode==='revision'){
       if(!Array.isArray(s.plan)||s.plan.length!==5||!s.plan.every(r=>object(r)&&integer(r.mission,0,missions.length-1)&&integer(r.bank,0,1)&&integer(r.index,0,4)))return false;
-      if(new Set(s.plan.map(r=>taskAt(r).id)).size!==5)return false;
+      if(new Set(s.plan.map(r=>taskAt(r).id)).size!==5||s.plan.some(r=>missions[r.mission].grade!==gradeOf(s)))return false;
     }
     if(!s.steps.every((v,i)=>object(v)&&typeof v.done==='boolean'&&integer(v.mistakes,0,1000)&&integer(v.hints,0,3)&&(i<s.index?v.done:i>s.index?!v.done:true)))return false;
     if(typeof s.draft!=='string'||s.draft.length>24||!['','wrong','correct','hint'].includes(s.feedback))return false;
     return s.index<5||s.steps.every(v=>v.done);
   }
-  const empty=()=>({version:1,results:{},sessions:{adventure:null,learn:null,revision:null},activeMode:'adventure',settings:{music:.35,sfx:.65},practiceVisits:{},review:{}});
-  function unlocked(p){let n=0;while(n<missions.length-1&&p.results[missions[n].id])n++;return n;}
+  const empty=()=>({version:1,results:{},sessions:{adventure:null,learn:null,revision:null},activeMode:'adventure',settings:{music:.35,sfx:.65},practiceVisits:{},review:{},activeGrade:4,gradeSessions:{5:{adventure:null,learn:null,revision:null}}});
+  function unlocked(p,grade=4){const path=pathFor(grade);let n=path.start;while(n<path.start+path.count-1&&p.results[missions[n].id])n++;return n;}
+  const sessionsFor=(p,grade=4)=>Number(grade)===4?p.sessions:p.gradeSessions[5];
   function normalize(raw){
     const p=empty();if(!object(raw)||raw.version!==1)return p;
     if(object(raw.results))for(const m of missions){const r=raw.results[m.id];if(object(r)&&integer(r.independent,0,5)&&integer(r.assisted,0,5)&&r.independent+r.assisted===5)p.results[m.id]={independent:r.independent,assisted:r.assisted};}
-    let gap=false;for(const m of missions){if(!p.results[m.id])gap=true;if(gap)delete p.results[m.id];}
-    if(object(raw.sessions))for(const mode of ['adventure','learn','revision']){const s=raw.sessions[mode];if(valid(s)&&s.mode===mode&&(mode!=='adventure'||s.mission<=unlocked(p)))p.sessions[mode]=JSON.parse(JSON.stringify(s));}
+    for(const path of paths){let gap=false;for(const m of pathMissions(path.grade)){if(!p.results[m.id])gap=true;if(gap)delete p.results[m.id];}}
+    for(const path of paths){const source=path.grade===4?raw.sessions:raw.gradeSessions?.[path.grade];if(object(source))for(const mode of ['adventure','learn','revision']){const s=source[mode];if(valid(s)&&s.mode===mode&&gradeOf(s)===path.grade&&(mode!=='adventure'||s.mission<=unlocked(p,path.grade)))sessionsFor(p,path.grade)[mode]=JSON.parse(JSON.stringify(s));}}
+    if(paths.some(v=>v.grade===raw.activeGrade))p.activeGrade=raw.activeGrade;
     if(['adventure','learn','revision'].includes(raw.activeMode))p.activeMode=raw.activeMode;
     if(object(raw.settings))for(const key of ['music','sfx'])if(Number.isFinite(raw.settings[key]))p.settings[key]=Math.max(0,Math.min(1,raw.settings[key]));
     if(object(raw.practiceVisits))for(const m of missions)if(integer(raw.practiceVisits[m.id],0,10000))p.practiceVisits[m.id]=raw.practiceVisits[m.id];
@@ -122,9 +132,10 @@
     }
     return true;
   }
-  function reviewPlan(profile){
+  function reviewPlan(profile,grade=4){
+    const path=pathFor(grade);
     const candidates=[];
-    missions.forEach((m,mission)=>{for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,index)=>{const r=profile.review[t.id];if(r||bank===0&&(profile.results[m.id]||mission===0))candidates.push({mission,bank,index});});});
+    missions.forEach((m,mission)=>{if(m.grade!==path.grade)return;for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,index)=>{const r=profile.review[t.id];if(r||bank===0&&(profile.results[m.id]||mission===path.start))candidates.push({mission,bank,index});});});
     const topicSeen=missions.map(m=>[...m.tasks,...m.practice].reduce((n,t)=>{const h=profile.review[t.id];return n+(h?h.independent+h.assisted:0);},0));
     const rank=r=>{const h=profile.review[taskAt(r).id];return [h?.lastSupported?0:1,topicSeen[r.mission],h?h.independent+h.assisted:0,r.mission,r.bank,r.index];};
     candidates.sort((a,b)=>{const x=rank(a),y=rank(b);for(let i=0;i<x.length;i++)if(x[i]!==y[i])return x[i]-y[i];return 0;});
@@ -134,7 +145,7 @@
     for(const r of candidates)if(!topics.has(r.mission))add(r);
     candidates.forEach(add);return plan;
   }
-  function freshReview(profile){const plan=reviewPlan(profile),s=fresh('revision',plan[0].mission,plan[0].bank);s.plan=plan;return s;}
+  function freshReview(profile,grade=4){const plan=reviewPlan(profile,grade),s=fresh('revision',plan[0].mission,plan[0].bank);s.plan=plan;return s;}
   function stars(r){return !r?0:r.independent===5?3:r.independent>=3?2:1;}
-  return {KEY,SOURCES,missions,allTasks,rational,equivalent,fresh,valid,normalize,unlocked,current,reference,origin,music,taskAt,submit,hint,advance,stars,reviewPlan,freshReview};
+  return {KEY,SOURCES,paths,pathFor,pathMissions,gradeOf,sessionsFor,missions,allTasks,rational,equivalent,fresh,valid,normalize,unlocked,current,reference,origin,music,taskAt,submit,hint,advance,stars,reviewPlan,freshReview};
 });

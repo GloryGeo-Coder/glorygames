@@ -119,3 +119,22 @@ body[data-view='sprint'] .main-layout{min-height:0;grid-template-columns:230px m
 @media(orientation:landscape) and (max-height:360px){.problem-grid[data-essential='true'] .visual-panel{display:flex;grid-column:1;grid-row:1;align-self:end;height:calc(100% - var(--prompt-height,70px) - 7px);padding:3px 5px;min-height:0}.problem-grid[data-essential='true'] .response-panel{grid-row:1}.diagram-dialog{inset:5px;padding:8px;max-height:calc(100dvh - 10px)}.diagram-content{height:150px;min-height:100px}.diagram-dialog h2{font-size:13px}.diagram-dialog>p{display:none}}
 
 .bar-chart{position:relative;height:min(215px,calc(100cqh - 4px));padding-top:20px}.bar-chart::before{content:'Learners';position:absolute;left:0;top:0;color:#d0e8ed;font-size:10px;line-height:12px}.bar-axis{height:calc(100% - 22px);display:block;position:relative;padding:0}.bar-axis span{position:absolute;left:0;transform:translateY(-50%)}.bar-axis span:nth-child(1){top:0}.bar-axis span:nth-child(2){top:50%}.bar-axis span:nth-child(3){top:100%}
+
+/* Grade selection and precise Grade 5 displays share the existing responsive activity grid. */
+.grade-picker{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#d9eaff;margin-bottom:12px}.grade-picker select{max-width:100%;min-height:44px;border:1px solid #7ddbdc;border-radius:10px;padding:8px 12px;background:#16304d;color:#fff;font:inherit}.grade-picker select:focus-visible{outline:3px solid #ffe38a;outline-offset:2px}
+.digit-chart{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;width:100%;max-width:450px}.digit-chart>div{display:grid;gap:8px;text-align:center;padding:10px 1px;border:1px solid #4e7c95;border-radius:8px;background:#15334d}.digit-chart small{font-size:clamp(9px,1.3vw,14px);white-space:nowrap}.digit-chart b{font-size:clamp(20px,3vw,36px)}.digit-chart [data-focus="true"]{border-color:#ffe38a;background:#4d492d}.math-readout{font-size:clamp(16px,2.6vw,30px)!important;font-weight:700;line-height:1.4;overflow-wrap:anywhere}.shape-options button:not(:has(svg)){padding:12px 6px;min-height:64px;font-size:clamp(14px,2vw,20px)}
+@media(max-height:440px){.grade-picker{margin-bottom:6px}.digit-chart>div{gap:2px;padding:3px 0}.digit-chart b{font-size:20px}.shape-options button:not(:has(svg)){min-height:44px;padding:5px}.math-readout{font-size:17px!important}}
+
+/* After a numeric answer is accepted, keep its value visible and make room for the explanation. */
+.problem-grid.solved .number-pad{display:none}
+@media(max-width:600px) and (orientation:portrait){.problem-grid.solved:has(.number-pad){grid-template-rows:minmax(60px,1fr) minmax(60px,.5fr)}}
+.problem-grid.solved .shape-options{grid-template-columns:1fr}
+.problem-grid.solved .shape-options button[aria-pressed='false']{display:none}
+.problem-grid.solved .shape-options button{min-height:44px}
+@media(max-width:600px) and (orientation:portrait){.problem-grid.solved:has(.shape-options){grid-template-rows:minmax(60px,1fr) minmax(100px,.7fr)}}
+@media(max-width:360px) and (orientation:portrait){
+ .learning-play:has(.problem-grid[data-essential='true']) .learning-question h1{font-size:17px}
+ .problem-grid[data-essential='true']{grid-template-rows:minmax(60px,.8fr) minmax(196px,1.5fr)}
+ .problem-grid.solved:has(.number-pad){grid-template-rows:minmax(60px,1fr) minmax(60px,.5fr)}
+ .problem-grid.solved:has(.shape-options){grid-template-rows:minmax(60px,1fr) minmax(100px,.7fr)}
+}
