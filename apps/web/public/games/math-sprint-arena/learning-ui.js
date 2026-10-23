@@ -13,9 +13,9 @@
   function home(){window.MathSprintLegacy?.leave();audio.pause();view('home');renderHome();$('learningHome').scrollTop=0;}
   function renderHome(){
     const route=path(),done=L.pathMissions(route.grade).filter(m=>profile.results[m.id]).length,practice=$('practiceBrowse').checked;
-    $('gradeSelect').value=String(route.grade);$('pathEyebrow').textContent=`Grade ${route.grade} · ${route.title}`;$('pathTitle').textContent=route.grade===4?'Restore Number City':'Explore Discovery District';
-    $('pathIntroduction').textContent=route.grade===4?'Join Pi-Bot to restore Number City. Build numbers, power engines and repair bridges through maths.':'Join Pi-Bot in Discovery District. Connect signal towers, plan deliveries and build the discovery festival with maths.';
-    $('curriculumScope').textContent=`This path practises selected Grade ${route.grade} CAPS skills: ${route.grade===4?'place value, whole-number calculations, patterns, money, common fractions, shapes, symmetry, length, area, mass, capacity, time, tallies and graphs':'six-digit place value, rounding, five-digit calculations, multiplication and division, factors, patterns, common fractions, money and rates, angles, solid objects, symmetry, measurement, area, cubic units, time and scaled pictographs'}. The twenty missions contain 100 Adventure activities and 100 alternate practice activities. Each set has five tasks with hints and worked explanations. It is a practice resource, rather than a complete Grade ${route.grade} course or a formal assessment.`;
+    $('gradeSelect').value=String(route.grade);$('pathEyebrow').textContent=`Grade ${route.grade} · ${route.title}`;$('pathTitle').textContent=route.grade===4?'Restore Number City':route.grade===5?'Explore Discovery District':'Launch Innovation Harbour';
+    $('pathIntroduction').textContent=route.grade===4?'Join Pi-Bot to restore Number City. Build numbers, power engines and repair bridges through maths.':route.grade===5?'Join Pi-Bot in Discovery District. Connect signal towers, plan deliveries and build the discovery festival with maths.':'Build a research harbour with Pi-Bot. Plan cargo, investigate fractions and decimals, transform designs and explain what the data shows.';
+    $('curriculumScope').textContent=`This path practises selected Grade ${route.grade} CAPS skills: ${route.grade===4?'place value, whole-number calculations, patterns, money, common fractions, shapes, symmetry, length, area, mass, capacity, time, tallies and graphs':route.grade===5?'six-digit place value, rounding, five-digit calculations, multiplication and division, factors, patterns, common fractions, money and rates, angles, solid objects, symmetry, measurement, area, cubic units, time and scaled pictographs':'nine-digit place value, larger calculations, primes, ratio and rate, mixed fractions, decimals, percentages, rules, angles, transformations, nets, area, volume, units, time, data and chance'}. The twenty missions contain 100 Adventure activities and 100 alternate practice activities. Each set has five tasks with hints and worked explanations. It is a practice resource, rather than a complete Grade ${route.grade} course or a formal assessment.`;
     $('chapterProgress').textContent=`${done} / ${route.count}`;
     const checkpoint=sessions().adventure;
     $('adventureStart').textContent=checkpoint&&checkpoint.index<5?'Continue Adventure':done===route.count?'Replay Adventure':'Start Adventure';
@@ -64,7 +64,7 @@
   function updateDraft(value){if(!session||session.index>=5||session.steps[session.index].done)return;session.draft=String(value).slice(0,24);const out=$('entryValue');if(out)out.textContent=session.draft||'…';save();}
   function numberKey(key){
     if(!session||document.body.dataset.view!=='learn'||session.index>=5)return;
-    const t=L.current(session);if(['place','fraction','choice','mirror','tile','tally'].includes(t.kind)||session.steps[session.index].done)return;
+    const t=L.current(session);if(['place','fraction','choice','mirror','tile','tally','coordinate'].includes(t.kind)||session.steps[session.index].done)return;
     let value=session.draft;
     if(key==='delete')value=value.slice(0,-1);else if(/^\d$/.test(key)&&value.length<12)value+=key;else if(key==='/'&&t.fractionEntry&&!value.includes('/')&&!value.includes('.')&&value)value+='/';else if(key==='.'&&!value.includes('.')&&!value.includes('/'))value=(value||'0')+'.';else return;
     updateDraft(value);audio.effect('tap');
@@ -151,8 +151,8 @@
       $('summaryTitle').textContent=`${title}: practice complete`;
       $('summaryMessage').textContent='Try a fresh set to practise with different questions, review familiar skills, or return to your saved Adventure.';
     }else{
-      $('summaryTitle').textContent=last?profile.activeGrade===5?'Discovery Festival ready!':'Number City exhibition ready!':`${title} restored!`;
-      $('summaryMessage').textContent=last?`The ${profile.activeGrade===5?'discovery festival':'city exhibition'} celebrates everything you have practised. Revisit a topic, try Review, or play the timed Sprint when you feel ready.`:session.mission===9?'The first Number Gates are restored! The next district has shapes, measurements, timetables and surveys to explore.':'Your maths has brought another part of the city to life. Try a fresh practice set or continue your journey.';
+      $('summaryTitle').textContent=last?profile.activeGrade===6?'Innovation Harbour launched!':profile.activeGrade===5?'Discovery Festival ready!':'Number City exhibition ready!':`${title} restored!`;
+      $('summaryMessage').textContent=last?`The ${profile.activeGrade===6?'harbour launch':profile.activeGrade===5?'discovery festival':'city exhibition'} celebrates everything you have practised. Revisit a topic, try Review, or play the timed Sprint when you feel ready.`:session.mission===9?'The first Number Gates are restored! The next district has shapes, measurements, timetables and surveys to explore.':'Your maths has brought another part of the city to life. Try a fresh practice set or continue your journey.';
     }
     $('summaryResult').textContent=`${independent} independent · ${5-independent} with support · 5 activities completed`;
     $('nextMission').hidden=!review&&last;
@@ -160,7 +160,7 @@
     $('retryMission').textContent='Try a fresh practice set';
     $('summaryTitle').tabIndex=-1;$('summaryTitle').focus({preventScroll:true});
   }
-  $('learningCheck').addEventListener('click',()=>{if(!session||session.index>=5)return;const t=L.current(session),value=session.draft||(['place','fraction','mirror','tile','tally'].includes(t.kind)?t.kind==='fraction'?`0/${t.parts}`:'0':'');const r=L.submit(session,value);if(r.ignored)return;if(r.empty){$('feedbackText').textContent=t.kind==='choice'?'Choose an answer, then check it.':'Enter a number using the keypad or your keyboard, then check it.';return;}audio.effect(r.ok?'correct':'wrong');save();feedback();if(r.ok){$('taskProgress').value=session.steps.filter(p=>p.done).length;$('learningNext').focus({preventScroll:true});}});
+  $('learningCheck').addEventListener('click',()=>{if(!session||session.index>=5)return;const t=L.current(session),value=session.draft||(['place','fraction','mirror','tile','tally'].includes(t.kind)?t.kind==='fraction'?`0/${t.parts}`:'0':'');const r=L.submit(session,value);if(r.ignored)return;if(r.empty){$('feedbackText').textContent=t.kind==='coordinate'?'Choose a grid cell, then check it.':t.kind==='choice'?'Choose an answer, then check it.':'Enter a number using the keypad or your keyboard, then check it.';return;}audio.effect(r.ok?'correct':'wrong');save();feedback();if(r.ok){$('taskProgress').value=session.steps.filter(p=>p.done).length;$('learningNext').focus({preventScroll:true});}});
   $('learningHint').addEventListener('click',()=>{if(L.hint(session)){audio.effect('hint');save();feedback();}});
   $('learningNext').addEventListener('click',()=>{if(L.advance(profile,session)){save();if(session.index===5){audio.effect('complete');summary();}else renderTask();}});
   $('adventureStart').addEventListener('click',()=>start('adventure'));$('learnStart').addEventListener('click',()=>start('learn'));$('reviewStart').addEventListener('click',()=>start('revision'));

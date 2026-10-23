@@ -1,16 +1,17 @@
-/* Number City: selected CAPS Grade 4–5 skills. Learning state is independent of Sprint scores. */
+/* Number City: selected CAPS Grade 4–6 skills. Learning state is independent of Sprint scores. */
 (function (root, factory) {
-  const api = factory(typeof module === 'object' && module.exports ? require('./learning-extension.js') : root.MathLearningExtension, typeof module === 'object' && module.exports ? require('./learning-grade5.js') : root.MathGrade5);
+  const api = factory(typeof module === 'object' && module.exports ? require('./learning-extension.js') : root.MathLearningExtension, typeof module === 'object' && module.exports ? require('./learning-grade5.js') : root.MathGrade5, typeof module === 'object' && module.exports ? require('./learning-grade6.js') : root.MathGrade6);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.MathLearning = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (extension, grade5) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (extension, grade5, grade6) {
   'use strict';
   const KEY = 'wga_math_sprint_learning_v1';
   const SOURCES = [
     'https://www.education.gov.za/Curriculum/CurriculumAssessmentPolicyStatements%28CAPS%29/CAPSIntermediate/tabid/572/Default.aspx',
     'https://www.education.gov.za/Portals/0/CD/National%20Curriculum%20Statements%20and%20Vocational/CAPS%20IP%20%20MATHEMATICS%20GR%204-6%20web.pdf',
     'https://www.education.gov.za/LinkClick.aspx?fileticket=HINtK497f94%3D&mid=10739&portalid=0&tabid=3207',
-    'https://www.education.gov.za/LinkClick.aspx?fileticket=Zcwzy598npw%3D&mid=10742&portalid=0&tabid=3207'
+    'https://www.education.gov.za/LinkClick.aspx?fileticket=Zcwzy598npw%3D&mid=10742&portalid=0&tabid=3207',
+    'https://www.education.gov.za/LinkClick.aspx?fileticket=cT8nlsKsBAs%3D&mid=10744&portalid=0&tabid=3207'
   ];
   const task = (kind, prompt, answer, hints, detail = {}) => ({ kind, prompt, answer: String(answer), hints, ...detail });
   const place = n => task('place', `Build ${n.toLocaleString('en-ZA').replace(/,/g, ' ')} using place value.`, n,
@@ -63,7 +64,10 @@
   const grade5Missions=grade5.create({task,calc,pattern,money});
   grade5Missions.forEach((m,i)=>{m.grade=5;m.number=i+1;m.music=73+i;for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,j)=>{t.id=`${m.id}-${bank?'practice-':''}${j+1}`;});});
   missions.push(...grade5Missions);
-  const paths=[{grade:4,title:'Number City',start:0,count:20,reviewMusic:72},{grade:5,title:'Discovery District',start:20,count:20,reviewMusic:93}];
+  const grade6Missions=grade6.create({task});
+  grade6Missions.forEach((m,i)=>{m.grade=6;m.number=i+1;m.music=94+i;for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,j)=>{t.id=`${m.id}-${bank?'practice-':''}${j+1}`;});});
+  missions.push(...grade6Missions);
+  const paths=[{grade:4,title:'Number City',start:0,count:20,reviewMusic:72},{grade:5,title:'Discovery District',start:20,count:20,reviewMusic:93},{grade:6,title:'Innovation Harbour',start:40,count:20,reviewMusic:114}];
   const pathFor=grade=>paths.find(p=>p.grade===Number(grade))||paths[0];
   const pathMissions=grade=>{const p=pathFor(grade);return missions.slice(p.start,p.start+p.count);};
   const gradeOf=s=>missions[s.mission].grade;
@@ -98,9 +102,9 @@
     if(typeof s.draft!=='string'||s.draft.length>24||!['','wrong','correct','hint'].includes(s.feedback))return false;
     return s.index<5||s.steps.every(v=>v.done);
   }
-  const empty=()=>({version:1,results:{},sessions:{adventure:null,learn:null,revision:null},activeMode:'adventure',settings:{music:.35,sfx:.65},practiceVisits:{},review:{},activeGrade:4,gradeSessions:{5:{adventure:null,learn:null,revision:null}}});
+  const empty=()=>({version:1,results:{},sessions:{adventure:null,learn:null,revision:null},activeMode:'adventure',settings:{music:.35,sfx:.65},practiceVisits:{},review:{},activeGrade:4,gradeSessions:Object.fromEntries(paths.filter(p=>p.grade!==4).map(p=>[p.grade,{adventure:null,learn:null,revision:null}]))});
   function unlocked(p,grade=4){const path=pathFor(grade);let n=path.start;while(n<path.start+path.count-1&&p.results[missions[n].id])n++;return n;}
-  const sessionsFor=(p,grade=4)=>Number(grade)===4?p.sessions:p.gradeSessions[5];
+  const sessionsFor=(p,grade=4)=>pathFor(grade).grade===4?p.sessions:p.gradeSessions[pathFor(grade).grade];
   function normalize(raw){
     const p=empty();if(!object(raw)||raw.version!==1)return p;
     if(object(raw.results))for(const m of missions){const r=raw.results[m.id];if(object(r)&&integer(r.independent,0,5)&&integer(r.assisted,0,5)&&r.independent+r.assisted===5)p.results[m.id]={independent:r.independent,assisted:r.assisted};}
