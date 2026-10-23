@@ -145,3 +145,7 @@ body[data-view='sprint'] .main-layout{min-height:0;grid-template-columns:230px m
 .coordinate-grid{display:grid;grid-template-columns:repeat(3,minmax(44px,1fr));gap:4px;width:min(250px,100%)}.coordinate-grid button{min-height:44px;padding:3px;font-size:17px;background:#173d5b}.coordinate-grid button[aria-pressed='true']{color:#08152b;background:#ffe38a;border-color:#fff5c8}.solved .coordinate-grid button[aria-pressed='true']{opacity:1}
 @media(max-width:600px){.g6-groups{gap:4px}.g6-groups>div{gap:3px;padding:5px 2px}.g6-groups small{font-size:10px}.g6-groups b{font-size:22px}}
 @media(orientation:landscape) and (max-height:360px){.coordinate-grid{gap:3px}.coordinate-grid button{font-size:14px}.coordinate-panel{gap:3px}}
+
+/* Grade 8 point choices retain readable coordinate headings beside the enlarged diagram. */
+.cartesian-grid{grid-template-columns:18px repeat(3,minmax(44px,1fr));grid-template-rows:12px repeat(3,44px);gap:4px}.cartesian-grid>span{display:flex;align-items:center;justify-content:center;font-size:10px;line-height:12px;font-variant-numeric:tabular-nums;color:#d4f5ff}.cartesian-grid button{min-height:44px;padding:2px}
+@media(orientation:landscape) and (max-height:360px){.cartesian-panel .tool-status{display:none}}
