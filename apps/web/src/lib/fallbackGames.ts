@@ -41,7 +41,7 @@ const TITLES: Record<string, string> = {
 export const fallbackGames: FallbackGame[] = Object.entries(GAME_CATALOG).map(([slug, entry]) => ({
   id: `fallback-${slug}`,
   slug,
-  title: TITLES[slug] ?? slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()),
+  title: entry.title ?? TITLES[slug] ?? slug.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()),
   description: entry.description,
   category: entry.category,
   tags: [entry.category.toLowerCase().replace(/_/g, "-")],
