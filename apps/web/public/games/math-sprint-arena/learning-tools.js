@@ -52,6 +52,7 @@
     const time=`${String(Math.floor(total/60)).padStart(2,'0')}:${String(minute).padStart(2,'0')}`,wrap=node('div',undefined,'clock-unit');wrap.append(svg(markup,`Clock showing ${time}`,'0 0 120 110'),node('b',time));return wrap;
   }
   function draw(t,v){
+    if(window.MathGrade10Tools?.draw(t,v))return true;
     if(window.MathGrade9Tools?.draw(t,v))return true;
     if(window.MathGrade8Tools?.draw(t,v))return true;
     if(window.MathGrade7Tools?.draw(t,v))return true;
@@ -105,6 +106,6 @@
     }
     return true;
   }
-  const essential=t=>window.MathGrade9Tools?.essential(t)||window.MathGrade8Tools?.essential(t)||window.MathGrade7Tools?.essential(t)||window.MathGrade6Tools?.essential(t)||['shape','ruler','mass','jug','elapsed','tally','chart','growing','solid','areaGrid','volume'].includes(t.kind)||(t.kind==='choice'&&(!!t.shape||!!t.bars||t.angle!==undefined));
+  const essential=t=>window.MathGrade10Tools?.essential(t)||window.MathGrade9Tools?.essential(t)||window.MathGrade8Tools?.essential(t)||window.MathGrade7Tools?.essential(t)||window.MathGrade6Tools?.essential(t)||['shape','ruler','mass','jug','elapsed','tally','chart','growing','solid','areaGrid','volume'].includes(t.kind)||(t.kind==='choice'&&(!!t.shape||!!t.bars||t.angle!==undefined));
   window.MathLearningTools={renderResponse,draw,essential};
 })();

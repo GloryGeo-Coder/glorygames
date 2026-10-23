@@ -20,17 +20,18 @@ export type GameEditorial = {
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "brick-blaster": {
     "category": "Arcade",
-    "summary": "Control a paddle, keep the ball alive and break through brick formations in a classic score-chasing arcade challenge.",
+    "summary": "Restore Neon Grid through five missions with interactive bricks, rescue drones, enemies and the Grid Warden, or chase high scores in Classic Arcade.",
     "overview": [
-      "Brick Blaster turns the familiar paddle-and-ball formula into a fast browser challenge built around positioning, timing and deliberate rebounds. You move a paddle along the bottom of the playfield while a ball ricochets into bricks above. Every successful return keeps the round alive and creates another opportunity to clear the remaining formation.",
+      "Brick Blaster combines Classic Arcade with the five-mission Neon Grid campaign. Clear barriers, activate relays, release repair drones, defeat a Sentinel and dismantle the Grid Warden’s generators before striking its exposed eye. Five illustrated scenes give each campaign mission its own setting.",
       "The fun comes from the changing angles. A return near the middle of the paddle can behave differently from one caught near an edge, so good play involves looking ahead to where the ball will travel after its next impact. The game also includes collectible power-ups and a score-submission option."
     ],
     "story": [
-      "There is no long scripted campaign or named hero to follow. The situation is simple: a wall of bricks stands between you and a cleared board, and your paddle is the only way to keep the ball in play. The challenge becomes more demanding as you try to convert each bounce into useful progress instead of merely reacting at the last moment."
+      "Neon Grid has fallen silent. Restore its five connected sites by breaching the outer barrier, rerouting power, evacuating repair drones and clearing the security dockyard. At the signal spire, disable the Grid Warden’s generators and watch for its eye to open.",
+      "Classic Arcade keeps the pure paddle-and-ball score challenge available whenever you want a quick run. The campaign adds designed objectives, enemy warnings and a saved route through the city."
     ],
     "howToPlay": [
-      "Start a round and tap to launch the ball into the brick formation.",
-      "Drag across the game area to slide the paddle horizontally under the returning ball.",
+      "Choose Classic Arcade or an unlocked Neon Grid mission, then use Launch to release the ball.",
+      "Steer with the dedicated control strip below the arena. Choose relative drag or direct positioning in Settings.",
       "Keep the ball from passing the paddle while aiming rebounds toward unbroken bricks.",
       "Watch for power-ups during play and use the opportunities they provide to maintain momentum.",
       "When the round finishes, review your score and use the available score submission or restart controls."
@@ -40,8 +41,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Tap or click the launch control to release the ball and continue when prompted."
     ],
     "mobile": [
-      "Drag a finger to move the paddle from side to side.",
-      "Tap to launch or continue; use the on-screen pause, restart and score-submission buttons."
+      "Drag on the control strip beneath the arena to keep your finger clear of the ball. Tap Launch and Pause/Menu as needed.",
+      "Rotate freely; the game pauses for a safe layout change. Continue when you are ready."
     ],
     "systems": [
       {
@@ -55,11 +56,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       {
         "title": "Power-ups and score runs",
         "body": "Power-ups can change the rhythm of a round. Their exact effect is communicated by the game when collected; keep the ball safe while adapting to the change."
+      },
+      {
+        "title": "Neon Grid objectives and scenes",
+        "body": "Activate relays, free drones from rescue pods, stop shooting enemies and disable generators. Each of the five missions has its own illustrated scene; Settings also offers the neon-grid background."
       }
     ],
     "progression": [
-      "Brick Blaster is organised around repeatable arcade rounds, not a story campaign. Your practical objective is to clear as much of the formation as possible while keeping control of the ball.",
-      "A longer, more accurate run generally offers more scoring opportunities. Where score submission is available, the result can be sent to the WebGameArena leaderboard."
+      "Complete the five Neon Grid missions in order. Best scores, unlocks and one-to-three-star results save on the same browser when storage is available. Fewer lives lost earns a stronger star result.",
+      "Campaign missions begin with three lives. Classic Arcade remains a separate repeatable score challenge, with six collectible power-ups and progressively generated brick formations."
     ],
     "tips": [
       "Watch the ball's trajectory, not just its current location; move before it reaches the paddle.",
@@ -70,12 +75,16 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "How many levels or missions can I play?",
+        "a": "Neon Grid has five progressively unlocked missions: Breach the Grid, Circuit Reroute, Skybridge Evac, Sentinel Sweep and The Grid Warden. Classic Arcade is a separate score challenge with generated formations."
+      },
+      {
         "q": "How do I move the paddle?",
-        "a": "Drag across the playfield on touch devices. On desktop, follow the game's pointer or drag input and use the controls presented in the round."
+        "a": "Use the control strip below the arena. Settings offers relative movement and direct positioning; mouse and touch input are supported."
       },
       {
         "q": "What happens when I miss the ball?",
-        "a": "A missed return costs progress according to the game's current round rules. The safest approach is to position the paddle early."
+        "a": "Missing the ball costs a life. When no lives remain, the run ends; restart Classic Arcade or retry the campaign mission. Position the paddle early to protect each return."
       },
       {
         "q": "Can I submit a high score?",
@@ -85,9 +94,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "bubble-pop-arena": {
     "category": "Casual",
-    "summary": "Pop bubbles against the clock, build combinations and react to special bubbles without touching dangerous ones.",
+    "summary": "Pop and drag through a continuous score attack across six changing arenas. Chain combos, collect time, freeze and bonus bubbles, and avoid bombs.",
     "overview": [
-      "Bubble Pop Arena is a timed tapping and dragging game in which the whole screen becomes an active playfield. Normal bubbles are opportunities to score, but not every bubble should be treated the same way. Special bubbles can extend the clock or temporarily change the pace, while bomb bubbles are hazards that reward restraint.",
+      "Bubble Pop Arena is one continuous round that begins with 45 seconds. Gold time bubbles extend the same run while six arena backgrounds and musical themes change as your score grows. Later waves bring denser, more varied bubbles; there is no campaign level selector.",
       "Instead of asking you to navigate a maze or defeat an enemy, Bubble Pop Arena tests visual scanning. You have to notice which bubbles are worth pursuing, choose a safe path for your finger or cursor and decide when chasing a combo is better than playing conservatively."
     ],
     "story": [
@@ -135,6 +144,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "Does this game have a fixed campaign?",
+        "a": "There are six changing arenas within a continuous round. You start with 45 seconds and collect time bubbles to extend the run; there are no fixed campaign levels."
+      },
+      {
         "q": "Can I drag through multiple bubbles?",
         "a": "Yes. The controls support both tapping and dragging as supported ways to pop bubbles."
       },
@@ -150,14 +163,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "city-quest-rise-of-the-guardian": {
     "category": "Adventure",
-    "summary": "Explore township-inspired districts as a Guardian, complete NPC missions and overcome platforming, enemy and boss challenges.",
+    "summary": "Explore 25 township platforming levels with animated characters, NPC missions, shooting enemies and drones, moving platforms, bosses and Amapiano-inspired music.",
     "overview": [
-      "City Quest: Rise of the Guardian is a story-mode platform adventure set across interconnected urban spaces inspired by township life. You travel through rooftops, streets, markets, taxi ranks and more dangerous hidden areas while completing missions and moving toward the next part of the city.",
+      "City Quest: Rise of the Guardian is a 25-level township adventure with longer routes, animated movement and combat, NPC objectives, moving platforms, ground fire and shooting drones. The fifteen added routes extend the original township setting with new local scenes and increasingly demanding encounters.",
       "Movement and combat share the spotlight. Some sections require careful jumps or moving-platform timing; others ask you to deal with walking enemies, flying drones and obstacles. Coins, collectible items, equipment power-ups and character skins make exploring worthwhile beyond simply reaching the exit."
     ],
     "story": [
       "The Guardian's journey is the thread connecting the city's locations. NPCs provide missions and story guidance as you move from familiar neighbourhood spaces toward more demanding areas such as a rail yard, skyline bridge, underground vault and final trial.",
-      "The setting matters because each area changes the kind of challenge you face. A rooftop sequence emphasises jumps and elevation, whereas a mission around traffic, marketplaces or hostile drones demands different reactions. The game contains ten levels and includes boss stages."
+      "The setting matters because each area changes the kind of challenge you face. A rooftop sequence emphasises jumps and elevation, whereas a mission around traffic, marketplaces or hostile drones demands different reactions. The game contains 25 levels and includes boss stages."
     ],
     "howToPlay": [
       "Start story mode and read the guidance or mission information provided in the current area.",
@@ -187,10 +200,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       {
         "title": "Collectibles and powers",
         "body": "Coins and items reward exploration. Shield, heart and blaster power-ups are gameplay mechanics, while unlockable skins provide longer-term goals."
+      },
+      {
+        "title": "Township sound and movement",
+        "body": "Twenty-five original Amapiano-inspired instrumentals accompany the routes. Animated movement, moving platforms, buffered jumps and touch controls support portrait and landscape play."
       }
     ],
     "progression": [
-      "The game has ten stages connected by a level map. Progress introduces new environments and challenges, building toward boss encounters and the final trial.",
+      "The game has 25 stages connected by a level map. Progress introduces new environments and challenges, building toward boss encounters and the final trial.",
       "Scoring integrates with WebGameArena, but a high score is not the only objective: completing missions and getting through each area's hazards are central to the experience."
     ],
     "tips": [
@@ -202,8 +219,12 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "How many levels or missions can I play?",
+        "a": "There are 25 campaign levels. Complete each route to unlock the next, with longer original routes and fifteen added township-themed stages."
+      },
+      {
         "q": "Does City Quest have a storyline?",
-        "a": "Yes. Story mode, NPC missions and a ten-level sequence are parts of the game."
+        "a": "Yes. Story mode, NPC missions and a 25-level sequence are parts of the game."
       },
       {
         "q": "Can the Guardian attack enemies?",
@@ -217,7 +238,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "climate-rescue-quest": {
     "category": "Educational",
-    "summary": "Restore cities, energy networks, rivers and forests across 25 missions with animated sprites, nature-inspired level music and responsive touch controls.",
+    "summary": "Restore the environment across 25 animated climate missions and five boss encounters, with nature-inspired level music, touch controls and saved progress.",
     "overview": [
       "Climate Rescue Quest combines an environmental theme with an accessible arcade challenge. The game moves across distinct scenes inspired by city environments, clean energy, waterways, forests and oceans. Players guide a hero through active stages while responding to obstacles and collecting helpful items.",
       "The environmental setting is more than a colour palette. Each backdrop suggests a different part of the climate challenge: energy decisions, water protection, healthy ecosystems and the importance of reducing waste. It is an introduction to those ideas through play, not a substitute for a complete climate-science lesson."
@@ -273,7 +294,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many stages are in Climate Rescue Quest?",
-        "a": "Climate Rescue Quest features 25 missions, including five smog-front encounters."
+        "a": "There are 25 missions, including five boss encounters, with an original nature-inspired musical arrangement for each level."
       },
       {
         "q": "What does the magnet power do?",
@@ -287,7 +308,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "cyber-shield-academy": {
     "category": "Educational",
-    "summary": "Solve 16 fictional cybersecurity missions across Case BIT and the Beacon response, with saved checkpoints, evidence-led choices and untimed practice.",
+    "summary": "Solve 16 fictional cybersecurity investigations with saved checkpoints, chapter retries, evidence-led choices, progressive hints and untimed practice.",
     "overview": [
       "Cyber Shield Academy: Terminal Ops is a learning-focused cybersecurity adventure built around a simulated command-line interface. Instead of clicking an attack button, players examine information, type commands and work through a fictional case using principles such as authorisation, careful evidence handling and system integrity.",
       "The environment is intentionally simulated. Its terminals, files, hosts and investigation tools are part of the game and do not grant access to external systems. That makes the experience a way to practise structured reasoning and safe defensive habits without handling a real network."
@@ -342,6 +363,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "How many levels or missions can I play?",
+        "a": "There are 16 missions: eight Case BIT investigations followed by eight Beacon network investigations. Saved checkpoints, chapter retries and untimed practice support revision."
+      },
+      {
         "q": "Does the game connect to real servers?",
         "a": "No. It is described as a safe, simulated terminal-based cybersecurity game."
       },
@@ -365,7 +390,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "fruit-slice": {
     "category": "Arcade",
-    "summary": "Slice animated fruit through 25 sunset trials, or chase your best in Endless Arcade. Avoid bombs, build combos and trigger frenzy.",
+    "summary": "Slice animated fruit through 25 sunset trials or Endless Arcade, build combos and frenzy, avoid bombs and enjoy original stage music.",
     "overview": [
       "Fruit Slice is a reflex-based browser arcade game in which pieces of fruit move through the play area waiting to be sliced. Your finger or mouse becomes the blade: a clean swipe cuts the target and adds to the pace of the round.",
       "The key difference between an ordinary swipe and a strong run is control. You need to follow fast-moving fruit, connect safe targets into combos and resist the temptation to swing blindly when a bomb enters the same part of the screen. Twenty-five campaign trials add score, fruit-type, combo, golden-fruit and frenzy goals, with later stages unlocked through play. Endless Arcade keeps the original three-life challenge."
@@ -414,6 +439,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "How many levels or missions can I play?",
+        "a": "There are 25 campaign trials with progressive unlocks. Endless Arcade is a separate three-life score challenge."
+      },
+      {
         "q": "How do I slice fruit on a laptop?",
         "a": "Click and drag the pointer across fruit. A quick motion works like a swipe."
       },
@@ -429,30 +458,31 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "high-spead-racer": {
     "category": "Racing",
-    "summary": "Race rivals across a multi-level campaign, choose garage vehicles and manage nitro, checkpoints and laps.",
+    "summary": "Rebuild your family garage in High Speed Racer: City of Legends through six career jobs, twelve arcade streets, 3D cars, reactive rivals and recoverable collisions.",
     "overview": [
-      "High Spead Racer is an arcade racing experience built for fast reactions and repeated attempts. You steer between lanes while managing nearby traffic, competing with rival drivers and watching the position display as the race develops. Nitro creates opportunities to accelerate, but speed also leaves less time to respond.",
-      "The garage and upgrade systems add longer-term choices beyond each race. Coins and progression help you unlock or improve vehicles, while the six-level campaign includes checkpoints, laps and overtaking opportunities."
+      "High Speed Racer: City of Legends combines a six-job opening career chapter with twelve arcade streets. Choose your driver’s name, appearance and driving identity, race original 3D cars, improve the garage and compete with rivals that accelerate, defend space and recover from contact.",
+      "Career jobs reward clean deliveries, engine tests, a timed downtown run and crew races. Arcade streets cover coastal, city, mountain, harbour, old-town, industrial, tunnel, airport and skyway settings. Garage upgrades, unlocked cars, driver identity and career reputation save on the same device."
     ],
     "story": [
-      "Rather than following a named character through cinematic scenes, High Spead Racer frames its journey as a rising competition. You begin with a vehicle and work to improve your performance against increasingly demanding rivals and road conditions.",
-      "The journey moves across multiple environments and levels. A successful driver must combine timing, lane awareness and upgrade decisions to turn early finishes into more consistent results."
+      "You return to Veyra Bay with a worn Family Coupe and a garage facing closure. Your sibling’s championship crash still shadows the family name. Mechanic Mara guides your first rainy duel against Ivo beneath the highway.",
+      "Six playable career jobs move from that first race to a careful customer-car delivery, an engine test, a downtown time challenge, a harbour race and the Precision crew’s mountain invitation. Photographs, parts and reputation mark the garage’s recovery as Lena and Sora begin to recognise your driving."
     ],
     "howToPlay": [
-      "Choose an available car in the garage and review its driving attributes before entering a race.",
+      "Choose Career for the six-job opening chapter or Arcade for the twelve street routes. Set your driver identity and review the job objective before starting.",
       "Watch the road ahead and use left/right movement to change lanes when traffic or rivals threaten your route.",
       "Build speed carefully and hold Nitro when a clear stretch makes a boost worthwhile.",
-      "Pass rivals to improve race position, but avoid close collisions that can end a run.",
+      "Contact costs speed and can push the car sideways. Correct your line and rebuild momentum; collisions do not automatically end an arcade race. Career delivery condition affects its objective and reward.",
       "Aim for checkpoints and finish lines while tracking the current lap and remaining competition.",
       "Use earned coins and available upgrades between attempts to plan your next race."
     ],
     "desktop": [
-      "Use Left/Right arrows or A/D to change lanes.",
+      "Use Left/Right or A/D to change lanes, Down or S to brake, and hold Space or Shift for Nitro.",
       "Hold Space or Shift for Nitro, P or Esc to pause, and M to mute."
     ],
     "mobile": [
       "Tap the left/right lane controls or swipe horizontally to change lanes.",
-      "Hold the on-screen Nitro control to boost."
+      "Hold the on-screen Nitro control to boost.",
+      "Hold Brake to reduce speed and make space. Release it to accelerate again; separate music, engine and effects controls are available."
     ],
     "systems": [
       {
@@ -466,11 +496,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       {
         "title": "Laps, checkpoints and boosts",
         "body": "Crossing checkpoints and completing laps are part of the campaign. Nitro is a short-term advantage best used when the path ahead is open."
+      },
+      {
+        "title": "Recoverable contact and car audio",
+        "body": "Independent rival movement, traffic spacing, sideways impact response and temporary speed loss make contact recoverable. Engine and gear sounds, instrumental music and effects have separate volume controls."
       }
     ],
     "progression": [
-      "Race through six levels, pass checkpoint gates, complete laps and earn opportunities to upgrade or unlock cars as you improve your results.",
-      "Clean overtakes and controlled nitro use are more valuable than reckless acceleration. Watch the on-screen position, lap and score indicators as you work toward the finish."
+      "Complete the six career jobs in order, earning reputation and visible garage improvements. Each job has a specific objective, such as delivery condition, Nitro test time, beating the clock or reaching a race position.",
+      "Arcade retains twelve street routes, vehicle choices, checkpoints, laps and garage upgrades. Recover from impacts by correcting your line and rebuilding speed. Rain affects grip and fog shortens the view."
     ],
     "tips": [
       "Look several car lengths ahead and make lane changes before reaching a blockage.",
@@ -480,6 +514,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Focus on finishing cleanly before trying to squeeze out every overtaking bonus."
     ],
     "faqs": [
+      {
+        "q": "How many levels or missions can I play?",
+        "a": "The opening career chapter contains six jobs, from First Green to The Precision Invitation. Arcade offers twelve street routes. Career and arcade progression retain their own objectives."
+      },
       {
         "q": "How do I use Nitro?",
         "a": "Hold Space or Shift on desktop, or press and hold the Nitro button on mobile."
@@ -491,14 +529,18 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       {
         "q": "How do I improve my race position?",
         "a": "Anticipate traffic early, overtake rivals safely and use nitro on clear sections of the track while working toward each checkpoint and finish line."
+      },
+      {
+        "q": "Does a collision immediately end the race?",
+        "a": "No. A collision slows the car and can nudge it sideways. Recover your line and speed. In career deliveries, damage also affects condition and the job result."
       }
     ]
   },
   "kasi-quest": {
     "category": "Adventure",
-    "summary": "Explore a township-inspired platform adventure with NPC missions, collectibles, upgrades and boss encounters.",
+    "summary": "Explore 20 longer township campaign levels with animated heroes and enemies, shooting drones, NPC missions, collectibles, upgrades, bosses and a daily challenge.",
     "overview": [
-      "Kasi Quest is an adventure platformer inspired by the atmosphere of township streets and neighbourhood life. It combines movement through side-scrolling spaces with objectives from non-player characters, collectible rewards and escalating encounters.",
+      "Kasi Quest is a 20-level township campaign with longer side-scrolling routes, animated characters and enemies, ground combat, shooting drones, bosses and NPC missions. Complete levels to unlock the next route, collect rewards for the upgrade shop and return for the separate daily challenge.",
       "Instead of treating each jump as an isolated obstacle, players are encouraged to think about the wider mission. Coins and collectibles support progression, a shop provides upgrade decisions, and boss encounters test how well you've mastered movement and timing."
     ],
     "story": [
@@ -532,10 +574,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       {
         "title": "Boss and daily challenges",
         "body": "Boss encounters test learned skills, while daily challenges provide a reason to return for new score attempts."
+      },
+      {
+        "title": "Animated combat and responsive controls",
+        "body": "Animated heroes, enemies and bosses respond to movement and attacks. Multi-touch movement and action controls adapt to portrait and landscape screens while keeping the township backgrounds."
       }
     ],
     "progression": [
-      "Kasi Quest uses platforming levels with missions, enemies and collectible progress. Its confirmed systems include combo scoring, upgrade shopping and WebGameArena score updates.",
+      "Complete 20 campaign levels in order, with later routes locked until earned. Longer routes add more ground enemies, shooting drones and boss encounters, while saved coins, upgrades and level results support repeat play.",
       "Follow NPC instructions and level objectives as the adventure opens up. Collecting coins, exploring routes and preparing for boss encounters can make later challenges easier."
     ],
     "tips": [
@@ -546,6 +592,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "For daily challenges, focus on completing the objective consistently before chasing complex combos."
     ],
     "faqs": [
+      {
+        "q": "How many levels or missions can I play?",
+        "a": "There are 20 campaign levels. Later routes unlock through completion; the daily challenge is available as a separate mode."
+      },
       {
         "q": "Does Kasi Quest have missions?",
         "a": "Yes. Talk to the characters you meet and follow the mission instructions to progress through the township adventure."
@@ -562,7 +612,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "lost-jungle-3d-temple-of-the-sun": {
     "category": "Adventure",
-    "summary": "Cross a dangerous jungle, gather Sun Relics and keys, solve temple puzzles and face legendary guardians.",
+    "summary": "Follow Ari through 25 long 2D jungle levels and five story chapters to recover the Sun Seals, find a missing mentor and restore the Temple of the Sun.",
     "overview": [
       "Lost Jungle: Temple of the Sun is a side-scrolling jungle expedition presented with richly themed backgrounds and platform challenges. Players travel through 25 long stages, searching for Sun Relics, coins and keys while navigating gaps, water and lava hazards, traps and enemies.",
       "The exploration is more involved than a straight race to an exit. Locked gates and pressure-plate puzzles make collected items and observation important, while special powers such as dash, shield, torch and healing fruit offer different ways to approach difficult sections."
@@ -614,6 +664,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "How many levels or missions can I play?",
+        "a": "There are 25 long 2D levels across five story chapters, with checkpoint beacons, Sun Seals and progressively harder enemies, traps and Guardian encounters."
+      },
+      {
         "q": "What kind of adventure is Temple of the Sun?",
         "a": "Temple of the Sun is a side-scrolling jungle platform adventure featuring relics, keys, puzzles, traps and boss encounters."
       },
@@ -629,7 +683,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "map-master-africa": {
     "category": "Educational",
-    "summary": "Practise Grades 4–10 geography through 84 missions and 504 tasks, then explore South Africa’s nine provinces and the world. All seven grade paths include revision and local learning summaries.",
+    "summary": "Practise Grades 4–10 geography through 84 missions and 504 campaign tasks, with 56 alternate revision activities, world and province atlases, and printable learning summaries.",
     "overview": [
       "Seven playable learning paths provide topic practice for Grades 4–10. Grades 4, 6, 7, 8 and 9 each have 12 missions; Grade 5 has eight and Grade 10 has sixteen. Each mission has six tasks, a field note, explanations, hints and an earned badge. Grade 10 adds 16 missions across advanced skills, atmosphere, geomorphology, population and water resources.",
       "Grade 4 combines the original five Map Academy expeditions with settlements, provincial geography, food and farming, and water investigations. Grade 5 introduces African neighbours and directions, physical features, weather and climate evidence, vegetation, minerals and mining. Grade 6 adds world coordinates, word and line scales, trade, climate and vegetation comparisons, population and settlement investigations. Grade 7 adds a street-route planner, Earth structure, historical hazard cases, population graphs and conservation investigations. Grade 8 adds coordinates in degrees and minutes, ratio scale, world time, seasons, climate graphs, settlements and transport. Grade 9 adds contour interpretation, a metric distance tool, a historical USGS orthoimage, development indicators, erosion, food security and resource sustainability. Grade 10 adds exact seconds entry, compass bearings, GIS layer inspection, terrain profiles, age-sex diagrams, weather interpretation and water investigations. These are original practice activities, not a complete school course or an official assessment.",
@@ -713,6 +767,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "How many levels or missions can I play?",
+        "a": "There are 84 missions and 504 campaign tasks across Grades 4–10, plus 56 alternate revision activities. Grades 4, 6, 7, 8 and 9 have 12 missions each, Grade 5 has eight and Grade 10 has sixteen."
+      },
+      {
         "q": "How does revision affect my campaign progress?",
         "a": "Revision uses a separate local practice record. It can clear tasks from your focus list, while campaign XP, stars, unlocks and your saved campaign position remain intact. Replay a campaign mission to improve its best result. Existing saves seed focus from supported results and pending mistakes; detailed recent history begins with the learning tools."
       },
@@ -743,126 +801,136 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ]
   },
   "math-sprint-arena": {
-      "category": "Educational",
-      "summary": "Explore independent Grade 4–9 maths paths with 120 untimed missions, 1 200 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
-      "overview": [
-          "Math Sprint Arena turns selected Grade 4–9 CAPS mathematics skills into six journeys with Pi-Bot. Restore Number City, explore Discovery District, launch Innovation Harbour, open Research Ridge, connect Skyline Lab and launch Horizon Station. Each grade can be started immediately and progresses independently.",
-          "Each grade contains twenty missions, 100 Adventure activities and 100 alternate practice activities. Review with Pi-Bot revisits practised questions within the selected grade, prioritising completed activities that used hints or retries. The separate 52-level Sprint retains its timed arithmetic, fraction, multiplication, geometry and algebra challenges."
-      ],
-      "story": [
-          "Number City has lost power, and Pi-Bot needs a resourceful partner to restore it. Rebuild the Number Gates, reconnect the workshop and station, and bring the market and fraction bridges back to life.",
-          "The next district is preparing a city exhibition. Design shape signs, reflect illuminated patterns, measure strips and floors, label deliveries, read water levels and organise tram journeys. Finally, collect a shape survey and interpret travel data to prepare the City Showcase.",
-          "In Grade 5, Discovery District is preparing a festival. Connect six-digit signal towers, estimate delivery routes, power the solar factory and plan the market. Fraction bridges, geometric designs, cargo cubes and transport surveys bring the final Discovery Festival to life.",
-          "Innovation Harbour brings a new Grade 6 challenge. Balance large energy accounts, pack cargo, connect prime-number locks and calibrate decimal instruments. Transform designs, fold nets, measure gardens and storage boxes, plan overnight deliveries and interpret research evidence before the harbour launch.",
-          "Grade 7 climbs to Research Ridge. Decode signed signals, calculate powers and roots, compare budgets, describe growing arrays, substitute into expressions and balance equations. Journey graphs, angle beacons, scale drawings, triangle terraces and research data help open the final observatory.",
-          "In Grade 8, Pi-Bot connects Skyline Lab. Restart integer reactors, synchronise factor switches and decode algebraic signals. Guide coordinate couriers, align parallel beams, calculate Pythagorean spans and plan circle decks and prism cargo pods. A research-and-chance investigation completes the network.",
-          "In Grade 9, Pi-Bot launches Horizon Station. Decode negative-exponent signals, plan compound-growth budgets, factorise airlock codes and repair algebraic fractions. Calibrate gradients, compare similar supports, build cylindrical tanks and investigate compound probability with trees and tables."
-      ],
-      "howToPlay": [
-          "Choose Grade 4, 5, 6, 7, 8 or 9, then start Adventure for that grade’s ordered twenty-mission route, Learn & Practise for any topic, or Review with Pi-Bot for saved revision. Play Sprint opens the separate timed challenge.",
-          "Read each activity and its model. Use place-value columns, illustrated choices, mirror squares, floor tiles, tally counters, a labelled transformation grid, Cartesian point selector or the built-in number pad. Integer tasks include a − key to change the sign. Use / between a fraction’s numerator and denominator; an improper fraction is accepted for a mixed-number calculation.",
-          "Tap a diagram to enlarge it when you need a closer look at a scale, graph or clock. Close the diagram to enter your answer.",
-          "Select Check answer, read the feedback and request a hint when needed. Mistakes are recoverable and the explanations stay until you continue.",
-          "Complete all five activities to finish an Adventure mission and unlock the next one. After a set, Try a fresh practice set switches to the alternate bank without changing Adventure results."
-      ],
-      "desktop": [
-          "Use the pointer to operate visual tools and the keypad. For numerical entry tasks, type digits, a decimal point or comma, / for fraction calculations, − to change an integer’s sign, and Backspace to correct an entry.",
-          "In Sprint, choose an answer tile or press 1–4. Arrow keys or A/D change lanes; Space pauses or resumes."
-      ],
-      "mobile": [
-          "Tap the large on-screen tools and keypad. Cartesian point selections, transformation cells, reflection squares and tally counts retain their saved state when you refresh.",
-          "Portrait and landscape layouts keep questions and response controls together. Tap a mathematical diagram to enlarge it; Menu & sound contains the current mission strategy, volumes and supported-browser fullscreen control."
-      ],
-      "systems": [
-          {
-              "title": "Six independent learning paths",
-              "body": "Grades 4–9 each contain twenty untimed missions with 100 Adventure activities and 100 alternate practice activities. Unlocks and Adventure, Learn and Review checkpoints are separate for every grade."
-          },
-          {
-              "title": "Hands-on mathematical tools",
-              "body": "Build place values, compare and calculate fractions, classify and measure angles, inspect solid objects and nets, transform grid markers, count square or cubic units and interpret charts. Grade 6 adds hundred-square models, mixed-fraction strips, labelled protractors, overnight timelines, pie charts and fair-spinner evidence. Grade 7 adds signed number lines, function diagrams, equation balances, distance–time graphs, reflex-angle arcs, circle parts, scale grids, triangular area and surface-area models. Grade 8 adds a saved Cartesian point selector, parallel-line angle evidence, triangle and Pythagoras models, exact-root choices, circle and composite-area plans, triangular prisms and stem-and-leaf data. Grade 9 adds border-cell patterns, binomial area models, coordinate-labelled line graphs, similar triangles, regular polygons, area-scale squares, closed cylinders, scatter plots, coin trees, two-way outcome tables and replacement-token models."
-          },
-          {
-              "title": "Focused revision",
-              "body": "Five-question Review sessions stay within the selected grade, prioritise previously completed activities that used support, then mix practised topics. Review has its own saved checkpoint and does not change Adventure results or Sprint scores."
-          },
-          {
-              "title": "Progressive support and fresh practice",
-              "body": "Each activity has three stages of help and a persistent worked explanation. Alternate practice sets change the questions while retaining the same topic and learning controls."
-          },
-          {
-              "title": "Music for every mission",
-              "body": "The 120 learning missions and 52 Sprint levels have distinct original musical arrangements, with a separate Review theme for each grade. Music and effects have separate controls."
-          }
-      ],
-      "progression": [
-          "Complete five activities to finish an Adventure mission and unlock the next mission within that grade. Grades 5–9 can begin before earlier grades are complete. Existing results, drafts and checkpoints remain intact. Independent and supported answers stay separate, and weaker replays do not erase better results.",
-          "Adventure, Learn and Review checkpoints save separately for each grade on the same browser when storage is available. Switching grades preserves unfinished drafts and hints. Learn and Review do not unlock Adventure or submit learning results to the Sprint leaderboard."
-      ],
-      "tips": [
-          "Identify what a question asks, then inspect the relevant labels, units and scale.",
-          "For a ruler that starts above zero, subtract the start reading from the end reading.",
-          "For reflections, match the row and distance from the dotted mirror line.",
-          "Count area using equal squares, mass using grams or kilograms, and time using 60 minutes per hour.",
-          "Use a fresh set to practise a method with different values. Review can help revisit activities previously completed with support.",
-          "Read a pictograph key before counting learners. A star may represent two or five people. For common fractions with matching denominators, keep the part size and add or subtract numerators.",
-          "For a mixed-number calculation, rename the number as an improper fraction, then use equal-sized parts.",
-          "On the transformation grid, columns A–C go left to right and rows 1–3 go bottom to top. A clockwise quarter-turn uses B2 as its centre.",
-          "Recorded spinner trials describe past results; they do not guarantee the next outcome."
-      ],
-      "learning": [
-          "Grade 9 practises selected CAPS skills informed by the DBE 2026 plan: real numbers, integer exponents, scientific notation, proportion, compound growth, patterns, binomial products, factorisation, algebraic fractions and restrictions, linear and zero-product equations, gradients and intercepts, similarity, polygons, Pythagoras, coordinate transformations, cylinder measurement, outliers, sampling and compound probability.",
-          "Grade 8 practises selected CAPS skills informed by the DBE 2026 plan: signed multiplication and division, three-digit HCF and LCM, ratio changes, exponent laws and scientific notation, rational powers and roots, decimal calculations, finance, patterns, functions, like terms, distributive expressions, equations, Cartesian points and transformations, graph features, angle relationships, Pythagoras, circles, composite area, triangular prisms, data summaries and probability.",
-          "Grade 7 introduces selected Senior Phase skills: integer addition and subtraction, exponents and roots, HCF and LCM, fraction operations, three-place decimals, percentages and simple interest, ratio and rate, geometric patterns, functions, variables and substitution, equations by inspection, global graphs, lines and angles, circle parts, enlargement, triangle area, surface area, volume, data summaries and fair samples.",
-          "Practise selected Grade 4 CAPS skills: place value, calculations, patterns, money, common fractions, 2-D shape properties, line symmetry, length, area by counting squares, mass, liquid measures, time intervals, tallies and graph interpretation.",
-          "Grade 5 adds six-digit place values, rounding, five-digit calculations, three-digit by two-digit multiplication and division, factors and multiples, number and dot patterns, equivalent fractions, fraction calculations and quantities, money and rates, angles, 3-D objects, symmetry, unit conversions, area, cubic units, time and scaled pictographs.",
-          "Grade 6 adds nine-digit place value, larger whole-number calculations, prime factors, ratio and rate, unlike-denominator and mixed fractions, decimal place value and calculations, percentages, rules, protractor readings, transformations, nets, rectangular area and volume, unit conversions, overnight time, pie charts, frequency tables, mode and chance investigations.",
-          "All six paths practise selected CAPS skills. They are learning resources rather than complete grade courses or formal assessments. The selected grade and activity topic are visible during play."
-      ],
-      "faqs": [
-          {
-              "q": "Which grades and topics are included?",
-              "a": "Grades 4–9 each have twenty missions and 200 Adventure and practice activities, covering selected CAPS number, pattern, geometry, measurement and data skills. Grades 6, 8 and 9 include chance investigations. These are practice resources rather than complete grade courses or formal assessments. Sprint is a separate mixed-topic timed game."
-          },
-          {
-              "q": "Do I need to finish earlier grades before starting Grade 9?",
-              "a": "No. Select Grade 4, 5, 6, 7, 8 or 9 from Learning grade on the home screen. Each begins with its first Adventure mission available and unlocks later missions through its own progress. Switching grades preserves separate checkpoints."
-          },
-          {
-              "q": "How do I enter a mixed-number answer?",
-              "a": "Use an equivalent improper fraction, such as 7/4 for 1 3/4. The keypad includes / for fraction calculations, and equivalent fractions are accepted."
-          },
-          {
-              "q": "What does Review with Pi-Bot do?",
-              "a": "Review creates a saved five-activity revision session from practised topics within the selected grade, prioritising completed questions that used hints or retries. A new player starts with that grade’s first topic. Review does not change Adventure results or submit Sprint scores."
-          },
-          {
-              "q": "How can I get different practice questions?",
-              "a": "After completing a set, choose Try a fresh practice set. Every mission has a guided bank and an alternate bank of five activities. Practice keeps its own checkpoint and does not unlock Adventure."
-          },
-          {
-              "q": "Will my original ten-mission progress remain?",
-              "a": "Yes. Existing results, hints, drafts, checkpoints, settings and the earlier Sprint best-score record are retained. Players who completed the original ten missions can continue with Shape Workshop."
-          },
-          {
-              "q": "Can I enlarge a graph or measuring diagram on my phone?",
-              "a": "Yes. Tap the diagram or focus it with a keyboard and press Enter or Space. The enlarged view retains the same data and labels. Close it to answer the activity."
-          },
-          {
-              "q": "Do mistakes end my learning session?",
-              "a": "No. Adventure, Learn and Review are untimed and allow retries. Answers completed after a hint or mistake are recorded as supported. Sprint is the optional mode with a timer and lives."
-          },
-          {
-              "q": "Will progress survive a refresh?",
-              "a": "Yes, when browser storage is available. Each grade and learning mode retains its own checkpoint on the same browser and device. If storage is blocked, the game remains playable and shows that saving is unavailable."
-          }
-      ]
+    "category": "Educational",
+    "summary": "Explore Grades 4–10 through seven independent maths paths: 140 untimed missions, 1 400 Adventure and practice activities, visual tools, saved checkpoints and focused revision, plus a 52-level Sprint.",
+    "overview": [
+      "Math Sprint Arena turns selected Grade 4–10 CAPS mathematics skills into seven journeys with Pi-Bot. Restore Number City, explore Discovery District, launch Innovation Harbour, open Research Ridge, connect Skyline Lab launch Horizon Station and open Infinity Summit. Each grade can be started immediately and progresses independently.",
+      "Each grade contains twenty missions, 100 Adventure activities and 100 alternate practice activities. Review with Pi-Bot revisits practised questions within the selected grade, prioritising completed activities that used hints or retries. The separate 52-level Sprint retains its timed arithmetic, fraction, multiplication, geometry and algebra challenges."
+    ],
+    "story": [
+      "Number City has lost power, and Pi-Bot needs a resourceful partner to restore it. Rebuild the Number Gates, reconnect the workshop and station, and bring the market and fraction bridges back to life.",
+      "The next district is preparing a city exhibition. Design shape signs, reflect illuminated patterns, measure strips and floors, label deliveries, read water levels and organise tram journeys. Finally, collect a shape survey and interpret travel data to prepare the City Showcase.",
+      "In Grade 5, Discovery District is preparing a festival. Connect six-digit signal towers, estimate delivery routes, power the solar factory and plan the market. Fraction bridges, geometric designs, cargo cubes and transport surveys bring the final Discovery Festival to life.",
+      "Innovation Harbour brings a new Grade 6 challenge. Balance large energy accounts, pack cargo, connect prime-number locks and calibrate decimal instruments. Transform designs, fold nets, measure gardens and storage boxes, plan overnight deliveries and interpret research evidence before the harbour launch.",
+      "Grade 7 climbs to Research Ridge. Decode signed signals, calculate powers and roots, compare budgets, describe growing arrays, substitute into expressions and balance equations. Journey graphs, angle beacons, scale drawings, triangle terraces and research data help open the final observatory.",
+      "In Grade 8, Pi-Bot connects Skyline Lab. Restart integer reactors, synchronise factor switches and decode algebraic signals. Guide coordinate couriers, align parallel beams, calculate Pythagorean spans and plan circle decks and prism cargo pods. A research-and-chance investigation completes the network.",
+      "In Grade 9, Pi-Bot launches Horizon Station. Decode negative-exponent signals, plan compound-growth budgets, factorise airlock codes and repair algebraic fractions. Calibrate gradients, compare similar supports, build cylindrical tanks and investigate compound probability with trees and tables.",
+      "Grade 10 opens Infinity Summit. Factorise cubic locks, connect simultaneous signals and set inequality boundaries. Coordinate surveys, parabolic reflectors, reciprocal crossings and exponential launches lead to trigonometric sighting tasks. Plan festival savings and solid cargo, then interpret quartiles, grouped data and Venn surveys before Pi-Bot opens the summit festival."
+    ],
+    "howToPlay": [
+      "Choose Grade 4, 5, 6, 7, 8, 9 or 10, then start Adventure for that grade’s ordered twenty-mission route, Learn & Practise for any topic, or Review with Pi-Bot for saved revision. Play Sprint opens the separate timed challenge.",
+      "Read each activity and its model. Use place-value columns, illustrated choices, mirror squares, floor tiles, tally counters, a labelled transformation grid, Cartesian point selector or the built-in number pad. Integer tasks include a − key to change the sign. Use / between a fraction’s numerator and denominator; an improper fraction is accepted for a mixed-number calculation.",
+      "Tap a diagram to enlarge it when you need a closer look at a scale, graph or clock. Close the diagram to enter your answer.",
+      "Select Check answer, read the feedback and request a hint when needed. Mistakes are recoverable and the explanations stay until you continue.",
+      "Complete all five activities to finish an Adventure mission and unlock the next one. After a set, Try a fresh practice set switches to the alternate bank without changing Adventure results."
+    ],
+    "desktop": [
+      "Use the pointer to operate visual tools and the keypad. For numerical entry tasks, type digits, a decimal point or comma, / for fraction calculations, − to change an integer’s sign, and Backspace to correct an entry.",
+      "In Sprint, choose an answer tile or press 1–4. Arrow keys or A/D change lanes; Space pauses or resumes."
+    ],
+    "mobile": [
+      "Tap the large on-screen tools and keypad. Cartesian point selections, transformation cells, reflection squares and tally counts retain their saved state when you refresh.",
+      "Portrait and landscape layouts keep questions and response controls together. Tap a mathematical diagram to enlarge it; Menu & sound contains the current mission strategy, volumes and supported-browser fullscreen control."
+    ],
+    "systems": [
+      {
+        "title": "Seven independent learning paths",
+        "body": "Grades 4–10 each contain twenty untimed missions with 100 Adventure activities and 100 alternate practice activities. Unlocks and Adventure, Learn and Review checkpoints are separate for every grade."
+      },
+      {
+        "title": "Hands-on mathematical tools",
+        "body": "Build place values, compare and calculate fractions, classify and measure angles, inspect solid objects and nets, transform grid markers, count square or cubic units and interpret charts. Grade 6 adds hundred-square models, mixed-fraction strips, labelled protractors, overnight timelines, pie charts and fair-spinner evidence. Grade 7 adds signed number lines, function diagrams, equation balances, distance–time graphs, reflex-angle arcs, circle parts, scale grids, triangular area and surface-area models. Grade 8 adds a saved Cartesian point selector, parallel-line angle evidence, triangle and Pythagoras models, exact-root choices, circle and composite-area plans, triangular prisms and stem-and-leaf data. Grade 9 adds border-cell patterns, binomial area models, coordinate-labelled line graphs, similar triangles, regular polygons, area-scale squares, closed cylinders, scatter plots, coin trees, two-way outcome tables and replacement-token models. Grade 10 adds interval number lines, simultaneous-equation cards, midpoint grids, correctly separated function branches, trigonometric waves, right-triangle surveys, cones, spheres, pyramids, combined solids, box plots, histograms and Venn evidence."
+      },
+      {
+        "title": "Focused revision",
+        "body": "Five-question Review sessions stay within the selected grade, prioritise previously completed activities that used support, then mix practised topics. Review has its own saved checkpoint and does not change Adventure results or Sprint scores."
+      },
+      {
+        "title": "Progressive support and fresh practice",
+        "body": "Each activity has three stages of help and a persistent worked explanation. Alternate practice sets change the questions while retaining the same topic and learning controls."
+      },
+      {
+        "title": "Music for every mission",
+        "body": "The 140 learning missions and 52 Sprint levels have distinct original musical arrangements, with a separate Review theme for each grade. Music and effects have separate controls."
+      }
+    ],
+    "progression": [
+      "Complete five activities to finish an Adventure mission and unlock the next mission within that grade. Grades 5–10 can begin before earlier grades are complete. Existing results, drafts and checkpoints remain intact. Independent and supported answers stay separate, and weaker replays do not erase better results.",
+      "Adventure, Learn and Review checkpoints save separately for each grade on the same browser when storage is available. Switching grades preserves unfinished drafts and hints. Learn and Review do not unlock Adventure or submit learning results to the Sprint leaderboard."
+    ],
+    "tips": [
+      "Identify what a question asks, then inspect the relevant labels, units and scale.",
+      "For a ruler that starts above zero, subtract the start reading from the end reading.",
+      "For reflections, match the row and distance from the dotted mirror line.",
+      "Count area using equal squares, mass using grams or kilograms, and time using 60 minutes per hour.",
+      "Use a fresh set to practise a method with different values. Review can help revisit activities previously completed with support.",
+      "Read a pictograph key before counting learners. A star may represent two or five people. For common fractions with matching denominators, keep the part size and add or subtract numerators.",
+      "For a mixed-number calculation, rename the number as an improper fraction, then use equal-sized parts.",
+      "On the transformation grid, columns A–C go left to right and rows 1–3 go bottom to top. A clockwise quarter-turn uses B2 as its centre.",
+      "Recorded spinner trials describe past results; they do not guarantee the next outcome."
+    ],
+    "learning": [
+      "Grade 10 practises selected CAPS Mathematics skills using the DBE teaching plan retained for 2026: real numbers and accuracy, rational exponents, cubic products and factorisation, algebraic fractions, quadratic and simultaneous equations, inequalities and intervals, linear sequences, coordinate geometry, straight-line, quadratic, reciprocal, exponential and trigonometric functions, special angles, right-triangle applications, simple and compound growth, midpoint geometry, solids, quartiles, grouped data and Venn probability.",
+      "Grade 9 practises selected CAPS skills informed by the DBE 2026 plan: real numbers, integer exponents, scientific notation, proportion, compound growth, patterns, binomial products, factorisation, algebraic fractions and restrictions, linear and zero-product equations, gradients and intercepts, similarity, polygons, Pythagoras, coordinate transformations, cylinder measurement, outliers, sampling and compound probability.",
+      "Grade 8 practises selected CAPS skills informed by the DBE 2026 plan: signed multiplication and division, three-digit HCF and LCM, ratio changes, exponent laws and scientific notation, rational powers and roots, decimal calculations, finance, patterns, functions, like terms, distributive expressions, equations, Cartesian points and transformations, graph features, angle relationships, Pythagoras, circles, composite area, triangular prisms, data summaries and probability.",
+      "Grade 7 introduces selected Senior Phase skills: integer addition and subtraction, exponents and roots, HCF and LCM, fraction operations, three-place decimals, percentages and simple interest, ratio and rate, geometric patterns, functions, variables and substitution, equations by inspection, global graphs, lines and angles, circle parts, enlargement, triangle area, surface area, volume, data summaries and fair samples.",
+      "Practise selected Grade 4 CAPS skills: place value, calculations, patterns, money, common fractions, 2-D shape properties, line symmetry, length, area by counting squares, mass, liquid measures, time intervals, tallies and graph interpretation.",
+      "Grade 5 adds six-digit place values, rounding, five-digit calculations, three-digit by two-digit multiplication and division, factors and multiples, number and dot patterns, equivalent fractions, fraction calculations and quantities, money and rates, angles, 3-D objects, symmetry, unit conversions, area, cubic units, time and scaled pictographs.",
+      "Grade 6 adds nine-digit place value, larger whole-number calculations, prime factors, ratio and rate, unlike-denominator and mixed fractions, decimal place value and calculations, percentages, rules, protractor readings, transformations, nets, rectangular area and volume, unit conversions, overnight time, pie charts, frequency tables, mode and chance investigations.",
+      "All seven paths practise selected CAPS skills. They are learning resources rather than complete grade courses or formal assessments. The selected grade and activity topic are visible during play."
+    ],
+    "faqs": [
+      {
+        "q": "How many levels or missions can I play?",
+        "a": "Grades 4–10 each have 20 missions, 100 Adventure activities and 100 alternate practice activities: 140 missions and 1 400 activities in total. The separate Sprint has 52 levels. These paths practise selected CAPS skills rather than complete school courses."
+      },
+      {
+        "q": "Which grades and topics are included?",
+        "a": "Grades 4–10 each have twenty missions and 200 Adventure and practice activities, covering selected CAPS number, pattern, geometry, measurement and data skills. Grades 6, 8 and 9 include chance investigations. These are practice resources rather than complete grade courses or formal assessments. Sprint is a separate mixed-topic timed game."
+      },
+      {
+        "q": "Do I need to finish earlier grades before starting Grade 10?",
+        "a": "No. Select Grade 4, 5, 6, 7, 8, 9 or 10 from Learning grade on the home screen. Each begins with its first Adventure mission available and unlocks later missions through its own progress. Switching grades preserves separate checkpoints."
+      },
+      {
+        "q": "How do I enter a mixed-number answer?",
+        "a": "Use an equivalent improper fraction, such as 7/4 for 1 3/4. The keypad includes / for fraction calculations, and equivalent fractions are accepted."
+      },
+      {
+        "q": "What does Review with Pi-Bot do?",
+        "a": "Review creates a saved five-activity revision session from practised topics within the selected grade, prioritising completed questions that used hints or retries. A new player starts with that grade’s first topic. Review does not change Adventure results or submit Sprint scores."
+      },
+      {
+        "q": "How can I get different practice questions?",
+        "a": "After completing a set, choose Try a fresh practice set. Every mission has a guided bank and an alternate bank of five activities. Practice keeps its own checkpoint and does not unlock Adventure."
+      },
+      {
+        "q": "Will my original ten-mission progress remain?",
+        "a": "Yes. Existing results, hints, drafts, checkpoints, settings and the earlier Sprint best-score record are retained. Players who completed the original ten missions can continue with Shape Workshop."
+      },
+      {
+        "q": "Can I enlarge a graph or measuring diagram on my phone?",
+        "a": "Yes. Tap the diagram or focus it with a keyboard and press Enter or Space. The enlarged view retains the same data and labels. Close it to answer the activity."
+      },
+      {
+        "q": "Do mistakes end my learning session?",
+        "a": "No. Adventure, Learn and Review are untimed and allow retries. Answers completed after a hint or mistake are recorded as supported. Sprint is the optional mode with a timer and lives."
+      },
+      {
+        "q": "Will progress survive a refresh?",
+        "a": "Yes, when browser storage is available. Each grade and learning mode retains its own checkpoint on the same browser and device. If storage is blocked, the game remains playable and shows that saving is unavailable."
+      },
+      {
+        "q": "How do I answer algebra, interval or exact-root questions?",
+        "a": "Choose one of the displayed options for symbolic expressions, intervals and exact roots. Use the number pad for numerical answers, including signed integers or fractions when their keys are provided. Coordinate questions use the labelled point selector."
+      }
+    ]
   },
   "neon-hover-runner": {
     "category": "Racing",
-    "summary": "Steer through a glowing futuristic track, jump obstacles and collect energy, shields, magnets and boosts.",
+    "summary": "Carry the core through five neon zones. Switch lanes, jump barriers, collect energy and data shards, use boosts and shields, and complete each zone objective.",
     "overview": [
-      "Neon Hover Runner is a reflex runner set on a luminous cyber track. Rather than racing another driver for a finishing position, you focus on keeping a hover vehicle moving through hazards while collecting resources that help extend the run.",
+      "Neon Hover Runner takes you through five zones: Skyline Warmup, Metro Surge, Data Tunnel, Reactor Bridge and Apex Night Run. Each has a distance goal and an objective involving energy, boosts, combos, survival or data shards. Finish the final zone to restore the core.",
       "The gameplay combines steering, jumping and occasional bursts of extra speed. Energy orbs, shields and magnets encourage you to make choices about which lanes are worth entering instead of simply steering away from everything you see."
     ],
     "story": [
@@ -899,7 +967,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Each run challenges you to stay on the track longer, avoid more obstacles and improve your best score. Mastering steering, jumps and power-up timing makes later sections easier to navigate.",
+      "Advance through five zones by reaching each distance checkpoint. Pursue energy, boost, combo, survival and data-shard objectives for rewards, then complete Apex Night Run to restore the core.",
       "Boosts can help you cover distance quickly, but choosing the right moment matters. Watch the charge indicator and the hazards ahead before accelerating."
     ],
     "tips": [
@@ -910,6 +978,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Practise smooth steering; frantic cross-track swipes make later corrections harder."
     ],
     "faqs": [
+      {
+        "q": "How many levels or missions can I play?",
+        "a": "There are five zones, ending with Apex Night Run. Complete the distance route and pursue each zone’s objective as you carry the core to the uplink."
+      },
       {
         "q": "How do I jump?",
         "a": "Tap during play, according to the controls provided with the game."
@@ -926,13 +998,13 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "neon-orb-defender": {
     "category": "Defense",
-    "summary": "Protect a futuristic base's Neon Orb, fight rogue machines and support friendly AI units across 25 longer missions.",
+    "summary": "Defend Fort Nova across 25 missions, with 15 robot and drone types, a boss in every mission, animated supplies, reserve lives and original level music.",
     "overview": [
-      "Neon Orb: Base Defence is an arcade action game built around protecting a vulnerable futuristic base. Rogue robots and drones create waves of danger, while the player works to keep the central Neon Orb safe and help friendly AI units.",
+      "Neon Orb: Base Defence follows the defence of Fort Nova through 25 missions. Fifteen enemy types mix ground robots and aerial drones, and every mission ends with a boss drawn from five boss families. Animated pickups and reserve lives support recovery as formations become more demanding.",
       "Unlike a pure survival shooter, the game has an explicit protective objective. Positioning and responding to threats matter because enemies do not have to defeat the player personally to create pressure; they can threaten the orb or disrupt the defence mission."
     ],
     "story": [
-      "The setting is a future military-style base with a valuable Neon Orb at its centre. Hostile, rogue AI forces threaten the installation, and the defender must resist their attacks while supporting friendly units.",
+      "Fort Nova’s Neon Orb powers the last working base. Mixed robot and drone formations press from different directions, and each of the 25 missions ends with a boss. Protect the core, recover supplies and learn to prioritise threats before later waves arrive.",
       "Twenty-five missions of enemy attacks test more than shooting accuracy. The defender must choose which threat to stop first while keeping the Neon Orb safe. The campaign builds toward a boss encounter that puts every learned skill under pressure."
     ],
     "howToPlay": [
@@ -961,10 +1033,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       {
         "title": "Waves and bosses",
         "body": "Twenty-five missions have three waves each, 25 boss encounters, saved unlocks and replay stars."
+      },
+      {
+        "title": "Supplies, reserve lives and aim assistance",
+        "body": "Animated life and power-up sprites make recovery opportunities visible. Reserve lives, responsive touch movement and optional auto-fire help players manage dense waves without hiding the campaign’s increasing difficulty."
       }
     ],
     "progression": [
-      "The 25-level story progression challenges you to keep the base defended as stronger enemies appear.",
+      "Complete 25 progressively unlocked defence missions, each with a boss, its own scene and its own musical arrangement. Fifteen enemy types and five boss families vary formation, attack timing and priority.",
       "Sound effects, background music and WebGameArena scoring are supported, but exact score awards or enemy weaknesses should be learned in play."
     ],
     "tips": [
@@ -975,6 +1051,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Prepare for a boss by keeping track of the safest movement space."
     ],
     "faqs": [
+      {
+        "q": "How many levels or missions can I play?",
+        "a": "There are 25 missions and 25 boss encounters, one per mission, with 15 enemy types and five boss families. Each mission has its own background and musical arrangement."
+      },
       {
         "q": "What is the main objective?",
         "a": "Protect the Neon Orb while dealing with rogue AI robots and drones."
@@ -991,7 +1071,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "physics-force-lab": {
     "category": "Educational",
-    "summary": "Learn physics through a young scientist's twelve-stage adventure covering forces, energy, circuits, waves and space.",
+    "summary": "Explore force, motion, energy, circuits and other physics ideas through twelve story missions, puzzles, collectibles and animated action.",
     "overview": [
       "Physics Force Lab: Rise of the Young Physicist combines a story-led adventure with introductory physics challenges. Instead of presenting formulas as an isolated worksheet, it puts ideas about movement, forces and physical systems into missions and puzzles where the player has to think about cause and effect.",
       "The curriculum span is unusually broad for a browser game: it includes force, motion, gravity, friction, energy, simple machines, electric circuits, magnetism, waves, pressure and space physics. Collectibles, animated characters and stage progression keep the presentation playful while the questions encourage explanation."
@@ -1046,7 +1126,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels are there?",
-        "a": "The adventure includes twelve physics stages covering mechanics and other physical concepts."
+        "a": "There are twelve story missions exploring physics ideas through challenges, puzzles and collectibles. They provide practice and exploration rather than a complete school physics course."
       },
       {
         "q": "Does the game teach electricity?",
@@ -1061,7 +1141,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "recycle-rush": {
     "category": "Educational",
     "sponsor": "Fibre Circle",
-    "summary": "Restore Verdale with Circuit in 25 story missions about sorting, preparation, reuse and local collection, alongside a 20-mission arcade campaign.",
+    "summary": "Restore Verdale with Circuit through 25 untimed story missions and 450 recovery tasks, plus 20 arcade missions with animated bosses, material cards and power-ups.",
     "overview": [
       "Bring colour back to Verdale in Recycle Rush: Restore Verdale, a recycling adventure sponsored by Fibre Circle. Join Circuit and Professor Loop as they help a community rebuild its collection points, share useful goods and connect everyday recovery choices to a cleaner town.",
       "Explore 25 story missions across the school, neighbourhood, market, recovery district, repair quarter and civic square. Inspect each object, prepare accepted packaging, share usable books and clothes, and refer electrical repairs to qualified experts. Solve community requests, complete saved community work orders and plan collection rounds, choosing pickups and accepted deliveries while managing the vehicle’s available load space.",
@@ -1133,7 +1213,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels are in Recycle Rush?",
-        "a": "There are 25 story missions, each with three areas and 18 tasks, plus a separate 20-mission arcade campaign. Completing the arcade campaign unlocks endless Loop Mode."
+        "a": "There are 25 story missions, each with three areas and 18 recovery tasks, plus a separate 20-mission arcade campaign. Completing Arcade unlocks endless Loop Mode."
       },
       {
         "q": "Is the story timed?",
@@ -1151,7 +1231,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "science-lab-dash": {
     "category": "Educational",
-    "summary": "Restore Nova Science Academy in a twenty-mission science adventure spanning experiments, puzzles and discovery.",
+    "summary": "Restore Nova Science Academy through 20 science missions, collect evidence, solve learning challenges and face the Glitch Experiment.",
     "overview": [
       "Science Lab Dash: Element Core Mystery is a story-driven educational action game. It combines a lane-based challenge with science questions, collectible evidence, power-ups and encounters with hazards or enemies. The result is a broad science journey rather than a single-topic quiz.",
       "The game covers laboratory safety, the scientific method, physics, chemistry, biology, Earth science, space, robotics and data science. Animated gameplay creates pressure, but careful reading still matters: players must complete missions, answer questions and use the tools available to the young scientist."
@@ -1208,7 +1288,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many missions are there?",
-        "a": "The game lists twenty missions."
+        "a": "There are 20 science missions leading towards the Glitch Experiment, with evidence, learning questions, powers and boss encounters."
       },
       {
         "q": "Who is the final threat?",
@@ -1216,13 +1296,13 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Can I play with touch controls?",
-        "a": "Yes. Swipe lane switching and on-screen action buttons are."
+        "a": "Yes. Use swipe lane switching and the on-screen action buttons."
       }
     ]
   },
   "sky-temple-3d-rise-of-the-relic-master": {
     "category": "Adventure",
-    "summary": "Explore four 3D worlds, collect ancient relics and defeat their Guardians with jumps, gliding and relic blasts.",
+    "summary": "Explore four 3D worlds, collect five relics in each and defeat their Guardians using jumps, gliding and relic blasts, with world music and saved checkpoints.",
     "overview": [
       "Sky Temple 3D: Rise of the Relic Master is a browser adventure across floating islands, crystal caverns, stormy citadels and a sunlit sanctuary. Recover ancient relics and face a Guardian in each world.",
       "Select Play Game to open the campaign in a new tab with the whole window available. Each world includes exploration music, Guardian music, sound effects and saved checkpoints."
@@ -1273,7 +1353,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many worlds are there?",
-        "a": "Four: Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary."
+        "a": "There are four campaign worlds: Sky Garden, Crystal Caverns, Storm Citadel and Solar Sanctuary. Collect five relics in each world and defeat its Guardian."
       },
       {
         "q": "Can the character fly?",
@@ -1291,9 +1371,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "space-dodger": {
     "category": "Adventure",
-    "summary": "Pilot a 3D spacecraft through eighteen story missions involving asteroids, hostile ships and boss encounters.",
+    "summary": "Pilot a GLB spacecraft through 18 story sectors with cinematic space backgrounds, rescue and escort objectives, reactive bosses, saved checkpoints and separate audio controls.",
     "overview": [
-      "Space Dodger: Starfall Odyssey extends the idea of asteroid avoidance into a larger three-dimensional space adventure. Players control a spacecraft, navigate obstacles and fight AI-controlled enemies while following mission-based progression.",
+      "Space Dodger 3D: Starfall Odyssey is an eighteen-sector campaign with original GLB spacecraft, cinematic backgrounds and forward-moving star effects. Survive asteroids and plasma gates, complete rescue and relay objectives, escort the Ark, navigate gravity gates and confront the Sovereign.",
       "Built as a Babylon.js space adventure, Starfall Odyssey includes asteroid fields, plasma gates, glowing engine trails, collectible power-ups, enemy fire and major boss encounters. Solid spacecraft and fortress models give depth to the action. Rescue pods, disable command relays, escort the Dawn Ark and cross charged ion lanes. Staying aware of the space around your ship matters as much as firing quickly."
     ],
     "story": [
@@ -1351,15 +1431,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "How many story levels are included?",
-        "a": "Eighteen sectors include asteroid routes, rescues, ion storms, command relays, an Ark escort, gravity gates and boss battles. Cleared sectors unlock checkpoint continuation and replay."
+        "a": "There are 18 story sectors. Unlock sectors through play, continue saved checkpoints and revisit completed routes for medals and personal records."
       }
     ]
   },
   "space-pilot-platformer": {
     "category": "Adventure",
-    "summary": "Guide Pilot Nova across asteroid platforms, defeat drones and gather star cores before boss confrontations.",
+    "summary": "Guide Pilot Nova through eight space platforming missions, collect star cores, cross moving platforms, battle drones and defeat an animated boss in every level.",
     "overview": [
-      "Space Pilot Platformer is a science-fiction platform adventure starring Pilot Nova. Instead of piloting a ship through open space, the player moves through a sequence of platforms suspended among asteroids while avoiding hazards and fighting drone enemies.",
+      "Space Pilot Platformer follows Pilot Nova through eight missions, from Crash Landing to Final Gate. Longer asteroid routes, moving platforms, rising star-core targets and hostile drones lead to an animated boss at the end of every level.",
       "Platform timing and collection are closely linked. Star cores reward exploration, while hostile drones and level-ending bosses keep the route from becoming a simple jumping exercise."
     ],
     "story": [
@@ -1395,7 +1475,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Advance through asteroid-platform stages by crossing gaps, collecting star cores, dealing with drones and defeating level bosses.",
+      "Complete eight missions in order, gathering each route’s required star cores, overcoming its hazards and defeating its animated boss before entering the rescue portal.",
       "A strong attempt balances safe traversal with optional collecting rather than treating every jump as a sprint."
     ],
     "tips": [
@@ -1406,6 +1486,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Practice difficult jumps deliberately instead of repeating the same mistimed input."
     ],
     "faqs": [
+      {
+        "q": "How many levels or missions can I play?",
+        "a": "There are eight missions: Crash Landing, Asteroid Platforms, Pirate Outpost, Crystal Nebula Ruins, Space Station Wreckage, Comet Foundry, NOVA-X Fortress and Final Gate. Each ends with a boss."
+      },
       {
         "q": "Who is the playable character?",
         "a": "The game description identifies the pilot as Pilot Nova."
@@ -1422,7 +1506,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "stack-tower": {
     "category": "Puzzle",
-    "summary": "Time falling blocks to build a high tower, chain perfect placements and charge Focus Mode.",
+    "summary": "Time each block drop, build perfect-placement combos, charge Focus Mode and keep climbing in an endless tower-building score challenge.",
     "overview": [
       "Stack Tower is a timing challenge built around a single satisfying action: dropping a moving block onto the structure below it. Each new block tests your sense of rhythm, alignment and the small corrections needed to keep a tower stable as it grows.",
       "The polished presentation features glowing pseudo-3D blocks, sound and background music, while the game systems give accurate players extra goals. Perfect placements can build combinations, and Focus Mode becomes a tactical tool when timing is difficult."
@@ -1474,6 +1558,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "Does this game have a fixed campaign?",
+        "a": "The tower is an endless score challenge. Keep placing blocks while enough of the top surface remains to continue; there is no fixed final campaign level."
+      },
+      {
         "q": "Which keys drop a block?",
         "a": "Space and Enter are desktop drop controls."
       },
@@ -1489,7 +1577,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "swipe-racer": {
     "category": "Racing",
-    "summary": "Swipe through traffic, collect pickups and use nitro across city, mountain, coast and neon-night missions.",
+    "summary": "Race through four city, mountain, coastal and neon-night missions. Swipe around traffic, collect pickups, use nitro and complete route objectives.",
     "overview": [
       "Swipe Racer is an arcade driving game designed around steering gestures and quick decisions. You navigate a 3D-style car through traffic and collect helpful items while looking ahead to the next safe space in the road.",
       "It combines the replayability of an endless traffic dodger with a four-part mission structure. The racing environments include a daytime city, a mountain pass, a coastal sunset route and a neon night scene, each bringing a different visual atmosphere."
@@ -1540,6 +1628,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "faqs": [
       {
+        "q": "How many levels or missions can I play?",
+        "a": "There are four mission routes: city streets, a mountain pass, the coast and a neon-night road."
+      },
+      {
         "q": "How do I steer?",
         "a": "Swipe or drag left and right, including on a touch screen."
       },
@@ -1555,7 +1647,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "word-dash": {
     "category": "Educational",
-    "summary": "Race through themed word missions, type target spellings, build streaks and use Hint, Freeze or extra-time powers.",
+    "summary": "Complete four themed word missions by typing or tapping letters, building spelling streaks and using Hint, Freeze and extra-time powers.",
     "overview": [
       "Word Dash turns spelling and vocabulary practice into a fast sequence of word challenges. Players match target words using physical or on-screen letters while managing a timer, improving accuracy and building streaks.",
       "Rather than repeating one plain keyboard exercise, the game moves through themed environments such as a library, city of words, mountain focus setting and neon letters area. Mission progression and helpful power-ups make it feel like an arcade challenge as well as a learning exercise."
@@ -1610,6 +1702,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Develop proofreading habits under mild time pressure."
     ],
     "faqs": [
+      {
+        "q": "How many levels or missions can I play?",
+        "a": "There are four themed mission levels with target words, streak scoring and power-ups."
+      },
       {
         "q": "How do I submit a word on desktop?",
         "a": "Enter submits the current word and Backspace removes the last input."
