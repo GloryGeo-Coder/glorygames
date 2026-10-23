@@ -744,9 +744,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "math-sprint-arena": {
       "category": "Educational",
-      "summary": "Explore independent Grade 4–8 maths paths with 100 untimed missions, 1 000 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
+      "summary": "Explore independent Grade 4–9 maths paths with 120 untimed missions, 1 200 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
       "overview": [
-          "Math Sprint Arena turns selected Grade 4–8 CAPS mathematics skills into five journeys with Pi-Bot. Restore Number City, explore Discovery District, launch Innovation Harbour, open Research Ridge and connect Skyline Lab. Each grade can be started immediately and progresses independently.",
+          "Math Sprint Arena turns selected Grade 4–9 CAPS mathematics skills into six journeys with Pi-Bot. Restore Number City, explore Discovery District, launch Innovation Harbour, open Research Ridge, connect Skyline Lab and launch Horizon Station. Each grade can be started immediately and progresses independently.",
           "Each grade contains twenty missions, 100 Adventure activities and 100 alternate practice activities. Review with Pi-Bot revisits practised questions within the selected grade, prioritising completed activities that used hints or retries. The separate 52-level Sprint retains its timed arithmetic, fraction, multiplication, geometry and algebra challenges."
       ],
       "story": [
@@ -755,10 +755,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
           "In Grade 5, Discovery District is preparing a festival. Connect six-digit signal towers, estimate delivery routes, power the solar factory and plan the market. Fraction bridges, geometric designs, cargo cubes and transport surveys bring the final Discovery Festival to life.",
           "Innovation Harbour brings a new Grade 6 challenge. Balance large energy accounts, pack cargo, connect prime-number locks and calibrate decimal instruments. Transform designs, fold nets, measure gardens and storage boxes, plan overnight deliveries and interpret research evidence before the harbour launch.",
           "Grade 7 climbs to Research Ridge. Decode signed signals, calculate powers and roots, compare budgets, describe growing arrays, substitute into expressions and balance equations. Journey graphs, angle beacons, scale drawings, triangle terraces and research data help open the final observatory.",
-          "In Grade 8, Pi-Bot connects Skyline Lab. Restart integer reactors, synchronise factor switches and decode algebraic signals. Guide coordinate couriers, align parallel beams, calculate Pythagorean spans and plan circle decks and prism cargo pods. A research-and-chance investigation completes the network."
+          "In Grade 8, Pi-Bot connects Skyline Lab. Restart integer reactors, synchronise factor switches and decode algebraic signals. Guide coordinate couriers, align parallel beams, calculate Pythagorean spans and plan circle decks and prism cargo pods. A research-and-chance investigation completes the network.",
+          "In Grade 9, Pi-Bot launches Horizon Station. Decode negative-exponent signals, plan compound-growth budgets, factorise airlock codes and repair algebraic fractions. Calibrate gradients, compare similar supports, build cylindrical tanks and investigate compound probability with trees and tables."
       ],
       "howToPlay": [
-          "Choose Grade 4, 5, 6, 7 or 8, then start Adventure for that grade’s ordered twenty-mission route, Learn & Practise for any topic, or Review with Pi-Bot for saved revision. Play Sprint opens the separate timed challenge.",
+          "Choose Grade 4, 5, 6, 7, 8 or 9, then start Adventure for that grade’s ordered twenty-mission route, Learn & Practise for any topic, or Review with Pi-Bot for saved revision. Play Sprint opens the separate timed challenge.",
           "Read each activity and its model. Use place-value columns, illustrated choices, mirror squares, floor tiles, tally counters, a labelled transformation grid, Cartesian point selector or the built-in number pad. Integer tasks include a − key to change the sign. Use / between a fraction’s numerator and denominator; an improper fraction is accepted for a mixed-number calculation.",
           "Tap a diagram to enlarge it when you need a closer look at a scale, graph or clock. Close the diagram to enter your answer.",
           "Select Check answer, read the feedback and request a hint when needed. Mistakes are recoverable and the explanations stay until you continue.",
@@ -774,12 +775,12 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       ],
       "systems": [
           {
-              "title": "Five independent learning paths",
-              "body": "Grades 4–8 each contain twenty untimed missions with 100 Adventure activities and 100 alternate practice activities. Unlocks and Adventure, Learn and Review checkpoints are separate for every grade."
+              "title": "Six independent learning paths",
+              "body": "Grades 4–9 each contain twenty untimed missions with 100 Adventure activities and 100 alternate practice activities. Unlocks and Adventure, Learn and Review checkpoints are separate for every grade."
           },
           {
               "title": "Hands-on mathematical tools",
-              "body": "Build place values, compare and calculate fractions, classify and measure angles, inspect solid objects and nets, transform grid markers, count square or cubic units and interpret charts. Grade 6 adds hundred-square models, mixed-fraction strips, labelled protractors, overnight timelines, pie charts and fair-spinner evidence. Grade 7 adds signed number lines, function diagrams, equation balances, distance–time graphs, reflex-angle arcs, circle parts, scale grids, triangular area and surface-area models. Grade 8 adds a saved Cartesian point selector, parallel-line angle evidence, triangle and Pythagoras models, exact-root choices, circle and composite-area plans, triangular prisms and stem-and-leaf data."
+              "body": "Build place values, compare and calculate fractions, classify and measure angles, inspect solid objects and nets, transform grid markers, count square or cubic units and interpret charts. Grade 6 adds hundred-square models, mixed-fraction strips, labelled protractors, overnight timelines, pie charts and fair-spinner evidence. Grade 7 adds signed number lines, function diagrams, equation balances, distance–time graphs, reflex-angle arcs, circle parts, scale grids, triangular area and surface-area models. Grade 8 adds a saved Cartesian point selector, parallel-line angle evidence, triangle and Pythagoras models, exact-root choices, circle and composite-area plans, triangular prisms and stem-and-leaf data. Grade 9 adds border-cell patterns, binomial area models, coordinate-labelled line graphs, similar triangles, regular polygons, area-scale squares, closed cylinders, scatter plots, coin trees, two-way outcome tables and replacement-token models."
           },
           {
               "title": "Focused revision",
@@ -791,11 +792,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
           },
           {
               "title": "Music for every mission",
-              "body": "The hundred learning missions and 52 Sprint levels have distinct original musical arrangements, with a separate Review theme for each grade. Music and effects have separate controls."
+              "body": "The 120 learning missions and 52 Sprint levels have distinct original musical arrangements, with a separate Review theme for each grade. Music and effects have separate controls."
           }
       ],
       "progression": [
-          "Complete five activities to finish an Adventure mission and unlock the next mission within that grade. Grades 5–8 can begin before earlier grades are complete. Existing results, drafts and checkpoints remain intact. Independent and supported answers stay separate, and weaker replays do not erase better results.",
+          "Complete five activities to finish an Adventure mission and unlock the next mission within that grade. Grades 5–9 can begin before earlier grades are complete. Existing results, drafts and checkpoints remain intact. Independent and supported answers stay separate, and weaker replays do not erase better results.",
           "Adventure, Learn and Review checkpoints save separately for each grade on the same browser when storage is available. Switching grades preserves unfinished drafts and hints. Learn and Review do not unlock Adventure or submit learning results to the Sprint leaderboard."
       ],
       "tips": [
@@ -810,21 +811,22 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
           "Recorded spinner trials describe past results; they do not guarantee the next outcome."
       ],
       "learning": [
+          "Grade 9 practises selected CAPS skills informed by the DBE 2026 plan: real numbers, integer exponents, scientific notation, proportion, compound growth, patterns, binomial products, factorisation, algebraic fractions and restrictions, linear and zero-product equations, gradients and intercepts, similarity, polygons, Pythagoras, coordinate transformations, cylinder measurement, outliers, sampling and compound probability.",
           "Grade 8 practises selected CAPS skills informed by the DBE 2026 plan: signed multiplication and division, three-digit HCF and LCM, ratio changes, exponent laws and scientific notation, rational powers and roots, decimal calculations, finance, patterns, functions, like terms, distributive expressions, equations, Cartesian points and transformations, graph features, angle relationships, Pythagoras, circles, composite area, triangular prisms, data summaries and probability.",
           "Grade 7 introduces selected Senior Phase skills: integer addition and subtraction, exponents and roots, HCF and LCM, fraction operations, three-place decimals, percentages and simple interest, ratio and rate, geometric patterns, functions, variables and substitution, equations by inspection, global graphs, lines and angles, circle parts, enlargement, triangle area, surface area, volume, data summaries and fair samples.",
           "Practise selected Grade 4 CAPS skills: place value, calculations, patterns, money, common fractions, 2-D shape properties, line symmetry, length, area by counting squares, mass, liquid measures, time intervals, tallies and graph interpretation.",
           "Grade 5 adds six-digit place values, rounding, five-digit calculations, three-digit by two-digit multiplication and division, factors and multiples, number and dot patterns, equivalent fractions, fraction calculations and quantities, money and rates, angles, 3-D objects, symmetry, unit conversions, area, cubic units, time and scaled pictographs.",
           "Grade 6 adds nine-digit place value, larger whole-number calculations, prime factors, ratio and rate, unlike-denominator and mixed fractions, decimal place value and calculations, percentages, rules, protractor readings, transformations, nets, rectangular area and volume, unit conversions, overnight time, pie charts, frequency tables, mode and chance investigations.",
-          "All five paths practise selected CAPS skills. They are learning resources rather than complete grade courses or formal assessments. The selected grade and activity topic are visible during play."
+          "All six paths practise selected CAPS skills. They are learning resources rather than complete grade courses or formal assessments. The selected grade and activity topic are visible during play."
       ],
       "faqs": [
           {
               "q": "Which grades and topics are included?",
-              "a": "Grades 4–8 each have twenty missions and 200 Adventure and practice activities, covering selected CAPS number, pattern, geometry, measurement and data skills. Grades 6 and 8 include chance investigations. These are practice resources rather than complete grade courses or formal assessments. Sprint is a separate mixed-topic timed game."
+              "a": "Grades 4–9 each have twenty missions and 200 Adventure and practice activities, covering selected CAPS number, pattern, geometry, measurement and data skills. Grades 6, 8 and 9 include chance investigations. These are practice resources rather than complete grade courses or formal assessments. Sprint is a separate mixed-topic timed game."
           },
           {
-              "q": "Do I need to finish earlier grades before starting Grade 8?",
-              "a": "No. Select Grade 4, 5, 6, 7 or 8 from Learning grade on the home screen. Each begins with its first Adventure mission available and unlocks later missions through its own progress. Switching grades preserves separate checkpoints."
+              "q": "Do I need to finish earlier grades before starting Grade 9?",
+              "a": "No. Select Grade 4, 5, 6, 7, 8 or 9 from Learning grade on the home screen. Each begins with its first Adventure mission available and unlocks later missions through its own progress. Switching grades preserves separate checkpoints."
           },
           {
               "q": "How do I enter a mixed-number answer?",
