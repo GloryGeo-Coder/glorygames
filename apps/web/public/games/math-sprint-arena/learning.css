@@ -138,3 +138,4 @@ body[data-view='sprint'] .main-layout{min-height:0;grid-template-columns:230px m
  .problem-grid.solved:has(.number-pad){grid-template-rows:minmax(60px,1fr) minmax(60px,.5fr)}
  .problem-grid.solved:has(.shape-options){grid-template-rows:minmax(60px,1fr) minmax(100px,.7fr)}
 }
+@media(max-width:360px) and (orientation:portrait){.problem-grid[data-essential='false']:not(.solved){grid-template-rows:minmax(0,.7fr) minmax(196px,1.6fr)}}
