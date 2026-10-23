@@ -744,19 +744,20 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "math-sprint-arena": {
       "category": "Educational",
-      "summary": "Explore separate Grade 4 and Grade 5 maths paths with 40 untimed missions, 400 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
+      "summary": "Explore independent Grade 4, 5 and 6 maths paths with 60 untimed missions, 600 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
       "overview": [
-          "Math Sprint Arena turns selected Grade 4 and Grade 5 CAPS mathematics skills into two journeys with Pi-Bot. Restore Number City in Grade 4, then explore Discovery District in Grade 5. Each grade can be started immediately and progresses independently.",
-          "Each path contains twenty missions, 100 Adventure activities and 100 alternate practice activities. Review with Pi-Bot revisits practised questions within the selected grade, prioritising completed activities that used hints or retries. The separate 52-level Sprint retains its timed arithmetic, fraction, multiplication, geometry and algebra challenges."
+          "Math Sprint Arena turns selected Grade 4, Grade 5 and Grade 6 CAPS mathematics skills into three journeys with Pi-Bot. Restore Number City, explore Discovery District and launch Innovation Harbour. Each grade can be started immediately and progresses independently.",
+          "Each grade contains twenty missions, 100 Adventure activities and 100 alternate practice activities. Review with Pi-Bot revisits practised questions within the selected grade, prioritising completed activities that used hints or retries. The separate 52-level Sprint retains its timed arithmetic, fraction, multiplication, geometry and algebra challenges."
       ],
       "story": [
           "Number City has lost power, and Pi-Bot needs a resourceful partner to restore it. Rebuild the Number Gates, reconnect the workshop and station, and bring the market and fraction bridges back to life.",
           "The next district is preparing a city exhibition. Design shape signs, reflect illuminated patterns, measure strips and floors, label deliveries, read water levels and organise tram journeys. Finally, collect a shape survey and interpret travel data to prepare the City Showcase.",
-          "In Grade 5, Discovery District is preparing a festival. Connect six-digit signal towers, estimate delivery routes, power the solar factory and plan the market. Fraction bridges, geometric designs, cargo cubes and transport surveys bring the final Discovery Festival to life."
+          "In Grade 5, Discovery District is preparing a festival. Connect six-digit signal towers, estimate delivery routes, power the solar factory and plan the market. Fraction bridges, geometric designs, cargo cubes and transport surveys bring the final Discovery Festival to life.",
+          "Innovation Harbour brings a new Grade 6 challenge. Balance large energy accounts, pack cargo, connect prime-number locks and calibrate decimal instruments. Transform designs, fold nets, measure gardens and storage boxes, plan overnight deliveries and interpret research evidence before the harbour launch."
       ],
       "howToPlay": [
-          "Choose Grade 4 or Grade 5, then start Adventure for that grade’s ordered twenty-mission route, Learn & Practise for any topic, or Review with Pi-Bot for saved revision. Play Sprint opens the separate timed challenge.",
-          "Read each activity and its model. Use place-value columns, illustrated choices, mirror squares, floor tiles, tally counters or the built-in number pad. For fraction calculations, use the / key between numerator and denominator.",
+          "Choose Grade 4, 5 or 6, then start Adventure for that grade’s ordered twenty-mission route, Learn & Practise for any topic, or Review with Pi-Bot for saved revision. Play Sprint opens the separate timed challenge.",
+          "Read each activity and its model. Use place-value columns, illustrated choices, mirror squares, floor tiles, tally counters, a labelled transformation grid or the built-in number pad. Use / between a fraction’s numerator and denominator; an improper fraction is accepted for a mixed-number calculation.",
           "Tap a diagram to enlarge it when you need a closer look at a scale, graph or clock. Close the diagram to enter your answer.",
           "Select Check answer, read the feedback and request a hint when needed. Mistakes are recoverable and the explanations stay until you continue.",
           "Complete all five activities to finish an Adventure mission and unlock the next one. After a set, Try a fresh practice set switches to the alternate bank without changing Adventure results."
@@ -766,17 +767,17 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
           "In Sprint, choose an answer tile or press 1–4. Arrow keys or A/D change lanes; Space pauses or resumes."
       ],
       "mobile": [
-          "Tap the large on-screen tools and keypad. Reflection squares and tally counts retain their saved state when you refresh.",
+          "Tap the large on-screen tools and keypad. Transformation cells, reflection squares and tally counts retain their saved state when you refresh.",
           "Portrait and landscape layouts keep questions and response controls together. Tap a mathematical diagram to enlarge it; Menu & sound contains the current mission strategy, volumes and supported-browser fullscreen control."
       ],
       "systems": [
           {
-              "title": "Two independent learning paths",
-              "body": "Grade 4 and Grade 5 each contain twenty untimed missions with 100 Adventure activities and 100 alternate practice activities. Unlocks and Adventure, Learn and Review checkpoints are separate for each grade."
+              "title": "Three independent learning paths",
+              "body": "Grades 4, 5 and 6 each contain twenty untimed missions with 100 Adventure activities and 100 alternate practice activities. Unlocks and Adventure, Learn and Review checkpoints are separate for every grade."
           },
           {
               "title": "Hands-on mathematical tools",
-              "body": "Build place values, compare fractions, classify angles, inspect solid objects, reflect patterns and count square or cubic units. Rulers, jugs, clocks, bar graphs and pictographs show labelled mathematical data. Grade 5 pictograph keys represent two or five learners per star."
+              "body": "Build place values, compare and calculate fractions, classify and measure angles, inspect solid objects and nets, transform grid markers, count square or cubic units and interpret charts. Grade 6 adds hundred-square models, mixed-fraction strips, labelled protractors, overnight timelines, pie charts and fair-spinner evidence."
           },
           {
               "title": "Focused revision",
@@ -788,11 +789,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
           },
           {
               "title": "Music for every mission",
-              "body": "The forty learning missions and 52 Sprint levels have distinct original musical arrangements, with a separate Review theme for each grade. Music and effects have separate controls."
+              "body": "The sixty learning missions and 52 Sprint levels have distinct original musical arrangements, with a separate Review theme for each grade. Music and effects have separate controls."
           }
       ],
       "progression": [
-          "Complete five activities to finish an Adventure mission and unlock the next mission within that grade. Grade 5 can begin before Grade 4 is complete. Earlier Grade 4 results and checkpoints remain intact. Independent and supported answers stay separate, and weaker replays do not erase better results.",
+          "Complete five activities to finish an Adventure mission and unlock the next mission within that grade. Grade 5 and Grade 6 can begin before earlier grades are complete. Existing results, drafts and checkpoints remain intact. Independent and supported answers stay separate, and weaker replays do not erase better results.",
           "Adventure, Learn and Review checkpoints save separately for each grade on the same browser when storage is available. Switching grades preserves unfinished drafts and hints. Learn and Review do not unlock Adventure or submit learning results to the Sprint leaderboard."
       ],
       "tips": [
@@ -801,21 +802,29 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
           "For reflections, match the row and distance from the dotted mirror line.",
           "Count area using equal squares, mass using grams or kilograms, and time using 60 minutes per hour.",
           "Use a fresh set to practise a method with different values. Review can help revisit activities previously completed with support.",
-          "Read a pictograph key before counting learners. A star may represent two or five people. For common fractions with matching denominators, keep the part size and add or subtract numerators."
+          "Read a pictograph key before counting learners. A star may represent two or five people. For common fractions with matching denominators, keep the part size and add or subtract numerators.",
+          "For a mixed-number calculation, rename the number as an improper fraction, then use equal-sized parts.",
+          "On the transformation grid, columns A–C go left to right and rows 1–3 go bottom to top. A clockwise quarter-turn uses B2 as its centre.",
+          "Recorded spinner trials describe past results; they do not guarantee the next outcome."
       ],
       "learning": [
           "Practise selected Grade 4 CAPS skills: place value, calculations, patterns, money, common fractions, 2-D shape properties, line symmetry, length, area by counting squares, mass, liquid measures, time intervals, tallies and graph interpretation.",
           "Grade 5 adds six-digit place values, rounding, five-digit calculations, three-digit by two-digit multiplication and division, factors and multiples, number and dot patterns, equivalent fractions, fraction calculations and quantities, money and rates, angles, 3-D objects, symmetry, unit conversions, area, cubic units, time and scaled pictographs.",
+          "Grade 6 adds nine-digit place value, larger whole-number calculations, prime factors, ratio and rate, unlike-denominator and mixed fractions, decimal place value and calculations, percentages, rules, protractor readings, transformations, nets, rectangular area and volume, unit conversions, overnight time, pie charts, frequency tables, mode and chance investigations.",
           "Both paths practise selected CAPS skills. They are learning resources rather than complete grade courses or formal assessments. The selected grade and activity topic are visible during play."
       ],
       "faqs": [
           {
               "q": "Which grades and topics are included?",
-              "a": "Grade 4 and Grade 5 each have twenty missions and 200 Adventure and practice activities. They cover selected CAPS number, pattern, geometry, measurement and data skills. Neither path claims complete course coverage. Sprint remains a separate mixed-topic timed game."
+              "a": "Grades 4, 5 and 6 each have twenty missions and 200 Adventure and practice activities, covering selected CAPS number, pattern, geometry, measurement and data skills. Grade 6 also includes chance investigations. These are practice resources rather than complete grade courses or formal assessments. Sprint is a separate mixed-topic timed game."
           },
           {
-              "q": "Do I need to finish Grade 4 before starting Grade 5?",
-              "a": "No. Select either grade from Learning grade on the home screen. Each grade begins with its first mission available and unlocks later missions through its own Adventure progress. Switching grades preserves saved checkpoints."
+              "q": "Do I need to finish earlier grades before starting Grade 6?",
+              "a": "No. Select Grade 4, 5 or 6 from Learning grade on the home screen. Each begins with its first Adventure mission available and unlocks later missions through its own progress. Switching grades preserves separate checkpoints."
+          },
+          {
+              "q": "How do I enter a mixed-number answer?",
+              "a": "Use an equivalent improper fraction, such as 7/4 for 1 3/4. The keypad includes / for fraction calculations, and equivalent fractions are accepted."
           },
           {
               "q": "What does Review with Pi-Bot do?",
