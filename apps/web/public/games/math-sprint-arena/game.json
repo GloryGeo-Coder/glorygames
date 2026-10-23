@@ -4,31 +4,33 @@
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "category": "Educational",
-  "description": "Explore independent Grade 4–7 maths paths with 80 untimed missions, 800 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
-  "version": "4.4.0",
+  "description": "Explore independent Grade 4–8 maths paths with 100 untimed missions, 1 000 Adventure and practice activities, visual tools, saved checkpoints and focused revision, or play the 52-level Sprint.",
+  "version": "4.5.0",
   "features": {
-    "learningMissions": 80,
-    "learningActivities": 400,
-    "curriculumScope": "Selected CAPS Grade 4–7 skills; not complete courses",
+    "learningMissions": 100,
+    "learningActivities": 500,
+    "curriculumScope": "Selected CAPS Grade 4–8 skills; not complete courses",
     "sprintLevels": 52,
-    "originalLevelArrangements": 132,
+    "originalLevelArrangements": 152,
     "savedCheckpoints": true,
     "untimedLearning": true,
-    "alternatePracticeActivities": 400,
-    "activityBankTotal": 800,
-    "revisionMusicTracks": 4,
-    "originalMusicArrangements": 136,
+    "alternatePracticeActivities": 500,
+    "activityBankTotal": 1000,
+    "revisionMusicTracks": 5,
+    "originalMusicArrangements": 157,
     "focusedRevision": true,
     "enlargeDiagrams": true,
     "learningGrades": [
       4,
       5,
       6,
-      7
+      7,
+      8
     ],
     "learningMissionsPerGrade": 20,
     "independentGradeProgress": true,
     "transformationGrid": true,
-    "signedIntegerEntry": true
+    "signedIntegerEntry": true,
+    "cartesianPointSelector": true
   }
 }

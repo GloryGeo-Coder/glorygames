@@ -18,6 +18,7 @@
   function output(text,label){const out=node('output',text,'tool-status');out.id='toolStatus';out.setAttribute('aria-label',label);return out;}
   function tallyImage(count){let lines='';for(let i=0;i<count;i++){const group=Math.floor(i/5),at=i%5,x=4+group*34;if(at===4)lines+=`<path d="M${x-2} 23L${x+26} 3"/>`;else lines+=`<path d="M${x+at*7} 4V23"/>`;}return svg(`<g stroke="#ffe38a" stroke-width="2.3">${lines}</g>`,`${count} tally marks`,'0 0 68 28');}
   function renderResponse(t,s,{panel,onChange,effect}){
+    if(window.MathGrade8Tools?.renderResponse(t,s,{panel,onChange,effect}))return true;
     if(window.MathGrade6Tools?.renderResponse(t,s,{panel,onChange,effect}))return true;
     if(!['choice','mirror','tile','tally'].includes(t.kind))return false;
     panel.className=`response-panel tool-panel ${t.kind}-panel`;
@@ -51,6 +52,7 @@
     const time=`${String(Math.floor(total/60)).padStart(2,'0')}:${String(minute).padStart(2,'0')}`,wrap=node('div',undefined,'clock-unit');wrap.append(svg(markup,`Clock showing ${time}`,'0 0 120 110'),node('b',time));return wrap;
   }
   function draw(t,v){
+    if(window.MathGrade8Tools?.draw(t,v))return true;
     if(window.MathGrade7Tools?.draw(t,v))return true;
     if(window.MathGrade6Tools?.draw(t,v))return true;
     if(!['choice','shape','mirror','ruler','tile','mass','jug','elapsed','tally','chart','placeRead','round','readout','product','growing','fractionMath','solid','areaGrid','volume'].includes(t.kind))return false;
@@ -102,6 +104,6 @@
     }
     return true;
   }
-  const essential=t=>window.MathGrade7Tools?.essential(t)||window.MathGrade6Tools?.essential(t)||['shape','ruler','mass','jug','elapsed','tally','chart','growing','solid','areaGrid','volume'].includes(t.kind)||(t.kind==='choice'&&(!!t.shape||!!t.bars||t.angle!==undefined));
+  const essential=t=>window.MathGrade8Tools?.essential(t)||window.MathGrade7Tools?.essential(t)||window.MathGrade6Tools?.essential(t)||['shape','ruler','mass','jug','elapsed','tally','chart','growing','solid','areaGrid','volume'].includes(t.kind)||(t.kind==='choice'&&(!!t.shape||!!t.bars||t.angle!==undefined));
   window.MathLearningTools={renderResponse,draw,essential};
 })();

@@ -1,9 +1,9 @@
-/* Number City: selected CAPS Grade 4–7 skills. Learning state is independent of Sprint scores. */
+/* Number City: selected CAPS Grade 4–8 skills. Learning state is independent of Sprint scores. */
 (function (root, factory) {
-  const api = factory(typeof module === 'object' && module.exports ? require('./learning-extension.js') : root.MathLearningExtension, typeof module === 'object' && module.exports ? require('./learning-grade5.js') : root.MathGrade5, typeof module === 'object' && module.exports ? require('./learning-grade6.js') : root.MathGrade6, typeof module === 'object' && module.exports ? require('./learning-grade7.js') : root.MathGrade7);
+  const api = factory(typeof module === 'object' && module.exports ? require('./learning-extension.js') : root.MathLearningExtension, typeof module === 'object' && module.exports ? require('./learning-grade5.js') : root.MathGrade5, typeof module === 'object' && module.exports ? require('./learning-grade6.js') : root.MathGrade6, typeof module === 'object' && module.exports ? require('./learning-grade7.js') : root.MathGrade7, typeof module === 'object' && module.exports ? require('./learning-grade8.js') : root.MathGrade8);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.MathLearning = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (extension, grade5, grade6, grade7) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (extension, grade5, grade6, grade7, grade8) {
   'use strict';
   const KEY = 'wga_math_sprint_learning_v1';
   const SOURCES = [
@@ -13,7 +13,8 @@
     'https://www.education.gov.za/LinkClick.aspx?fileticket=Zcwzy598npw%3D&mid=10742&portalid=0&tabid=3207',
     'https://www.education.gov.za/LinkClick.aspx?fileticket=cT8nlsKsBAs%3D&mid=10744&portalid=0&tabid=3207',
     'https://www.education.gov.za/LinkClick.aspx?fileticket=uCNqOwfGbmc%3D&tabid=',
-    'https://www.education.gov.za/LinkClick.aspx?fileticket=ntUvRUteBtQ%3D&mid=10747&portalid=0&tabid=3208'
+    'https://www.education.gov.za/LinkClick.aspx?fileticket=ntUvRUteBtQ%3D&mid=10747&portalid=0&tabid=3208',
+    'https://www.education.gov.za/LinkClick.aspx?fileticket=E68Ig0s3y4U%3D&mid=10749&portalid=0&tabid=3208'
   ];
   const task = (kind, prompt, answer, hints, detail = {}) => ({ kind, prompt, answer: String(answer), hints, ...detail });
   const place = n => task('place', `Build ${n.toLocaleString('en-ZA').replace(/,/g, ' ')} using place value.`, n,
@@ -72,7 +73,10 @@
   const grade7Missions=grade7.create({task});
   grade7Missions.forEach((m,i)=>{m.grade=7;m.number=i+1;m.music=115+i;for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,j)=>{t.id=`${m.id}-${bank?'practice-':''}${j+1}`;});});
   missions.push(...grade7Missions);
-  const paths=[{grade:4,title:'Number City',start:0,count:20,reviewMusic:72},{grade:5,title:'Discovery District',start:20,count:20,reviewMusic:93},{grade:6,title:'Innovation Harbour',start:40,count:20,reviewMusic:114},{grade:7,title:'Research Ridge',start:60,count:20,reviewMusic:135}];
+  const grade8Missions=grade8.create({task});
+  grade8Missions.forEach((m,i)=>{m.grade=8;m.number=i+1;m.music=136+i;for(const [bank,tasks]of [[0,m.tasks],[1,m.practice]])tasks.forEach((t,j)=>{t.id=`${m.id}-${bank?'practice-':''}${j+1}`;});});
+  missions.push(...grade8Missions);
+  const paths=[{grade:4,title:'Number City',start:0,count:20,reviewMusic:72},{grade:5,title:'Discovery District',start:20,count:20,reviewMusic:93},{grade:6,title:'Innovation Harbour',start:40,count:20,reviewMusic:114},{grade:7,title:'Research Ridge',start:60,count:20,reviewMusic:135},{grade:8,title:'Skyline Lab',start:80,count:20,reviewMusic:156}];
   const pathFor=grade=>paths.find(p=>p.grade===Number(grade))||paths[0];
   const pathMissions=grade=>{const p=pathFor(grade);return missions.slice(p.start,p.start+p.count);};
   const gradeOf=s=>missions[s.mission].grade;

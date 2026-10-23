@@ -2,9 +2,9 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const L=require('../public/games/math-sprint-arena/learning-data.js'),A=require('../public/games/math-sprint-arena/arena-audio.js');
 const root=path.resolve(__dirname,'../public/games/math-sprint-arena');
 function complete(p,s,assist=false){while(s.index<5){const t=L.current(s);if(assist)L.hint(s);assert.equal(L.submit(s,t.answer).ok,true);assert.equal(L.advance(p,s),true);}}
-test('Grade 4–7 paths contain 800 authored Adventure and alternate activities with grade, skill, unique IDs, explanations and three hints',()=>{
- assert.equal(L.missions.length,80);const ids=[];for(const m of L.missions){assert.ok([4,5,6,7].includes(m.grade));assert.equal(m.tasks.length,5);assert.ok(m.skill&&m.story&&m.lesson);assert.ok(fs.existsSync(path.join(root,'assets/backgrounds',`bg-${m.background}.png`)));for(const t of [...m.tasks,...m.practice]){ids.push(t.id);assert.ok(L.rational(t.answer),t.id);assert.equal(t.hints.length,3);assert.equal(new Set(t.hints).size,3);assert.ok(t.explanation.length>35);assert.ok(t.worked.length>4);}}
- assert.equal(new Set(ids).size,800);
+test('Grade 4–8 paths contain 1000 authored Adventure and alternate activities with grade, skill, unique IDs, explanations and three hints',()=>{
+ assert.equal(L.missions.length,100);const ids=[];for(const m of L.missions){assert.ok([4,5,6,7,8].includes(m.grade));assert.equal(m.tasks.length,5);assert.ok(m.skill&&m.story&&m.lesson);assert.ok(fs.existsSync(path.join(root,'assets/backgrounds',`bg-${m.background}.png`)));for(const t of [...m.tasks,...m.practice]){ids.push(t.id);assert.ok(L.rational(t.answer),t.id);assert.equal(t.hints.length,3);assert.equal(new Set(t.hints).size,3);assert.ok(t.explanation.length>35);assert.ok(t.worked.length>4);}}
+ assert.equal(new Set(ids).size,1000);
 });
 test('generated mathematical statements, currency and visual models have correct answers',()=>{
  for(const m of L.missions)for(const t of [...m.tasks,...m.practice]){if(t.kind==='place')assert.equal(Number(t.answer),t.value);if(t.kind==='line')assert.equal(Number(t.answer),t.a+t.b);if(t.kind==='entry')assert.equal(Number(t.answer),t.op==='+'?t.a+t.b:t.a-t.b);if(t.kind==='array')assert.equal(Number(t.answer),t.groups*t.each);if(t.kind==='share')assert.equal(Number(t.answer)*t.groups,t.total);if(t.kind==='fraction')assert.equal(t.answer,`${t.take}/${t.parts}`);if(t.kind==='perimeter')assert.equal(Number(t.answer),2*(t.length+t.width));}
@@ -36,7 +36,7 @@ test('corrupt, future and locked saves are bounded without inventing completion 
  const best=fs.readFileSync(path.join(root,'game.js'),'utf8');assert.match(best,/wga_math_sprint_arena_v3_best/);assert.match(best,/wga_math_sprint_arena_v4_sprint/);
 });
 test('every learning and Sprint level has an original distinct melody and named arrangement',()=>{
- assert.equal(A.themes.length,136);assert.equal(new Set(A.themes.map(t=>t.title)).size,136);assert.equal(new Set(A.themes.map(t=>JSON.stringify(t.notes))).size,136);for(const t of A.themes){assert.equal(t.notes.length,16);assert.equal(t.rhythm.length,16);assert.ok(t.bpm>=80&&t.bpm<=140);}
+ assert.equal(A.themes.length,157);assert.equal(new Set(A.themes.map(t=>t.title)).size,157);assert.equal(new Set(A.themes.map(t=>JSON.stringify(t.notes))).size,157);for(const t of A.themes){assert.equal(t.notes.length,16);assert.equal(t.rhythm.length,16);assert.ok(t.bpm>=80&&t.bpm<=140);}
 });
 test('unavailable audio does not block play, and pause clears scheduled timers',()=>{
  for(const env of [{setInterval,clearInterval},{setInterval,clearInterval,AudioContext:class{constructor(){throw Error('blocked');}}}]){const a=A.create(env);assert.doesNotThrow(()=>{a.start(0);a.effect('correct');a.volume('music',0);a.pause();a.dispose();});assert.equal(a.available,false);}
@@ -119,7 +119,7 @@ test('invalid review plans, unknown history IDs and invalid bank values do not c
 });
 function toolHarness(){
  const vm=require('node:vm');class Element{constructor(tag){this.tag=tag;this.children=[];this.attrs={};this.style={setProperty(k,v){this[k]=String(v);}};this.dataset={};this.textContent='';this.events={};}setAttribute(k,v){this.attrs[k]=String(v);}append(...items){this.children.push(...items);}replaceChildren(...items){this.children=items;}addEventListener(k,v){this.events[k]=v;}click(){this.events.click?.();}}
- const document={createElement:t=>new Element(t),createElementNS:(_,t)=>new Element(t)},window={};vm.runInNewContext(fs.readFileSync(path.join(root,'learning-grade6-tools.js'),'utf8'),{document,window});vm.runInNewContext(fs.readFileSync(path.join(root,'learning-grade7-tools.js'),'utf8'),{document,window});vm.runInNewContext(fs.readFileSync(path.join(root,'learning-tools.js'),'utf8'),{document,window});return {tools:window.MathLearningTools,Element};
+ const document={createElement:t=>new Element(t),createElementNS:(_,t)=>new Element(t)},window={};vm.runInNewContext(fs.readFileSync(path.join(root,'learning-grade6-tools.js'),'utf8'),{document,window});vm.runInNewContext(fs.readFileSync(path.join(root,'learning-grade7-tools.js'),'utf8'),{document,window});vm.runInNewContext(fs.readFileSync(path.join(root,'learning-grade8-tools.js'),'utf8'),{document,window});vm.runInNewContext(fs.readFileSync(path.join(root,'learning-tools.js'),'utf8'),{document,window});return {tools:window.MathLearningTools,Element};
 }
 test('survey, scale, clock and graph renderers match the authored mathematical data',()=>{
  const {tools,Element}=toolHarness();for(const t of L.allTasks.filter(t=>['ruler','mass','jug','elapsed','tally','chart'].includes(t.kind))){const v=new Element('div');assert.equal(tools.draw(t,v),true);assert.ok(v.children.length>0);
@@ -143,8 +143,8 @@ test('new interactive activities can be submitted through their real shape, mirr
 test('revision rotates through all previously completed topics rather than trapping older saves in the first five',()=>{
  const old={version:1,results:{}};for(const m of L.missions)old.results[m.id]={independent:5,assisted:0};const p=L.normalize(old),seen=new Set();for(let round=0;round<4;round++){const s=L.freshReview(p);s.plan.forEach(r=>seen.add(r.mission));complete(p,s);}assert.equal(seen.size,20);
 });
-test('metadata advertises only the implemented Grade 4–7 scope and exact activity/music counts',()=>{
- const meta=JSON.parse(fs.readFileSync(path.join(root,'game.json'))).features;assert.equal(meta.learningMissions,L.missions.length);assert.equal(meta.learningActivities,L.missions.reduce((n,m)=>n+m.tasks.length,0));assert.equal(meta.alternatePracticeActivities,L.missions.reduce((n,m)=>n+m.practice.length,0));assert.equal(meta.activityBankTotal,L.allTasks.length);assert.equal(meta.originalMusicArrangements,A.themes.length);assert.deepEqual(meta.learningGrades,[4,5,6,7]);assert.equal(meta.learningMissionsPerGrade,20);assert.equal(meta.originalLevelArrangements,meta.learningMissions+meta.sprintLevels);
+test('metadata advertises only the implemented Grade 4–8 scope and exact activity/music counts',()=>{
+ const meta=JSON.parse(fs.readFileSync(path.join(root,'game.json'))).features;assert.equal(meta.learningMissions,L.missions.length);assert.equal(meta.learningActivities,L.missions.reduce((n,m)=>n+m.tasks.length,0));assert.equal(meta.alternatePracticeActivities,L.missions.reduce((n,m)=>n+m.practice.length,0));assert.equal(meta.activityBankTotal,L.allTasks.length);assert.equal(meta.originalMusicArrangements,A.themes.length);assert.deepEqual(meta.learningGrades,[4,5,6,7,8]);assert.equal(meta.learningMissionsPerGrade,20);assert.equal(meta.originalLevelArrangements,meta.learningMissions+meta.sprintLevels);
 });
 
 test('Grade 5 has an independent twenty-mission unlock chain and 200 activities; Grade 4 gaps do not erase it',()=>{
@@ -274,25 +274,86 @@ test('Grade 7 saved signs, fractional drafts, hints and Review are independent o
 });
 test('Grade 7 integers, powers and roots obey signed arithmetic and inverse relationships',()=>{
  assert.deepEqual(L.missions[60].tasks.map(t=>t.answer),['-6','-5','4','-7','5']);assert.deepEqual(L.missions[61].tasks.map(t=>t.answer),['3','-6','-4','13','-9']);assert.deepEqual(L.missions[62].tasks.map(t=>t.answer),['36','64','32','9','5']);
- for(const t of L.allTasks.slice(600)){if(t.signedEntry)assert.ok(!t.fractionEntry);if(t.delta!==undefined){assert.equal(Number(t.answer),t.start+t.delta);assert.ok(Number(t.answer)>=t.min&&Number(t.answer)<=t.max);}if(t.exponent)assert.equal(Number(t.answer),t.base**t.exponent);if(t.rootBase)assert.equal(Number(t.answer),t.rootBase);}
+ for(const t of L.allTasks.slice(600,800)){if(t.signedEntry)assert.ok(!t.fractionEntry);if(t.delta!==undefined){assert.equal(Number(t.answer),t.start+t.delta);assert.ok(Number(t.answer)>=t.min&&Number(t.answer)<=t.max);}if(t.exponent)assert.equal(Number(t.answer),t.base**t.exponent);if(t.rootBase)assert.equal(Number(t.answer),t.rootBase);}
  const s=L.fresh('adventure',60);assert.equal(L.submit(s,'−6').ok,true);assert.ok(L.equivalent('-0','0'));for(const bad of ['--6','6-','-','−','- 1/0'])assert.equal(L.rational(bad),null);
 });
 test('Grade 7 fractions and thousandths match independent exact reference answers',()=>{
  const expected=[['17/12','7/12','3/8','6/7','3/4'],['23/20','13/24','3/20','25/14','7/10']];for(const[bank,key]of [[0,'tasks'],[1,'practice']])L.missions[64][key].forEach((t,i)=>assert.ok(L.equivalent(t.answer,expected[bank][i]),t.id));
  assert.deepEqual(L.missions[65].tasks.slice(0,4).map(t=>t.answer),['6.045','5.267','7.125','2.160']);assert.deepEqual(L.missions[65].practice.slice(0,4).map(t=>t.answer),['6.224','5.637','5.700','1.645']);
- for(const t of L.allTasks.slice(600).filter(t=>t.decimalCalculation)){const scaled=Number(t.answer)*1000,expected=t.op==='+'?t.a+t.b:t.op==='−'?t.a-t.b:t.op==='×'?t.a*t.b:t.a/t.b;assert.ok(Math.abs(scaled-expected)<1e-8,t.id);}
+ for(const t of L.allTasks.slice(600,800).filter(t=>t.decimalCalculation)){const scaled=Number(t.answer)*1000,expected=t.op==='+'?t.a+t.b:t.op==='−'?t.a-t.b:t.op==='×'?t.a*t.b:t.a/t.b;assert.ok(Math.abs(scaled-expected)<1e-8,t.id);}
 });
 test('Grade 7 finance, ratios and algebra have checked practical and substituted answers',()=>{
  assert.deepEqual(L.missions[66].tasks.map(t=>t.answer),['340','230','120','440','275']);assert.deepEqual(L.missions[66].practice.map(t=>t.answer),['480','280','120','680','330']);assert.deepEqual(L.missions[67].tasks.map(t=>t.answer),['18','36','50','90','300']);
- for(const t of L.allTasks.slice(600)){if(t.principal){const interest=t.principal*t.rate*t.years/100;const expected=t.query==='interest'?interest:t.query==='sale'?t.principal*(100-t.rate)/100:t.principal*(100+t.rate)/100;assert.equal(Number(t.answer),expected,t.id);}if(t.g7Model==='balance'){assert.equal(t.coefficient*Number(t.answer)+t.constant,t.total);}if(t.x!==undefined&&t.g7Model==='cards')assert.equal(Number(t.answer),t.coefficient*t.x+t.constant);if(t.g7Model==='function'){const answer=Number(t.answer);assert.equal(t.unknown?answer*t.multiplier+t.offset:t.input*t.multiplier+t.offset,t.unknown?t.input*t.multiplier+t.offset:answer);}}
+ for(const t of L.allTasks.slice(600,800)){if(t.principal){const interest=t.principal*t.rate*t.years/100;const expected=t.query==='interest'?interest:t.query==='sale'?t.principal*(100-t.rate)/100:t.principal*(100+t.rate)/100;assert.equal(Number(t.answer),expected,t.id);}if(t.g7Model==='balance'){assert.equal(t.coefficient*Number(t.answer)+t.constant,t.total);}if(t.x!==undefined&&t.g7Model==='cards')assert.equal(Number(t.answer),t.coefficient*t.x+t.constant);if(t.g7Model==='function'){const answer=Number(t.answer);assert.equal(t.unknown?answer*t.multiplier+t.offset:t.input*t.multiplier+t.offset,t.unknown?t.input*t.multiplier+t.offset:answer);}}
 });
 test('Grade 7 graphs, angles, triangle area, surface area and data models carry accurate evidence',()=>{
- for(const t of L.allTasks.slice(600)){if(t.g7Model==='graph'){assert.equal(t.values.length,5);if(t.query==='read')assert.equal(Number(t.answer),t.values[3]);else{const label=t.options.find(o=>String(o.value)===t.answer).label;if(label==='Constant')assert.ok(t.values.every(v=>v===t.values[0]));if(label==='Steady increase')assert.ok(t.values.every((v,i)=>i===0||v-t.values[i-1]===t.values[1]-t.values[0]));if(label==='Steady decrease')assert.ok(t.values.every((v,i)=>i===0||v<t.values[i-1]));if(label==='Increase gets faster')assert.ok(t.values[4]-t.values[3]>t.values[1]-t.values[0]);}}
+ for(const t of L.allTasks.slice(600,800)){if(t.g7Model==='graph'){assert.equal(t.values.length,5);if(t.query==='read')assert.equal(Number(t.answer),t.values[3]);else{const label=t.options.find(o=>String(o.value)===t.answer).label;if(label==='Constant')assert.ok(t.values.every(v=>v===t.values[0]));if(label==='Steady increase')assert.ok(t.values.every((v,i)=>i===0||v-t.values[i-1]===t.values[1]-t.values[0]));if(label==='Steady decrease')assert.ok(t.values.every((v,i)=>i===0||v<t.values[i-1]));if(label==='Increase gets faster')assert.ok(t.values[4]-t.values[3]>t.values[1]-t.values[0]);}}
   if(t.g7Model==='angle')assert.equal(t.options.find(o=>String(o.value)===t.answer).label,t.degrees<90?'Acute':t.degrees<180?'Obtuse':'Reflex');if(t.g7Model==='triangle')assert.equal(Number(t.answer)*2,t.base*t.height);if(t.g7Model==='box')assert.equal(Number(t.answer),t.query==='surface'?2*(t.length*t.width+t.width*t.height+t.length*t.height):t.length*t.width*t.height);if(t.g7Model==='scale')assert.equal(Number(t.answer),(t.query==='width'?t.width:t.length)*t.factor);
   if(t.g7Model==='data'){const a=[...t.values].sort((a,b)=>a-b);assert.equal(Number(t.answer),t.query==='mean'?a.reduce((a,b)=>a+b)/5:t.query==='median'?a[2]:a[4]-a[0]);}}
  assert.equal(L.missions[76].tasks[1].answer,'14');assert.equal(L.missions[77].tasks[0].answer,'72');assert.equal(L.missions[77].practice[0].answer,'136');assert.deepEqual(L.missions[78].tasks.slice(0,3).map(t=>t.answer),['10','11','13']);
 });
 test('Grade 7 SVGs render every model, proportional arrays, five graph points and explicitly marked reflex arcs',()=>{
- const{tools,Element}=toolHarness();const kinds=new Set();for(const t of L.allTasks.slice(600)){const v=new Element('div');assert.equal(tools.draw(t,v),true,t.id);assert.ok(v.children.length);kinds.add(t.g7Model);if(t.g7Model==='growing')assert.equal((v.children[0].innerHTML.match(/data-pattern-cell=/g)||[]).length,t.stage*(t.stage+1));if(t.g7Model==='graph')assert.equal((v.children[0].innerHTML.match(/data-graph-point=/g)||[]).length,5);if(t.g7Model==='angle'&&t.degrees>180){assert.match(v.children[0].innerHTML,/ 0 1 0 /);assert.match(v.children[0].attrs['aria-label'],/larger reflex turn/);}}
+ const{tools,Element}=toolHarness();const kinds=new Set();for(const t of L.allTasks.slice(600,800)){const v=new Element('div');assert.equal(tools.draw(t,v),true,t.id);assert.ok(v.children.length);kinds.add(t.g7Model);if(t.g7Model==='growing')assert.equal((v.children[0].innerHTML.match(/data-pattern-cell=/g)||[]).length,t.stage*(t.stage+1));if(t.g7Model==='graph')assert.equal((v.children[0].innerHTML.match(/data-graph-point=/g)||[]).length,5);if(t.g7Model==='angle'&&t.degrees>180){assert.match(v.children[0].innerHTML,/ 0 1 0 /);assert.match(v.children[0].attrs['aria-label'],/larger reflex turn/);}}
  for(const kind of ['integer','function','balance','graph','angle','circle','triangle','box','scale','data'])assert.ok(kinds.has(kind),kind);
+});
+
+test('v4.4 content is preserved: all 800 activities and 136 music arrangements are hash-locked',()=>{
+ assert.equal(crypto.createHash('sha256').update(JSON.stringify(L.allTasks.slice(0,800))).digest('hex'),'7cfc501b1f68d8ea6374137a010deb929fed93f8a556654c2c0485cd35cdfb16');
+ assert.equal(crypto.createHash('sha256').update(JSON.stringify(A.themes.slice(0,136))).digest('hex'),'181b705f3240a9642392eaac8cab3ed53d670cb47bdaa4a99961f3dc53075e36');
+});
+test('Grade 8 has twenty independent unlocks and all 200 activities complete without cross-grade awards',()=>{
+ assert.deepEqual(L.pathFor(8),{grade:8,title:'Skyline Lab',start:80,count:20,reviewMusic:156});const p=L.normalize(null),practice=L.normalize(null);
+ for(let m=80;m<100;m++){assert.equal(L.unlocked(p,8),m);assert.equal(L.missions[m].music,136+m-80);const unique=[...L.missions[m].tasks,...L.missions[m].practice].map(({id,...t})=>JSON.stringify(t));assert.equal(new Set(unique).size,10,L.missions[m].id);complete(p,L.fresh('adventure',m));complete(practice,L.fresh('learn',m,1),true);}
+ assert.equal(Object.keys(p.results).length,20);assert.deepEqual(practice.results,{});assert.equal(L.unlocked(practice,8),80);for(const[g,start]of[[4,0],[5,20],[6,40],[7,60]])assert.equal(L.unlocked(p,g),start);
+ const results=JSON.stringify(p.results),review=L.freshReview(p,8);assert.ok(review.plan.every(r=>r.mission>=80&&r.mission<100));assert.equal(new Set(review.plan.map(r=>L.taskAt(r).id)).size,5);assert.equal(L.music(review),156);complete(p,review);assert.equal(JSON.stringify(p.results),results);
+});
+test('Grade 8 migration preserves all four earlier paths, settings, drafts and revision checkpoints',()=>{
+ const old=L.normalize(null);for(let m=0;m<80;m++)complete(old,L.fresh('adventure',m));old.sessions.adventure=L.fresh();old.sessions.adventure.draft='3000';for(const[g,m,draft]of[[5,28,'3/'],[6,46,'7/'],[7,60,'-']]){old.gradeSessions[g].learn=L.fresh('learn',m,1);old.gradeSessions[g].learn.draft=draft;L.hint(old.gradeSessions[g].learn);old.gradeSessions[g].revision=L.freshReview(old,g);}old.activeGrade=7;old.settings={music:.2,sfx:.5};delete old.gradeSessions[8];
+ const p=L.normalize(JSON.parse(JSON.stringify(old)));assert.deepEqual(p.results,old.results);assert.deepEqual(p.sessions,old.sessions);for(const g of[5,6,7])assert.deepEqual(p.gradeSessions[g],old.gradeSessions[g]);assert.equal(L.unlocked(p,8),80);assert.deepEqual(p.settings,old.settings);
+ p.activeGrade=8;p.gradeSessions[8].learn=L.fresh('learn',91,1);p.gradeSessions[8].learn.draft='2';L.hint(p.gradeSessions[8].learn);p.gradeSessions[8].revision=L.freshReview(p,8);assert.deepEqual(L.normalize(JSON.parse(JSON.stringify(p))),p);p.gradeSessions[8].adventure=L.fresh('adventure',81);assert.equal(L.normalize(p).gradeSessions[8].adventure,null);const bad=L.freshReview(p,8);bad.plan[2]={mission:60,bank:0,index:0};assert.equal(L.valid(bad),false);
+});
+test('Grade 8 signed arithmetic, factorisation, scientific notation and exponent laws are exact',()=>{
+ assert.deepEqual(L.missions[80].tasks.map(t=>t.answer),['-24','35','-12','9','-9']);assert.deepEqual(L.missions[80].practice.map(t=>t.answer),['-56','54','-12','8','-3']);assert.deepEqual(L.missions[81].tasks.map(t=>t.answer),['42','432','75','180','120']);assert.deepEqual(L.missions[81].practice.map(t=>t.answer),['72','360','36','200','180']);
+ for(const t of L.allTasks.slice(800)){if(t.exponentLaw)assert.equal(Number(t.answer),t.op==='×'?t.m+t.n:t.m-t.n);if(t.scientificValue){const label=t.options.find(o=>String(o.value)===t.answer).label;assert.equal(label,t.scientificValue===45000?'4.5 × 10⁴':'7.2 × 10⁵');}if(t.query==='HCF'){assert.equal(t.a%Number(t.answer),0);assert.equal(t.b%Number(t.answer),0);for(let n=Number(t.answer)+1;n<=Math.min(t.a,t.b);n++)assert.ok(t.a%n!==0||t.b%n!==0);}if(t.query==='LCM'){assert.equal(Number(t.answer)%t.a,0);assert.equal(Number(t.answer)%t.b,0);for(let n=Math.max(t.a,t.b);n<Number(t.answer);n++)assert.ok(n%t.a!==0||n%t.b!==0);}}
+});
+test('Grade 8 rational powers and decimal operations match exact independent references',()=>{
+ for(const[bank,expected]of[['tasks',['29/12','6/7','4/9','3/4','2/5']],['practice',['57/20','3/2','9/16','4/9','3/7']]])L.missions[83][bank].forEach((t,i)=>assert.ok(L.equivalent(t.answer,expected[i]),t.id));
+ assert.deepEqual(L.missions[84].tasks.map(t=>t.answer),['0.400','0.054','42.000','5.000','18.750']);assert.deepEqual(L.missions[84].practice.map(t=>t.answer),['0.900','0.120','39.000','12.000','21.000']);assert.deepEqual(L.missions[85].tasks.map(t=>t.answer),['460','1210','300','210','15']);assert.deepEqual(L.missions[85].practice.map(t=>t.answer),['690','1490','450','290','20']);
+ for(const t of L.allTasks.slice(800).filter(t=>t.decimalCalculation)){const x=L.rational(t.answer);assert.equal(t.op==='×'?x.n*10000n:x.n*BigInt(t.b),t.op==='×'?x.d*BigInt(t.a*t.b):x.d*BigInt(t.a));}
+});
+test('Grade 8 expression choices are uniquely equivalent and equations balance under substitution',()=>{
+ for(const t of L.allTasks.slice(800)){
+  if(t.expectedCoefficients){const parse=label=>{const m=label.match(/^(-?\d+)x ([+−]) (\d+)$/);assert.ok(m,label);return[Number(m[1]),(m[2]==='−'?-1:1)*Number(m[3])];};const expected=t.divide?[t.a/t.factor,t.c/t.factor]:[t.a*t.factor,t.c*t.factor];const matches=t.options.filter(o=>JSON.stringify(parse(o.label))===JSON.stringify(expected));assert.equal(matches.length,1,t.id);assert.equal(String(matches[0].value),t.answer);}
+  if(t.likeA!==undefined){const expected=`${t.subtract?t.likeA-t.likeB:t.likeA+t.likeB}${t.square?'x²':'x'}`;assert.equal(t.options.filter(o=>o.label===expected).length,1);assert.equal(t.options.find(o=>String(o.value)===t.answer).label,expected);}
+  if(t.g8Model==='equation'){const x=Number(t.answer);assert.equal(t.a*x+t.c,t.rightA*x+t.rightC);}
+  if(t.g8Model==='function'){const x=t.unknown?Number(t.answer):t.input,y=t.unknown?t.input*t.multiplier+t.offset:Number(t.answer);assert.equal(y,t.multiplier*x+t.offset);}
+ }
+});
+test('Cartesian points and transformations have correct signed coordinates and saved real-control selections',()=>{
+ const{tools,Element}=toolHarness();for(const t of L.allTasks.slice(800).filter(t=>t.kind==='cartesian')){
+  const id=Number(t.answer),decoded=[-2+(id-1)%3*2,-2+Math.floor((id-1)/3)*2];assert.deepEqual(decoded,t.target);if(t.operation==='x-axis')assert.deepEqual(t.target,[t.from[0],-t.from[1]||0]);if(t.operation==='y-axis')assert.deepEqual(t.target,[-t.from[0]||0,t.from[1]]);if(t.operation==='y=x')assert.deepEqual(t.target,[t.from[1],t.from[0]]);if(t.operation==='rotate')assert.deepEqual(t.target,[-t.from[1]||0,t.from[0]]);if(t.operation==='translate')assert.deepEqual(t.target,[t.from[0]+t.delta[0],t.from[1]+t.delta[1]]);
+  const p=L.normalize(null),s=L.fresh('learn',91,t.id.includes('practice')?1:0),index=L.missions[91][s.bank?'practice':'tasks'].findIndex(v=>v.id===t.id);if(index<0)continue;s.index=index;s.steps.forEach((v,i)=>{v.done=i<index;});const panel=new Element('div');assert.equal(tools.renderResponse(t,s,{panel,onChange:v=>s.draft=String(v),effect:()=>{}}),true);const buttons=panel.children[0].children.filter(b=>b.tag==='button');assert.equal(buttons.length,9);assert.equal(panel.children[0].children.length,16);const button=buttons.find(b=>b.dataset.plot===id);assert.ok(button);button.click();assert.equal(button.attrs['aria-pressed'],'true');p.gradeSessions[8].learn=s;const restored=L.normalize(p).gradeSessions[8].learn;assert.equal(restored.draft,t.answer);assert.equal(L.submit(restored,restored.draft).ok,true);
+ }
+});
+test('Grade 8 geometry distinguishes angle relationships, hypotenuse, circle units and closed-prism faces',()=>{
+ for(const t of L.allTasks.slice(800)){
+  if(t.g8Model==='angles')assert.equal(Number(t.answer),['adjacent','cointerior'].includes(t.relationship)?180-t.given:t.given);
+  if(t.g8Model==='triangleAngles')assert.equal(Number(t.answer)+t.angles[0]+t.angles[1],180);
+  if(t.g8Model==='pythagoras'){if(t.radicand){assert.equal(t.radicand,t.a*t.a+t.b*t.b);assert.equal(t.options.find(o=>String(o.value)===t.answer).label,`√${t.radicand}`);}else assert.equal(Number(t.answer)**2,t.missing==='hypotenuse'?t.a*t.a+t.b*t.b:t.c*t.c-t.a*t.a);}
+  if(t.g8Model==='circle')assert.ok(L.equivalent(t.answer,String((t.query==='area'?314*t.radius*t.radius:628*t.radius)/100)));
+  if(t.g8Model==='composite')assert.equal(Number(t.answer),t.length*t.height-t.cutWidth*t.cutHeight);
+  if(t.g8Model==='prism'){assert.equal(t.a*t.a+t.b*t.b,t.c*t.c);assert.equal(Number(t.answer),t.query==='volume'?t.a*t.b/2*t.length:t.a*t.b+(t.a+t.b+t.c)*t.length);}
+ }
+ assert.deepEqual(L.missions[97].tasks.map(t=>t.answer),['60','108','180','3.75','3000']);assert.deepEqual(L.missions[97].practice.map(t=>t.answer),['240','216','324','4.25','4000']);
+});
+test('Grade 8 data, chance and every evidence renderer agree with their supplied quantities',()=>{
+ const{tools,Element}=toolHarness(),models=new Set();for(const t of L.allTasks.slice(800)){
+  const v=new Element('div');assert.equal(tools.draw(t,v),true,t.id);assert.ok(v.children.length);models.add(t.g8Model);
+  if(t.g8Model==='statistics'){const sorted=[...t.values].sort((a,b)=>a-b);assert.equal(Number(t.answer),t.query==='mean'?t.values.reduce((a,b)=>a+b)/6:(sorted[2]+sorted[3])/2);}
+  if(t.g8Model==='tokens'){assert.ok(L.equivalent(t.answer,`${t.counts[1]}/${t.counts[0]+t.counts[1]}`));assert.equal((v.children[0].innerHTML.match(/data-probability-token=/g)||[]).length,t.counts[0]+t.counts[1]);}
+  if(t.g8Model==='pattern')assert.equal((v.children[0].innerHTML.match(/data-square-cell=/g)||[]).length,t.stage*t.stage);
+  if(t.g8Model==='cartesian')assert.equal((v.children[0].innerHTML.match(/data-cartesian-point=/g)||[]).length,9);
+  if(t.g8Model==='graph'){assert.equal((v.children[0].innerHTML.match(/data-signal-point=/g)||[]).length,5);assert.equal(Number(t.answer),t.query==='minimum'?Math.min(...t.values):Math.max(...t.values));}
+ }
+ assert.equal(L.missions[98].tasks[1].answer,'12.5');assert.equal(L.missions[98].practice[1].answer,'17');for(const model of['cartesian','angles','pythagoras','prism','stem','tokens'])assert.ok(models.has(model));
 });
