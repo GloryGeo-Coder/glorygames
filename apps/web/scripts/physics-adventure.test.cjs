@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.join(__dirname,'../public/games/physics-force-lab'),A=require(path.join(root,'adventure-data.js'));
-test('all 75 repair targets can be reached using allowed equipment settings',()=>{
+test('all 90 repair targets can be reached using allowed equipment settings',()=>{
   for(const m of A.missions)for(let i=0;i<3;i++){
     const e=A.experiment(m,i),values=e.type==='grid'?['000000000',m.stations[i].board.solution]:e.options?e.options.map(o=>o[0]):Array.from({length:(e.max-e.min)/e.step+1},(_,n)=>e.min+n*e.step);
     assert.ok(values.some(v=>A.simulate(m,i,v,true).success),`${m.id}:${i} is unreachable`);
@@ -45,9 +45,9 @@ test('adventure and original lab entry references resolve and retain shared scor
   for(const m of A.missions)assert.ok(fs.existsSync(path.join(root,'assets/backgrounds',m.bg)),m.bg);
 });
 test('experiment lessons identify their selected grade topics and explain fair tests',()=>{
-  assert.deepEqual(A.missions.map(m=>m.grade),[4,4,5,5,6,4,5,6,6,6,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9]);for(const m of A.missions){assert.ok(m.topic&&m.concept);assert.equal(m.stations.length,3);for(let i=0;i<3;i++){const e=A.experiment(m,i);assert.ok(e.explanation&&e.hint);assert.equal(e.answers.length,3);assert.equal(e.predictions.length,3);}}
+  assert.deepEqual(A.missions.map(m=>m.grade),[4,4,5,5,6,4,5,6,6,6,7,7,7,7,7,8,8,8,8,8,9,9,9,9,9,10,10,10,10,10]);for(const m of A.missions){assert.ok(m.topic&&m.concept);assert.equal(m.stations.length,3);for(let i=0;i<3;i++){const e=A.experiment(m,i);assert.ok(e.explanation&&e.hint);assert.equal(e.answers.length,3);assert.equal(e.predictions.length,3);}}
 });
-test('all twenty-five original arrangements play distinct phrases and pause clears the music timer',()=>{
+test('all thirty original arrangements play distinct phrases and pause clears the music timer',()=>{
   const vm=require('node:vm'),notes=[],timers=new Set();
   const param={setValueAtTime(){},exponentialRampToValueAtTime(){},setTargetAtTime(){}};
   class AC{constructor(){this.state='running';this.currentTime=0;this.destination={};}createGain(){return {gain:param,connect(){},disconnect(){}};}createOscillator(){return {frequency:{setValueAtTime:f=>notes.push(f)},connect(){},disconnect(){},start(){},stop(){}};}}
@@ -55,7 +55,7 @@ test('all twenty-five original arrangements play distinct phrases and pause clea
   vm.runInNewContext(fs.readFileSync(path.join(root,'adventure-audio.js'),'utf8'),sandbox);
   const a=new sandbox.PhysicsAdventureAudio({music:.4,effects:.7}),phrases=[];
   for(let i=0;i<A.missions.length;i++){notes.length=0;a.play(i);for(let n=0;n<16;n++)a.tick();phrases.push(notes.join(','));a.stop();assert.equal(timers.size,0);}
-  assert.equal(new Set(phrases).size,25);
+  assert.equal(new Set(phrases).size,30);
   const unsupported={setInterval(){throw Error('should not start');},clearInterval(){}};vm.runInNewContext(fs.readFileSync(path.join(root,'adventure-audio.js'),'utf8'),unsupported);const silent=new unsupported.PhysicsAdventureAudio({music:0,effects:0});assert.doesNotThrow(()=>{silent.play(0);silent.effect('jump');silent.stop();});
 });
 test('the five previously released mission definitions remain byte-equivalent as data',()=>{

@@ -469,7 +469,8 @@
     won:false,
     levelIndex:0,
     score:0,
-    best:Number(localStorage.getItem(BEST_KEY)||0),
+    best:readBest(),
+    reduced:readReduced(),
     stars:0,
     camera:0,
     t:0,
@@ -482,7 +483,7 @@
     activeQuiz:null
   };
 
-  let W=1280,H=720,DPR=1,last=performance.now();
+  let W=1280,H=720,viewHeight=720,renderScale=1,DPR=1,last=performance.now();
   const images={};
 
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -492,14 +493,15 @@
 
   function level(){return LEVELS[state.levelIndex]||LEVELS[0];}
 
+  function readBest(){try{const n=Number(localStorage.getItem(BEST_KEY));return Number.isFinite(n)?Math.max(0,n):0;}catch{return 0;}}
+  function readReduced(){try{return localStorage.getItem('wga_physics_original_motion')==='reduced'||matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return matchMedia('(prefers-reduced-motion: reduce)').matches;}}
+  function storeBest(){try{localStorage.setItem(BEST_KEY,String(state.best));}catch{}}
+  function clearInput(){state.keys={};held.left.clear();held.right.clear();state.player.vx=0;}
   function resize(){
-    const rect=canvas.getBoundingClientRect();
-    DPR=Math.min(2,window.devicePixelRatio||1);
-    W=Math.max(1,Math.floor(rect.width));
-    H=Math.max(1,Math.floor(rect.height));
-    canvas.width=Math.floor(W*DPR);
-    canvas.height=Math.floor(H*DPR);
-    ctx.setTransform(DPR,0,0,DPR,0,0);
+    const rect=canvas.getBoundingClientRect(),view=window.PhysicsLegacyVisuals.viewport(rect.width,rect.height,window.devicePixelRatio||1);
+    DPR=view.dpr;renderScale=view.scale;W=view.width;viewHeight=view.height;H=view.worldHeight;
+    canvas.width=Math.round(rect.width*DPR);canvas.height=Math.round(rect.height*DPR);ctx.setTransform(DPR*renderScale,0,0,DPR*renderScale,0,0);
+    state.camera=clamp(state.player.x-W*.35,0,Math.max(0,state.world.length-W));
   }
 
   function loadImage(src){
@@ -534,9 +536,9 @@
     ui.overlayTitle.textContent=title;
     ui.overlayText.textContent=text;
     ui.startBtn.textContent=button;
-    ui.overlay.classList.add("active");
+    clearInput();ui.overlay.classList.add("active");if(!ui.overlay.open)ui.overlay.showModal();
   }
-  function hideOverlay(){ui.overlay.classList.remove("active");}
+  function hideOverlay(){ui.overlay.classList.remove("active");ui.overlay.close();clearInput();}
 
   function toast(text){
     ui.toast.textContent=text;
@@ -550,7 +552,7 @@
     const AC=window.AudioContext||window.webkitAudioContext;
     if(!AC) return null;
     if(!state.audio.ctx){
-      state.audio.ctx=new AC();
+      try{state.audio.ctx=new AC();}catch{return null;}
       state.audio.master=state.audio.ctx.createGain();
       state.audio.master.gain.value=0.12;
       state.audio.master.connect(state.audio.ctx.destination);
@@ -632,16 +634,19 @@
     try{window.parent?.postMessage?.({...payload,type:"gg:score"},"*");}catch{}
   }
 
-  function setKey(k,v){state.keys[k]=v;}
+  const held={left:new Set(),right:new Set()};
+  function setKey(k,v,source="keyboard"){if(!held[k])return;if(v)held[k].add(source);else held[k].delete(source);state.keys[k]=held[k].size>0;}
 
   window.addEventListener("keydown",e=>{
     const k=e.key.toLowerCase();
+    if(ui.overlay.open||ui.quizPanel.open){if(k==='p'&&!e.repeat&&ui.overlay.open&&state.started){e.preventDefault();continueGame();}return;}
+    if(["arrowleft","arrowright","arrowup"," "].includes(k))e.preventDefault();
     if(["a","arrowleft"].includes(k)) setKey("left",true);
     if(["d","arrowright"].includes(k)) setKey("right",true);
     if(["w","arrowup"," "].includes(k)){e.preventDefault();jump();}
-    if(k==="f") useTool();
-    if(k==="e") forceBlast();
-    if(k==="p") togglePause();
+    if(k==="f"&&!e.repeat) useTool();
+    if(k==="e"&&!e.repeat) forceBlast();
+    if(k==="p"&&!e.repeat) togglePause();
   });
   window.addEventListener("keyup",e=>{
     const k=e.key.toLowerCase();
@@ -650,17 +655,17 @@
   });
 
   function bindHold(btn,on,off){
-    if(!btn) return;
-    btn.addEventListener("pointerdown",e=>{e.preventDefault();ensureAudio();on();},{passive:false});
-    btn.addEventListener("pointerup",e=>{e.preventDefault();off&&off();},{passive:false});
-    btn.addEventListener("pointercancel",()=>off&&off());
-    btn.addEventListener("pointerleave",()=>off&&off());
+    btn.addEventListener('pointerdown',e=>{e.preventDefault();btn.setPointerCapture(e.pointerId);ensureAudio();on(e.pointerId);});
+    const release=e=>off?.(e.pointerId);btn.addEventListener('pointerup',release);btn.addEventListener('pointercancel',release);btn.addEventListener('lostpointercapture',release);
   }
-  bindHold(ui.leftBtn,()=>setKey("left",true),()=>setKey("left",false));
-  bindHold(ui.rightBtn,()=>setKey("right",true),()=>setKey("right",false));
-  bindHold(ui.jumpBtn,()=>jump(),()=>{});
-  bindHold(ui.toolBtn,()=>useTool(),()=>{});
-  bindHold(ui.blastBtn,()=>forceBlast(),()=>{});
+  bindHold(ui.leftBtn,id=>setKey('left',true,id),id=>setKey('left',false,id));
+  bindHold(ui.rightBtn,id=>setKey('right',true,id),id=>setKey('right',false,id));
+  bindHold(ui.jumpBtn,jump);bindHold(ui.toolBtn,useTool);bindHold(ui.blastBtn,forceBlast);
+  window.addEventListener('blur',()=>{clearInput();if(state.started&&!state.paused)togglePause();});
+  document.addEventListener('visibilitychange',()=>{clearInput();if(document.hidden){stopMusic();if(state.started&&!state.paused)togglePause();}});
+  window.addEventListener('pagehide',()=>{clearInput();stopMusic();});
+  ui.overlay.addEventListener('cancel',e=>{e.preventDefault();if(state.started)continueGame();});ui.quizPanel.addEventListener('cancel',e=>e.preventDefault());
+  $('legacyReduced').checked=state.reduced;$('legacyReduced').onchange=()=>{state.reduced=$('legacyReduced').checked;try{localStorage.setItem('wga_physics_original_motion',state.reduced?'reduced':'full');}catch{}};
 
   ui.startBtn.addEventListener("click",()=>{
     ensureAudio();
@@ -678,7 +683,7 @@
     ui.muteBtn.textContent=state.muted?"Muted":"Sound";
     if(state.muted) stopMusic(); else if(state.started&&!state.paused) startMusic();
   });
-  window.addEventListener("resize",resize);
+  window.addEventListener("resize",resize);new ResizeObserver(resize).observe(canvas);
 
   function newGame(){
     state.started=true;state.paused=false;state.won=false;
@@ -699,8 +704,8 @@
   }
 
   function togglePause(){
-    if(!state.started) return;
-    state.paused=!state.paused;
+    if(!state.started||ui.quizPanel.open) return;
+    clearInput();state.paused=!state.paused;
     if(state.paused){stopMusic();showOverlay("Paused","Take a quick break from the lab. Continue when ready.","Continue");}
     else{hideOverlay();startMusic();last=performance.now();}
   }
@@ -708,7 +713,7 @@
   function gameOver(msg){
     state.started=false;state.paused=true;stopMusic();
     state.best=Math.max(state.best,Math.floor(state.score));
-    localStorage.setItem(BEST_KEY,String(state.best));
+    storeBest();
     postScore("game_over");
     showOverlay("Experiment Failed",`${msg}\n\nScore: ${Math.floor(state.score)}\nBest: ${state.best}`,"Restart");
   }
@@ -717,7 +722,7 @@
     state.started=false;state.paused=true;state.won=true;stopMusic();
     state.score+=2000;
     state.best=Math.max(state.best,Math.floor(state.score));
-    localStorage.setItem(BEST_KEY,String(state.best));
+    storeBest();
     postScore("game_won");
     sfx("level");
     showOverlay("Junior Physics Guardian!",`The Quantum Core is stable. Professor Newtonia celebrates your physics journey.\n\nFinal Score: ${Math.floor(state.score)}\nStars: ${state.stars}`,"Play Again");
@@ -807,7 +812,7 @@
 
     const firstLesson=(LESSON_STEPS[state.levelIndex]||[])[0]||lv.topic;
     ui.conceptText.textContent="Concept: " + firstLesson;
-    toast(lv.name + " expanded: longer route, more puzzles.");
+    toast(lv.name + " • Follow the laboratory route.");
     updateHUD();
   }
 
@@ -913,9 +918,9 @@
     if(inZone("lowgrav")) gravity*=.45;
     p.vy += gravity*dt;
     p.x += p.vx*dt;
-    p.y += p.vy*dt;
+    p.previousY=p.y;p.y += p.vy*dt;
 
-    handlePlatforms();
+    handlePlatforms(dt);
 
     if(p.y>H+300) damagePlayer(35,"Careful! You fell into the experiment pit.",true);
     p.x=clamp(p.x,20,state.world.length-130);
@@ -942,15 +947,15 @@
     return state.world.hazards.some(h=>h.type===type && p.x+p.w>h.x && p.x<h.x+h.w && p.y+p.h>h.y && p.y<h.y+h.h);
   }
 
-  function handlePlatforms(){
+  function handlePlatforms(dt){
     const p=state.player;
     p.onGround=false;
     for(const pl of state.world.platforms){
       if(pl.type==="moving") pl.x=pl.ox+Math.sin(state.t*1.2+pl.phase)*pl.amp;
-      const prevY=p.y-p.vy*(1/60);
+      const prevY=p.previousY;
       if(p.x+p.w>pl.x && p.x<pl.x+pl.w && p.y+p.h>=pl.y && prevY+p.h<=pl.y+18 && p.vy>=0){
         p.y=pl.y-p.h;p.vy=0;p.onGround=true;p.jumps=0;
-        if(pl.type==="moving") p.x+=Math.cos(state.t*1.2+pl.phase)*pl.amp*.015;
+        if(pl.type==="moving") p.x+=Math.cos(state.t*1.2+pl.phase)*pl.amp*1.2*dt;
       }
     }
   }
@@ -1175,7 +1180,7 @@
     const quizId=terminal?.quizId ?? state.mission.quizzes;
     const q=currentQuizFor(quizId);
     state.activeQuiz={terminal,quizId,q};
-    state.paused=true;stopMusic();
+    state.paused=true;clearInput();stopMusic();
     ui.quizTopic.textContent=`${lv.name} • Experiment ${quizId+1}/${state.mission.requiredQuizzes}`;
     ui.quizQuestion.textContent=q.q;
     ui.quizAnswers.innerHTML="";
@@ -1185,13 +1190,13 @@
       btn.addEventListener("click",()=>answerQuiz(i));
       ui.quizAnswers.appendChild(btn);
     });
-    ui.quizPanel.classList.add("active");
+    ui.quizPanel.classList.add("active");ui.quizPanel.showModal();
   }
 
   function answerQuiz(i){
     const active=state.activeQuiz || {q:level().quiz,terminal:null,quizId:0};
     const q=active.q;
-    ui.quizPanel.classList.remove("active");
+    ui.quizPanel.classList.remove("active");ui.quizPanel.close();clearInput();
     if(i===q.correct){
       if(active.terminal) active.terminal.solved=true;
       state.mission.quizzes=Math.max(state.mission.quizzes,(active.quizId||0)+1);
@@ -1262,7 +1267,7 @@
 
     state.paused=true;
     stopMusic();
-    showOverlay(lv.name,`${lv.story}\n\nHard Mode Objective: collect ${reqCoins} rewards, ${reqCards} knowledge cards and solve ${reqQuizzes} experiment puzzles. Enemies now shoot, gates require quiz progress and physics principles unlock as you travel.\n\nNew tool: ${lv.tool}`,"Start Lab");
+    showOverlay(lv.name,`${lv.story}\n\nObjective: collect ${reqCoins} rewards, ${reqCards} knowledge cards and solve ${reqQuizzes} experiment puzzles. Solve experiment terminals to unlock gates and follow the route to the portal.\n\nTool: ${lv.tool}`,"Start Lab");
   }
 
   function progressRatio(){
@@ -1284,7 +1289,7 @@
     const reqQuizzes=state.mission.requiredQuizzes||requiredQuizzes();
     ui.storyText.textContent=lv.story;
     ui.topicLabel.textContent=lv.name;
-    ui.objectiveText.textContent=`${lv.objective} Hard Mode: collect ${reqCoins} rewards, ${reqCards} knowledge cards and solve ${reqQuizzes} experiment puzzles${lv.boss?" before defeating GlitchBot":""}.`;
+    ui.objectiveText.textContent=`Collect ${reqCoins} rewards and ${reqCards} cards; solve ${reqQuizzes} experiments${lv.boss?"; defeat GlitchBot":""}.`;
     ui.conceptText.textContent=`Principle ${Math.min(state.mission.conceptIndex+1,(LESSON_STEPS[state.levelIndex]||[]).length)}/${(LESSON_STEPS[state.levelIndex]||[]).length || 1}: ${lesson}`;
     ui.score.textContent=Math.floor(state.score);
     ui.level.textContent=`${state.levelIndex+1}/12`;
@@ -1302,25 +1307,27 @@
 
   function drawCover(src){
     const im=image(src);
-    if(!im){ctx.fillStyle="#06122a";ctx.fillRect(0,0,W,H);return;}
-    const r=Math.max(W/im.naturalWidth,H/im.naturalHeight);
+    if(!im){ctx.fillStyle="#06122a";ctx.fillRect(0,0,W,viewHeight);return;}
+    const r=Math.max(W/im.naturalWidth,viewHeight/im.naturalHeight);
     const dw=im.naturalWidth*r,dh=im.naturalHeight*r;
-    ctx.drawImage(im,(W-dw)/2,(H-dh)/2,dw,dh);
+    ctx.drawImage(im,(W-dw)/2,(viewHeight-dh)/2,dw,dh);
   }
 
   function draw(){
     const lv=level();
     drawCover(ASSETS.backgrounds[lv.bg]);
     ctx.save();
-    ctx.translate(-state.camera,0);
+    let viewY=clamp(state.player.y+state.player.h-viewHeight*.76,0,Math.max(0,H-viewHeight));
+    const boss=state.world.boss;if(boss&&Math.abs(state.player.x-boss.x)<W*.8)viewY=Math.min(viewY,Math.max(0,boss.y-55));
+    ctx.translate(-state.camera,-viewY);
 
     drawWorld();
     drawItems();
     drawHazards();
     drawGates();
     drawEnemies();
-    drawBoss();
     drawTerminals();
+    drawBoss();
     drawPortal();
     drawParticles();
     drawPlayer();
@@ -1330,7 +1337,7 @@
 
     if(!state.started){
       ctx.fillStyle="rgba(0,0,0,.15)";
-      ctx.fillRect(0,0,W,H);
+      ctx.fillRect(0,0,W,viewHeight);
     }
   }
 
@@ -1350,8 +1357,12 @@
         ctx.shadowBlur=12;
         roundRect(pl.x,pl.y,pl.w,pl.h,10,true,false);
         ctx.shadowBlur=0;
+        ctx.fillStyle='#bdd9e4';ctx.fillRect(pl.x+7,pl.y+3,pl.w-14,3);
+        ctx.fillStyle='#204457';for(let i=0;i<Math.floor(pl.w/30);i++)ctx.fillRect(pl.x+12+i*30,pl.y+11,17,5);
       }
     }
+    window.PhysicsLegacyVisuals.draw(ctx,'professor',{x:200,y:groundY()-98,w:62,h:98,time:state.t,reduced:state.reduced});
+    window.PhysicsLegacyVisuals.draw(ctx,'helper',{x:305,y:groundY()-80,w:46,h:49,time:state.t,reduced:state.reduced});
   }
 
   function roundRect(x,y,w,h,r,fill,stroke){
@@ -1372,7 +1383,7 @@
   function drawItems(){
     for(const it of state.world.items){
       const src=ASSETS.items[it.type]||ASSETS.items.coin;
-      drawImage(src,it.x,it.y+Math.sin(state.t*4+it.age)*6,it.w,it.h,1,Math.sin(state.t+it.age)*.08);
+      drawImage(src,it.x,it.y+(state.reduced?0:Math.sin(state.t*4+it.age)*6),it.w,it.h,1,state.reduced?0:Math.sin(state.t+it.age)*.08);
     }
   }
 
@@ -1425,7 +1436,7 @@
 
   function drawEnemies(){
     for(const e of state.world.enemies){
-      drawImage(e.img,e.x,e.y+Math.sin(e.age*3)*(e.fly?8:0),e.w,e.h,e.hit>0?.7:1,Math.sin(e.age*2)*.04);
+      window.PhysicsLegacyVisuals.draw(ctx,e.type,{x:e.x,y:e.y+(state.reduced?0:Math.sin(e.age*3)*(e.fly?8:0)),w:e.w,h:e.h,time:e.age,facing:e.dir,walking:!e.fly,hit:e.hit>0,reduced:state.reduced});
       ctx.fillStyle="rgba(0,0,0,.45)";
       ctx.fillRect(e.x,e.y-9,e.w,5);
       ctx.fillStyle="#ff5f84";
@@ -1436,7 +1447,7 @@
   function drawBoss(){
     const b=state.world.boss;
     if(!b)return;
-    drawImage(b.img,b.x,b.y,b.w,b.h,1,Math.sin(b.age)*.03);
+    window.PhysicsLegacyVisuals.draw(ctx,'boss',{...b,time:b.age,walking:true,facing:-1,reduced:state.reduced});
     const w=360,x=b.x-100,y=b.y-35;
     ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x,y,w,12);
     ctx.fillStyle="#ff5cc8";ctx.fillRect(x,y,w*clamp(b.hp/b.maxHp,0,1),12);
@@ -1497,7 +1508,7 @@
       ctx.save();ctx.strokeStyle="rgba(114,255,196,.8)";ctx.lineWidth=4;ctx.shadowColor="#72ffc4";ctx.shadowBlur=18;
       ctx.beginPath();ctx.arc(p.x+p.w/2,p.y+p.h/2,70,0,Math.PI*2);ctx.stroke();ctx.restore();
     }
-    drawImage(src,p.x-32,p.y-38,p.w+64,p.h+58,a,Math.sin(p.anim*8)*.015);
+    window.PhysicsLegacyVisuals.draw(ctx,'player',{...p,time:p.anim,walking:Math.abs(p.vx)>20&&p.onGround,airborne:!p.onGround,attacking:p.toolCd>.25,hit:a<1,reduced:state.reduced});
   }
 
   function drawFloaters(){
@@ -1517,7 +1528,7 @@
   }
 
   async function boot(){
-    resize();
+    resize();ui.overlay.showModal();
     await loadAssets();
     updateHUD();
     try{window.GG?.setSlug?.(GAME_SLUG);}catch{}

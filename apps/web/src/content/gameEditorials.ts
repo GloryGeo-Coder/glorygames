@@ -1071,71 +1071,92 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "physics-force-lab": {
     "category": "Educational",
-    "summary": "Explore force, motion, energy, circuits and other physics ideas through twelve story missions, puzzles, collectibles and animated action.",
+    "summary": "Restore Nova through 30 untimed adventure missions and 90 repair investigations covering selected Grades 4–10 physics topics, with saved experiments and a field notebook, plus 12 animated original action labs.",
     "overview": [
-      "Physics Force Lab: Rise of the Young Physicist combines a story-led adventure with introductory physics challenges. Instead of presenting formulas as an isolated worksheet, it puts ideas about movement, forces and physical systems into missions and puzzles where the player has to think about cause and effect.",
-      "The curriculum span is unusually broad for a browser game: it includes force, motion, gravity, friction, energy, simple machines, electric circuits, magnetism, waves, pressure and space physics. Collectibles, animated characters and stage progression keep the presentation playful while the questions encourage explanation."
+      "Physics Force Lab: Rise of the Young Physicist turns physics into a journey through Nova. Explore a district, make a prediction, change the equipment and test an idea before explaining the evidence that repairs each machine. The adventure has 30 missions and 90 repair investigations, with no countdown or lost lives for experiment mistakes.",
+      "The learning route develops selected South African CAPS topics from Grades 4–10: movement, sound, wheels and axles, springs, circuits, Earth rotation, heat transfer, electricity, light, forces, resistance, motion graphs, mechanical energy and waves. It supports practice and exploration rather than replacing the full Natural Sciences or Physical Sciences curriculum. The 12 original labs provide a separate action platforming campaign with tools, collectibles, shooting robots and a final boss."
     ],
     "story": [
-      "The main character is a young physicist learning to interpret the world through experiments and challenges. As the adventure progresses, the learner meets new physical phenomena and must apply the right concept to solve a task.",
-      "Across twelve stages, the young physicist investigates changing forces and physical systems. Each puzzle encourages you to test an explanation, learn from the result and approach the next experiment with greater confidence."
+      "Your first morning at Nova Physics Institute begins with a blackout. Professor Newtonia is trapped behind a stalled lift, Pip has found a damaged Quantum Core log, and your small workshop becomes the recovery team’s base. Repairing carts, radios, machines and beacons reveals a chain of unreliable readings and broken connections across the city.",
+      "The investigation leads through the recovery district, cooling watchtowers, a signal gallery and the isolated mechanical drive. Each restored mission adds a photograph to your workshop and evidence to your notebook. The final Grade 10 chapter asks you to use motion, energy, wave and circuit records to restart the Core and earn your place as a Junior Physics Guardian."
     ],
     "howToPlay": [
-      "Start the physics mission and read the question, instruction or demonstration carefully.",
-      "Observe how objects move or interact before choosing an explanation.",
-      "Apply the concept highlighted in that stage, such as gravity, friction or an electrical circuit.",
-      "Complete the puzzle or mission objective and collect available rewards.",
-      "Use feedback from the activity to correct a mistaken assumption before attempting the next stage.",
-      "Return to an earlier concept when a later challenge depends on it."
+      "Choose Begin adventure or continue your saved checkpoint, then read the district briefing.",
+      "Move along the route, jump over maintenance drones and collect optional data cells. Interact with each repair station when its prompt appears.",
+      "Choose a prediction and adjust the equipment. From the recovery chapter onward, test two different settings before explaining a successful result.",
+      "Read the diagram, measurements, trial history and feedback. Use the two-stage hints whenever you need help.",
+      "Apply all three repairs, reach the district relay and complete the mission to unlock the next one.",
+      "Open the field notebook from Pause or Settings to revisit your recorded explanations and observations. Choose the 12 original labs from the opening menu for the action campaign."
     ],
     "desktop": [
-      "Use the mouse or keyboard controls displayed for the active experiment or puzzle, and read the objective before making a choice."
+      "Adventure: use A/D or Left/Right to move, Space, W or Up to jump, and E to interact. Use the mouse or keyboard for equipment, answers and supply-route ordering. P pauses.",
+      "Original labs: use A/D or arrows to move, W/Up/Space to jump, F for the current physics tool and E for force blast. Use Pause, Sound and Restart on the HUD.",
+      "Enter Fullscreen is available where supported: in Adventure Settings and the original-lab menu. The game opens in its own browser tab."
     ],
     "mobile": [
-      "Tap the experiment controls and answer choices shown on screen to work through physics challenges."
+      "Use the dedicated movement, jump and interaction controls beneath the Adventure play area. Tap equipment choices, move sliders and use Earlier/Later buttons to order the electricity supply stages.",
+      "The original labs have their own movement, jump, Tool and Blast buttons below the play area. Questions and menus scroll on small screens. Portrait and landscape layouts keep the HUD outside the canvas and preserve world positions during rotation."
     ],
     "systems": [
       {
-        "title": "Twelve-stage physics journey",
-        "body": "Each stage develops part of a broad physics curriculum through mission-based gameplay."
+        "title": "Thirty missions, six chapters",
+        "body": "Restore the academy and recovery districts, investigate Grade 7 heat and energy, Grade 8 electricity and light, Grade 9 forces and power, and complete the Grade 10 Core restart."
       },
       {
-        "title": "Conceptual problem solving",
-        "body": "Players interpret forces and systems, connect observations to explanations and respond through puzzles."
+        "title": "Evidence-led repair investigations",
+        "body": "Predictions, controlled comparisons, diagrams, temperature and motion tables, progressive hints and explanations connect each successful repair to a physics idea."
       },
       {
-        "title": "Adventure presentation",
-        "body": "Story scenes, sprites, music and collectibles add an exploratory setting to the educational content."
+        "title": "A saved field notebook",
+        "body": "Adventure checkpoints, tested equipment settings, hints, completed missions and notebook findings save on this device. Findings remain available when a mission is retried."
+      },
+      {
+        "title": "Twelve original action labs",
+        "body": "Animated scientists, robots, drones and GlitchBot accompany moving platforms, hazards, collectible power-ups, physics tools, experiment terminals and level music. This mode uses health and a separate best-score record."
       }
     ],
     "progression": [
-      "The learning sequence includes both mechanics topics and later physical systems, so the most useful progress is an improved ability to explain why something happens.",
-      "Scores can be submitted through WebGameArena, but the experience is also valuable when a player pauses and thinks through a problem."
-    ],
-    "tips": [
-      "Describe the physical situation in words before selecting an answer.",
-      "Separate the force acting on an object from the direction the object is already moving.",
-      "In a circuit task, trace a complete path rather than focusing on one component.",
-      "For friction or gravity questions, ask what would change if a surface or mass changed.",
-      "Use unfamiliar terms as topics to revisit after a session instead of guessing repeatedly."
+      "Complete missions in sequence to unlock the next district. Each mission has three required repairs and twelve optional data cells; any completed mission can be replayed. The notebook keeps your discoveries through retries.",
+      "The first ten missions introduce selected Grades 4–6 topics and clearly marked enrichment. Grades 7, 8, 9 and 10 each add five missions. The Grade 10 route introduces signed motion and graphs, energy calculations, superposition, wave relationships, charge conservation and circuit measurements.",
+      "Adventure saves use this browser’s local storage. The original labs retain a separate best score; their current action run is not a saved Adventure checkpoint. Clearing browser data removes locally saved records."
     ],
     "learning": [
-      "Introduces forces, motion, gravity, energy, simple machines, electricity, magnetism, waves and pressure.",
-      "Encourages observation, reasoning and explanation rather than rote answer selection."
+      "Practise making predictions, changing one factor, comparing observations and explaining evidence.",
+      "Keep related quantities distinct: mass and weight, heat and temperature, distance and displacement, current and charge, power and energy.",
+      "Connect Grade 10 graphs and equations to the model readings, including position/velocity slopes, mechanical energy, wavelength and frequency, and energy transferred per charge."
     ],
     "faqs": [
       {
-        "q": "How many levels are there?",
-        "a": "There are twelve story missions exploring physics ideas through challenges, puzzles and collectibles. They provide practice and exploration rather than a complete school physics course."
+        "q": "How many missions and levels are included?",
+        "a": "The main adventure contains 30 missions and 90 repair investigations. The separate original action campaign contains 12 labs. Each adventure mission also has 12 optional data cells."
       },
       {
-        "q": "Does the game teach electricity?",
-        "a": "Yes. Circuits and magnetism are listed among its physics topics."
+        "q": "Which school grades does the game support?",
+        "a": "The adventure covers selected physics topics associated with South African CAPS Grades 4–10. It is a practice resource, not the complete Natural Sciences or Physical Sciences syllabus or a formal assessment. The original action labs are a separate mixed-topic challenge."
       },
       {
-        "q": "Do I need to know every formula in advance?",
-        "a": "The game is framed as a learning adventure. Read the task and use its observations as the starting point."
+        "q": "Does refreshing erase my investigation?",
+        "a": "Adventure checkpoints, equipment choices, trial history, hints and notebook findings save on the current device when browser storage is available. The original labs save a best score, rather than the current action run."
+      },
+      {
+        "q": "Can I play without sound or a timer?",
+        "a": "Adventure investigations are untimed and provide diagrams, written observations and feedback with sound off. Music and effects have separate volume controls, and reduced decorative motion is available. The original labs include a Sound toggle and reduced-motion setting."
+      },
+      {
+        "q": "Can I play on a phone?",
+        "a": "Yes. Both modes have touch controls and responsive portrait/landscape layouts. Menus and experiment questions scroll, and rotating the original labs preserves the world’s geometry."
+      },
+      {
+        "q": "Are the readings real laboratory measurements?",
+        "a": "No. The repeatable teaching models illustrate relationships under stated assumptions. Read each experiment’s explanation and model notes before applying the idea to a real physical situation."
       }
+    ],
+    "tips": [
+      "Keep the comparison fair by changing only the factor identified in the investigation.",
+      "Read units and reference directions before using a number.",
+      "Compare recorded trials rather than judging a result only by its animation.",
+      "A failed target is evidence: adjust the equipment, test again and use the next hint.",
+      "In the original labs, combine movement and jumping, collect the required rewards and solve terminals before entering the exit portal."
     ]
   },
   "recycle-rush": {

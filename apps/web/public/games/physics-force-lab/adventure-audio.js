@@ -26,7 +26,12 @@
     {bpm:94,root:185,chords:[0,7,2,9],notes:[12,19,14,9,4,7,16,2],wave:'sine'},
     {bpm:118,root:155.56,chords:[0,3,5,10],notes:[7,12,15,10,19,17,3,0],wave:'triangle'},
     {bpm:102,root:207.65,chords:[0,5,7,4],notes:[4,12,7,16,19,14,9,0],wave:'sine'},
-    {bpm:126,root:146.83,chords:[0,8,3,7],notes:[0,8,12,19,15,10,17,7],wave:'triangle'}
+    {bpm:126,root:146.83,chords:[0,8,3,7],notes:[0,8,12,19,15,10,17,7],wave:'triangle'},
+    {bpm:108,root:174.61,chords:[0,7,5,2],notes:[0,12,7,14,19,9,16,4],wave:'sine'},
+    {bpm:98,root:130.81,chords:[0,5,9,4],notes:[7,16,12,19,14,4,9,2],wave:'triangle'},
+    {bpm:114,root:196,chords:[0,3,8,5],notes:[12,15,7,19,10,17,3,0],wave:'sine'},
+    {bpm:120,root:164.81,chords:[0,7,3,5],notes:[4,12,19,7,15,10,17,0],wave:'triangle'},
+    {bpm:128,root:146.83,chords:[0,5,9,7],notes:[0,7,16,12,19,14,21,12],wave:'triangle'}
   ];
   class AdventureAudio{
     constructor(settings){this.settings=settings;this.ctx=null;this.timer=null;this.index=0;this.step=0;this.active=false;}

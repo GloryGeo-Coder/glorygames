@@ -1,9 +1,9 @@
 (function (root, factory) {
   const node=typeof module === 'object' && module.exports;
-  const api = factory(node ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict,node ? require('./adventure-grade7.js') : root.PhysicsHeatChapter,node ? require('./adventure-grade8.js') : root.PhysicsSignalChapter,node ? require('./adventure-grade9.js') : root.PhysicsPowerChapter);
+  const api = factory(node ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict,node ? require('./adventure-grade7.js') : root.PhysicsHeatChapter,node ? require('./adventure-grade8.js') : root.PhysicsSignalChapter,node ? require('./adventure-grade9.js') : root.PhysicsPowerChapter,node ? require('./adventure-grade10.js') : root.PhysicsFinalChapter);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.PhysicsAdventure = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery,heat,signal,power) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery,heat,signal,power,finalChapter) {
   'use strict';
   const SAVE_KEY = 'wga_physics_adventure_v1';
   const clamp = (n, a, b) => Math.min(b, Math.max(a, Number(n) || 0));
@@ -55,6 +55,7 @@
   if(heat)missions.push(...heat.missions);
   if(heat&&signal)missions.push(...signal.missions);
   if(heat&&signal&&power)missions.push(...power.missions);
+  if(heat&&signal&&power&&finalChapter)missions.push(...finalChapter.missions);
   function experiment(mission, station) {
     const m=typeof mission==='number'?missions[mission]:mission;
     return {...m,...m.stations[station].lesson};
@@ -99,6 +100,13 @@
     if(['grid','circuit'].includes(e.type))return result.output?'lamp on':'lamp off';
     if(e.type==='daylight')return result.detail;
     if(e.type==='convection')return result.state==='circulating'?'Whole-tank convection current':'Warm upper layer; weak whole-tank circulation';
+    if(e.grade===10){
+      if(result.samples)return `${result.output} ${result.unit}; displacement ${result.displacement} m`;
+      if(e.type==='journey')return `${result.distance} m distance; ${result.displacement} m east displacement`;
+      if(e.type==='mechanical-energy')return `${result.potential} J potential + ${result.kinetic} J kinetic`;
+      if(e.type==='em-link')return result.detail;
+      return `${result.output} ${result.unit}`;
+    }
     if(e.grade===9){
       if(e.type==='forces')return `${Math.abs(result.output)} N ${result.state==='balanced'?'balanced':result.state+' resultant'}`;
       if(e.type==='magnet')return result.state==='attract'?'Magnetic attraction':'Magnetic repulsion';
@@ -133,6 +141,8 @@
   function simulate(mission, station, value, closed=true) {
     const m=experiment(mission,station);
     const s=m.stations[station];
+    const final=finalChapter?.simulate(m,s,value);
+    if(final)return final;
     const mechanical=power?.simulate(m,s,value);
     if(mechanical)return mechanical;
     const electrical=signal?.simulate(m,s,value);
