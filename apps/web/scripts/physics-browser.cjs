@@ -19,9 +19,26 @@ async function solve(page,mi,si,first=false){
     const firstWire=page.locator('[data-wire="0"]');await firstWire.focus();await firstWire.press('Enter');assert.equal(await firstWire.getAttribute('data-rotation'),'1');await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();
     await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();assert.equal(await page.locator('[data-wire="0"]').getAttribute('data-rotation'),'1');assert.match(await page.locator('#labHint').textContent(),/above the middle row/);
   }
-  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180],[25,75,100],['copper','wood','steel'],['bottom','top','black'],['wool','wool','wool'],['wood','shiny','wool']];
+  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180],[25,75,100],['copper','wood','steel'],['bottom','top','black'],['wool','wool','wool'],['wood','shiny','wool'],['gain','gain','lose'],[2,3,3],['middle','smooth','water'],['glass','prism','overlap'],[5,'parallel-break','wide']];
   if(e.type==='grid')await setWires(page,m.stations[si].board.solution);else if(e.options)await page.locator('#equipment select').selectOption(values[mi][si]);else await setRange(page,values[mi][si]);
   await page.locator('#runTest').click();assert.match(await page.locator('#testResult').textContent(),/Target reached/);
+  if(mi===15&&si===0){
+    assert.match(await page.locator('#labVisual').getAttribute('aria-label'),/Only electrons transfer/);
+    await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();
+    await page.getByRole('button',{name:e.answers[1],exact:true}).click();assert.equal(await page.locator('#finishLab').isVisible(),false);
+    await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();
+    assert.equal(await page.locator('#equipment select').inputValue(),'gain');assert.equal(await page.locator('#trialHistory li').count(),2);assert.match(await page.locator('#labHint').textContent(),/negative rod/);
+    await page.locator('#runTest').click();
+  }
+  if(mi>=15&&si===0){
+    for(const [width,height]of [[320,568],[360,740],[375,667],[568,320],[844,390],[768,1024],[1024,768],[1440,900],[390,844]]){
+      await page.setViewportSize({width,height});await page.locator('#labVisual').scrollIntoViewIfNeeded();
+      const b=await page.locator('#labVisual').boundingBox();assert.ok(b.x>=0&&b.x+b.width<=width+1);assert.equal(await page.locator('#labVisual svg').count(),1);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+      const select=page.locator('#equipment select');if(await select.count()){const box=await select.boundingBox();assert.ok(box.width<=width&&box.height>=44);}
+    }
+    if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,`grade8-mission-${mi+1}.png`)});}
+  }
   if(mi===13&&si===0){
     assert.equal(await page.locator('#measurementTable tbody tr').count(),6);assert.equal(await page.locator('#measurementTable tbody tr').last().locator('td').first().textContent(),'66.7');
     await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();await page.getByRole('button',{name:e.answers[1],exact:true}).click();assert.equal(await page.locator('#finishLab').isVisible(),false);
@@ -105,6 +122,15 @@ async function solve(page,mi,si,first=false){
     console.log(`Layout/input/rotation/experiment: ${w}×${h} passed`);await c.close();
   }
   const denied=await browser.newContext({viewport:{width:390,height:844}});await denied.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw Error('blocked');}});window.AudioContext=undefined;window.webkitAudioContext=undefined;});const p=await denied.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await begin(p);await moveTo(p,'Medical supplies');await solve(p,0,0);await denied.close();
+  // A failed optional diagram download must not prevent an evidence-based repair.
+  const noVisual=await browser.newContext({viewport:{width:390,height:844}}),previous=A.blank();
+  for(const m of A.missions.slice(0,15))previous.completed[m.id]=true;
+  previous.current=15;previous.checkpoints['charge-yard']={x:900,solved:[],cells:[],labs:{}};
+  await noVisual.addInitScript(({key,previous})=>localStorage.setItem(key,JSON.stringify(previous)),{key:A.SAVE_KEY,previous});
+  await noVisual.route('**/adventure-signal-ui.js',route=>route.abort());const fallback=await noVisual.newPage();fallback.on('pageerror',e=>errors.push(e.message));
+  await fallback.goto(base);await begin(fallback);await moveTo(fallback,'Attraction gate');await fallback.locator('#interactAdventure').click();
+  assert.match(await fallback.locator('#labVisual').textContent(),/written observations/);
+  await fallback.getByRole('button',{name:A.experiment(15,0).predictions[0],exact:true}).click();await fallback.locator('#runTest').click();await fallback.locator('#equipment select').selectOption('gain');await fallback.locator('#runTest').click();await fallback.getByRole('button',{name:A.experiment(15,0).answers[0],exact:true}).click();await fallback.locator('#finishLab').click();assert.match(await fallback.locator('#missionStats').textContent(),/1\/3 repairs/);await noVisual.close();
   // Existing campaign still starts and reaches a live HUD under its own entry.
   const old=await browser.newPage({viewport:{width:1024,height:768}});old.on('pageerror',e=>errors.push(e.message));await old.goto(base.replace('index.html','original-labs.html'));await old.locator('#startBtn').click();await old.waitForTimeout(1000);assert.equal(await old.locator('#overlay').evaluate(el=>el.classList.contains('active')),false);assert.match(await old.locator('#levelValue').textContent(),/1.*12/);assert.ok(await old.locator('.wga-tab-fullscreen').count());await old.close();
   assert.deepEqual(errors,[]);console.log('All browser checks passed; no uncaught JavaScript errors.');
