@@ -4,7 +4,10 @@
   let storage;try{storage=window.localStorage;}catch{}
   let profile=A.load(storage),m=A.missions[profile.current],cp=null,running=false,activeLab=-1,ending=false,tested=false,explained=false,storageWarned=false,saveAvailable=true,lesson=null;
   const audio=new window.PhysicsAdventureAudio(profile.settings),keys={left:new Set(),right:new Set()};
-  const player={x:80,y:420,vx:0,vy:0,ground:true,facing:1,animation:0,flash:0};
+  const player={x:80,y:420,vx:0,vy:0,ground:true,facing:1,animation:0,flash:0,landing:0,cheer:0};
+  const C=window.PhysicsCharacterSprites,sprites=C?{hero:new C.Animator('player'),professor:new C.Animator('professor'),pip:new C.Animator('helper'),patrols:Array.from({length:4},()=>new C.Animator('maintenance'))}:null;
+  C?.load(['player','professor','helper','maintenance']);
+  const patrolBumps=[0,0,0,0];
   let width=960,height=540,scale=1,camera=0,time=0,last=performance.now(),saveElapsed=0,nearest=null,images={};
   let terrain=A.route(m),stationX=terrain.stations,endX=terrain.end,length=terrain.length;
   const dialogs=[...document.querySelectorAll('dialog')];
@@ -25,7 +28,7 @@
     checkpoint();closeAll();profile.current=i;m=A.missions[i];terrain=A.route(m);stationX=terrain.stations;endX=terrain.end;length=terrain.length;
     if(retry)delete profile.checkpoints[m.id];
     cp=profile.checkpoints[m.id]||{x:80,solved:[],cells:[],labs:{}};
-    profile.checkpoints[m.id]=cp;Object.assign(player,{x:cp.x,y:420,vx:0,vy:0,ground:true,flash:0});
+    profile.checkpoints[m.id]=cp;Object.assign(player,{x:cp.x,y:420,vx:0,vy:0,ground:true,flash:0,landing:0,cheer:0});
     activeLab=-1;ending=false;running=true;nearest=null;camera=A.clamp(player.x-width*.36,0,Math.max(0,length-width));$('prompt').textContent='';$('interactAdventure').disabled=true;checkpoint();hud();
     $('storyGrade').textContent=`MISSION ${i+1} • GRADE ${m.grade} • ${m.topic}`;
     $('storyTitle').textContent=m.title;$('storyCopy').textContent=m.story;
@@ -58,7 +61,7 @@
     else if(cp.solved.length===3)finishMission();else notice('Repair all three stations before opening the district relay.');
   }
   function finishMission(){
-    profile.completed[m.id]=true;ending=true;checkpoint();audio.effect('repair');
+    profile.completed[m.id]=true;ending=true;player.cheer=1.2;sprites?.hero.set('celebrate',true);sprites?.pip.set('cheer',true);checkpoint();audio.effect('repair');
     $('storyGrade').textContent='DISTRICT RESTORED';$('storyTitle').textContent=m.title;
     $('storyCopy').textContent=m.ending;$('storyGoal').textContent=`Evidence collected: ${cp.solved.length} repairs and ${cp.cells.length} optional data cells. ${m.concept}`;
     $('storyContinue').textContent=profile.current<A.missions.length-1?'Next mission':'Return to mission map';open('storyDialog');postScore();
@@ -135,7 +138,7 @@
     if(tested){$('reflectionQuestion').textContent=lesson.question;$('reflectionAnswers').replaceChildren();A.shuffled(lesson.answers,lesson.correct).forEach(answer=>{const b=document.createElement('button');b.textContent=answer.text;b.onclick=()=>{explained=answer.correct;$('reflectionFeedback').textContent=answer.correct?lesson.explanation:`Look again at your evidence. ${lesson.hint}`;$('reflectionFeedback').className=answer.correct?'success':'';$('finishLab').hidden=!answer.correct;};$('reflectionAnswers').append(b);});}
   }
   function applyRepair(){
-    if(!tested||!explained)return;cp.solved.push(activeLab);A.recordRepair(profile,m,activeLab);checkpoint();close('labDialog');audio.effect('repair');hud();notice(`Repair ${cp.solved.length}/3 complete. ${cp.solved.length===3?'The district relay is ready ahead.':'Follow the route to the next station.'}`);
+    if(!tested||!explained)return;player.cheer=1.1;sprites?.hero.set('celebrate',true);sprites?.pip.set('cheer',true);cp.solved.push(activeLab);A.recordRepair(profile,m,activeLab);checkpoint();close('labDialog');audio.effect('repair');hud();notice(`Repair ${cp.solved.length}/3 complete. ${cp.solved.length===3?'The district relay is ready ahead.':'Follow the route to the next station.'}`);
   }
   function visual(animate=false){
     const l=labState(),r=A.simulate(m,activeLab,l.value,l.closed),v=$('labVisual'),color=lesson.color;
@@ -184,21 +187,27 @@
   }
   function update(dt){
     if(!running||modal()||document.hidden)return;
-    time+=dt;player.flash=Math.max(0,player.flash-dt);const move=Number(keys.right.size>0)-Number(keys.left.size>0),target=move*265;
+    const wasGround=player.ground;
+    time+=dt;player.landing=Math.max(0,player.landing-dt);player.cheer=Math.max(0,player.cheer-dt);player.flash=Math.max(0,player.flash-dt);const move=Number(keys.right.size>0)-Number(keys.left.size>0),target=move*265;
     player.vx+=(target-player.vx)*Math.min(1,dt*13);if(move)player.facing=move;
     const barrier=cp.solved.length<3?stationX[[0,1,2].find(i=>!cp.solved.includes(i))]+100:length-55;
     player.x=A.clamp(player.x+player.vx*dt,45,barrier);const previousY=player.y;player.vy+=1250*dt;player.y+=player.vy*dt;
     const floor=A.landingFloor(terrain,player.x,previousY,player.y,player.vy);
-    player.ground=player.y>=floor;if(player.ground){player.y=floor;player.vy=0;}
+    player.ground=player.y>=floor;if(player.ground&&!wasGround)player.landing=.18;if(player.ground){player.y=floor;player.vy=0;}
     player.animation+=Math.abs(player.vx)*dt*.04;
     // Malfunctioning maintenance drones patrol a predictable lane; contact costs momentum only.
-    for(let i=0;i<(terrain.platforms.length?4:3);i++){const x=droneX(i);if(Math.abs(player.x-x)<35&&player.y>395&&player.flash===0){player.x=Math.max(45,player.x-28);player.vx=-80;player.flash=1.5;audio.effect('bump');notice('Drone contact slowed you down. Jump over its patrol lane.');}}
+    for(let i=0;i<(terrain.platforms.length?4:3);i++){const x=droneX(i);if(Math.abs(player.x-x)<35&&player.y>395&&player.flash===0){player.x=Math.max(45,player.x-28);player.vx=-80;player.flash=1.5;patrolBumps[i]=.34;sprites?.patrols[i].set('bump',true);audio.effect('bump');notice('Drone contact slowed you down. Jump over its patrol lane.');}}
     for(let i=0;i<12;i++){const {x,y}=A.cell(m,i);if(!cp.cells.includes(i)&&Math.abs(player.x-x)<29&&Math.abs(player.y-35-y)<50){cp.cells.push(i);audio.effect('cell');hud();checkpoint();}}
     nearest=null;for(let i=0;i<3;i++)if(Math.abs(player.x-stationX[i])<95&&!cp.solved.includes(i))nearest={kind:'station',index:i};
     if(Math.abs(player.x-endX)<100)nearest={kind:'exit'};
     $('prompt').textContent=nearest?nearest.kind==='station'?`E / Interact • ${m.stations[nearest.index].name}`:cp.solved.length===3?'E / Interact • Restore district relay':'Three repairs needed':'';
     $('interactAdventure').disabled=!nearest;
     camera+=(A.clamp(player.x-width*.36,0,Math.max(0,length-width))-camera)*Math.min(1,dt*9);
+    if(sprites){
+      sprites.hero.set(player.flash>1.12?'hurt':player.cheer>0?'celebrate':!player.ground?(player.vy<0?'rise':'fall'):player.landing>0?'land':Math.abs(player.vx)>15?'run':nearest?.kind==='station'?'interact':'idle').step(dt);
+      sprites.pip.set(player.cheer>0?'cheer':nearest?.kind==='station'?'scan':'hover').step(dt);sprites.professor.set(player.x<420?'talk':nearest?'gesture':'idle').step(dt);
+      sprites.patrols.forEach((a,i)=>{patrolBumps[i]=Math.max(0,patrolBumps[i]-dt);a.set(patrolBumps[i]>0?'bump':'hover').step(dt);});
+    }
     saveElapsed+=dt;if(saveElapsed>2){checkpoint();saveElapsed=0;}
   }
   function droneX(i){return 1030+i*(terrain.platforms.length?850:800)+Math.sin(time*.85+i)*110;}
@@ -207,6 +216,9 @@
   function limb(x,y,angle,len,color,w){ctx.save();ctx.translate(x,y);ctx.rotate(angle);rect(-w/2,0,w,len,color,w/2);ctx.restore();}
   // Articulated sprites: independent legs, arms, torso, face and equipment, with action-specific poses.
   function scientist(x,y,mode='player'){
+    const professor=mode==='professor',sprite=professor?sprites?.professor:sprites?.hero;
+    if(C?.draw(ctx,professor?'professor':'player',{x:x-(professor?24:22),y:y-(professor?88:84),w:professor?48:44,h:professor?88:84,facing:professor?1:player.facing,animator:sprite,reduced:profile.settings.reduced,opacity:!professor&&player.flash>0?.85:1}))return;
+
     const isProf=mode==='professor',walk=!isProf&&Math.abs(player.vx)>15&&player.ground,phase=profile.settings.reduced?0:player.animation,air=!isProf&&!player.ground,tool=!isProf&&nearest?.kind==='station';
     ctx.save();ctx.translate(x,y);ctx.scale(isProf?1:player.facing,1);const stride=walk?Math.sin(phase)*.65:0,bob=walk?Math.abs(Math.cos(phase))*2:0;
     ctx.globalAlpha=!isProf&&player.flash>0?.65:1;ellipse(0,2,20,4,'#05141d66');ctx.translate(0,-bob);
@@ -218,7 +230,10 @@
     if(isProf){ellipse(-13,-68,5,10,'#dddde1');ellipse(13,-68,5,10,'#dddde1');}else{rect(-16,-56,6,10,m.color,2);}
     ctx.restore();
   }
-  function robot(x,y,enemy=false){
+  function robot(x,y,enemy=false,index=0){
+    const h=enemy?51:45,w=enemy?60:44;
+    if(C?.draw(ctx,enemy?'maintenance':'helper',{x:x-w/2,y:y+24-h,w,h,facing:enemy?-1:player.facing,animator:enemy?sprites?.patrols[index]:sprites?.pip,reduced:profile.settings.reduced}))return;
+
     const f=profile.settings.reduced?0:Math.sin(time*4+x)*3,wave=profile.settings.reduced?0:Math.sin(time*4)*.2;ctx.save();ctx.translate(x,y+f);ellipse(0,26,21,4,'#03142466');rect(-21,-14,42,29,enemy?'#b15e63':'#f4d18b',10);rect(-16,-9,32,17,'#102d43',6);ellipse(-7,-1,3,4,enemy?'#ffb0ad':'#6af8d7');ellipse(7,-1,3,4,enemy?'#ffb0ad':'#6af8d7');limb(-22,0,wave,14,'#65949e',6);limb(22,0,-wave,14,'#65949e',6);rect(-4,-23,8,10,'#7e9fa6',2);ellipse(0,-25,4,4,enemy?'#ff7272':m.color);if(enemy){ctx.strokeStyle='#adc3ce';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-30,30,profile.settings.reduced?3:2+Math.abs(Math.cos(time*22))*4,0,0,7);ctx.stroke();}ctx.restore();
   }
   function apparatus(x,i){
@@ -302,7 +317,7 @@
     for(let i=0;i<3;i++){const x=stationX[i],solved=cp?.solved.includes(i);apparatus(x,i);rect(x-37,346,74,74,'#b1c4c6',8);rect(x-29,354,58,38,solved?'#3b947a':'#163e54',5);ctx.font='bold 20px system-ui';ctx.textAlign='center';ctx.fillStyle=solved?'#a5ffcf':m.color;ctx.fillText(solved?'✓':String(i+1),x,381);rect(x-18,401,36,7,solved?'#69f2c4':'#f2b575',3);
       if(!solved){rect(x+93,305,8,115,'#9b6670',3);for(let j=0;j<5;j++)rect(x+93,316+j*21,8,10,'#ffd58d',1);}
     }
-    for(let i=0;i<(terrain.platforms.length?4:3);i++)robot(droneX(i),390,true);
+    for(let i=0;i<(terrain.platforms.length?4:3);i++)robot(droneX(i),390,true,i);
     rect(endX-28,300,56,120,'#254459',8);ellipse(endX,327,20,20,cp?.solved.length===3?m.color:'#476572');
     ctx.textAlign='center';ctx.font='bold 13px system-ui';ctx.fillStyle='#e9f7ff';ctx.fillText('DISTRICT RELAY',endX,286);
     scientist(player.x,player.y);robot(player.x-55*player.facing,player.y-55);
