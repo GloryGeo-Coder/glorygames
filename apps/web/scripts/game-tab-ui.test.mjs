@@ -28,18 +28,32 @@ test('fullscreen is user activated, exits correctly and gives a harmless rejecti
 test('unsupported fullscreen adds no dead control', () => {
   const host = target(); bindGameFullscreen({ document: { documentElement: {} }, window: target(), host }); assert.equal(host.children.length, 0);
 });
-test('all 21 entries opt in once, retain their original scripts and expose the menu host; Sky Temple opts out', () => {
+test('all 21 entries opt in once, expose their runtime and menu host; Sky Temple opts out', () => {
   assert.equal(Object.keys(GAME_START_BUTTONS).length, 21);
   for (const [slug, id] of Object.entries(GAME_START_BUTTONS)) {
     const html = readFileSync(new URL(`../public/games/${slug}/index.html`, import.meta.url), 'utf8');
     assert.equal((html.match(/game-tab\.mjs\?v=1/g) || []).length, 1, slug);
     assert.equal((html.match(/game-tab\.css\?v=1/g) || []).length, 1, slug);
     assert.ok(html.includes(`id="${id}"`), `${slug}: ${id}`);
-    assert.match(html, /(?:\.\/)?game\.js/);
+    if (slug === 'physics-force-lab') {
+      assert.match(html, /src="\.\/adventure\.js"/);
+      const original = readFileSync(new URL('../public/games/physics-force-lab/original-labs.html', import.meta.url), 'utf8');
+      assert.match(original, /src="\.\/game\.js"/);
+      assert.match(original, /id="startBtn"/);
+    } else assert.match(html, /(?:\.\/)?game\.js/);
   }
   assert.ok(!GAME_START_BUTTONS['sky-temple-3d-rise-of-the-relic-master']);
   const sky = readFileSync(new URL('../public/games/sky-temple-3d-rise-of-the-relic-master/preview3d/index.html', import.meta.url), 'utf8');
   assert.ok(!sky.includes('game-tab.mjs'));
+});
+
+test('the preserved Physics labs mount the same score and fullscreen bridge at their explicit entry', () => {
+  const host = target(), doc = { ...target(), documentElement: { dataset: {} }, getElementById: () => ({ parentElement: host }) };
+  const win = { ...target(), document: doc, location: { pathname: '/games/physics-force-lab/original-labs.html', origin: 'https://example.test', search: '?scores=0' }, dispatchEvent() {}, Event: class {} };
+  win.self = win; win.top = win; mountGameTab(win);
+  assert.equal(doc.documentElement.dataset.wgaTab, 'physics-force-lab');
+  win.GG.setScore(25); assert.equal(win.__wgaGameTab.scoreBridge.state().latest, 25);
+  win.__wgaGameTab.scoreBridge.dispose();
 });
 
 test('standalone bootstrap accepts only its own origin/window scores and supports SDK object calls in practice mode', () => {
