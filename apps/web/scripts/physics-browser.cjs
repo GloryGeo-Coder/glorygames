@@ -10,6 +10,13 @@ async function begin(page){await page.locator('#startBtn').click();await page.lo
 async function moveTo(page,text){await page.keyboard.down('d');try{await page.waitForFunction(t=>document.getElementById('prompt').textContent.includes(t),text,{timeout:16000});}finally{await page.keyboard.up('d');}await page.waitForTimeout(100);}
 async function setRange(page,value){const range=page.locator('#equipment input[type=range]');await range.focus();await range.press('Home');const min=Number(await range.getAttribute('min')),step=Number(await range.getAttribute('step'))||1;for(let n=min;n<value;n+=step)await range.press('ArrowRight');}
 async function setWires(page,value){for(let i=0;i<9;i++){const tile=page.locator(`[data-wire="${i}"]`);if(await tile.isDisabled())continue;const current=Number(await tile.getAttribute('data-rotation'));for(let turn=0;turn<(Number(value[i])-current+4)%4;turn++)await tile.tap();}}
+async function setSupplyRoute(page,target){
+  const first=page.locator(`[data-stage="${target[0]}"][data-shift="-1"]`);if(await first.isEnabled()){await first.focus();await first.press('Enter');}
+  for(let i=0;i<3;i++){
+    const stage=target[i];
+    while(await page.locator('#equipment .supply-order li').evaluateAll((rows,id)=>rows.findIndex(row=>row.querySelector('button').dataset.stage===id),stage)>i)await page.locator(`[data-stage="${stage}"][data-shift="-1"]`).click();
+  }
+}
 async function solve(page,mi,si,first=false){
   const m=A.missions[mi],e=A.experiment(m,si);await page.locator('#interactAdventure').click();assert.equal(await page.locator('#labTitle').textContent(),m.stations[si].name);
   await page.getByRole('button',{name:e.predictions[0],exact:true}).click();
@@ -19,8 +26,8 @@ async function solve(page,mi,si,first=false){
     const firstWire=page.locator('[data-wire="0"]');await firstWire.focus();await firstWire.press('Enter');assert.equal(await firstWire.getAttribute('data-rotation'),'1');await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();
     await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();assert.equal(await page.locator('[data-wire="0"]').getAttribute('data-rotation'),'1');assert.match(await page.locator('#labHint').textContent(),/above the middle row/);
   }
-  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180],[25,75,100],['copper','wood','steel'],['bottom','top','black'],['wool','wool','wool'],['wood','shiny','wool'],['gain','gain','lose'],[2,3,3],['middle','smooth','water'],['glass','prism','overlap'],[5,'parallel-break','wide']];
-  if(e.type==='grid')await setWires(page,m.stations[si].board.solution);else if(e.options)await page.locator('#equipment select').selectOption(values[mi][si]);else await setRange(page,values[mi][si]);
+  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180],[25,75,100],['copper','wood','steel'],['bottom','top','black'],['wool','wool','wool'],['wood','shiny','wool'],['gain','gain','lose'],[2,3,3],['middle','smooth','water'],['glass','prism','overlap'],[5,'parallel-break','wide'],[40,60,20],['moon',5,'S'],[2,2,120],[2,'parallel','low-high'],['copper','012','led']];
+  if(e.type==='supply-route')await setSupplyRoute(page,values[mi][si]);else if(e.type==='grid')await setWires(page,m.stations[si].board.solution);else if(e.options)await page.locator('#equipment select').selectOption(values[mi][si]);else await setRange(page,values[mi][si]);
   await page.locator('#runTest').click();assert.match(await page.locator('#testResult').textContent(),/Target reached/);
   if(mi===15&&si===0){
     assert.match(await page.locator('#labVisual').getAttribute('aria-label'),/Only electrons transfer/);
@@ -37,7 +44,20 @@ async function solve(page,mi,si,first=false){
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
       const select=page.locator('#equipment select');if(await select.count()){const box=await select.boundingBox();assert.ok(box.width<=width&&box.height>=44);}
     }
-    if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,`grade8-mission-${mi+1}.png`)});}
+    if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,`grade${e.grade}-mission-${mi+1}.png`)});}
+  }
+  if(mi===24&&si===1){
+    assert.match(await page.locator('#testResult').textContent(),/3\/3 stages/);
+    await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();await page.getByRole('button',{name:e.answers[1],exact:true}).click();assert.equal(await page.locator('#finishLab').isVisible(),false);
+    await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();
+    assert.deepEqual(await page.locator('.supply-order li').evaluateAll(rows=>rows.map(row=>row.querySelector('button').dataset.stage)),['0','1','2']);assert.equal(await page.locator('#trialHistory li').count(),2);assert.match(await page.locator('#labHint').textContent(),/Generator first/);
+    await page.locator('#runTest').click();
+    for(const [width,height]of [[320,568],[360,740],[375,667],[568,320],[844,390],[768,1024],[1024,768],[1440,900],[390,844]]){
+      await page.setViewportSize({width,height});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+      for(const b of await page.locator('.supply-order button').all()){const rect=await b.boundingBox();assert.ok(rect.width>=44&&rect.height>=44);}
+      await page.locator('.supply-order').scrollIntoViewIfNeeded();await page.locator('.supply-order li').last().scrollIntoViewIfNeeded();
+    }
+    if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,'grade9-supply-route.png')});}
   }
   if(mi===13&&si===0){
     assert.equal(await page.locator('#measurementTable tbody tr').count(),6);assert.equal(await page.locator('#measurementTable tbody tr').last().locator('td').first().textContent(),'66.7');
@@ -131,6 +151,12 @@ async function solve(page,mi,si,first=false){
   await fallback.goto(base);await begin(fallback);await moveTo(fallback,'Attraction gate');await fallback.locator('#interactAdventure').click();
   assert.match(await fallback.locator('#labVisual').textContent(),/written observations/);
   await fallback.getByRole('button',{name:A.experiment(15,0).predictions[0],exact:true}).click();await fallback.locator('#runTest').click();await fallback.locator('#equipment select').selectOption('gain');await fallback.locator('#runTest').click();await fallback.getByRole('button',{name:A.experiment(15,0).answers[0],exact:true}).click();await fallback.locator('#finishLab').click();assert.match(await fallback.locator('#missionStats').textContent(),/1\/3 repairs/);await noVisual.close();
+  const noPowerVisual=await browser.newContext({viewport:{width:390,height:844}}),powerSave=A.blank();
+  for(const m of A.missions.slice(0,20))powerSave.completed[m.id]=true;
+  powerSave.current=20;powerSave.checkpoints['force-yard']={x:900,solved:[],cells:[],labs:{}};
+  await noPowerVisual.addInitScript(({key,powerSave})=>localStorage.setItem(key,JSON.stringify(powerSave)),{key:A.SAVE_KEY,powerSave});await noPowerVisual.route('**/adventure-power-ui.js',route=>route.abort());
+  const noPower=await noPowerVisual.newPage();noPower.on('pageerror',e=>errors.push(e.message));await noPower.goto(base);await begin(noPower);await moveTo(noPower,'Balanced inspection cart');await noPower.locator('#interactAdventure').click();assert.match(await noPower.locator('#labVisual').textContent(),/written observations/);
+  await noPower.getByRole('button',{name:A.experiment(20,0).predictions[0],exact:true}).click();await noPower.locator('#runTest').click();await setRange(noPower,40);await noPower.locator('#runTest').click();await noPower.getByRole('button',{name:A.experiment(20,0).answers[0],exact:true}).click();await noPower.locator('#finishLab').click();assert.match(await noPower.locator('#missionStats').textContent(),/1\/3 repairs/);await noPowerVisual.close();
   // Existing campaign still starts and reaches a live HUD under its own entry.
   const old=await browser.newPage({viewport:{width:1024,height:768}});old.on('pageerror',e=>errors.push(e.message));await old.goto(base.replace('index.html','original-labs.html'));await old.locator('#startBtn').click();await old.waitForTimeout(1000);assert.equal(await old.locator('#overlay').evaluate(el=>el.classList.contains('active')),false);assert.match(await old.locator('#levelValue').textContent(),/1.*12/);assert.ok(await old.locator('.wga-tab-fullscreen').count());await old.close();
   assert.deepEqual(errors,[]);console.log('All browser checks passed; no uncaught JavaScript errors.');

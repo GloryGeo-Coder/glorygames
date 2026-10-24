@@ -1,9 +1,9 @@
 (function (root, factory) {
   const node=typeof module === 'object' && module.exports;
-  const api = factory(node ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict,node ? require('./adventure-grade7.js') : root.PhysicsHeatChapter,node ? require('./adventure-grade8.js') : root.PhysicsSignalChapter);
+  const api = factory(node ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict,node ? require('./adventure-grade7.js') : root.PhysicsHeatChapter,node ? require('./adventure-grade8.js') : root.PhysicsSignalChapter,node ? require('./adventure-grade9.js') : root.PhysicsPowerChapter);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.PhysicsAdventure = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery,heat,signal) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery,heat,signal,power) {
   'use strict';
   const SAVE_KEY = 'wga_physics_adventure_v1';
   const clamp = (n, a, b) => Math.min(b, Math.max(a, Number(n) || 0));
@@ -54,6 +54,7 @@
   // Cached older entry pages can still run their original two chapters.
   if(heat)missions.push(...heat.missions);
   if(heat&&signal)missions.push(...signal.missions);
+  if(heat&&signal&&power)missions.push(...power.missions);
   function experiment(mission, station) {
     const m=typeof mission==='number'?missions[mission]:mission;
     return {...m,...m.stations[station].lesson};
@@ -98,6 +99,14 @@
     if(['grid','circuit'].includes(e.type))return result.output?'lamp on':'lamp off';
     if(e.type==='daylight')return result.detail;
     if(e.type==='convection')return result.state==='circulating'?'Whole-tank convection current':'Warm upper layer; weak whole-tank circulation';
+    if(e.grade===9){
+      if(e.type==='forces')return `${Math.abs(result.output)} N ${result.state==='balanced'?'balanced':result.state+' resultant'}`;
+      if(e.type==='magnet')return result.state==='attract'?'Magnetic attraction':'Magnetic repulsion';
+      if(e.type==='voltage-share')return `${result.drops[0]} V + ${result.drops[1]} V = 3 V`;
+      if(e.type==='supply-route')return `${result.output}/3 stages in supply order`;
+      if(e.type==='energy-budget')return `${result.output.toFixed(3)} kWh; R${result.cost.toFixed(2)}; ${result.lit?'lighting supplied':'no lighting'}`;
+      return `${result.output} ${result.unit}`;
+    }
     if(e.grade===8){
       if(['network','coil','transmit'].includes(e.type))return `${result.output} ${result.unit}`;
       if(e.type==='charge')return `${result.state==='attract'?'Attraction':'Repulsion'}: ${result.rodCharge<0?'negative':'positive'} rod and ${result.probe<0?'negative':'positive'} probe`;
@@ -111,7 +120,7 @@
     if(result.energy)return `${result.energy.potential} potential, ${result.energy.kinetic} kinetic, ${result.energy.surroundings} surroundings (model units)`;
     return `${result.output} ${result.unit}`.trim();
   }
-  function setting(e,t,index) {return e.type==='grid'?`Wire arrangement ${index+1}`:`${e.grade>=7&&e.options?e.options.find(o=>o[0]===t.value)?.[1]||t.value:t.value}${e.unit?' '+e.unit:''}${e.type==='circuit'?(t.closed?', switch closed':', switch open'):''}`;}
+  function setting(e,t,index) {return e.type==='grid'?`Wire arrangement ${index+1}`:e.type==='supply-route'?t.value.split('').map(n=>['Generator','Transmission','Local supply'][Number(n)]).join(' → '):`${e.grade>=7&&e.options?e.options.find(o=>o[0]===t.value)?.[1]||t.value:t.value}${e.unit?' '+e.unit:''}${e.type==='circuit'?(t.closed?', switch closed':', switch open'):''}`;}
   function notebook(p) {
     return missions.flatMap(m=>Object.keys(p.journal[m.id]||{}).map(key=>{
       const index=Number(key),e=experiment(m,index);
@@ -124,6 +133,8 @@
   function simulate(mission, station, value, closed=true) {
     const m=experiment(mission,station);
     const s=m.stations[station];
+    const mechanical=power?.simulate(m,s,value);
+    if(mechanical)return mechanical;
     const electrical=signal?.simulate(m,s,value);
     if(electrical)return electrical;
     const thermal=heat?.simulate(m,s,value);
