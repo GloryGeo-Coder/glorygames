@@ -127,8 +127,8 @@ async function solve(page,mi,si,first=false){
     await begin(p);
     if(w===390){
       await p.locator('#settingsBtn').click();
-      const full=p.locator('#settingsDialog .wga-tab-fullscreen');
-      if(await full.count()){await full.click();await p.waitForFunction(()=>!!document.fullscreenElement);await full.click();await p.waitForFunction(()=>!document.fullscreenElement);}
+      const full=p.locator('#settingsDialog [data-physics-fullscreen]');
+      assert.equal(await full.isVisible(),true);await full.click();await p.waitForFunction(()=>!!document.fullscreenElement);await full.click();await p.waitForFunction(()=>!document.fullscreenElement);
       await p.locator('#musicVolume').focus();await p.locator('#musicVolume').press('Home');assert.equal(await p.locator('#musicOutput').textContent(),'0%');
       await p.locator('[data-close="settingsDialog"]').click();
     }
@@ -143,10 +143,12 @@ async function solve(page,mi,si,first=false){
     await p.locator('#pauseAdventure').click();const before=await p.evaluate(key=>JSON.parse(localStorage.getItem(key)).checkpoints.cargo.x,A.SAVE_KEY);assert.ok(before>100);await p.locator('#resumeAdventure').click();
     await p.setViewportSize({width:h,height:w});await p.waitForTimeout(100);await p.locator('#pauseAdventure').click();const after=await p.evaluate(key=>JSON.parse(localStorage.getItem(key)).checkpoints.cargo.x,A.SAVE_KEY);assert.ok(Math.abs(after-before)<2,'rotation changed world position');await p.locator('#resumeAdventure').click();await p.setViewportSize({width:w,height:h});
     if(shots&&w===390){fs.mkdirSync(shots,{recursive:true});await p.screenshot({path:path.join(shots,'phone-adventure.png')});}
+    await p.locator('#fullscreenBtn').click();await p.waitForFunction(()=>!!document.fullscreenElement);
     await moveTo(p,'Medical supplies');await p.locator('#interactAdventure').click();
     await p.getByRole('button',{name:A.missions[0].predictions[0],exact:true}).click();await setRange(p,3);await p.locator('#runTest').click();await p.getByRole('button',{name:A.missions[0].answers[0],exact:true}).click();
     await p.locator('#finishLab').scrollIntoViewIfNeeded();const b=await p.locator('#finishLab').boundingBox();assert.ok(b.y>=0&&b.y+b.height<=h+1,'repair unreachable in scrollable experiment');
     if(shots&&w===390)await p.screenshot({path:path.join(shots,'phone-experiment.png')});await p.locator('#finishLab').click();
+    await p.locator('#fullscreenBtn').click();await p.waitForFunction(()=>!document.fullscreenElement);
     console.log(`Layout/input/rotation/experiment: ${w}×${h} passed`);await c.close();
   }
   const denied=await browser.newContext({viewport:{width:390,height:844}});await denied.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw Error('blocked');}});window.AudioContext=undefined;window.webkitAudioContext=undefined;});const p=await denied.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await begin(p);await moveTo(p,'Medical supplies');await solve(p,0,0);await denied.close();
@@ -166,6 +168,6 @@ async function solve(page,mi,si,first=false){
   const noPower=await noPowerVisual.newPage();noPower.on('pageerror',e=>errors.push(e.message));await noPower.goto(base);await begin(noPower);await moveTo(noPower,'Balanced inspection cart');await noPower.locator('#interactAdventure').click();assert.match(await noPower.locator('#labVisual').textContent(),/written observations/);
   await noPower.getByRole('button',{name:A.experiment(20,0).predictions[0],exact:true}).click();await noPower.locator('#runTest').click();await setRange(noPower,40);await noPower.locator('#runTest').click();await noPower.getByRole('button',{name:A.experiment(20,0).answers[0],exact:true}).click();await noPower.locator('#finishLab').click();assert.match(await noPower.locator('#missionStats').textContent(),/1\/3 repairs/);await noPowerVisual.close();
   // Existing campaign still starts and reaches a live HUD under its own entry.
-  const old=await browser.newPage({viewport:{width:1024,height:768}});old.on('pageerror',e=>errors.push(e.message));await old.goto(base.replace('index.html','original-labs.html'));await old.locator('#startBtn').click();await old.waitForTimeout(1000);assert.equal(await old.locator('#overlay').evaluate(el=>el.classList.contains('active')),false);assert.match(await old.locator('#levelValue').textContent(),/1.*12/);assert.ok(await old.locator('.wga-tab-fullscreen').count());await old.close();
+  const old=await browser.newPage({viewport:{width:1024,height:768}});old.on('pageerror',e=>errors.push(e.message));await old.goto(base.replace('index.html','original-labs.html'));await old.locator('#startBtn').click();await old.waitForTimeout(1000);assert.equal(await old.locator('#overlay').evaluate(el=>el.classList.contains('active')),false);assert.match(await old.locator('#levelValue').textContent(),/1.*12/);assert.equal(await old.locator('#fullscreenBtn').isVisible(),true);await old.close();
   assert.deepEqual(errors,[]);console.log('All browser checks passed; no uncaught JavaScript errors.');
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server.close();});

@@ -8,6 +8,7 @@
   <title>Physics Force Lab: Rise of the Young Physicist</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+  <link rel="stylesheet" href="./display-controls.css" />
 </head>
 <body data-game="physics-force-lab" data-mode="original-labs">
   <main class="game-shell">
@@ -54,6 +55,7 @@
         <button id="rightBtn" aria-label="Move right">▶</button>
         <button id="jumpBtn" aria-label="Jump">▲</button>
       </div>
+      <div class="physics-display-controls"><button id="fullscreenBtn" data-physics-fullscreen hidden type="button" aria-label="Enter Fullscreen"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="screen-expand" d="M9 3H3v6M15 3h6v6M21 15v6h-6M9 21H3v-6"/><path class="screen-collapse" d="M3 9h6V3M15 3v6h6M21 15h-6v6M9 21v-6H3"/></svg><span class="screen-label">Enter Fullscreen</span></button><span data-physics-display-status role="status"></span></div>
       <div class="action-pad">
         <button id="toolBtn" class="primary" aria-label="Use physics tool">Tool</button>
         <button id="blastBtn" aria-label="Force blast">Blast</button>
@@ -83,6 +85,7 @@
           <button id="howBtn">How to Play</button>
         </div>
         <label class="motion-setting"><input type="checkbox" id="legacyReduced"> Reduce decorative motion</label>
+        <button data-physics-fullscreen hidden type="button"><span class="screen-label">Enter Fullscreen</span></button><p data-physics-display-status role="status"></p>
         <p class="control-note">
           Controls: A/D or arrows move • W/Up/Space jump • F or Tool uses the current physics tool • E/Blast fires force blast
         </p>
@@ -107,6 +110,7 @@
   <script src="./character-sprites.js"></script>
   <script src="./legacy-visuals.js"></script>
   <script src="./game.js"></script>
+  <script src="./display-controls.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

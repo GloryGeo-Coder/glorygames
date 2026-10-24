@@ -1,0 +1,23 @@
+/* Shared only by the two Physics modes. The whole document enters fullscreen so HUD, touch controls and dialogs stay available. */
+[hidden]{display:none!important}
+.physics-display-controls{display:flex;align-items:center;justify-content:center;gap:14px;min-width:0;flex-shrink:0}
+.physics-display-controls button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;min-width:44px;margin:0;touch-action:manipulation}
+.physics-display-controls svg{width:24px;height:24px;flex:none}
+.screen-collapse,[aria-pressed=true] .screen-expand{display:none}[aria-pressed=true] .screen-collapse{display:initial}
+[data-physics-display-status]:empty{display:none}
+.physics-display-controls [data-physics-display-status]{position:fixed;z-index:10;bottom:calc(78px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);border:1px solid #6e94a6;border-radius:10px;background:#0b253bed;padding:10px;font-size:12px;line-height:1.5;pointer-events:none}
+/* min-width:0 prevents long mission titles from widening a narrow phone viewport. */
+.missionbar>div,.mission-head>span{min-width:0;overflow-wrap:anywhere}
+@media(max-width:1100px),(max-height:500px){
+  .physics-display-controls .keyboard-note,.physics-display-controls .screen-label{display:none}
+  .physics-display-controls button{width:44px;min-width:44px;height:44px;min-height:44px;padding:0}
+  .controlbar .pad{gap:5px}.controlbar .pad button{min-width:48px;padding:8px}
+}
+/* Reserve cutout space for fullscreen and landscape without shrinking below usable touch targets. */
+@media(max-height:360px) and (min-width:480px){
+  .topbar,.missionbar,.controlbar{padding-left:10px;padding-right:10px}
+  .missionbar{padding-top:3px;padding-bottom:3px}.missionbar strong{font-size:12px}.missionbar span{font-size:10px}
+  .hud .title-panel{display:none}.hud .stat-panel{grid-column:1;grid-row:1;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px}.hud .top-actions{grid-column:2;grid-row:1}
+  .hud .stat-panel div{padding:1px 4px}.hud .stat-panel b{font-size:9px}
+  .mission-panel #objectiveText{display:none}.mission-panel{padding-top:3px;padding-bottom:3px}
+}
