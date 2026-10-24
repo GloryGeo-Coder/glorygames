@@ -2,6 +2,9 @@
   'use strict';
   function viewport(width,height,dpr=1){const scale=Math.min(1,Math.max(.55,height/600));return {scale,width:width/scale,height:height/scale,worldHeight:720,dpr:Math.min(2,Math.max(1,dpr))};}
   function draw(ctx,kind,p){
+    const state=p.sprite?.state||p.state||(kind==='helper'?'hover':kind==='drone'?'hover':p.airborne?'rise':p.attacking?'cast':p.hit?'hurt':p.walking?(kind==='player'?'run':'walk'):'idle');
+    if(globalThis.PhysicsCharacterSprites?.draw(ctx,kind,{...p,state,time:p.sprite?.time??p.time}))return;
+
     const t=p.reduced?0:p.time||0,phase=t*8,stride=p.walking?Math.sin(phase)*.35:0,bob=p.walking?Math.abs(Math.cos(phase))*2:Math.sin(t*2)*1.1;
     const rect=(x,y,w,h,c,r=5)=>{ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();};
     const oval=(x,y,rx,ry,c)=>{ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();};

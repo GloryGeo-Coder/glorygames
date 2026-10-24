@@ -3,6 +3,7 @@
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
+  const characters=window.PhysicsCharacterSprites;
   const $ = id => document.getElementById(id);
 
   const ui = {
@@ -480,6 +481,7 @@
     mission:{coins:0,cards:0,quizzes:0,quiz:false,complete:false,bossDown:false,conceptIndex:0,requiredCoins:0,requiredCards:0,requiredQuizzes:0},
     world:{length:3200,platforms:[],items:[],enemies:[],hazards:[],terminals:[],gates:[],particles:[],floaters:[],boss:null,portal:null},
     audio:{ctx:null,master:null,timer:null},
+    spriteGhosts:[],pipCheer:0,
     activeQuiz:null
   };
 
@@ -514,8 +516,9 @@
   }
 
   async function loadAssets(){
-    const paths=[...ASSETS.backgrounds,...Object.values(ASSETS.sprites),...Object.values(ASSETS.items),...Object.values(ASSETS.effects)];
+    const paths=[...ASSETS.backgrounds,...Object.values(ASSETS.items),...Object.values(ASSETS.effects)];
     const loaded=await Promise.all(paths.map(loadImage));
+    await characters?.load(['player','professor','helper','glitch','drone','magnetBot','boss']);
     paths.forEach((p,i)=>images[p]=loaded[i]);
   }
 
@@ -732,7 +735,7 @@
     state.transitioning=false;
     const lv=level();
     const targets=missionTargets();
-    state.camera=0;
+    state.camera=0;state.spriteGhosts=[];state.pipCheer=0;state.player.spriteAction=0;state.player.spriteHurt=0;state.player.spriteLand=0;state.player.sprite?.set('idle',true);
     state.activeQuiz=null;
     state.mission={coins:0,cards:0,quizzes:0,quiz:false,complete:false,bossDown:false,conceptIndex:0,requiredCoins:targets.coins,requiredCards:targets.cards,requiredQuizzes:targets.quizzes};
     state.world={length:HARDMODE.baseLength+state.levelIndex*HARDMODE.lengthStep,platforms:[],items:[],enemies:[],hazards:[],terminals:[],gates:[],particles:[],floaters:[],boss:null,portal:null};
@@ -843,7 +846,7 @@
     const p=state.player;
     if(p.toolCd>0) return;
     const lv=level();
-    p.toolCd=.8;
+    p.toolCd=.8;p.spriteAction=.4;p.sprite?.set('cast',true);
     sfx("tool");
     addParticles(p.x+p.w/2,p.y+p.h/2,toolColor(),22,260);
     if(lv.tool.includes("Speed")){p.vx+=p.facing*480;p.superJump=Math.max(p.superJump,.8);toast("Speed Boots burst!");}
@@ -861,7 +864,7 @@
     if(!state.started||state.paused) return;
     const p=state.player;
     if(p.blastCd>0) return;
-    p.blastCd=.55;
+    p.blastCd=.55;p.spriteAction=.4;p.sprite?.set('cast',true);
     sfx("blast");
     const b={x:p.x+p.w*.5,y:p.y+p.h*.43,w:28,h:14,vx:p.facing*640,life:.95,damage:26,type:"blast"};
     state.world.particles.push(b);
@@ -894,7 +897,7 @@
 
   function update(dt){
     if(!state.started||state.paused) return;
-    const lv=level(), p=state.player;
+    const lv=level(), p=state.player,wasGround=state.player.onGround;
     state.t+=dt;
     p.anim+=dt;
     p.toolCd=Math.max(0,p.toolCd-dt);
@@ -920,7 +923,7 @@
     p.x += p.vx*dt;
     p.previousY=p.y;p.y += p.vy*dt;
 
-    handlePlatforms(dt);
+    handlePlatforms(dt);if(p.onGround&&!wasGround)p.spriteLand=.18;
 
     if(p.y>H+300) damagePlayer(35,"Careful! You fell into the experiment pit.",true);
     p.x=clamp(p.x,20,state.world.length-130);
@@ -935,9 +938,20 @@
     updateTerminal();
     updateLessons();
     checkMission();
+    updateCharacterAnimations(dt);
     updateHUD();
   }
 
+  function updateCharacterAnimations(dt){
+    if(!characters)return;const p=state.player;
+    p.spriteAction=Math.max(0,(p.spriteAction||0)-dt);p.spriteHurt=Math.max(0,(p.spriteHurt||0)-dt);p.spriteLand=Math.max(0,(p.spriteLand||0)-dt);state.pipCheer=Math.max(0,state.pipCheer-dt);
+    p.sprite||=new characters.Animator('player');p.sprite.set(p.spriteHurt>0?'hurt':p.spriteAction>0?'cast':!p.onGround?(p.vy<0?'rise':'fall'):p.spriteLand>0?'land':Math.abs(p.vx)>20?'run':state.pipCheer>0?'celebrate':'idle').step(dt);
+    for(const e of state.world.enemies){e.spriteAction=Math.max(0,(e.spriteAction||0)-dt);e.sprite||=new characters.Animator(e.type);e.sprite.set(e.hit>0?'hurt':e.spriteAction>0?'attack':e.fly?'hover':'walk').step(dt);}
+    const b=state.world.boss;if(b){b.spriteAction=Math.max(0,(b.spriteAction||0)-dt);b.spriteHurt=Math.max(0,(b.spriteHurt||0)-dt);b.sprite||=new characters.Animator('boss');b.sprite.set(b.spriteHurt>0?'hurt':b.spriteAction>0?'fire':b.fire<.35?'charge':'idle').step(dt);}
+    for(const g of state.spriteGhosts)g.time+=dt;state.spriteGhosts=state.spriteGhosts.filter(g=>g.time<g.duration);
+  }
+  function characterDefeat(e,kind){state.spriteGhosts.push({x:e.x,y:e.y,w:e.w,h:e.h,kind,time:0,duration:kind==='boss'?.8:.6,facing:e.dir||-1});if(state.spriteGhosts.length>24)state.spriteGhosts.shift();state.pipCheer=.8;}
+  function drawCharacterDefeats(){for(const g of state.spriteGhosts)window.PhysicsLegacyVisuals.draw(ctx,g.kind,{...g,state:'defeat',reduced:state.reduced,opacity:1-g.time/g.duration});}
   function onIce(){
     const p=state.player;
     return state.world.hazards.some(h=>h.type==="ice" && p.x+p.w>h.x && p.x<h.x+h.w && Math.abs((p.y+p.h)-h.y)<25);
@@ -1031,7 +1045,7 @@
             state.score+=e.score||100;
             addFloater(e.x,e.y,`+${e.score||100}`,"#72ffc4",18);
             addParticles(e.x,e.y,"rgba(114,255,196,.95)",20,240);
-            state.world.enemies.splice(i,1);
+            characterDefeat(e,e.type);state.world.enemies.splice(i,1);
           }
           break;
         }
@@ -1040,7 +1054,7 @@
   }
 
   function enemyShoot(e){
-    const p=state.player;
+    const p=state.player;e.spriteAction=.4;e.spriteFacing=Math.sign(p.x-e.x)||e.dir;e.sprite?.set('attack',true);
     const sx=e.x+e.w/2, sy=e.y+e.h/2;
     const tx=p.x+p.w/2, ty=p.y+p.h/2;
     const a=Math.atan2(ty-sy,tx-sx);
@@ -1057,7 +1071,7 @@
     b.age+=dt;b.fire-=dt;
     b.y=groundY()-b.h-20+Math.sin(b.age*1.5)*10;
     if(b.fire<=0){
-      b.fire=1.0;
+      b.fire=1.0;b.spriteAction=.4;b.sprite?.set('fire',true);
       for(let i=0;i<4;i++){
         const ang=Math.atan2((p.y+p.h/2)-(b.y+b.h/2),(p.x+p.w/2)-b.x)+(i-1.5)*.18;
         state.world.particles.push({x:b.x+b.w*.2,y:b.y+b.h*.45,vx:Math.cos(ang)*260,vy:Math.sin(ang)*260,r:6,life:2.2,age:0,type:"enemyShot",color:"rgba(255,90,160,.95)",damagePlayer:13});
@@ -1067,11 +1081,11 @@
       const q=state.world.particles[j];
       if(!q.damage) continue;
       if(rect({x:q.x,y:q.y,w:q.w||14,h:q.h||14},b)){
-        b.hp-=q.damage;
+        b.hp-=q.damage;b.spriteHurt=.25;
         addParticles(q.x,q.y,toolColor(),10,220);
         state.world.particles.splice(j,1);
         if(b.hp<=0){
-          state.world.boss=null;
+          characterDefeat(b,'boss');state.world.boss=null;
           state.mission.bossDown=true;
           state.score+=1500;
           sfx("level");
@@ -1221,7 +1235,7 @@
     const p=state.player;
     if(p.invuln>0 && !reset) return;
     if(p.shield>0 && !reset){p.shield=Math.max(0,p.shield-1.4);toast("Energy Shield protected you!");return;}
-    p.health-=amount;
+    p.health-=amount;p.spriteHurt=.32;p.sprite?.set('hurt',true);
     p.invuln=.8;
     addParticles(p.x+p.w/2,p.y+p.h/2,"rgba(255,95,132,.95)",20,240);
     sfx("hit");
@@ -1326,6 +1340,7 @@
     drawHazards();
     drawGates();
     drawEnemies();
+    drawCharacterDefeats();
     drawTerminals();
     drawBoss();
     drawPortal();
@@ -1361,8 +1376,8 @@
         ctx.fillStyle='#204457';for(let i=0;i<Math.floor(pl.w/30);i++)ctx.fillRect(pl.x+12+i*30,pl.y+11,17,5);
       }
     }
-    window.PhysicsLegacyVisuals.draw(ctx,'professor',{x:200,y:groundY()-98,w:62,h:98,time:state.t,reduced:state.reduced});
-    window.PhysicsLegacyVisuals.draw(ctx,'helper',{x:305,y:groundY()-80,w:46,h:49,time:state.t,reduced:state.reduced});
+    window.PhysicsLegacyVisuals.draw(ctx,'professor',{x:200,y:groundY()-98,w:62,h:98,state:state.player.x<420?'talk':'idle',time:state.t,reduced:state.reduced});
+    window.PhysicsLegacyVisuals.draw(ctx,'helper',{x:state.player.x-65*state.player.facing,y:state.player.y-25,w:42,h:43,state:state.pipCheer>0?'cheer':state.player.toolCd>.2?'scan':'hover',time:state.t,reduced:state.reduced});
   }
 
   function roundRect(x,y,w,h,r,fill,stroke){
@@ -1436,7 +1451,7 @@
 
   function drawEnemies(){
     for(const e of state.world.enemies){
-      window.PhysicsLegacyVisuals.draw(ctx,e.type,{x:e.x,y:e.y+(state.reduced?0:Math.sin(e.age*3)*(e.fly?8:0)),w:e.w,h:e.h,time:e.age,facing:e.dir,walking:!e.fly,hit:e.hit>0,reduced:state.reduced});
+      window.PhysicsLegacyVisuals.draw(ctx,e.type,{x:e.x,y:e.y+(state.reduced?0:Math.sin(e.age*3)*(e.fly?8:0)),w:e.w,h:e.h,time:e.age,facing:e.spriteAction>0?e.spriteFacing:e.dir,walking:!e.fly,hit:e.hit>0,sprite:e.sprite,reduced:state.reduced});
       ctx.fillStyle="rgba(0,0,0,.45)";
       ctx.fillRect(e.x,e.y-9,e.w,5);
       ctx.fillStyle="#ff5f84";
@@ -1447,7 +1462,7 @@
   function drawBoss(){
     const b=state.world.boss;
     if(!b)return;
-    window.PhysicsLegacyVisuals.draw(ctx,'boss',{...b,time:b.age,walking:true,facing:-1,reduced:state.reduced});
+    window.PhysicsLegacyVisuals.draw(ctx,'boss',{...b,time:b.age,walking:false,facing:Math.sign(state.player.x-b.x)||-1,sprite:b.sprite,reduced:state.reduced});
     const w=360,x=b.x-100,y=b.y-35;
     ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x,y,w,12);
     ctx.fillStyle="#ff5cc8";ctx.fillRect(x,y,w*clamp(b.hp/b.maxHp,0,1),12);
@@ -1502,13 +1517,12 @@
 
   function drawPlayer(){
     const p=state.player;
-    const src=!p.onGround?ASSETS.sprites.jump:Math.abs(p.vx)>20?ASSETS.sprites.run:ASSETS.sprites.idle;
-    const a=p.invuln>0&&Math.sin(state.t*28)>0?.55:1;
+    const a=p.invuln>0?.82:1;
     if(p.shield>0){
       ctx.save();ctx.strokeStyle="rgba(114,255,196,.8)";ctx.lineWidth=4;ctx.shadowColor="#72ffc4";ctx.shadowBlur=18;
       ctx.beginPath();ctx.arc(p.x+p.w/2,p.y+p.h/2,70,0,Math.PI*2);ctx.stroke();ctx.restore();
     }
-    window.PhysicsLegacyVisuals.draw(ctx,'player',{...p,time:p.anim,walking:Math.abs(p.vx)>20&&p.onGround,airborne:!p.onGround,attacking:p.toolCd>.25,hit:a<1,reduced:state.reduced});
+    window.PhysicsLegacyVisuals.draw(ctx,'player',{...p,time:p.anim,walking:Math.abs(p.vx)>20&&p.onGround,airborne:!p.onGround,attacking:p.toolCd>.25,hit:a<1,opacity:a,sprite:p.sprite,reduced:state.reduced});
   }
 
   function drawFloaters(){

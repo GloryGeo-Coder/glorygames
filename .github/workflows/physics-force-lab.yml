@@ -5,12 +5,16 @@ on:
       - 'apps/web/public/games/physics-force-lab/**'
       - 'apps/web/scripts/physics-*'
       - '.github/workflows/physics-force-lab.yml'
+      - 'tools/physics-character-art.cjs'
+      - 'tools/build-physics-characters.cjs'
   push:
     branches: [main]
     paths:
       - 'apps/web/public/games/physics-force-lab/**'
       - 'apps/web/scripts/physics-*'
       - '.github/workflows/physics-force-lab.yml'
+      - 'tools/physics-character-art.cjs'
+      - 'tools/build-physics-characters.cjs'
 permissions:
   contents: read
 jobs:
@@ -23,4 +27,5 @@ jobs:
         with:
           node-version: '24'
       - run: for file in apps/web/public/games/physics-force-lab/*.js; do node --check "$file"; done
+      - run: node --check tools/physics-character-art.cjs && node --check tools/build-physics-characters.cjs
       - run: node --test apps/web/scripts/physics-*.test.cjs
