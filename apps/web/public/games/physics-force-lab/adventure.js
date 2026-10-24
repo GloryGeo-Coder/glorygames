@@ -332,6 +332,7 @@
   document.addEventListener('visibilitychange',()=>{clearInput();checkpoint();if(document.hidden){audio.stop();if(running&&!modal())pause();}});
   window.addEventListener('pagehide',()=>{clearInput();checkpoint();audio.stop();});
   window.addEventListener('resize',()=>{resize();checkpoint();});new ResizeObserver(resize).observe(canvas);
+  ['fullscreenchange','webkitfullscreenchange'].forEach(event=>document.addEventListener(event,clearInput));
   dialogs.forEach(d=>d.addEventListener('cancel',e=>{e.preventDefault();if(d.id==='homeDialog'&&!running)return;close(d.id);if(!running&&!modal())open('homeDialog');}));
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>close(b.dataset.close));
   $('startBtn').onclick=()=>launch(profile.current);$('chooseMission').onclick=missionMap;$('missionsBtn').onclick=missionMap;
@@ -342,8 +343,6 @@
   ['music','effects'].forEach(k=>{const input=$(k+'Volume');input.value=profile.settings[k]*100;$(k+'Output').textContent=input.value+'%';input.oninput=()=>{profile.settings[k]=Number(input.value)/100;$(k+'Output').textContent=input.value+'%';audio.unlock();audio.volumes();checkpoint();};});
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;profile.settings.reduced||=reduced;$('reduceMotion').checked=profile.settings.reduced;document.body.classList.toggle('reduce-motion',profile.settings.reduced);
   $('reduceMotion').onchange=()=>{profile.settings.reduced=$('reduceMotion').checked;document.body.classList.toggle('reduce-motion',profile.settings.reduced);checkpoint();};
-  // Keep fullscreen reachable during play, within Settings, without crowding the mobile HUD.
-  document.addEventListener('DOMContentLoaded',()=>{const host=document.querySelector('#settingsDialog article');document.querySelectorAll('#homeDialog .wga-tab-fullscreen, #homeDialog .wga-tab-status').forEach(control=>host.append(control));});
   A.missions.forEach(mission=>{const im=new Image();im.onload=()=>images[mission.bg]=im;im.src='./assets/backgrounds/'+mission.bg;});
   $('campaignCount').textContent=`${A.missions.length} adventure missions`;
   const completed=Object.values(profile.completed).filter(Boolean).length;$('homeProgress').textContent=completed?`${completed}/${A.missions.length} missions restored • Workshop reputation: ${A.score(profile)}`:'Your workshop is waiting. Meet Pip and begin the recovery.';$('startBtn').textContent=Object.keys(profile.checkpoints).length?'Continue adventure':'Begin adventure';

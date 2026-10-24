@@ -8,6 +8,7 @@
   <title>Physics Force Lab: Rise of the Young Physicist</title>
   <link rel="stylesheet" href="./adventure.css">
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1">
+  <link rel="stylesheet" href="./display-controls.css">
 </head>
 <body data-game="physics-force-lab">
   <main id="adventure" class="adventure">
@@ -19,7 +20,7 @@
     <section class="playfield"><canvas id="adventureCanvas" aria-label="Nova adventure. Move with arrows or A and D, jump with Space and interact with E."></canvas><div id="prompt" class="prompt"></div><div id="notice" class="notice" role="status"></div></section>
     <footer class="controlbar" aria-label="Touch and keyboard controls">
       <div class="pad"><button id="moveLeft" aria-label="Move left">◀</button><button id="moveRight" aria-label="Move right">▶</button></div>
-      <span class="keyboard-note">A/D move · Space jump · E interact</span>
+      <div class="physics-display-controls"><span class="keyboard-note">A/D move · Space jump · E interact</span><button id="fullscreenBtn" data-physics-fullscreen hidden type="button" aria-label="Enter Fullscreen"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path class="screen-expand" d="M9 3H3v6M15 3h6v6M21 15v6h-6M9 21H3v-6"/><path class="screen-collapse" d="M3 9h6V3M15 3v6h6M21 15h-6v6M9 21v-6H3"/></svg><span class="screen-label">Enter Fullscreen</span></button><span data-physics-display-status role="status"></span></div>
       <div class="pad"><button id="jumpAdventure" aria-label="Jump">Jump</button><button id="interactAdventure" class="primary">Interact</button></div>
     </footer>
   </main>
@@ -28,7 +29,7 @@
   <dialog id="storyDialog" aria-labelledby="storyTitle"><article><span id="storyGrade" class="eyebrow"></span><h2 id="storyTitle"></h2><p id="storyCopy"></p><p id="storyGoal" class="callout"></p><button id="storyContinue" class="primary">Explore the district</button></article></dialog>
   <dialog id="labDialog" aria-labelledby="labTitle"><article class="lab-card"><div class="lab-heading"><div><span id="labGrade" class="eyebrow"></span><h2 id="labTitle"></h2></div><button id="leaveLab" aria-label="Close experiment and return to the adventure">Back</button></div><p id="labGoal" class="callout"></p><p id="fairTest" class="small"></p><section id="predictStep"><h3>1. Predict</h3><p id="predictionQuestion"></p><div id="predictionAnswers" class="answers"></div></section><section id="testStep"><h3>2. Adjust and test</h3><div id="equipment"></div><div id="labVisual" class="lab-visual" role="img" aria-label="Experiment diagram"></div><div class="buttons"><button id="runTest" class="primary">Run experiment</button><button id="hintBtn">Need a hint?</button></div><p id="labHint" class="small"></p><p id="testResult" role="status"></p><ol id="trialHistory" class="trial-history"></ol><div id="measurementTable" class="measurement-table" hidden></div></section><section id="reflectStep" hidden><h3>3. Explain your evidence</h3><p id="reflectionQuestion"></p><div id="reflectionAnswers" class="answers"></div><p id="reflectionFeedback" role="status"></p></section><button id="finishLab" class="primary" hidden>Apply the repair</button><p class="small">A simplified teaching model. Numerical readings illustrate relationships; they are not laboratory measurements.</p></article></dialog>
   <dialog id="pauseDialog" aria-labelledby="pauseTitle"><article><span class="eyebrow">CHECKPOINT SAVED</span><h2 id="pauseTitle">Take a breather</h2><p id="pauseCopy">Your investigation will be here when you return.</p><div class="buttons"><button id="resumeAdventure" class="primary">Resume</button><button id="retryMission">Retry this mission</button><button id="pauseMap">Mission map</button><button id="pauseNotebook">Notebook</button></div></article></dialog>
-  <dialog id="settingsDialog" aria-labelledby="settingsTitle"><article><h2 id="settingsTitle">Make yourself comfortable</h2><label class="setting">Music <input id="musicVolume" type="range" min="0" max="100" value="45"><output id="musicOutput">45%</output></label><label class="setting">Sound effects <input id="effectsVolume" type="range" min="0" max="100" value="70"><output id="effectsOutput">70%</output></label><label class="setting"><input id="reduceMotion" type="checkbox"> Reduce decorative motion</label><button id="settingsNotebook">Field notebook</button><p>Sound investigations always include a visible wave and written measurements.</p><button data-close="settingsDialog" class="primary">Done</button></article></dialog>
+  <dialog id="settingsDialog" aria-labelledby="settingsTitle"><article><h2 id="settingsTitle">Make yourself comfortable</h2><label class="setting">Music <input id="musicVolume" type="range" min="0" max="100" value="45"><output id="musicOutput">45%</output></label><label class="setting">Sound effects <input id="effectsVolume" type="range" min="0" max="100" value="70"><output id="effectsOutput">70%</output></label><label class="setting"><input id="reduceMotion" type="checkbox"> Reduce decorative motion</label><button id="settingsNotebook">Field notebook</button><button data-physics-fullscreen hidden type="button"><span class="screen-label">Enter Fullscreen</span></button><p data-physics-display-status role="status"></p><p>Sound investigations always include a visible wave and written measurements.</p><button data-close="settingsDialog" class="primary">Done</button></article></dialog>
   <noscript>This adventure needs JavaScript enabled to run.</noscript>
   <dialog id="notebookDialog" aria-labelledby="notebookTitle"><article><span class="eyebrow">YOUR DISCOVERIES</span><h2 id="notebookTitle">The field notebook</h2><p id="notebookProgress"></p><div id="notebookEntries" class="notebook-entries"></div><button data-close="notebookDialog" class="primary">Back</button></article></dialog>
   <script src="./character-sprite-data.js"></script>
@@ -45,6 +46,7 @@
   <script src="./adventure-data.js"></script>
   <script src="./adventure-audio.js"></script>
   <script src="./adventure.js"></script>
+  <script src="./display-controls.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

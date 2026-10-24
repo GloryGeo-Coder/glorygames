@@ -687,6 +687,7 @@
     if(state.muted) stopMusic(); else if(state.started&&!state.paused) startMusic();
   });
   window.addEventListener("resize",resize);new ResizeObserver(resize).observe(canvas);
+  ['fullscreenchange','webkitfullscreenchange'].forEach(event=>document.addEventListener(event,clearInput));
 
   function newGame(){
     state.started=true;state.paused=false;state.won=false;
@@ -709,7 +710,7 @@
   function togglePause(){
     if(!state.started||ui.quizPanel.open) return;
     clearInput();state.paused=!state.paused;
-    if(state.paused){stopMusic();showOverlay("Paused","Take a quick break from the lab. Continue when ready.","Continue");}
+    if(state.paused){stopMusic();showOverlay("Paused",`Take a quick break from the lab. Continue when ready. ${ui.objectiveText.textContent} ${ui.conceptText.textContent}`,"Continue");}
     else{hideOverlay();startMusic();last=performance.now();}
   }
 
