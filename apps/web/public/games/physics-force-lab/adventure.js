@@ -35,7 +35,7 @@
   }
   function missionMap(){
     $('missionList').replaceChildren();
-    A.missions.forEach((mission,i)=>{if(i===0||i===5||i===10||i===15||i===20){const h=document.createElement('h3');h.textContent=i===0?'Chapter one • Academy district':i===5?'Chapter two • Recovery district':i===10?'Chapter three • Grade 7: Heat & Energy':i===15?'Chapter four • Grade 8: Electricity & Light':'Chapter five • Grade 9: Forces & Power';$('missionList').append(h);}const b=document.createElement('button');b.disabled=!A.isUnlocked(profile,i);const title=document.createElement('strong'),sub=document.createElement('span');title.textContent=`${i+1}. ${mission.title}`;sub.textContent=`Grade ${mission.grade} • ${mission.topic} • ${b.disabled?'Locked':profile.completed[mission.id]?'Restored — replay':'Explore'}`;b.append(title,sub);b.onclick=()=>launch(i,!!profile.completed[mission.id]);$('missionList').append(b);});
+    A.missions.forEach((mission,i)=>{if(i===0||i===5||i===10||i===15||i===20||i===25){const h=document.createElement('h3');h.textContent=i===0?'Chapter one • Academy district':i===5?'Chapter two • Recovery district':i===10?'Chapter three • Grade 7: Heat & Energy':i===15?'Chapter four • Grade 8: Electricity & Light':i===20?'Chapter five • Grade 9: Forces & Power':'Chapter six • Grade 10: The Core Restart';$('missionList').append(h);}const b=document.createElement('button');b.disabled=!A.isUnlocked(profile,i);const title=document.createElement('strong'),sub=document.createElement('span');title.textContent=`${i+1}. ${mission.title}`;sub.textContent=`Grade ${mission.grade} • ${mission.topic} • ${b.disabled?'Locked':profile.completed[mission.id]?'Restored — replay':'Explore'}`;b.append(title,sub);b.onclick=()=>launch(i,!!profile.completed[mission.id]);$('missionList').append(b);});
     open('mapDialog');
   }
   function showNotebook(){
@@ -130,7 +130,7 @@
     $('finishLab').hidden=true;$('reflectionFeedback').textContent='';
     $('testResult').textContent=`Observed: ${A.observation(lesson,r)}. ${r.detail} ${tested?'Target reached. Explain the evidence below.':r.success?'Target reached. Compare another equipment setting before explaining your evidence.':'Target not reached yet. Adjust one factor and test again.'}`;
     $('testResult').className=r.success?'success':'';history();visual(true);checkpoint();
-    if(lesson.type==='amplitude')audio.amplitude(l.value);else audio.effect(lesson.grade===9?(['forces','gravity-place','gravity-mass','magnet'].includes(lesson.type)?'force':'power'):lesson.grade===8?(['charge','network','branch','coil'].includes(lesson.type)?'electric':'optical'):lesson.grade===7?(lesson.type==='convection'?'flow':'thermal'):lesson.type==='sound'?'signal':'test',r.output);
+    if(lesson.type==='sound-wavelength')audio.effect('signal',l.value);else if(lesson.type==='amplitude')audio.amplitude(l.value);else audio.effect(lesson.grade===10?(['charge-sharing','charge-flow','equivalent-resistance','energy-per-charge','em-link'].includes(lesson.type)?'electric':'test'):lesson.grade===9?(['forces','gravity-place','gravity-mass','magnet'].includes(lesson.type)?'force':'power'):lesson.grade===8?(['charge','network','branch','coil'].includes(lesson.type)?'electric':'optical'):lesson.grade===7?(lesson.type==='convection'?'flow':'thermal'):lesson.type==='sound'?'signal':'test',r.output);
     $('reflectStep').hidden=!tested;
     if(tested){$('reflectionQuestion').textContent=lesson.question;$('reflectionAnswers').replaceChildren();A.shuffled(lesson.answers,lesson.correct).forEach(answer=>{const b=document.createElement('button');b.textContent=answer.text;b.onclick=()=>{explained=answer.correct;$('reflectionFeedback').textContent=answer.correct?lesson.explanation:`Look again at your evidence. ${lesson.hint}`;$('reflectionFeedback').className=answer.correct?'success':'';$('finishLab').hidden=!answer.correct;};$('reflectionAnswers').append(b);});}
   }
@@ -141,7 +141,7 @@
     const l=labState(),r=A.simulate(m,activeLab,l.value,l.closed),v=$('labVisual'),color=lesson.color;
     const compared=[...l.trials].reverse().find(t=>t.value!==l.value),comparison=compared?A.simulate(m,activeLab,compared.value,compared.closed):null;
     const line=(x1,y1,x2,y2,c=color)=>`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${c}" stroke-width="5" fill="none"/>`;
-    let content='';const signal=window.PhysicsPowerVisuals?.render(lesson,m.stations[activeLab],l.value,r)||window.PhysicsSignalVisuals?.render(lesson,m.stations[activeLab],l.value,r);v.classList.toggle('signal-visual',!!signal);const thermal=window.PhysicsHeatVisuals?.render(lesson,m.stations[activeLab],l.value,r,comparison);
+    let content='';const signal=window.PhysicsFinalVisuals?.render(lesson,m.stations[activeLab],l.value,r,comparison)||window.PhysicsPowerVisuals?.render(lesson,m.stations[activeLab],l.value,r)||window.PhysicsSignalVisuals?.render(lesson,m.stations[activeLab],l.value,r);v.classList.toggle('signal-visual',!!signal);const thermal=window.PhysicsHeatVisuals?.render(lesson,m.stations[activeLab],l.value,r,comparison);
     if(signal){v.innerHTML=signal;}
     else if(thermal){content=thermal;}
     else if(lesson.type==='sound'||lesson.type==='amplitude') {let d='';const amplitude=lesson.type==='amplitude'?r.output*3:24,frequency=lesson.type==='amplitude'?.08:r.output/1400;for(let x=15;x<480;x+=3)d+=`${x===15?'M':'L'}${x},${74+Math.sin(x*frequency)*amplitude}`;content=`<path class="wave-line" d="${d}" fill="none" stroke="${color}" stroke-width="3"/><text x="20" y="26">${lesson.type==='amplitude'?`Vibration height: ${r.output} mm • pitch unchanged`:`Visible vibrations • ${r.output} Hz`}</text>`;}
@@ -163,6 +163,7 @@
   function renderMeasurements(result,compared,comparison){
     const host=$('measurementTable');if(!host)return;host.replaceChildren();
     const l=labState(),recorded=l.trials.some(t=>t.value===l.value);
+    if(result.samples){renderMotionTable(host,result,compared,comparison,recorded);return;}
     host.hidden=!result.series||!recorded;if(host.hidden)return;
     const legend=document.createElement('p');legend.className='small';legend.textContent=`Recorded model readings. Solid line: ${A.setting(lesson,{value:l.value},0)}.${comparison?.series?` Dashed line: ${A.setting(lesson,compared,0)}.`:''}`;
     const table=document.createElement('table'),caption=document.createElement('caption'),head=document.createElement('thead'),body=document.createElement('tbody'),row=document.createElement('tr');
@@ -170,6 +171,13 @@
     for(const text of ['Time (min)',A.setting(lesson,{value:l.value},0),...(comparison?.series?[A.setting(lesson,compared,0)]:[])]){const th=document.createElement('th');th.scope='col';th.textContent=text;row.append(th);}head.append(row);
     result.series.forEach((point,i)=>{const tr=document.createElement('tr');for(const [index,value]of [point.time,point.temperature,...(comparison?.series?[comparison.series[i].temperature]:[])].entries()){const cell=document.createElement(index===0?'th':'td');if(index===0)cell.scope='row';cell.textContent=String(value);tr.append(cell);}body.append(tr);});
     table.append(head,body);host.append(legend,table);
+  }
+  function renderMotionTable(host,result,compared,comparison,recorded){
+    host.hidden=!recorded;if(!recorded)return;
+    const key=result.graph,unit=key==='position'?'m':'m/s',legend=document.createElement('p');legend.className='small';legend.textContent=`Recorded model readings. Solid: ${A.setting(lesson,{value:labState().value},0)}.${comparison?.samples?` Dashed: ${A.setting(lesson,compared,0)}.`:''}`;
+    const table=document.createElement('table'),caption=document.createElement('caption'),head=document.createElement('thead'),body=document.createElement('tbody'),row=document.createElement('tr');caption.textContent=`${key==='position'?'Position':'Velocity'} measurements (${unit})`;table.append(caption);
+    for(const label of ['Time (s)',`Current (${unit})`,...(comparison?.samples?[`Comparison (${unit})`]:[])]){const th=document.createElement('th');th.scope='col';th.textContent=label;row.append(th);}head.append(row);
+    result.samples.forEach((p,i)=>{const tr=document.createElement('tr');[p.time,p[key],...(comparison?.samples?[comparison.samples[i][key]]:[])].forEach((n,j)=>{const td=document.createElement(j===0?'th':'td');if(j===0)td.scope='row';td.textContent=String(n);tr.append(td);});body.append(tr);});table.append(head,body);host.append(legend,table);
   }
   function resize(){
     const rect=canvas.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);scale=Math.max(.8,Math.min(1.4,rect.height/500));width=rect.width/scale;height=rect.height/scale;ctx.setTransform(dpr*scale,0,0,dpr*scale,0,0);camera=A.clamp(player.x-width*.36,0,Math.max(0,length-width));
@@ -216,7 +224,7 @@
   function apparatus(x,i){
     const repaired=cp?.solved.includes(i),pulse=profile.settings.reduced?0:Math.sin(time*4+i),type=A.experiment(m,i).type;
     ctx.save();ctx.translate(x-90,0);
-    if(type==='sound'||type==='amplitude'){
+    if(['sound','amplitude','pulse-add','wave-frequency','sound-wavelength'].includes(type)){
       rect(-22,318,24,102,'#466a7b',3);rect(-32,306,44,34,repaired?m.color:'#6b8191',8);
       if(repaired){ctx.strokeStyle=m.color;ctx.lineWidth=2;for(let n=0;n<3;n++){ctx.globalAlpha=.65-n*.18;ctx.beginPath();ctx.arc(-10,322,28+n*13+pulse*3,-.7,.7);ctx.stroke();}ctx.globalAlpha=1;}
     }else if(type==='circuit'||type==='grid'){
@@ -233,7 +241,7 @@
       rect(-32,324,67,9,'#8db2bf',3);rect(-30,333,8,87,'#5b8196',2);rect(-7,339,15,39,'#95c4d6',4);rect(-3,378,6,12,'#b1cbd4',1);rect(-16,389,34,24,repaired?m.color:'#7891a3',4);
     }else if(type==='magnet'){
       rect(-44,363,30,20,'#b4787f',3);rect(-14,363,30,20,'#789fc1',3);rect(30,373,8,47,'#6f8d9c',2);rect(-30,403,65,17,'#344f65',3);
-    }else if(['wire','cells','cell-bank','voltage-share','supply-route','energy-budget'].includes(type)){
+    }else if(['wire','cells','cell-bank','voltage-share','supply-route','energy-budget','motion-graph','acceleration-graph','braking-graph','charge-sharing','charge-flow','equivalent-resistance','energy-per-charge','em-link'].includes(type)){
       rect(-40,348,80,72,'#34566a',6);rect(-29,360,58,26,repaired?'#75bca2':'#163747',4);rect(-25,398,12,12,'#d9bc89',3);rect(12,398,12,12,repaired?m.color:'#70858e',3);
     }else if(type==='charge'){
       const value=cp?.labs[i]?.value||A.experiment(m,i).initial,negative=value==='gain';

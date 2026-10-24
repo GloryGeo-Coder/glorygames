@@ -26,7 +26,7 @@ async function solve(page,mi,si,first=false){
     const firstWire=page.locator('[data-wire="0"]');await firstWire.focus();await firstWire.press('Enter');assert.equal(await firstWire.getAttribute('data-rotation'),'1');await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();
     await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();assert.equal(await page.locator('[data-wire="0"]').getAttribute('data-rotation'),'1');assert.match(await page.locator('#labHint').textContent(),/above the middle row/);
   }
-  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180],[25,75,100],['copper','wood','steel'],['bottom','top','black'],['wool','wool','wool'],['wood','shiny','wool'],['gain','gain','lose'],[2,3,3],['middle','smooth','water'],['glass','prism','overlap'],[5,'parallel-break','wide'],[40,60,20],['moon',5,'S'],[2,2,120],[2,'parallel','low-high'],['copper','012','led']];
+  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180],[25,75,100],['copper','wood','steel'],['bottom','top','black'],['wool','wool','wool'],['wood','shiny','wool'],['gain','gain','lose'],[2,3,3],['middle','smooth','water'],['glass','prism','overlap'],[5,'parallel-break','wide'],[40,60,20],['moon',5,'S'],[2,2,120],[2,'parallel','low-high'],['copper','012','led'],[4,3,2],[2.5,4,2],[-2,4,680],[-2,4,'parallel'],[-2,2,'visible']];
   if(e.type==='supply-route')await setSupplyRoute(page,values[mi][si]);else if(e.type==='grid')await setWires(page,m.stations[si].board.solution);else if(e.options)await page.locator('#equipment select').selectOption(values[mi][si]);else await setRange(page,values[mi][si]);
   await page.locator('#runTest').click();assert.match(await page.locator('#testResult').textContent(),/Target reached/);
   if(mi===15&&si===0){
@@ -45,6 +45,14 @@ async function solve(page,mi,si,first=false){
       const select=page.locator('#equipment select');if(await select.count()){const box=await select.boundingBox();assert.ok(box.width<=width&&box.height>=44);}
     }
     if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,`grade${e.grade}-mission-${mi+1}.png`)});}
+  }
+  if(mi===25&&si===1){
+    assert.equal(await page.locator('#measurementTable tbody tr').count(),5);assert.equal(await page.locator('#measurementTable tbody tr').last().locator('td').first().textContent(),'12');
+    await page.locator('#hintBtn').click();await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();assert.equal(await page.locator('#equipment input').inputValue(),'3');assert.equal(await page.locator('#measurementTable tbody tr').count(),5);await page.locator('#runTest').click();
+    for(const [width,height]of [[320,568],[360,740],[375,667],[568,320],[844,390],[768,1024],[1024,768],[1440,900],[390,844]]){
+      await page.setViewportSize({width,height});await page.locator('#measurementTable tbody tr').last().scrollIntoViewIfNeeded();const b=await page.locator('#measurementTable tbody tr').last().boundingBox();assert.ok(b.y>=0&&b.y+b.height<=height+1);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    }
+    if(shots){fs.mkdirSync(shots,{recursive:true});await page.locator('#labVisual').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'grade10-motion-table.png')});}
   }
   if(mi===24&&si===1){
     assert.match(await page.locator('#testResult').textContent(),/3\/3 stages/);

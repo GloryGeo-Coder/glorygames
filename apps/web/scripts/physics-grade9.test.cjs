@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),path=requir
 const root=path.join(__dirname,'../public/games/physics-force-lab'),A=require(path.join(root,'adventure-data.js')),visuals=require(path.join(root,'adventure-power-ui.js'));
 const values=e=>e.options?e.options.map(o=>o[0]):Array.from({length:(e.max-e.min)/e.step+1},(_,n)=>e.min+n*e.step);
 test('Grade 9 adds five sequential missions and preserves all twenty released mission definitions',()=>{
-  assert.equal(require('node:crypto').createHash('sha256').update(JSON.stringify(A.missions.slice(0,20))).digest('hex'),'a9a6d637623918fbea25415d6d69683aabe6357baaeed04f1cc54211f5d30aaa');assert.equal(A.missions.length,25);
+  assert.equal(require('node:crypto').createHash('sha256').update(JSON.stringify(A.missions.slice(0,20))).digest('hex'),'a9a6d637623918fbea25415d6d69683aabe6357baaeed04f1cc54211f5d30aaa');assert.ok(A.missions.length>=25);
   for(let mi=20;mi<25;mi++)for(let si=0;si<3;si++){const e=A.experiment(mi,si);assert.equal(e.grade,9);assert.equal(e.needsComparison,true);assert.equal(e.predictions.length,3);assert.equal(e.answers.length,3);assert.ok(e.explanation&&A.hint(A.missions[mi],si,2));assert.ok(values(e).some(v=>A.simulate(mi,si,v).success));assert.ok(values(e).some(v=>!A.simulate(mi,si,v).success));}
 });
 test('horizontal resultant adds signed forces without confusing force with current motion',()=>{

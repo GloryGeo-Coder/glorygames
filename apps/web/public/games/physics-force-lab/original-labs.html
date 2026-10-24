@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#06122a" />
-  <meta name="description" content="Physics Force Lab: Rise of the Young Physicist is a story-based physics adventure game with missions, experiments, collectables, powerups, animated sprites, sound effects and curriculum-based levels." />
+  <meta name="description" content="Play twelve original Physics Force Lab action levels with animated scientists, robots, drones, physics tools, experiment terminals and touch controls." />
   <title>Physics Force Lab: Rise of the Young Physicist</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
 </head>
-<body data-game="physics-force-lab" data-build="v3-story-campaign">
+<body data-game="physics-force-lab" data-mode="original-labs">
   <main class="game-shell">
-    <canvas id="gameCanvas" width="1280" height="720" aria-label="Physics Force Lab game canvas"></canvas>
+
 
     <header class="hud">
       <section class="glass title-panel">
@@ -20,6 +20,11 @@
         <p id="storyText">Restore the Quantum Core one physics lab at a time.</p>
       </section>
 
+    <nav class="top-actions">
+      <button id="pauseBtn">Pause</button>
+      <button id="muteBtn">Sound</button>
+      <button id="restartBtn">Restart</button>
+    </nav>
       <section class="glass stat-panel">
         <div><span>Score</span><b id="scoreValue">0</b></div>
         <div><span>Level</span><b id="levelValue">1/12</b></div>
@@ -40,12 +45,9 @@
       <p id="conceptText">Concept: Force is a push or pull.</p>
     </section>
 
-    <nav class="top-actions">
-      <button id="pauseBtn">Pause</button>
-      <button id="muteBtn">Sound</button>
-      <button id="restartBtn">Restart</button>
-    </nav>
 
+
+    <section class="legacy-playfield"><canvas id="gameCanvas" width="1280" height="720" aria-label="Original physics labs. Move with A/D, jump with Space, use the tool with F and blast with E."></canvas></section>
     <section class="mobile-controls" aria-label="Touch controls">
       <div class="move-pad">
         <button id="leftBtn" aria-label="Move left">◀</button>
@@ -60,7 +62,7 @@
 
     <section id="toast" class="toast" aria-live="polite"></section>
 
-    <div id="overlay" class="overlay active">
+    <dialog id="overlay" class="overlay active" aria-labelledby="overlayTitle">
       <article class="overlay-card">
         <div class="lab-orb"></div>
         <div class="eyebrow">Story-based physics adventure</div>
@@ -71,7 +73,7 @@
         </p>
         <div class="feature-row">
           <span>12 levels</span>
-          <span>Curriculum path</span>
+          <span>Action challenges</span>
           <span>Powerups</span>
           <span>Experiments</span>
           <span>Boss challenge</span>
@@ -80,19 +82,20 @@
           <button id="startBtn" class="primary">Start Story</button>
           <button id="howBtn">How to Play</button>
         </div>
+        <label class="motion-setting"><input type="checkbox" id="legacyReduced"> Reduce decorative motion</label>
         <p class="control-note">
           Controls: A/D or arrows move • W/Up/Space jump • F or Tool uses the current physics tool • E/Blast fires force blast
         </p>
       </article>
-    </div>
+    </dialog>
 
-    <div id="quizPanel" class="quiz-panel">
+    <dialog id="quizPanel" class="quiz-panel" aria-labelledby="quizQuestion">
       <article class="quiz-card">
         <div class="eyebrow" id="quizTopic">Experiment Challenge</div>
         <h2 id="quizQuestion">Question</h2>
         <div id="quizAnswers" class="quiz-answers"></div>
       </article>
-    </div>
+    </dialog>
   </main>
 
   <noscript>
@@ -100,6 +103,7 @@
       JavaScript is required to play Physics Force Lab.
     </p>
   </noscript>
+  <script src="./legacy-visuals.js"></script>
   <script src="./game.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
