@@ -1,8 +1,9 @@
 (function (root, factory) {
-  const api = factory(typeof module === 'object' && module.exports ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict);
+  const node=typeof module === 'object' && module.exports;
+  const api = factory(node ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict,node ? require('./adventure-grade7.js') : root.PhysicsHeatChapter);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.PhysicsAdventure = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery,heat) {
   'use strict';
   const SAVE_KEY = 'wga_physics_adventure_v1';
   const clamp = (n, a, b) => Math.min(b, Math.max(a, Number(n) || 0));
@@ -50,12 +51,15 @@
       stations:[{name:'Workshop lamp',goal:'Light the workshop lamp.'},{name:'Bridge lamp',goal:'Repair the bridge lamp.'},{name:'District beacon',goal:'Complete the district beacon circuit.'}] }
   ];
   missions.push(...recovery.missions);
+  // Cached older entry pages can still run their original two chapters.
+  if(heat)missions.push(...heat.missions);
   function experiment(mission, station) {
     const m=typeof mission==='number'?missions[mission]:mission;
     return {...m,...m.stations[station].lesson};
   }
   function route(mission) {
     const m=typeof mission==='number'?missions[mission]:mission;
+    if(missions.indexOf(m)>=10)return {length:4400,stations:[900,2100,3300],end:4220,platforms:[{x:1320,y:350,w:180},{x:2580,y:350,w:180},{x:3660,y:350,w:180}]};
     return missions.indexOf(m)<5
       ? {length:3200,stations:[660,1460,2260],end:3020,platforms:[]}
       : {length:4000,stations:[800,1900,3000],end:3820,platforms:[{x:1110,y:350,w:180},{x:2260,y:350,w:180},{x:3230,y:350,w:180}]};
@@ -92,9 +96,11 @@
   function observation(e,result) {
     if(['grid','circuit'].includes(e.type))return result.output?'lamp on':'lamp off';
     if(e.type==='daylight')return result.detail;
+    if(e.type==='convection')return result.state==='circulating'?'Whole-tank convection current':'Warm upper layer; weak whole-tank circulation';
+    if(result.energy)return `${result.energy.potential} potential, ${result.energy.kinetic} kinetic, ${result.energy.surroundings} surroundings (model units)`;
     return `${result.output} ${result.unit}`.trim();
   }
-  function setting(e,t,index) {return e.type==='grid'?`Wire arrangement ${index+1}`:`${t.value}${e.unit?' '+e.unit:''}${e.type==='circuit'?(t.closed?', switch closed':', switch open'):''}`;}
+  function setting(e,t,index) {return e.type==='grid'?`Wire arrangement ${index+1}`:`${e.grade===7&&e.options?e.options.find(o=>o[0]===t.value)?.[1]||t.value:t.value}${e.unit?' '+e.unit:''}${e.type==='circuit'?(t.closed?', switch closed':', switch open'):''}`;}
   function notebook(p) {
     return missions.flatMap(m=>Object.keys(p.journal[m.id]||{}).map(key=>{
       const index=Number(key),e=experiment(m,index);
@@ -107,6 +113,8 @@
   function simulate(mission, station, value, closed=true) {
     const m=experiment(mission,station);
     const s=m.stations[station];
+    const thermal=heat?.simulate(m,s,value);
+    if(thermal)return thermal;
     const extra=recovery.simulate(m,s,value);
     if(extra)return extra;
     let output=0, unit='m', detail='';
