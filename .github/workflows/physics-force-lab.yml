@@ -46,7 +46,7 @@ jobs:
       - name: Install isolated browser test tools
         run: |
           npm install --prefix "$RUNNER_TEMP/physics-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
-          printf 'PLAYWRIGHT_PATH=%s/physics-browser/node_modules/playwright\\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/physics-browser/node_modules/playwright" >> "$GITHUB_ENV"
       - name: Install Chromium and system dependencies
         run: '"$RUNNER_TEMP/physics-browser/node_modules/.bin/playwright" install --with-deps chromium'
       - name: Revision on mobile, fullscreen and refresh
