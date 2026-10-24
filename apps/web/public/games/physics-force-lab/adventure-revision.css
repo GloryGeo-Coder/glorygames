@@ -1,0 +1,12 @@
+#revisionDialog{padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+/* Revision uses the existing scrollable modal and stays inside the document in fullscreen. */
+.revision-card{min-width:0}.revision-card h3{line-height:1.45;overflow-wrap:anywhere}.revision-card section{min-width:0}
+.revision-card .revision-select{display:grid;gap:8px;margin:16px 0}.revision-select select{width:100%;min-width:0;min-height:48px;border:1px solid #6c8e9c;border-radius:10px;background:#0c2438;color:#eef8ff;font:inherit;padding:10px}
+.revision-card .answers button{min-height:48px;white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+.revision-card .answers button[aria-pressed=true]{opacity:1}.revision-card .answers button:disabled{cursor:default;opacity:.8}
+#revisionContext{margin:8px 0 14px}#revisionFeedback{margin:16px 0;line-height:1.7}.revision-feedback{color:#ffe0a3}
+#revisionNext{width:100%;margin:12px 0}.revision-card details{padding:12px;border:1px solid #547484;border-radius:12px;margin:14px 0}
+.revision-card summary{cursor:pointer;min-height:44px;line-height:1.5;font-weight:750}.revision-card ul{padding-left:22px;line-height:1.7;color:#cfe4ee}
+.revision-card :focus-visible{outline:3px solid #ffd28a;outline-offset:3px}.revision-card [tabindex="-1"]:focus{outline:0}
+#revisionSaveStatus:empty{display:none}#revisionResult{margin-bottom:12px}#revisionProgress{font-size:14px}
+@media(max-width:600px){.revision-card .buttons{align-items:stretch}.revision-card .buttons button{flex:1 1 140px}.revision-card h3{font-size:18px}}
