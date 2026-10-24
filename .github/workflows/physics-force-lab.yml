@@ -17,6 +17,9 @@ on:
       - 'tools/build-physics-characters.cjs'
 permissions:
   contents: read
+concurrency:
+  group: physics-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   physics-force-lab:
     runs-on: ubuntu-latest
