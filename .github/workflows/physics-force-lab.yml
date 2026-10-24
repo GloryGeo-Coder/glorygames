@@ -33,7 +33,7 @@ jobs:
       - run: node --check tools/physics-character-art.cjs && node --check tools/build-physics-characters.cjs
       - run: node --test apps/web/scripts/physics-*.test.cjs
   physics-browser:
-    needs: physics-force-lab
+    needs: [physics-force-lab, physics-cover]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -64,3 +64,42 @@ jobs:
         run: node apps/web/scripts/physics-characters-browser.cjs
       - name: Next.js production build
         run: npm run build --prefix apps/web
+  physics-cover:
+    needs: physics-force-lab
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install cover preview tools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/physics-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/physics-browser/node_modules/playwright" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/physics-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Prepare optimized cover and check real page components
+        working-directory: apps/web
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),crypto=require('node:crypto'),{createRequire}=require('node:module');
+          const app=process.cwd(),req=createRequire(path.join(app,'package.json')),sharp=req('sharp');
+          function emit(name,bytes){const s=bytes.toString('base64');for(let i=0;i<s.length;i+=12000)console.log(name+':'+s.slice(i,i+12000));}
+          (async()=>{
+           const png=path.join(app,'public/games/physics-force-lab/thumb.png'),m=await sharp(png).metadata();assert.equal(m.width,1672);assert.equal(m.height,941);
+           const webp=await sharp(png).webp({quality:86,effort:6}).toBuffer();fs.writeFileSync(path.join(app,'public/games/physics-force-lab/thumb.webp'),webp);
+           console.log('PHYSICS_WEBP_SHA:'+crypto.createHash('sha1').update('blob '+webp.length+'\0').update(webp).digest('hex'));emit('PHYSICS_WEBP_DATA',webp);
+           req('tsx/cjs');req.extensions['.css']=(module)=>{module.exports=new Proxy({},{get:(_,key)=>key==='__esModule'?false:String(key)});};
+           const React=req('react'),{renderToStaticMarkup}=req('react-dom/server'),Tile=req(path.join(app,'src/components/GameTile.tsx')).default,Launch=req(path.join(app,'src/components/GameLaunch.tsx')).default,Editorial=req(path.join(app,'src/components/GameEditorial.tsx')).default,{GAME_CATALOG}=req(path.join(app,'src/lib/gameCatalog.ts'));
+           const el=React.createElement,props={slug:'physics-force-lab',...GAME_CATALOG['physics-force-lab'],tags:['physics','mobile']},css=fs.readFileSync('src/app/globals.css','utf8')+'\n'+fs.readFileSync('src/components/GameLaunch.module.css','utf8');
+           const cards=renderToStaticMarkup(el('main',{style:{padding:12}},el('div',{className:'grid'},Array.from({length:6},(_,i)=>el(Tile,{key:i,game:props})))));
+           const page=renderToStaticMarkup(el('main',{style:{maxWidth:1140,margin:'auto',padding:12}},el('div',{style:{height:520}},el(Launch,props)),el(Editorial,props)));
+           const html=body=>'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+css+'</style></head><body>'+body+'</body></html>';
+           const server=http.createServer((request,response)=>{if(request.url==='/cards'||request.url==='/page'){response.setHeader('Content-Type','text/html; charset=utf-8');response.end(html(request.url==='/cards'?cards:page));return;}const file=path.resolve(app+'/public','.'+new URL(request.url,'http://localhost').pathname);try{response.setHeader('Content-Type',file.endsWith('.webp')?'image/webp':'image/png');response.end(fs.readFileSync(file));}catch{response.writeHead(404).end();}});
+           const {chromium}=req(process.env.PLAYWRIGHT_PATH);let browser;
+           try{await new Promise(r=>server.listen(0,'127.0.0.1',r));browser=await chromium.launch({headless:true,args:['--no-sandbox']});const url='http://127.0.0.1:'+server.address().port;
+            for(const [width,height]of [[320,568],[390,844],[768,1024],[1440,900]]){const p=await browser.newPage({viewport:{width,height}});await p.goto(url+'/cards');await p.locator('img').first().evaluate(im=>im.decode());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);if(width===320)emit('PHYSICS_CARD_SCREENSHOT',await p.screenshot());await p.goto(url+'/page');await p.locator('img').first().evaluate(im=>im.decode());assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.match(await p.locator('body').innerText(),/55 distinct concept checks/);assert.equal(await p.locator('a').filter({hasText:'Play Game'}).getAttribute('target'),'_blank');if(width===390){emit('PHYSICS_PAGE_SCREENSHOT',await p.screenshot());const story=p.locator('article').filter({has:p.getByRole('heading',{name:'Story and setting',exact:true})});await story.scrollIntoViewIfNeeded();emit('PHYSICS_STORY_SCREENSHOT',await p.screenshot());}console.log('PHYSICS_PRESENTATION_PASS:'+width+'x'+height);await p.close();}
+           }finally{await browser?.close();server.close();}
+          })().catch(e=>{console.error(e);process.exitCode=1;});
+          NODE
