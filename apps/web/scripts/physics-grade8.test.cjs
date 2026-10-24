@@ -3,7 +3,7 @@ const root=path.join(__dirname,'../public/games/physics-force-lab'),A=require(pa
 const values=e=>e.options?e.options.map(o=>o[0]):Array.from({length:(e.max-e.min)/e.step+1},(_,i)=>e.min+i*e.step);
 test('Grade 8 adds five missions while preserving the fifteen released mission definitions',()=>{
   assert.equal(require('node:crypto').createHash('sha256').update(JSON.stringify(A.missions.slice(0,15))).digest('hex'),'56cbfd28cef4b106b1a896edca2f804feab91164ad3f14c98a0613b61e6d6686');
-  assert.equal(A.missions.length,20);assert.equal(new Set(A.missions.map(m=>m.id)).size,20);
+  assert.ok(A.missions.length>=20);assert.equal(new Set(A.missions.map(m=>m.id)).size,A.missions.length);
   for(let mi=15;mi<20;mi++)for(let si=0;si<3;si++){const e=A.experiment(mi,si);assert.equal(e.grade,8);assert.ok(e.needsComparison&&e.hint&&e.explanation&&A.hint(A.missions[mi],si,2));assert.ok(values(e).some(v=>A.simulate(mi,si,v).success));assert.ok(values(e).some(v=>!A.simulate(mi,si,v).success));}
 });
 test('electron transfer conserves charge and particle counts, fixes protons and gives reciprocal force rules',()=>{

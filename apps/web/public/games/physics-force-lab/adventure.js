@@ -35,7 +35,7 @@
   }
   function missionMap(){
     $('missionList').replaceChildren();
-    A.missions.forEach((mission,i)=>{if(i===0||i===5||i===10||i===15){const h=document.createElement('h3');h.textContent=i===0?'Chapter one • Academy district':i===5?'Chapter two • Recovery district':i===10?'Chapter three • Grade 7: Heat & Energy':'Chapter four • Grade 8: Electricity & Light';$('missionList').append(h);}const b=document.createElement('button');b.disabled=!A.isUnlocked(profile,i);const title=document.createElement('strong'),sub=document.createElement('span');title.textContent=`${i+1}. ${mission.title}`;sub.textContent=`Grade ${mission.grade} • ${mission.topic} • ${b.disabled?'Locked':profile.completed[mission.id]?'Restored — replay':'Explore'}`;b.append(title,sub);b.onclick=()=>launch(i,!!profile.completed[mission.id]);$('missionList').append(b);});
+    A.missions.forEach((mission,i)=>{if(i===0||i===5||i===10||i===15||i===20){const h=document.createElement('h3');h.textContent=i===0?'Chapter one • Academy district':i===5?'Chapter two • Recovery district':i===10?'Chapter three • Grade 7: Heat & Energy':i===15?'Chapter four • Grade 8: Electricity & Light':'Chapter five • Grade 9: Forces & Power';$('missionList').append(h);}const b=document.createElement('button');b.disabled=!A.isUnlocked(profile,i);const title=document.createElement('strong'),sub=document.createElement('span');title.textContent=`${i+1}. ${mission.title}`;sub.textContent=`Grade ${mission.grade} • ${mission.topic} • ${b.disabled?'Locked':profile.completed[mission.id]?'Restored — replay':'Explore'}`;b.append(title,sub);b.onclick=()=>launch(i,!!profile.completed[mission.id]);$('missionList').append(b);});
     open('mapDialog');
   }
   function showNotebook(){
@@ -87,11 +87,25 @@
   function renderEquipment(){
     const l=labState(),box=$('equipment');box.replaceChildren();box.className='equipment';
     if(lesson.type==='grid'){renderWireBoard(box);return;}
+    if(lesson.type==='supply-route'){renderSupplyRoute(box);return;}
     const label=document.createElement('label'),name=document.createElement('span');name.textContent=lesson.variable;label.append(name);
     if(lesson.options){const select=document.createElement('select');select.setAttribute('aria-label',lesson.variable);lesson.options.forEach(([value,text])=>select.add(new Option(text,value)));select.value=l.value;select.onchange=()=>{l.value=select.value;resetTest();};label.append(select);}
     else {const input=document.createElement('input'),out=document.createElement('output');input.type='range';input.min=lesson.min;input.max=lesson.max;input.step=lesson.step;input.value=l.value;input.setAttribute('aria-label',lesson.variable);out.textContent=`${l.value} ${lesson.unit}`;input.oninput=()=>{l.value=Number(input.value);out.textContent=`${l.value} ${lesson.unit}`;resetTest();};label.append(input,out);}
     box.append(label);
     if(lesson.type==='circuit'){const switchLabel=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.checked=l.closed;check.onchange=()=>{l.closed=check.checked;resetTest();};switchLabel.append(check,' Close the switch');box.append(switchLabel);}
+  }
+  function renderSupplyRoute(box){
+    const names=['Generator','High-voltage transmission','Local transformer and distribution'];
+    const help=document.createElement('p');help.className='small';help.textContent='Move each stage earlier or later. Consumers connect after the final stage. Test your route to record evidence.';box.append(help);
+    const list=document.createElement('ol');list.className='supply-order';list.setAttribute('aria-label','Electricity supply stages');
+    labState().value.split('').forEach((digit,i)=>{
+      const row=document.createElement('li'),title=document.createElement('strong'),controls=document.createElement('div');title.textContent=names[Number(digit)];controls.className='buttons';
+      for(const [direction,delta]of [['Earlier',-1],['Later',1]]){
+        const b=document.createElement('button');b.type='button';b.textContent=direction;b.disabled=i+delta<0||i+delta>2;b.dataset.stage=digit;b.dataset.shift=String(delta);b.setAttribute('aria-label',`Move ${names[Number(digit)]} ${direction.toLowerCase()}`);
+        b.onclick=()=>{const digits=labState().value.split('');[digits[i],digits[i+delta]]=[digits[i+delta],digits[i]];labState().value=digits.join('');resetTest();renderEquipment();const next=$('equipment').querySelector(`[data-stage="${digit}"][data-shift="${delta}"]:not(:disabled)`);(next||$('equipment').querySelector(`[data-stage="${digit}"]:not(:disabled)`))?.focus();};controls.append(b);
+      }
+      row.append(title,controls);list.append(row);
+    });box.append(list);
   }
   function renderWireBoard(box){
     const legend=document.createElement('p');legend.className='wire-legend';legend.textContent='Cell on the left; lamp on the right of the middle row. Tap a wire to rotate it clockwise. The return wire is fixed.';box.append(legend);
@@ -116,7 +130,7 @@
     $('finishLab').hidden=true;$('reflectionFeedback').textContent='';
     $('testResult').textContent=`Observed: ${A.observation(lesson,r)}. ${r.detail} ${tested?'Target reached. Explain the evidence below.':r.success?'Target reached. Compare another equipment setting before explaining your evidence.':'Target not reached yet. Adjust one factor and test again.'}`;
     $('testResult').className=r.success?'success':'';history();visual(true);checkpoint();
-    if(lesson.type==='amplitude')audio.amplitude(l.value);else audio.effect(lesson.grade===8?(['charge','network','branch','coil'].includes(lesson.type)?'electric':'optical'):lesson.grade===7?(lesson.type==='convection'?'flow':'thermal'):lesson.type==='sound'?'signal':'test',r.output);
+    if(lesson.type==='amplitude')audio.amplitude(l.value);else audio.effect(lesson.grade===9?(['forces','gravity-place','gravity-mass','magnet'].includes(lesson.type)?'force':'power'):lesson.grade===8?(['charge','network','branch','coil'].includes(lesson.type)?'electric':'optical'):lesson.grade===7?(lesson.type==='convection'?'flow':'thermal'):lesson.type==='sound'?'signal':'test',r.output);
     $('reflectStep').hidden=!tested;
     if(tested){$('reflectionQuestion').textContent=lesson.question;$('reflectionAnswers').replaceChildren();A.shuffled(lesson.answers,lesson.correct).forEach(answer=>{const b=document.createElement('button');b.textContent=answer.text;b.onclick=()=>{explained=answer.correct;$('reflectionFeedback').textContent=answer.correct?lesson.explanation:`Look again at your evidence. ${lesson.hint}`;$('reflectionFeedback').className=answer.correct?'success':'';$('finishLab').hidden=!answer.correct;};$('reflectionAnswers').append(b);});}
   }
@@ -127,7 +141,7 @@
     const l=labState(),r=A.simulate(m,activeLab,l.value,l.closed),v=$('labVisual'),color=lesson.color;
     const compared=[...l.trials].reverse().find(t=>t.value!==l.value),comparison=compared?A.simulate(m,activeLab,compared.value,compared.closed):null;
     const line=(x1,y1,x2,y2,c=color)=>`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${c}" stroke-width="5" fill="none"/>`;
-    let content='';const signal=window.PhysicsSignalVisuals?.render(lesson,m.stations[activeLab],l.value,r);v.classList.toggle('signal-visual',!!signal);const thermal=window.PhysicsHeatVisuals?.render(lesson,m.stations[activeLab],l.value,r,comparison);
+    let content='';const signal=window.PhysicsPowerVisuals?.render(lesson,m.stations[activeLab],l.value,r)||window.PhysicsSignalVisuals?.render(lesson,m.stations[activeLab],l.value,r);v.classList.toggle('signal-visual',!!signal);const thermal=window.PhysicsHeatVisuals?.render(lesson,m.stations[activeLab],l.value,r,comparison);
     if(signal){v.innerHTML=signal;}
     else if(thermal){content=thermal;}
     else if(lesson.type==='sound'||lesson.type==='amplitude') {let d='';const amplitude=lesson.type==='amplitude'?r.output*3:24,frequency=lesson.type==='amplitude'?.08:r.output/1400;for(let x=15;x<480;x+=3)d+=`${x===15?'M':'L'}${x},${74+Math.sin(x*frequency)*amplitude}`;content=`<path class="wave-line" d="${d}" fill="none" stroke="${color}" stroke-width="3"/><text x="20" y="26">${lesson.type==='amplitude'?`Vibration height: ${r.output} mm • pitch unchanged`:`Visible vibrations • ${r.output} Hz`}</text>`;}
@@ -140,7 +154,7 @@
       content=`<text x="20" y="20">Sun stays fixed • Earth rotates • marked city moves</text><circle cx="230" cy="76" r="46" fill="#4894c7"/><path d="M230 30A46 46 0 0 0 230 122Z" fill="#142b4e"/><circle cx="${x}" cy="${y}" r="7" fill="#ffedb0" stroke="#101d2e" stroke-width="2"/><circle cx="410" cy="76" r="29" fill="#ffd877"/><path d="M368 58H305M368 76H305M368 94H305" stroke="#ffd877" stroke-width="2"/><text x="20" y="139">City marker: ${r.detail.replace('The marked city ','')}</text>`;
     }
     else if(lesson.type==='circuit'){content=line(75,40,75,105)+line(75,105,410,105)+line(410,105,410,40)+line(75,40,220,40)+line(270,40,410,40)+line(220,40,270,l.closed?40:18)+`<path d="M60 61H90M65 72H85" stroke="#fff" stroke-width="6"/><circle class="${r.output?'lit':''}" cx="410" cy="45" r="20" fill="${r.output?'#ffdf67':'#34516c'}" stroke="white" stroke-width="3"/><text x="95" y="133">Cell → ${l.value} bridge → lamp • switch ${l.closed?'closed':'open'}</text>`;}
-    else if(lesson.grade===8){content='<text x="20" y="65">Use the written observations below to compare your tests.</text>';}
+    else if(lesson.grade>=8){content='<text x="20" y="65">Use the written observations below to compare your tests.</text>';}
     else {const end=60+Math.min(370,r.output*22),target=lesson.stations[activeLab].target;content=`<rect x="20" y="106" width="460" height="7" rx="3" fill="#557483"/>${lesson.type!=='wheels'?`<rect x="${60+target[0]*22}" y="82" width="${Math.max(14,(target[1]-target[0])*22)}" height="32" fill="#69f2c433" stroke="#69f2c4"/>`:''}<g class="test-object" style="--travel-start:${60-end}px"><rect x="${end-22}" y="72" width="44" height="26" rx="5" fill="${color}"/><circle cx="${end-12}" cy="103" r="7" fill="#d9e8f0"/><circle cx="${end+12}" cy="103" r="7" fill="#d9e8f0"/></g><text x="20" y="25">${lesson.type==='spring'?'Stored spring energy → movement':lesson.type==='wheels'?'Compare the same starting energy':'Energy transferred by a push'}</text><text x="20" y="135">Travel distance: ${r.output} m</text>${lesson.type==='spring'?'<path class="spring-coil" d="M20 85l7 -12 7 24 7 -24 7 24 7 -12" fill="none" stroke="#e0bfff" stroke-width="3"/>':''}`;}
     if(!signal)v.innerHTML=`<svg viewBox="0 0 500 145" aria-hidden="true" style="color:#e8f6ff;font:14px system-ui;fill:currentColor">${content}</svg>`;
     v.setAttribute('aria-label',`${lesson.type} experiment: ${r.detail} ${r.output} ${r.unit}`);v.classList.remove('testing');if(animate&&!profile.settings.reduced){void v.offsetWidth;v.classList.add('testing');}
@@ -213,6 +227,14 @@
       const rotation=repaired&&!profile.settings.reduced?time*2:0;ctx.save();ctx.translate(18,382);ctx.rotate(rotation);for(let n=0;n<8;n++){ctx.rotate(Math.PI/4);rect(-3,-28,6,56,repaired?m.color:'#7296aa',2);}ctx.restore();
     }else if(type==='daylight'){
       rect(-16,389,45,31,'#496579',3);limb(6,350,-.6,50,'#aac0c9',20);ellipse(10,337,23,14,repaired?m.color:'#486c86');
+    }else if(type==='forces'){
+      rect(-25,380,55,25,repaired?m.color:'#698493',5);ellipse(-14,411,8,8,'#abc4d0');ellipse(20,411,8,8,'#abc4d0');rect(-55,391,29,4,'#e1b098',1);rect(30,391,25,4,'#bde0d7',1);
+    }else if(type==='gravity-place'||type==='gravity-mass'){
+      rect(-32,324,67,9,'#8db2bf',3);rect(-30,333,8,87,'#5b8196',2);rect(-7,339,15,39,'#95c4d6',4);rect(-3,378,6,12,'#b1cbd4',1);rect(-16,389,34,24,repaired?m.color:'#7891a3',4);
+    }else if(type==='magnet'){
+      rect(-44,363,30,20,'#b4787f',3);rect(-14,363,30,20,'#789fc1',3);rect(30,373,8,47,'#6f8d9c',2);rect(-30,403,65,17,'#344f65',3);
+    }else if(['wire','cells','cell-bank','voltage-share','supply-route','energy-budget'].includes(type)){
+      rect(-40,348,80,72,'#34566a',6);rect(-29,360,58,26,repaired?'#75bca2':'#163747',4);rect(-25,398,12,12,'#d9bc89',3);rect(12,398,12,12,repaired?m.color:'#70858e',3);
     }else if(type==='charge'){
       const value=cp?.labs[i]?.value||A.experiment(m,i).initial,negative=value==='gain';
       rect(-43,355,31,65,'#b0a3c9',6);rect(10,337,14,83,'#6a8ca9',5);ellipse(17,349,21,21,negative?'#8cbbec':'#d4a18b');

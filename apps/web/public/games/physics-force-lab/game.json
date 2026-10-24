@@ -6,9 +6,9 @@
   "category": "Educational",
   "description": "A story-based physics adventure where a young physicist learns force, motion, gravity, friction, energy, simple machines, circuits, magnetism, waves, pressure, space physics and combined revision through missions, puzzles and collectables.",
   "orientation": "any",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "features": {
-    "levels": 32,
+    "levels": 37,
     "storyMode": true,
     "curriculum": true,
     "animatedSprites": true,
@@ -19,7 +19,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "adventureMissions": 20,
+    "adventureMissions": 25,
     "originalLabs": 12,
     "savedCheckpoints": true,
     "untimedExperiments": true,
@@ -28,6 +28,8 @@
     "grade7HeatEnergy": true,
     "temperatureGraphs": true,
     "grade8ElectricityLight": true,
-    "circuitAndRayDiagrams": true
+    "circuitAndRayDiagrams": true,
+    "grade9ForcesPower": true,
+    "supplyRoutePuzzle": true
   }
 }
