@@ -6,7 +6,12 @@
     {bpm:108,root:146.83,chords:[0,7,3,5],notes:[12,7,15,19,12,10,7,3],wave:'sine'},
     {bpm:112,root:110,chords:[0,3,7,5],notes:[0,12,7,15,19,7,10,12],wave:'triangle'},
     {bpm:100,root:164.81,chords:[0,5,2,7],notes:[12,16,19,7,14,12,4,7],wave:'sine'},
-    {bpm:120,root:123.47,chords:[0,7,5,9],notes:[0,7,12,14,19,16,12,7],wave:'triangle'}
+    {bpm:120,root:123.47,chords:[0,7,5,9],notes:[0,7,12,14,19,16,12,7],wave:'triangle'},
+    {bpm:94,root:174.61,chords:[0,5,7,2],notes:[12,7,4,0,9,12,16,14],wave:'sine'},
+    {bpm:104,root:138.59,chords:[0,3,8,5],notes:[0,3,10,12,15,7,3,10],wave:'triangle'},
+    {bpm:116,root:155.56,chords:[0,7,5,3],notes:[12,0,7,10,15,12,19,7],wave:'triangle'},
+    {bpm:88,root:196,chords:[0,2,7,5],notes:[19,14,12,7,4,9,7,0],wave:'sine'},
+    {bpm:118,root:116.54,chords:[0,5,8,7],notes:[0,12,15,19,10,7,12,17],wave:'triangle'}
   ];
   class AdventureAudio{
     constructor(settings){this.settings=settings;this.ctx=null;this.timer=null;this.index=0;this.step=0;this.active=false;}
@@ -28,6 +33,7 @@
       const notes={jump:[260,390],cell:[660,990],repair:[392,523,659,784],bump:[130,90],test:[330,440],click:[520],signal:[value||440]};
       (notes[kind]||notes.click).forEach((f,i)=>this.note(f,kind==='signal'?.5:.12,'effects','sine',.25,i*.075));
     }
+    amplitude(strength){if(this.unlock())this.note(440,.5,'effects','sine',.05+Math.max(1,Math.min(5,Number(strength)||1))*.06);}
     play(index){this.index=index;this.active=true;if(!this.unlock()||this.timer)return;this.step=0;this.timer=setInterval(()=>this.tick(),60000/themes[index].bpm/2);}
     tick(){
       if(!this.active||root.document?.hidden)return;

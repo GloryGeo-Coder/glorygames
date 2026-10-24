@@ -1,8 +1,8 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === 'object' && module.exports ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.PhysicsAdventure = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery) {
   'use strict';
   const SAVE_KEY = 'wga_physics_adventure_v1';
   const clamp = (n, a, b) => Math.min(b, Math.max(a, Number(n) || 0));
@@ -49,10 +49,66 @@
       explanation:'Copper is a conductor. With the switch closed, a complete conducting path connects the cell and lamp. Plastic and rubber are insulators.',hint:'Use a conducting material and close the switch. Change just one of these factors between tests.',
       stations:[{name:'Workshop lamp',goal:'Light the workshop lamp.'},{name:'Bridge lamp',goal:'Repair the bridge lamp.'},{name:'District beacon',goal:'Complete the district beacon circuit.'}] }
   ];
+  missions.push(...recovery.missions);
+  function experiment(mission, station) {
+    const m=typeof mission==='number'?missions[mission]:mission;
+    return {...m,...m.stations[station].lesson};
+  }
+  function route(mission) {
+    const m=typeof mission==='number'?missions[mission]:mission;
+    return missions.indexOf(m)<5
+      ? {length:3200,stations:[660,1460,2260],end:3020,platforms:[]}
+      : {length:4000,stations:[800,1900,3000],end:3820,platforms:[{x:1110,y:350,w:180},{x:2260,y:350,w:180},{x:3230,y:350,w:180}]};
+  }
+  function cell(mission,index) {
+    const r=route(mission);
+    if(r.platforms.length&&index%4===3){const p=r.platforms[Math.floor(index/4)];return {x:p.x+p.w/2,y:p.y-28};}
+    return {x:220+index*(r.platforms.length?300:235),y:index%3===1?335:390};
+  }
+  function landingFloor(terrain,x,previousY,nextY,velocityY) {
+    let floor=420;
+    if(velocityY>=0)for(const p of terrain.platforms)if(x>=p.x-16&&x<=p.x+p.w+16&&previousY<=p.y&&nextY>=p.y)floor=Math.min(floor,p.y);
+    return floor;
+  }
+  function normalizeValue(e,value) {
+    if(e.type==='grid')return recovery.normalizeGrid(value);
+    if(e.options)return e.options.some(o=>o[0]===value)?value:e.initial;
+    if(!Number.isFinite(Number(value)))return e.initial;
+    return clamp(Math.round((Number(value)-e.min)/e.step)*e.step+e.min,e.min,e.max);
+  }
+  function cleanLab(e,l={}) {
+    return {value:normalizeValue(e,l.value??e.initial),closed:l.closed!==false,
+      prediction:Number.isInteger(l.prediction)&&l.prediction>=0&&l.prediction<e.predictions.length?l.prediction:null,
+      trials:Array.isArray(l.trials)?l.trials.slice(-6).filter(t=>t&&typeof t==='object').map(t=>({value:normalizeValue(e,t.value),closed:t.closed!==false})):[],
+      hint:!!l.hint,hintLevel:Math.floor(clamp(l.hintLevel??(l.hint?1:0),0,2))};
+  }
+  function comparisonReady(e,l) {return !e.needsComparison||new Set(l.trials.map(t=>JSON.stringify(e.type==='circuit'?[t.value,t.closed]:[t.value]))).size>=2;}
+  function hint(mission,index,level=1) {const e=experiment(mission,index);return level>1?mission.stations[index].hint2||e.explanation:e.hint;}
+  function recordRepair(p,mission,index) {
+    p.journal[mission.id]||={};
+    const lab=cleanLab(experiment(mission,index),p.checkpoints[mission.id]?.labs[index]);
+    p.journal[mission.id][index]=lab;
+  }
+  function observation(e,result) {
+    if(['grid','circuit'].includes(e.type))return result.output?'lamp on':'lamp off';
+    if(e.type==='daylight')return result.detail;
+    return `${result.output} ${result.unit}`.trim();
+  }
+  function setting(e,t,index) {return e.type==='grid'?`Wire arrangement ${index+1}`:`${t.value}${e.unit?' '+e.unit:''}${e.type==='circuit'?(t.closed?', switch closed':', switch open'):''}`;}
+  function notebook(p) {
+    return missions.flatMap(m=>Object.keys(p.journal[m.id]||{}).map(key=>{
+      const index=Number(key),e=experiment(m,index);
+      const evidence=p.journal[m.id][key];
+      return {mission:m.title,station:m.stations[index].name,grade:e.grade,topic:e.topic,concept:e.concept,explanation:e.explanation,evidence,
+        observations:evidence.trials.map((t,n)=>`${setting(e,t,n)} → ${observation(e,simulate(m,index,t.value,t.closed))}`)};
+    }));
+  }
   // Deliberately simplified, repeatable teaching models, not laboratory measurements.
   function simulate(mission, station, value, closed=true) {
-    const m=typeof mission==='number'?missions[mission]:mission;
+    const m=experiment(mission,station);
     const s=m.stations[station];
+    const extra=recovery.simulate(m,s,value);
+    if(extra)return extra;
     let output=0, unit='m', detail='';
     if(m.type==='cart') { value=clamp(value,1,6); output=Math.max(0,value*2-s.resistance); detail='Same trolley and track; only the push changes.'; }
     if(m.type==='sound') { value=clamp(value,10,30); output=240*(20/value)**2;unit='Hz';detail='Same ruler and pluck; only its free length changes.'; }
@@ -62,32 +118,36 @@
     const success=m.type==='circuit'?output===1:output>=s.target[0]&&output<=s.target[1];
     return {output:Math.round(output*10)/10,unit,success,detail};
   }
-  function blank() { return {version:1,current:0,completed:{},records:{},checkpoints:{},settings:{music:.45,effects:.7,reduced:false}}; }
+  function blank() { return {version:1,current:0,completed:{},records:{},journal:{},checkpoints:{},settings:{music:.45,effects:.7,reduced:false}}; }
   function sanitize(raw) {
     const p=blank(); if(!raw||raw.version!==1)return p;
     for(const m of missions) {
       if(raw.completed?.[m.id]===true&&missions.slice(0,missions.indexOf(m)).every(previous=>p.completed[previous.id]))p.completed[m.id]=true;
       if(raw.records?.[m.id])p.records[m.id]=Math.floor(clamp(raw.records[m.id],0,12));
+      for(let i=0;i<3;i++)if(raw.journal?.[m.id]?.[i]&&typeof raw.journal[m.id][i]==='object'){
+        p.journal[m.id]||={};p.journal[m.id][i]=cleanLab(experiment(m,i),raw.journal[m.id][i]);
+      }
       const c=raw.checkpoints?.[m.id];
       if(c&&typeof c==='object') {
         const solved=Array.isArray(c.solved)?[...new Set(c.solved.filter(n=>Number.isInteger(n)&&n>=0&&n<3))]:[];
         const labs={};
         for(let i=0;i<3;i++) {
           const l=c.labs?.[i];if(!l||typeof l!=='object')continue;
-          const value=m.options?m.options.some(o=>o[0]===l.value)?l.value:m.initial:clamp(l.value,m.min,m.max);
-          labs[i]={value,closed:l.closed!==false,prediction:Number.isInteger(l.prediction)&&l.prediction>=0&&l.prediction<3?l.prediction:null,trials:Array.isArray(l.trials)?l.trials.slice(-6).filter(t=>t&&typeof t.value!=='object').map(t=>({value:t.value,closed:t.closed!==false})):[],hint:!!l.hint};
+          labs[i]=cleanLab(experiment(m,i),l);
         }
-        p.checkpoints[m.id]={x:clamp(c.x,50,3040),solved,cells:Array.isArray(c.cells)?[...new Set(c.cells.filter(n=>Number.isInteger(n)&&n>=0&&n<12))]:[],labs};
+        p.checkpoints[m.id]={x:clamp(c.x,50,route(m).length-160),solved,cells:Array.isArray(c.cells)?[...new Set(c.cells.filter(n=>Number.isInteger(n)&&n>=0&&n<12))]:[],labs};
+        for(const i of solved)if(!p.journal[m.id]?.[i])recordRepair(p,m,i);
         if(p.checkpoints[m.id].cells.length)p.records[m.id]=Math.max(p.records[m.id]||0,p.checkpoints[m.id].cells.length);
       }
     }
     p.current=clamp(Math.floor(raw.current),0,missions.length-1);
     if(!isUnlocked(p,p.current))p.current=missions.findIndex((_,i)=>isUnlocked(p,i)&&!p.completed[missions[i].id]);
     p.current=Math.max(0,p.current);
+    if(p.completed[missions[p.current].id]&&p.checkpoints[missions[p.current].id]?.solved.length===3&&p.current<missions.length-1&&isUnlocked(p,p.current+1))p.current++;
     p.settings={music:clamp(raw.settings?.music??.45,0,1),effects:clamp(raw.settings?.effects??.7,0,1),reduced:!!raw.settings?.reduced};
     return p;
   }
-  function isUnlocked(p,i) {return i===0||missions.slice(0,i).every(m=>p.completed[m.id]);}
+  function isUnlocked(p,i) {return Number.isInteger(i)&&i>=0&&i<missions.length&&(i===0||missions.slice(0,i).every(m=>p.completed[m.id]));}
   function load(storage) {try{return sanitize(JSON.parse(storage.getItem(SAVE_KEY)));}catch{return blank();}}
   function save(storage,p) {try{storage.setItem(SAVE_KEY,JSON.stringify(p));return true;}catch{return false;}}
   function score(p) {return missions.reduce((sum,m)=>sum+(p.completed[m.id]?1500:(p.checkpoints[m.id]?.solved.length||0)*400)+Math.max(p.records[m.id]||0,p.checkpoints[m.id]?.cells.length||0)*25,0);}
@@ -96,5 +156,5 @@
     for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
     return a;
   }
-  return {SAVE_KEY,missions,simulate,blank,sanitize,isUnlocked,load,save,score,shuffled,clamp};
+  return {SAVE_KEY,missions,simulate,blank,sanitize,isUnlocked,load,save,score,shuffled,clamp,experiment,route,cell,landingFloor,cleanLab,normalizeValue,comparisonReady,hint,recordRepair,notebook,observation,setting,wirePorts:recovery.ports,traceWires:recovery.trace};
 });
