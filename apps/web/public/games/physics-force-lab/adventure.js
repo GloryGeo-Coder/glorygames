@@ -346,5 +346,6 @@
   A.missions.forEach(mission=>{const im=new Image();im.onload=()=>images[mission.bg]=im;im.src='./assets/backgrounds/'+mission.bg;});
   $('campaignCount').textContent=`${A.missions.length} adventure missions`;
   const completed=Object.values(profile.completed).filter(Boolean).length;$('homeProgress').textContent=completed?`${completed}/${A.missions.length} missions restored • Workshop reputation: ${A.score(profile)}`:'Your workshop is waiting. Meet Pip and begin the recovery.';$('startBtn').textContent=Object.keys(profile.checkpoints).length?'Continue adventure':'Begin adventure';
+  window.PhysicsRevisionUI?.create({document,A,R:window.PhysicsRevision,profile,storage,open,close});
   resize();open('homeDialog');requestAnimationFrame(loop);
 })();

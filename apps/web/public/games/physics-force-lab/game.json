@@ -4,9 +4,9 @@
   "entry": "index.html",
   "thumbnail": "thumb.png",
   "category": "Educational",
-  "description": "Restore Nova with Newtonia and Pip through 30 untimed adventure missions and 90 repair investigations covering selected Grades 4\u201310 physics topics, with saved experiments and a field notebook. Play the 12 animated original action labs for a separate challenge.",
+  "description": "Restore Nova with Newtonia and Pip through 30 untimed adventure missions and 90 repair investigations covering selected Grades 4–10 physics topics, with saved experiments and a field notebook. Play the 12 animated original action labs for a separate challenge.",
   "orientation": "any",
-  "version": "4.7.0",
+  "version": "4.8.0",
   "features": {
     "levels": 42,
     "storyMode": true,
@@ -37,6 +37,8 @@
     "characterSpriteSheets": 8,
     "characterAnimationFrames": 227,
     "characterAnimationClips": 40,
-    "fullscreenControls": true
+    "fullscreenControls": true,
+    "cumulativeRevision": true,
+    "revisionConceptChecks": 55
   }
 }
