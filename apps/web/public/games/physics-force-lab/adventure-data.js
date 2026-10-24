@@ -1,0 +1,100 @@
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.PhysicsAdventure = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const SAVE_KEY = 'wga_physics_adventure_v1';
+  const clamp = (n, a, b) => Math.min(b, Math.max(a, Number(n) || 0));
+  const missions = [
+    { id:'cargo', title:'The silent workshop', grade:4, topic:'Energy and movement', color:'#54e6bc', bg:'level-01-force-lab.png',
+      story:'Your first morning at Nova Physics Institute begins with a blackout. Professor Newtonia is trapped behind a stalled supply lift. Pip, your lab companion, has found three cargo trolleys. Transfer energy to move their repair kits into the marked bays.',
+      ending:'The lift powers up. Newtonia steps out with a cracked Quantum Core log: the shutdown began in the signal tower. Your first repair photograph joins the workshop wall.',
+      concept:'A moving person can transfer energy to a trolley by pushing it.', type:'cart', variable:'Push setting', unit:'', min:1, max:6, step:1, initial:1,
+      prediction:'What happens when you use a stronger push, keeping the trolley and track the same?', predictions:['The trolley travels farther','The trolley receives less movement energy','The trolley always stays still'], correctPrediction:0,
+      question:'What supplied the energy that moved the trolley?', answers:['Your push transferred energy to the trolley','The track created energy from nothing','The trolley moved without an energy input'], correct:0,
+      explanation:'Your muscles supplied energy. The push transferred some of it to the trolley, and friction eventually slowed it down.',
+      hint:'Increase only the push setting. Keep the same trolley and track for a fair comparison.',
+      stations:[{name:'Medical supplies',target:[4.5,5.5],resistance:1,goal:'Stop the trolley in the 4.5–5.5 m bay.'},{name:'Lift parts',target:[6.5,7.5],resistance:1.2,goal:'Reach the 6.5–7.5 m repair bay.'},{name:'Professor’s toolkit',target:[10,11],resistance:1.3,goal:'Reach the 10–11 m bay without overshooting.'}] },
+    { id:'sound', title:'A voice across the bridge', grade:4, topic:'Energy and sound', color:'#ffd074', bg:'level-09-wave-tunnel.png',
+      story:'The bridge radio is silent, but its emergency receiver still works. Newtonia asks you to build three vibrating signals. Shorten a clamped ruler to make a higher note, and use the visible wave display to match each receiver.',
+      ending:'Pip relays your signal. The bridge lights return and a message arrives: “Core safeguards were disabled remotely.” Follow the repair trail to the wheel workshop.',
+      concept:'Vibrations produce sound. Faster vibrations produce a higher pitch.',type:'sound',variable:'Free ruler length',unit:'cm',min:10,max:30,step:1,initial:30,
+      prediction:'If you shorten the free vibrating part of the ruler, what happens to its pitch?',predictions:['The pitch becomes higher','The sound must become louder','The pitch always stays the same'],correctPrediction:0,
+      question:'Which observation explains the higher pitch?',answers:['The shorter ruler vibrated faster','The ruler changed colour','Higher pitch always means louder sound'],correct:0,
+      explanation:'Pitch depends on how fast something vibrates. Loudness is a different property. The ruler model shows faster vibrations as a higher note.',hint:'Try a shorter free length for a higher note. The wave remains visible even with sound off.',
+      stations:[{name:'Bridge receiver',target:[230,250],goal:'Match the receiver: 230–250 Hz.'},{name:'Harbour radio',target:[415,440],goal:'Match the receiver: 415–440 Hz.'},{name:'Emergency beacon',target:[655,680],goal:'Match the receiver: 655–680 Hz.'}] },
+    { id:'wheels',title:'The recovery convoy',grade:5,topic:'Systems for moving things: wheels and axles',color:'#71caff',bg:'level-06-machines-workshop.png',
+      story:'A convoy carrying replacement Core parts has broken down. Its wheels bind against badly fitted axles. Compare wheel assemblies using the same starting energy, then fit a freely turning set to each recovery cart.',
+      ending:'The convoy rolls again. Your workshop gains a spare-parts bench, and the grateful driver gives you a spring launcher from the old energy gardens.',
+      concept:'Wheels turning freely around axles help a vehicle move more easily.',type:'wheels',variable:'Wheel assembly',initial:'locked',options:[['locked','Locked axle'],['rubbing','Wheels rubbing'],['free','Freely turning wheels']],
+      prediction:'With the same starting energy, which assembly should move farthest?',predictions:['Freely turning wheels','A locked axle','Wheels rubbing against the body'],correctPrediction:0,
+      question:'Why must the starting energy stay the same when comparing the assemblies?',answers:['So the wheel assembly is the only changed variable','So every cart must stop at the same place','Because wheels create their own energy'],correct:0,
+      explanation:'A fair comparison changes one factor. Freely turning wheels reduce resistance compared with a locked or rubbing assembly.',hint:'Test a locked axle first, then change only the assembly to freely turning wheels.',
+      stations:[{name:'Supply cart',target:[9,13],energy:6,goal:'Make this cart travel at least 9 m.'},{name:'Recovery trailer',target:[11,15],energy:7,goal:'Make this trailer travel at least 11 m.'},{name:'Convoy leader',target:[13,17],energy:8,goal:'Make the final cart travel at least 13 m.'}] },
+    { id:'spring',title:'The energy gardens',grade:5,topic:'Stored energy: springs and movement',color:'#b6a0ff',bg:'level-05-energy-reactor.png',
+      story:'The energy gardens have lost their transport line. Use a compressed spring to send repair capsules to the stranded stations. Too little compression falls short; too much sends a capsule past its receiver.',
+      ending:'Repair capsules reach every receiver. The garden turbines turn and Newtonia discovers a damaged beacon circuit linking the district to the Quantum Core.',
+      concept:'Compressing a spring stores energy. Releasing it can produce movement.',type:'spring',variable:'Spring compression',unit:'cm',min:1,max:10,step:1,initial:1,
+      prediction:'What does compressing the same spring farther do?',predictions:['It stores more energy','It removes all stored energy','It makes the spring create energy'],correctPrediction:0,
+      question:'What energy change launched the capsule?',answers:['Stored energy in the spring became movement energy','Movement energy vanished without a transfer','The capsule created energy by moving'],correct:0,
+      explanation:'You supplied energy while compressing the spring. On release, stored energy transferred to the capsule as movement energy.',hint:'Compare one setting at a time. A small change in compression can change the travel distance substantially.',
+      stations:[{name:'Garden receiver',target:[4.5,5.5],goal:'Land in the 4.5–5.5 m receiver.'},{name:'Turbine tower',target:[9,10.5],goal:'Land in the 9–10.5 m receiver.'},{name:'Core relay',target:[15,16.5],goal:'Land in the 15–16.5 m receiver.'}] },
+    { id:'circuit',title:'Light the district',grade:6,topic:'Electric circuits, conductors and insulators',color:'#ffaf85',bg:'level-07-circuit-lab.png',
+      story:'The district beacon has three broken connections. Test the materials, choose a conductor and close each switch. When all three lamps shine, the route to the next Core district will be safe.',
+      ending:'The whole district lights up. Nova’s first recovery team is back at work, and your restored workshop now has five mission photographs. The Core mystery continues beyond the academy. You can replay your investigations or explore the original labs.',
+      concept:'A lamp needs an energy source and a complete conducting path.',type:'circuit',variable:'Bridge material',initial:'plastic',options:[['plastic','Plastic strip'],['copper','Copper wire'],['rubber','Rubber strip'],['wood','Dry wooden stick']],
+      prediction:'Which bridge material will let current flow when the switch closes?',predictions:['Copper wire','Plastic strip','Rubber strip'],correctPrediction:0,
+      question:'Why did the lamp light up?',answers:['The cell supplied energy through a complete conducting circuit','The plastic became an energy source','An open switch completed the circuit'],correct:0,
+      explanation:'Copper is a conductor. With the switch closed, a complete conducting path connects the cell and lamp. Plastic and rubber are insulators.',hint:'Use a conducting material and close the switch. Change just one of these factors between tests.',
+      stations:[{name:'Workshop lamp',goal:'Light the workshop lamp.'},{name:'Bridge lamp',goal:'Repair the bridge lamp.'},{name:'District beacon',goal:'Complete the district beacon circuit.'}] }
+  ];
+  // Deliberately simplified, repeatable teaching models, not laboratory measurements.
+  function simulate(mission, station, value, closed=true) {
+    const m=typeof mission==='number'?missions[mission]:mission;
+    const s=m.stations[station];
+    let output=0, unit='m', detail='';
+    if(m.type==='cart') { value=clamp(value,1,6); output=Math.max(0,value*2-s.resistance); detail='Same trolley and track; only the push changes.'; }
+    if(m.type==='sound') { value=clamp(value,10,30); output=240*(20/value)**2;unit='Hz';detail='Same ruler and pluck; only its free length changes.'; }
+    if(m.type==='wheels') { output=s.energy*({locked:.4,rubbing:1,free:2}[value]||.4);detail='Same cart, track and starting energy; only the wheel assembly changes.'; }
+    if(m.type==='spring') {value=clamp(value,1,10);output=.2*value*value;detail='Same spring and capsule; only compression changes.';}
+    if(m.type==='circuit') {output=value==='copper'&&closed?1:0;unit='';detail=output?'Complete conducting path: lamp on.':!closed?'The open switch breaks the path.':'The bridge is an insulator: lamp off.';}
+    const success=m.type==='circuit'?output===1:output>=s.target[0]&&output<=s.target[1];
+    return {output:Math.round(output*10)/10,unit,success,detail};
+  }
+  function blank() { return {version:1,current:0,completed:{},records:{},checkpoints:{},settings:{music:.45,effects:.7,reduced:false}}; }
+  function sanitize(raw) {
+    const p=blank(); if(!raw||raw.version!==1)return p;
+    for(const m of missions) {
+      if(raw.completed?.[m.id]===true&&missions.slice(0,missions.indexOf(m)).every(previous=>p.completed[previous.id]))p.completed[m.id]=true;
+      if(raw.records?.[m.id])p.records[m.id]=Math.floor(clamp(raw.records[m.id],0,12));
+      const c=raw.checkpoints?.[m.id];
+      if(c&&typeof c==='object') {
+        const solved=Array.isArray(c.solved)?[...new Set(c.solved.filter(n=>Number.isInteger(n)&&n>=0&&n<3))]:[];
+        const labs={};
+        for(let i=0;i<3;i++) {
+          const l=c.labs?.[i];if(!l||typeof l!=='object')continue;
+          const value=m.options?m.options.some(o=>o[0]===l.value)?l.value:m.initial:clamp(l.value,m.min,m.max);
+          labs[i]={value,closed:l.closed!==false,prediction:Number.isInteger(l.prediction)&&l.prediction>=0&&l.prediction<3?l.prediction:null,trials:Array.isArray(l.trials)?l.trials.slice(-6).filter(t=>t&&typeof t.value!=='object').map(t=>({value:t.value,closed:t.closed!==false})):[],hint:!!l.hint};
+        }
+        p.checkpoints[m.id]={x:clamp(c.x,50,3040),solved,cells:Array.isArray(c.cells)?[...new Set(c.cells.filter(n=>Number.isInteger(n)&&n>=0&&n<12))]:[],labs};
+        if(p.checkpoints[m.id].cells.length)p.records[m.id]=Math.max(p.records[m.id]||0,p.checkpoints[m.id].cells.length);
+      }
+    }
+    p.current=clamp(Math.floor(raw.current),0,missions.length-1);
+    if(!isUnlocked(p,p.current))p.current=missions.findIndex((_,i)=>isUnlocked(p,i)&&!p.completed[missions[i].id]);
+    p.current=Math.max(0,p.current);
+    p.settings={music:clamp(raw.settings?.music??.45,0,1),effects:clamp(raw.settings?.effects??.7,0,1),reduced:!!raw.settings?.reduced};
+    return p;
+  }
+  function isUnlocked(p,i) {return i===0||missions.slice(0,i).every(m=>p.completed[m.id]);}
+  function load(storage) {try{return sanitize(JSON.parse(storage.getItem(SAVE_KEY)));}catch{return blank();}}
+  function save(storage,p) {try{storage.setItem(SAVE_KEY,JSON.stringify(p));return true;}catch{return false;}}
+  function score(p) {return missions.reduce((sum,m)=>sum+(p.completed[m.id]?1500:(p.checkpoints[m.id]?.solved.length||0)*400)+Math.max(p.records[m.id]||0,p.checkpoints[m.id]?.cells.length||0)*25,0);}
+  function shuffled(answers,correct,rng=Math.random) {
+    const a=answers.map((text,i)=>({text,correct:i===correct}));
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    return a;
+  }
+  return {SAVE_KEY,missions,simulate,blank,sanitize,isUnlocked,load,save,score,shuffled,clamp};
+});

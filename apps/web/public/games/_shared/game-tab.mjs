@@ -53,7 +53,8 @@ export function bindGameFullscreen({ document: doc, window: win, host } = {}) {
 export function mountGameTab(win = globalThis.window) {
   if (!win || win.top !== win.self || win.__wgaGameTab) return;
   const match = win.location.pathname.match(/^\/games\/([a-z0-9-]+)\/(?:index\.html)?$/);
-  const slug = match?.[1], startId = GAME_START_BUTTONS[slug];
+  const originalPhysics = win.location.pathname === '/games/physics-force-lab/original-labs.html';
+  const slug = originalPhysics ? 'physics-force-lab' : match?.[1], startId = GAME_START_BUTTONS[slug];
   if (!startId) return;
   const doc = win.document;
   doc.documentElement.dataset.wgaTab = slug;
