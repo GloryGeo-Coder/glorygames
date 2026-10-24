@@ -1,9 +1,9 @@
 (function (root, factory) {
   const node=typeof module === 'object' && module.exports;
-  const api = factory(node ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict,node ? require('./adventure-grade7.js') : root.PhysicsHeatChapter);
+  const api = factory(node ? require('./adventure-chapter2.js') : root.PhysicsRecoveryDistrict,node ? require('./adventure-grade7.js') : root.PhysicsHeatChapter,node ? require('./adventure-grade8.js') : root.PhysicsSignalChapter);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.PhysicsAdventure = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery,heat) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (recovery,heat,signal) {
   'use strict';
   const SAVE_KEY = 'wga_physics_adventure_v1';
   const clamp = (n, a, b) => Math.min(b, Math.max(a, Number(n) || 0));
@@ -53,6 +53,7 @@
   missions.push(...recovery.missions);
   // Cached older entry pages can still run their original two chapters.
   if(heat)missions.push(...heat.missions);
+  if(heat&&signal)missions.push(...signal.missions);
   function experiment(mission, station) {
     const m=typeof mission==='number'?missions[mission]:mission;
     return {...m,...m.stations[station].lesson};
@@ -97,10 +98,20 @@
     if(['grid','circuit'].includes(e.type))return result.output?'lamp on':'lamp off';
     if(e.type==='daylight')return result.detail;
     if(e.type==='convection')return result.state==='circulating'?'Whole-tank convection current':'Warm upper layer; weak whole-tank circulation';
+    if(e.grade===8){
+      if(['network','coil','transmit'].includes(e.type))return `${result.output} ${result.unit}`;
+      if(e.type==='charge')return `${result.state==='attract'?'Attraction':'Repulsion'}: ${result.rodCharge<0?'negative':'positive'} rod and ${result.probe<0?'negative':'positive'} probe`;
+      if(e.type==='branch')return `${result.output} lamp${result.output===1?'':'s'} on`;
+      if(e.type==='mirror')return `Reflected ray: ${result.state} receiver direction`;
+      if(e.type==='refract')return result.state==='air'?'No change of direction':`Ray bends towards the normal in ${result.state}`;
+      if(e.type==='surface')return result.state==='smooth'?'Parallel reflected rays':'Scattered reflected rays';
+      if(e.type==='spectrum')return result.state==='spectrum'?'Visible spectrum':result.state==='white'?'White beam':'Beam blocked';
+      if(e.type==='combine')return result.state==='white'?'Recombined white light':'Separate spectral components';
+    }
     if(result.energy)return `${result.energy.potential} potential, ${result.energy.kinetic} kinetic, ${result.energy.surroundings} surroundings (model units)`;
     return `${result.output} ${result.unit}`.trim();
   }
-  function setting(e,t,index) {return e.type==='grid'?`Wire arrangement ${index+1}`:`${e.grade===7&&e.options?e.options.find(o=>o[0]===t.value)?.[1]||t.value:t.value}${e.unit?' '+e.unit:''}${e.type==='circuit'?(t.closed?', switch closed':', switch open'):''}`;}
+  function setting(e,t,index) {return e.type==='grid'?`Wire arrangement ${index+1}`:`${e.grade>=7&&e.options?e.options.find(o=>o[0]===t.value)?.[1]||t.value:t.value}${e.unit?' '+e.unit:''}${e.type==='circuit'?(t.closed?', switch closed':', switch open'):''}`;}
   function notebook(p) {
     return missions.flatMap(m=>Object.keys(p.journal[m.id]||{}).map(key=>{
       const index=Number(key),e=experiment(m,index);
@@ -113,6 +124,8 @@
   function simulate(mission, station, value, closed=true) {
     const m=experiment(mission,station);
     const s=m.stations[station];
+    const electrical=signal?.simulate(m,s,value);
+    if(electrical)return electrical;
     const thermal=heat?.simulate(m,s,value);
     if(thermal)return thermal;
     const extra=recovery.simulate(m,s,value);

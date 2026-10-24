@@ -3,7 +3,7 @@ const root=path.join(__dirname,'../public/games/physics-force-lab'),A=require(pa
 
 test('Grade 7 adds five missions and fifteen comparison investigations without changing earlier mission data',()=>{
   const hash=require('node:crypto').createHash('sha256').update(JSON.stringify(A.missions.slice(0,10))).digest('hex');assert.equal(hash,'ba5e351a398436e7e31f5af774b154ec89413911cf18125a8830f3e8ad7ca7a3');
-  assert.equal(A.missions.length,15);
+  assert.ok(A.missions.length>=15);
   for(let mi=10;mi<15;mi++)for(let si=0;si<3;si++){const e=A.experiment(mi,si);assert.equal(e.grade,7);assert.equal(e.needsComparison,true);assert.ok(e.topic&&e.explanation&&e.hint);assert.equal(e.answers.length,3);}
   assert.deepEqual(A.route(5).stations,[800,1900,3000]);assert.equal(A.route(5).length,4000);assert.equal(A.route(10).length,4400);
 });
