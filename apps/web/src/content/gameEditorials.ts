@@ -1071,14 +1071,17 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "physics-force-lab": {
     "category": "Educational",
-    "summary": "Restore Nova through 30 untimed adventure missions and 90 repair investigations covering selected Grades 4–10 physics topics, with saved experiments and a field notebook, plus 12 animated original action labs.",
+    "summary": "Join Newtonia and Pip to restore Nova through 30 untimed missions and 90 investigations covering selected Grades 4–10 physics topics, with saved discoveries, 55 revision checks and 12 animated action labs.",
     "overview": [
-      "Physics Force Lab: Rise of the Young Physicist turns physics into a journey through Nova. Explore a district, make a prediction, change the equipment and test an idea before explaining the evidence that repairs each machine. The adventure has 30 missions and 90 repair investigations, with no countdown or lost lives for experiment mistakes.",
-      "The learning route develops selected South African CAPS topics from Grades 4–10: movement, sound, wheels and axles, springs, circuits, Earth rotation, heat transfer, electricity, light, forces, resistance, motion graphs, mechanical energy and waves. It supports practice and exploration rather than replacing the full Natural Sciences or Physical Sciences curriculum. The 12 original labs provide a separate action platforming campaign with tools, collectibles, shooting robots and a final boss."
+      "Pull on your field jacket, settle your goggles and step into Nova, a city whose machines have fallen silent. Physics Force Lab: Rise of the Young Physicist is a colourful 2D adventure starring a young scientist, Professor Newtonia and Pip, a bright-eyed floating lab companion. Every machine you restore begins with an idea you can investigate.",
+      "Explore 30 Adventure missions and complete 90 repair investigations. Make a prediction, adjust the equipment, compare measurements and explain what happened. The route introduces selected South African CAPS Grades 4–10 physics topics through movement, sound, heat, circuits, light, forces, energy, waves and motion graphs. Investigations are untimed, with hints and feedback that help you keep learning.",
+      "Your field notebook saves discoveries for later, while the Revision Workshop turns completed repairs into 55 distinct concept checks. For a faster challenge, enter the separate 12 original action labs, where animated robots, drones and GlitchBot guard routes filled with platforms, physics tools and experiment terminals. These modes provide supplementary practice, not the complete Natural Sciences or Physical Sciences curriculum."
     ],
     "story": [
-      "Your first morning at Nova Physics Institute begins with a blackout. Professor Newtonia is trapped behind a stalled lift, Pip has found a damaged Quantum Core log, and your small workshop becomes the recovery team’s base. Repairing carts, radios, machines and beacons reveals a chain of unreliable readings and broken connections across the city.",
-      "The investigation leads through the recovery district, cooling watchtowers, a signal gallery and the isolated mechanical drive. Each restored mission adds a photograph to your workshop and evidence to your notebook. The final Grade 10 chapter asks you to use motion, energy, wave and circuit records to restart the Core and earn your place as a Junior Physics Guardian."
+      "Your first morning at Nova Physics Institute begins with a blackout. A supply lift has stalled with Professor Newtonia trapped behind it, the Quantum Core has fallen silent, and Pip has found a damaged log that could explain the failure. Your small workshop becomes the recovery team’s base. A trolley delivery and a working circuit are the first steps towards bringing the city back to life.",
+      "With Newtonia’s guidance and Pip beside you, follow the repair routes through Nova. Restore carts, radios, springs and beacons, then investigate the cooling watchtowers, circuit causeway, mirror stations and mechanical drive. The young physicist’s goggles, field jacket and orange tool bracer belong to a hands-on explorer: progress comes from testing equipment and explaining the evidence.",
+      "As the districts recover, photographs fill your workshop and observations build a field notebook of the journey. The final Grade 10 chapter brings motion records, energy, waves, charge and circuit measurements together for the Quantum Core restart. Restore the Core and earn your place as a Junior Physics Guardian.",
+      "The investigation continues in the Revision Workshop, where your repair discoveries become short, untimed practice sessions. In the separate original action campaign, use your physics tools to cross hazardous laboratory routes, face rogue robots and drones, and confront GlitchBot at the Core."
     ],
     "howToPlay": [
       "Choose Begin adventure or continue your saved checkpoint, then read the district briefing.",
@@ -1086,18 +1089,22 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Choose a prediction and adjust the equipment. From the recovery chapter onward, test two different settings before explaining a successful result.",
       "Read the diagram, measurements, trial history and feedback. Use the two-stage hints whenever you need help.",
       "Apply all three repairs, reach the district relay and complete the mission to unlock the next one.",
-      "Open the field notebook from Pause or Settings to revisit your recorded explanations and observations. Choose the 12 original labs from the opening menu for the action campaign."
+      "Open the field notebook from Pause or Settings to revisit recorded explanations and observations. Choose Revision from the opening menu, Pause or notebook to practise completed discoveries. Choose the 12 original labs from the opening menu for the separate action campaign."
     ],
     "desktop": [
       "Adventure: use A/D or Left/Right to move, Space, W or Up to jump, and E to interact. Use the mouse or keyboard for equipment, answers and supply-route ordering. P pauses.",
       "Original labs: use A/D or arrows to move, W/Up/Space to jump, F for the current physics tool and E for force blast. Use Pause, Sound and Restart on the HUD.",
-      "Enter Fullscreen is available where supported: in Adventure Settings and the original-lab menu. The game opens in its own browser tab."
+      "Use the fullscreen control beside the play buttons, in Adventure Settings or in the original start/pause menu where supported. Alt+Enter also toggles fullscreen outside input fields. The game opens in its own browser tab."
     ],
     "mobile": [
       "Use the dedicated movement, jump and interaction controls beneath the Adventure play area. Tap equipment choices, move sliders and use Earlier/Later buttons to order the electricity supply stages.",
-      "The original labs have their own movement, jump, Tool and Blast buttons below the play area. Questions and menus scroll on small screens. Portrait and landscape layouts keep the HUD outside the canvas and preserve world positions during rotation."
+      "The original labs have their own movement, jump, Tool and Blast buttons below the play area. Both modes provide a fullscreen control where supported. Questions and menus scroll on small screens. Portrait and landscape layouts keep controls reachable and preserve world positions during rotation; browsers without fullscreen retain the tab-filling view."
     ],
     "systems": [
+      {
+        "title": "An illustrated cast of explorers and machines",
+        "body": "Travel with the young physicist, Professor Newtonia and Pip. Expressive movement, tool actions and repair celebrations bring the Adventure to life, while distinct robots, drones, magnetic bots and GlitchBot animate the original action labs."
+      },
       {
         "title": "Thirty missions, six chapters",
         "body": "Restore the academy and recovery districts, investigate Grade 7 heat and energy, Grade 8 electricity and light, Grade 9 forces and power, and complete the Grade 10 Core restart."
@@ -1113,17 +1120,22 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       {
         "title": "Twelve original action labs",
         "body": "Animated scientists, robots, drones and GlitchBot accompany moving platforms, hazards, collectible power-ups, physics tools, experiment terminals and level music. This mode uses health and a separate best-score record."
+      },
+      {
+        "title": "The Revision Workshop",
+        "body": "Completed repairs unlock 55 distinct concept checks across the full Adventure. Review up to six ideas in an untimed session, choose a grade or mix your discoveries, read scientific feedback and revisit your own experiment notes. Missed ideas receive another turn, and practice saves separately from campaign progress."
       }
     ],
     "progression": [
       "Complete missions in sequence to unlock the next district. Each mission has three required repairs and twelve optional data cells; any completed mission can be replayed. The notebook keeps your discoveries through retries.",
       "The first ten missions introduce selected Grades 4–6 topics and clearly marked enrichment. Grades 7, 8, 9 and 10 each add five missions. The Grade 10 route introduces signed motion and graphs, energy calculations, superposition, wave relationships, charge conservation and circuit measurements.",
-      "Adventure saves use this browser’s local storage. The original labs retain a separate best score; their current action run is not a saved Adventure checkpoint. Clearing browser data removes locally saved records."
+      "Adventure saves use this browser’s local storage. Revision saves its selected questions, answer order, feedback and session position separately, and never unlocks missions or adds campaign score. The original labs retain a separate best score; their current action run is not a saved Adventure checkpoint. Clearing browser data removes locally saved records."
     ],
     "learning": [
       "Practise making predictions, changing one factor, comparing observations and explaining evidence.",
       "Keep related quantities distinct: mass and weight, heat and temperature, distance and displacement, current and charge, power and energy.",
-      "Connect Grade 10 graphs and equations to the model readings, including position/velocity slopes, mechanical energy, wavelength and frequency, and energy transferred per charge."
+      "Connect Grade 10 graphs and equations to the model readings, including position/velocity slopes, mechanical energy, wavelength and frequency, and energy transferred per charge.",
+      "Use short revision sessions to recall ideas from completed repairs, compare the explanation with your saved observations and return to concepts that need another look."
     ],
     "faqs": [
       {
@@ -1136,7 +1148,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Does refreshing erase my investigation?",
-        "a": "Adventure checkpoints, equipment choices, trial history, hints and notebook findings save on the current device when browser storage is available. The original labs save a best score, rather than the current action run."
+        "a": "Adventure checkpoints, equipment choices, trial history, hints and notebook findings save on the current device when browser storage is available. Revision also saves the current question, answer order, feedback and session position. The original labs save a best score, rather than the current action run."
       },
       {
         "q": "Can I play without sound or a timer?",
@@ -1144,11 +1156,15 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Can I play on a phone?",
-        "a": "Yes. Both modes have touch controls and responsive portrait/landscape layouts. Menus and experiment questions scroll, and rotating the original labs preserves the world’s geometry."
+        "a": "Yes. Both modes have touch controls and responsive portrait/landscape layouts. Menus and experiment questions scroll, and rotation preserves the world’s geometry. Fullscreen is available beside the play controls and in the menus where the browser supports it."
       },
       {
         "q": "Are the readings real laboratory measurements?",
         "a": "No. The repeatable teaching models illustrate relationships under stated assumptions. Read each experiment’s explanation and model notes before applying the idea to a real physical situation."
+      },
+      {
+        "q": "How does the Revision Workshop work?",
+        "a": "Complete Adventure repairs to unlock their ideas for revision. The 90 repairs provide 55 distinct concept checks. Choose a grade or mix your discoveries in sessions of up to six questions, with explanations and experiment notes. Practice progress saves separately and does not change mission unlocks or game scores."
       }
     ],
     "tips": [
@@ -1156,6 +1172,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Read units and reference directions before using a number.",
       "Compare recorded trials rather than judging a result only by its animation.",
       "A failed target is evidence: adjust the equipment, test again and use the next hint.",
+      "After a repair, open Revision and recall the idea before checking the feedback. Use your experiment notes whenever a comparison would help.",
       "In the original labs, combine movement and jumping, collect the required rewards and solve terminals before entering the exit portal."
     ]
   },
