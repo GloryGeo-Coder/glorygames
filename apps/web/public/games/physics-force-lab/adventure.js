@@ -35,7 +35,7 @@
   }
   function missionMap(){
     $('missionList').replaceChildren();
-    A.missions.forEach((mission,i)=>{if(i===0||i===5){const h=document.createElement('h3');h.textContent=i===0?'Chapter one • Academy district':'Chapter two • Recovery district';$('missionList').append(h);}const b=document.createElement('button');b.disabled=!A.isUnlocked(profile,i);const title=document.createElement('strong'),sub=document.createElement('span');title.textContent=`${i+1}. ${mission.title}`;sub.textContent=`Grade ${mission.grade} • ${mission.topic} • ${b.disabled?'Locked':profile.completed[mission.id]?'Restored — replay':'Explore'}`;b.append(title,sub);b.onclick=()=>launch(i,!!profile.completed[mission.id]);$('missionList').append(b);});
+    A.missions.forEach((mission,i)=>{if(i===0||i===5||i===10){const h=document.createElement('h3');h.textContent=i===0?'Chapter one • Academy district':i===5?'Chapter two • Recovery district':'Chapter three • Grade 7: Heat & Energy';$('missionList').append(h);}const b=document.createElement('button');b.disabled=!A.isUnlocked(profile,i);const title=document.createElement('strong'),sub=document.createElement('span');title.textContent=`${i+1}. ${mission.title}`;sub.textContent=`Grade ${mission.grade} • ${mission.topic} • ${b.disabled?'Locked':profile.completed[mission.id]?'Restored — replay':'Explore'}`;b.append(title,sub);b.onclick=()=>launch(i,!!profile.completed[mission.id]);$('missionList').append(b);});
     open('mapDialog');
   }
   function showNotebook(){
@@ -116,7 +116,7 @@
     $('finishLab').hidden=true;$('reflectionFeedback').textContent='';
     $('testResult').textContent=`Observed: ${A.observation(lesson,r)}. ${r.detail} ${tested?'Target reached. Explain the evidence below.':r.success?'Target reached. Compare another equipment setting before explaining your evidence.':'Target not reached yet. Adjust one factor and test again.'}`;
     $('testResult').className=r.success?'success':'';history();visual(true);checkpoint();
-    if(lesson.type==='amplitude')audio.amplitude(l.value);else audio.effect(lesson.type==='sound'?'signal':'test',r.output);
+    if(lesson.type==='amplitude')audio.amplitude(l.value);else audio.effect(lesson.grade===7?(lesson.type==='convection'?'flow':'thermal'):lesson.type==='sound'?'signal':'test',r.output);
     $('reflectStep').hidden=!tested;
     if(tested){$('reflectionQuestion').textContent=lesson.question;$('reflectionAnswers').replaceChildren();A.shuffled(lesson.answers,lesson.correct).forEach(answer=>{const b=document.createElement('button');b.textContent=answer.text;b.onclick=()=>{explained=answer.correct;$('reflectionFeedback').textContent=answer.correct?lesson.explanation:`Look again at your evidence. ${lesson.hint}`;$('reflectionFeedback').className=answer.correct?'success':'';$('finishLab').hidden=!answer.correct;};$('reflectionAnswers').append(b);});}
   }
@@ -125,9 +125,11 @@
   }
   function visual(animate=false){
     const l=labState(),r=A.simulate(m,activeLab,l.value,l.closed),v=$('labVisual'),color=lesson.color;
+    const compared=[...l.trials].reverse().find(t=>t.value!==l.value),comparison=compared?A.simulate(m,activeLab,compared.value,compared.closed):null;
     const line=(x1,y1,x2,y2,c=color)=>`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${c}" stroke-width="5" fill="none"/>`;
-    let content='';
-    if(lesson.type==='sound'||lesson.type==='amplitude') {let d='';const amplitude=lesson.type==='amplitude'?r.output*3:24,frequency=lesson.type==='amplitude'?.08:r.output/1400;for(let x=15;x<480;x+=3)d+=`${x===15?'M':'L'}${x},${74+Math.sin(x*frequency)*amplitude}`;content=`<path class="wave-line" d="${d}" fill="none" stroke="${color}" stroke-width="3"/><text x="20" y="26">${lesson.type==='amplitude'?`Vibration height: ${r.output} mm • pitch unchanged`:`Visible vibrations • ${r.output} Hz`}</text>`;}
+    let content='';const thermal=window.PhysicsHeatVisuals?.render(lesson,m.stations[activeLab],l.value,r,comparison);
+    if(thermal){content=thermal;}
+    else if(lesson.type==='sound'||lesson.type==='amplitude') {let d='';const amplitude=lesson.type==='amplitude'?r.output*3:24,frequency=lesson.type==='amplitude'?.08:r.output/1400;for(let x=15;x<480;x+=3)d+=`${x===15?'M':'L'}${x},${74+Math.sin(x*frequency)*amplitude}`;content=`<path class="wave-line" d="${d}" fill="none" stroke="${color}" stroke-width="3"/><text x="20" y="26">${lesson.type==='amplitude'?`Vibration height: ${r.output} mm • pitch unchanged`:`Visible vibrations • ${r.output} Hz`}</text>`;}
     else if(lesson.type==='water'){
       const y=94-Number(l.value)*8;content=`<text x="20" y="20">Raised water → falling water → turning wheel</text><rect x="35" y="${y}" width="75" height="22" rx="3" fill="#70cfff"/><path d="M110 ${y+12}H200V90H350" fill="none" stroke="#589bbb" stroke-width="7"/><g class="water-wheel" style="--turns:${Math.min(3,r.output)};transform-origin:380px 85px"><circle cx="380" cy="85" r="31" fill="none" stroke="${color}" stroke-width="5"/>${Array.from({length:8},(_,i)=>`<path d="M380 85L${380+Math.cos(i*Math.PI/4)*29} ${85+Math.sin(i*Math.PI/4)*29}" stroke="${color}" stroke-width="4"/>`).join('')}</g><text x="20" y="135">Release height ${l.value} m • wheel: ${r.output} rotations</text>`;
     }else if(lesson.type==='grid'){
@@ -140,6 +142,18 @@
     else {const end=60+Math.min(370,r.output*22),target=lesson.stations[activeLab].target;content=`<rect x="20" y="106" width="460" height="7" rx="3" fill="#557483"/>${lesson.type!=='wheels'?`<rect x="${60+target[0]*22}" y="82" width="${Math.max(14,(target[1]-target[0])*22)}" height="32" fill="#69f2c433" stroke="#69f2c4"/>`:''}<g class="test-object" style="--travel-start:${60-end}px"><rect x="${end-22}" y="72" width="44" height="26" rx="5" fill="${color}"/><circle cx="${end-12}" cy="103" r="7" fill="#d9e8f0"/><circle cx="${end+12}" cy="103" r="7" fill="#d9e8f0"/></g><text x="20" y="25">${lesson.type==='spring'?'Stored spring energy → movement':lesson.type==='wheels'?'Compare the same starting energy':'Energy transferred by a push'}</text><text x="20" y="135">Travel distance: ${r.output} m</text>${lesson.type==='spring'?'<path class="spring-coil" d="M20 85l7 -12 7 24 7 -24 7 24 7 -12" fill="none" stroke="#e0bfff" stroke-width="3"/>':''}`;}
     v.innerHTML=`<svg viewBox="0 0 500 145" aria-hidden="true" style="color:#e8f6ff;font:14px system-ui;fill:currentColor">${content}</svg>`;
     v.setAttribute('aria-label',`${lesson.type} experiment: ${r.detail} ${r.output} ${r.unit}`);v.classList.remove('testing');if(animate&&!profile.settings.reduced){void v.offsetWidth;v.classList.add('testing');}
+    renderMeasurements(r,compared,comparison);
+  }
+  function renderMeasurements(result,compared,comparison){
+    const host=$('measurementTable');if(!host)return;host.replaceChildren();
+    const l=labState(),recorded=l.trials.some(t=>t.value===l.value);
+    host.hidden=!result.series||!recorded;if(host.hidden)return;
+    const legend=document.createElement('p');legend.className='small';legend.textContent=`Recorded model readings. Solid line: ${A.setting(lesson,{value:l.value},0)}.${comparison?.series?` Dashed line: ${A.setting(lesson,compared,0)}.`:''}`;
+    const table=document.createElement('table'),caption=document.createElement('caption'),head=document.createElement('thead'),body=document.createElement('tbody'),row=document.createElement('tr');
+    caption.textContent='Temperature measurements (°C)';table.append(caption);
+    for(const text of ['Time (min)',A.setting(lesson,{value:l.value},0),...(comparison?.series?[A.setting(lesson,compared,0)]:[])]){const th=document.createElement('th');th.scope='col';th.textContent=text;row.append(th);}head.append(row);
+    result.series.forEach((point,i)=>{const tr=document.createElement('tr');for(const [index,value]of [point.time,point.temperature,...(comparison?.series?[comparison.series[i].temperature]:[])].entries()){const cell=document.createElement(index===0?'th':'td');if(index===0)cell.scope='row';cell.textContent=String(value);tr.append(cell);}body.append(tr);});
+    table.append(head,body);host.append(legend,table);
   }
   function resize(){
     const rect=canvas.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);scale=Math.max(.8,Math.min(1.4,rect.height/500));width=rect.width/scale;height=rect.height/scale;ctx.setTransform(dpr*scale,0,0,dpr*scale,0,0);camera=A.clamp(player.x-width*.36,0,Math.max(0,length-width));
@@ -197,6 +211,20 @@
       const rotation=repaired&&!profile.settings.reduced?time*2:0;ctx.save();ctx.translate(18,382);ctx.rotate(rotation);for(let n=0;n<8;n++){ctx.rotate(Math.PI/4);rect(-3,-28,6,56,repaired?m.color:'#7296aa',2);}ctx.restore();
     }else if(type==='daylight'){
       rect(-16,389,45,31,'#496579',3);limb(6,350,-.6,50,'#aac0c9',20);ellipse(10,337,23,14,repaired?m.color:'#486c86');
+    }else if(type==='conduction'){
+      const material=cp?.labs[i]?.value||A.experiment(m,i).initial,reading=A.simulate(m,i,material).output;
+      rect(-46,367,24,53,'#af654c',4);rect(-22,378,59,10,material==='wood'?'#9b805b':material==='steel'?'#b6c6cd':'#c59e78',2);rect(35,353,16,67,'#8caac2',5);rect(39,415-(repaired?reading*.65:15),8,repaired?reading*.65:15,repaired?'#ffab7b':'#42758c',3);ellipse(-34,360,13,8,repaired?'#ffc282':'#a07866');
+    }else if(type==='convection'){
+      const circulating=cp?.labs[i]?.value==='bottom';
+      rect(-42,336,82,84,'#6c97ad',7);rect(-37,341,72,73,'#276486',4);const phase=repaired&&circulating&&!profile.settings.reduced?time%2:0;
+      if(circulating){ellipse(-17,397-phase*22,6,6,'#ffb383');ellipse(17,350+phase*22,6,6,'#a4dcff');}else{rect(-35,343,68,19,'#b36f66',3);ellipse(16,394,6,6,'#a4dcff');}
+      rect(-23,circulating?415:337,41,5,repaired?'#ffba86':'#6e7a83',2);
+    }else if(type==='radiation'){
+      const finish=cp?.labs[i]?.value||A.experiment(m,i).initial;
+      rect(-34,359,74,45,finish==='black'?'#263340':finish==='white'?'#e6e4d9':'#c1d1d9',5);rect(-28,366,62,7,m.color,2);rect(-8,404,11,16,'#496577',2);ellipse(41,348,6,6,repaired?'#ffdf9c':'#8a8779');
+    }else if(type==='insulation'){
+      const warm=m.stations[i].start>m.stations[i].ambient;
+      rect(-36,359,74,61,'#526c8d',9);rect(-30,366,62,47,repaired?'#b0c7eb':'#73839d',7);rect(-33,356,68,10,'#b1becf',3);rect(-3,377,9,27,warm?'#8d4d42':'#285e7e',3);ellipse(1,402,6,6,warm?'#ffb58b':'#77dcff');
     }else{
       const roll=repaired&&!profile.settings.reduced?Math.sin(time*.8+i)*18:0;ctx.translate(roll,0);
       rect(-38,381,67,25,repaired?m.color:'#56717e',4);rect(-30,366,22,15,'#d6b38c',2);rect(-5,359,24,22,'#c49b72',2);
@@ -217,7 +245,7 @@
     // Persistent, visible workshop restoration: photographs, plants and repaired equipment.
     rect(20,257,260,120,'#132e40',9);rect(33,270,234,93,'#275367',4);
     const done=Object.values(profile.completed).filter(Boolean).length;
-    for(let i=0;i<A.missions.length;i++){const x=43+(i%5)*43,y=277+Math.floor(i/5)*42;rect(x,y,32,34,i<done?'#ddc9a0':'#1e4052',2);if(profile.completed[A.missions[i].id]){rect(x+4,y+4,24,22,A.missions[i].color,1);ellipse(x+16,y+15,6,7,'#275367');}}
+    for(let i=0;i<A.missions.length;i++){const x=43+(i%5)*43,y=277+Math.floor(i/5)*27;rect(x,y,32,24,i<done?'#ddc9a0':'#1e4052',2);if(profile.completed[A.missions[i].id]){rect(x+4,y+3,24,16,A.missions[i].color,1);ellipse(x+16,y+11,5,5,'#275367');}}
     rect(30,379,240,10,'#b08762',3);rect(42,390,12,30,'#466171',2);rect(242,390,12,30,'#466171',2);if(profile.completed.cargo)scientist(200,420,'professor');
     for(let i=0;i<12;i++){if(cp?.cells.includes(i))continue;const {x,y}=A.cell(m,i);const bob=profile.settings.reduced?0:Math.sin(time*3+i)*4;ctx.save();ctx.translate(x,y+bob);ctx.rotate(Math.PI/4);rect(-7,-7,14,14,m.color,3);ctx.restore();}
     for(let i=0;i<3;i++){const x=stationX[i],solved=cp?.solved.includes(i);apparatus(x,i);rect(x-37,346,74,74,'#b1c4c6',8);rect(x-29,354,58,38,solved?'#3b947a':'#163e54',5);ctx.font='bold 20px system-ui';ctx.textAlign='center';ctx.fillStyle=solved?'#a5ffcf':m.color;ctx.fillText(solved?'✓':String(i+1),x,381);rect(x-18,401,36,7,solved?'#69f2c4':'#f2b575',3);

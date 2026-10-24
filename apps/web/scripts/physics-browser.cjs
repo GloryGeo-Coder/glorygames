@@ -19,9 +19,19 @@ async function solve(page,mi,si,first=false){
     const firstWire=page.locator('[data-wire="0"]');await firstWire.focus();await firstWire.press('Enter');assert.equal(await firstWire.getAttribute('data-rotation'),'1');await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();
     await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();assert.equal(await page.locator('[data-wire="0"]').getAttribute('data-rotation'),'1');assert.match(await page.locator('#labHint').textContent(),/above the middle row/);
   }
-  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180]];
+  const values=[[3,4,6],[20,15,12],['free','free','free'],[5,7,9],['copper','copper','copper'],[2,3,4],[4,6,8],[],[0,180,90],[6,'120301003',180],[25,75,100],['copper','wood','steel'],['bottom','top','black'],['wool','wool','wool'],['wood','shiny','wool']];
   if(e.type==='grid')await setWires(page,m.stations[si].board.solution);else if(e.options)await page.locator('#equipment select').selectOption(values[mi][si]);else await setRange(page,values[mi][si]);
   await page.locator('#runTest').click();assert.match(await page.locator('#testResult').textContent(),/Target reached/);
+  if(mi===13&&si===0){
+    assert.equal(await page.locator('#measurementTable tbody tr').count(),6);assert.equal(await page.locator('#measurementTable tbody tr').last().locator('td').first().textContent(),'66.7');
+    await page.locator('#hintBtn').click();await page.locator('#hintBtn').click();await page.getByRole('button',{name:e.answers[1],exact:true}).click();assert.equal(await page.locator('#finishLab').isVisible(),false);
+    await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();assert.equal(await page.locator('#equipment select').inputValue(),'wool');assert.equal(await page.locator('#trialHistory li').count(),2);assert.match(await page.locator('#labHint').textContent(),/no extra wrap with wool/);assert.equal(await page.locator('#measurementTable tbody tr').count(),6);
+    await page.locator('#runTest').click();
+    for(const [width,height]of [[320,568],[360,740],[375,667],[390,844],[568,320],[844,390],[768,1024],[1024,768],[1440,900]]){
+      await page.setViewportSize({width,height});await page.locator('#measurementTable').scrollIntoViewIfNeeded();const b=await page.locator('#measurementTable').boundingBox();assert.ok(b.x>=0&&b.x+b.width<=width+1);await page.locator('#measurementTable tbody tr').last().scrollIntoViewIfNeeded();const last=await page.locator('#measurementTable tbody tr').last().boundingBox();assert.ok(last.y>=0&&last.y+last.height<=height+1);
+    }
+    await page.setViewportSize({width:390,height:844});if(shots){fs.mkdirSync(shots,{recursive:true});await page.locator('#labVisual').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'grade7-temperature-table.png')});}
+  }
   if(first){
     await page.getByRole('button',{name:e.answers[1],exact:true}).click();assert.equal(await page.locator('#finishLab').isVisible(),false);
     await page.locator('#leaveLab').click();await page.reload();await begin(page);await page.locator('#interactAdventure').click();
@@ -42,14 +52,15 @@ async function solve(page,mi,si,first=false){
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const base=`http://127.0.0.1:${server.address().port}/games/physics-force-lab/index.html?scores=0`;
   browser=await chromium.launch({headless:true,...(process.env.CHROME_BIN?{executablePath:process.env.CHROME_BIN}:{}),args:['--no-sandbox']});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
-  if(process.env.PHYSICS_CHAPTER==='2'){
-    const old={version:1,current:4,completed:{},records:{},checkpoints:{},settings:{music:.45,effects:.7,reduced:false}};
-    for(const mission of A.missions.slice(0,5)){old.completed[mission.id]=true;old.checkpoints[mission.id]={x:3020,solved:[0,1,2],cells:[],labs:{}};}
+  const start=process.env.PHYSICS_CHAPTER?(Number(process.env.PHYSICS_CHAPTER)-1)*5:0;
+  if(start){
+    const old={version:1,current:start-1,completed:{},records:{},checkpoints:{},settings:{music:.45,effects:.7,reduced:false}};
+    for(const mission of A.missions.slice(0,start)){old.completed[mission.id]=true;old.checkpoints[mission.id]={x:A.route(mission).end,solved:[0,1,2],cells:[],labs:{}};}
     await context.addInitScript(({key,old})=>{if(!localStorage.getItem(key)){localStorage.setItem(key,JSON.stringify(old));localStorage.setItem('wga_physics_force_lab_v3_best','98765');}},{key:A.SAVE_KEY,old});
   }
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await page.goto(base);await begin(page);
-  if(!process.env.PHYSICS_SMOKE){for(let mi=process.env.PHYSICS_CHAPTER==='2'?5:0;mi<A.missions.length;mi++){
+  if(!process.env.PHYSICS_SMOKE){for(let mi=start;mi<A.missions.length;mi++){
     for(let si=0;si<3;si++){await moveTo(page,A.missions[mi].stations[si].name);await solve(page,mi,si,mi===0&&si===0);
       if(mi===5&&si===0){await page.keyboard.down('d');await page.waitForTimeout(1150);await page.keyboard.press('Space');await page.waitForTimeout(1050);await page.keyboard.up('d');await page.locator('#pauseAdventure').click();const p=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),A.SAVE_KEY);if(shots){fs.mkdirSync(shots,{recursive:true});await page.screenshot({path:path.join(shots,'platform-check.png')});}assert.ok(p.checkpoints['sound-garden'].cells.includes(3),`jump did not reach optional platform cell: ${JSON.stringify(p.checkpoints['sound-garden'])}`);await page.locator('#resumeAdventure').click();}
     }
@@ -59,8 +70,9 @@ async function solve(page,mi,si,first=false){
     console.log(`Phone campaign: mission ${mi+1} completed through real movement and experiment controls`);
     await page.locator('#storyContinue').click();if(mi<A.missions.length-1)await page.locator('#storyContinue').click();
   }
-  assert.equal((await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),A.SAVE_KEY)).completed['recovery-relay'],true);
-  await page.locator('[data-close="mapDialog"]').click();await page.locator('#pauseAdventure').click();await page.locator('#pauseNotebook').click();assert.equal(await page.locator('#notebookEntries details').count(),30);await page.locator('#notebookEntries summary').last().click();assert.match(await page.locator('#notebookEntries details').last().textContent(),/Earth/);await page.locator('[data-close="notebookDialog"]').click();await page.locator('#retryMission').click();await page.locator('#storyContinue').click();await page.locator('#pauseAdventure').click();await page.locator('#pauseNotebook').click();assert.equal(await page.locator('#notebookEntries details').count(),30);
+  assert.equal((await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),A.SAVE_KEY)).completed[A.missions.at(-1).id],true);
+  await page.locator('[data-close="mapDialog"]').click();await page.locator('#pauseAdventure').click();await page.locator('#pauseNotebook').click();assert.equal(await page.locator('#notebookEntries details').count(),A.missions.length*3);await page.locator('#notebookEntries summary').last().click();assert.ok((await page.locator('#notebookEntries details').last().textContent()).includes(A.experiment(A.missions.length-1,2).concept));await page.locator('[data-close="notebookDialog"]').click();await page.locator('#retryMission').click();await page.locator('#storyContinue').click();await page.locator('#pauseAdventure').click();await page.locator('#pauseNotebook').click();assert.equal(await page.locator('#notebookEntries details').count(),A.missions.length*3);
+  if(start)assert.equal(await page.evaluate(()=>localStorage.getItem('wga_physics_force_lab_v3_best')),'98765');
   }
   await context.close();
   const sizes=process.env.PHYSICS_SMOKE?[[390,844],[568,320]]:[[320,568],[360,740],[375,667],[390,844],[568,320],[844,390],[768,1024],[1024,768],[1440,900]];
