@@ -4,6 +4,7 @@
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   const characters=window.PhysicsCharacterSprites;
+  const worldArt=window.PhysicsWorldArt;
   const $ = id => document.getElementById(id);
 
   const ui = {
@@ -516,9 +517,10 @@
   }
 
   async function loadAssets(){
-    const paths=[...ASSETS.backgrounds,...Object.values(ASSETS.items),...Object.values(ASSETS.effects)];
+    const paths=[...(worldArt?[]:ASSETS.backgrounds),...Object.values(ASSETS.items),...Object.values(ASSETS.effects)];
     const loaded=await Promise.all(paths.map(loadImage));
     await characters?.load(['player','professor','helper','glitch','drone','magnetBot','boss']);
+    if(worldArt)await worldArt.load(ASSETS.backgrounds[level().bg]);
     paths.forEach((p,i)=>images[p]=loaded[i]);
   }
 
@@ -733,6 +735,7 @@
   }
 
   function buildLevel(){
+    worldArt?.load(ASSETS.backgrounds[level().bg]);
     state.transitioning=false;
     const lv=level();
     const targets=missionTargets();
@@ -1321,6 +1324,7 @@
   }
 
   function drawCover(src){
+    if(worldArt){worldArt.background(ctx,src,W,viewHeight,state.t,state.reduced);return;}
     const im=image(src);
     if(!im){ctx.fillStyle="#06122a";ctx.fillRect(0,0,W,viewHeight);return;}
     const r=Math.max(W/im.naturalWidth,viewHeight/im.naturalHeight);
@@ -1359,6 +1363,7 @@
 
   function drawWorld(){
     for(const pl of state.world.platforms){
+      if(worldArt){worldArt.platform(ctx,pl.x,pl.y,pl.w,pl.h,toolColor(),pl.type==="moving");continue;}
       if(pl.type==="ground"){
         ctx.fillStyle="rgba(3,8,18,.78)";
         ctx.fillRect(pl.x,pl.y,pl.w,pl.h);

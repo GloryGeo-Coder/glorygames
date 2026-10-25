@@ -7,6 +7,8 @@ on:
       - '.github/workflows/physics-force-lab.yml'
       - 'tools/physics-character-art.cjs'
       - 'tools/build-physics-characters.cjs'
+      - 'tools/physics-illustrated-poses.cjs'
+      - 'tools/physics-art-source/**'
   push:
     branches: [main]
     paths:
@@ -15,6 +17,8 @@ on:
       - '.github/workflows/physics-force-lab.yml'
       - 'tools/physics-character-art.cjs'
       - 'tools/build-physics-characters.cjs'
+      - 'tools/physics-illustrated-poses.cjs'
+      - 'tools/physics-art-source/**'
 permissions:
   contents: read
 concurrency:
@@ -62,5 +66,7 @@ jobs:
         run: node apps/web/scripts/physics-browser.cjs
       - name: Character animation regression
         run: node apps/web/scripts/physics-characters-browser.cjs
+      - name: Illustrated worlds and image failure regression
+        run: node apps/web/scripts/physics-world-art-browser.cjs
       - name: Next.js production build
         run: npm run build --prefix apps/web
