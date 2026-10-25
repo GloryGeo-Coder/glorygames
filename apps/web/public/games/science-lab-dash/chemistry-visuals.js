@@ -1,4 +1,4 @@
-(function(r,f){const api=f();if(typeof module==='object'&&module.exports)module.exports=api;else r.ScienceChemistryVisuals=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(r,f){const grade5=typeof module==='object'&&module.exports?require('./chemistry-grade5-visuals.js'):r.ScienceChemistryGrade5Visuals;const api=f(grade5);if(typeof module==='object'&&module.exports)module.exports=api;else r.ScienceChemistryVisuals=api;})(typeof globalThis!=='undefined'?globalThis:this,function(grade5){
 'use strict';
 const text=(x,y,s,size=22)=>`<text x="${x}" y="${y}" fill="#e4f6ff" font-size="${size}" font-family="system-ui,sans-serif">${s}</text>`;
 const rect=(x,y,w,h,c,rad=8)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rad}" fill="${c}"/>`;
@@ -7,7 +7,8 @@ function vessel(x){return `<path d="M${x} 65V220H${x+170}V65" fill="#1e3e55" str
 function dots(state,x){return Array.from({length:18},(_,i)=>{const cx=x+18+(i%6)*(state==='gas'?26:24),cy=state==='gas'?85+Math.floor(i/6)*52:state==='solid'?145+Math.floor(i/6)*24:166+Math.floor(i/6)*19;return `<circle class="${state==='solid'?'':'floating'}" cx="${cx}" cy="${cy}" r="7" fill="${state==='solid'?'#b0e3ff':'#79e4d1'}" style="animation-delay:-${i*.13}s"/>`;}).join('');}
 function visual(t,value,result){
  let s='',success=result?.success;
- if(t.type==='evaporation'){s=text(40,35,'Earlier: liquid water')+text(337,35,'After the observation',20)+vessel(35)+vessel(340)+dots('liquid',35);for(let i=0;i<18;i++){const vapour=i<(value==='open'?9:3);s+=`<circle class="floating" cx="${358+i%6*25}" cy="${vapour?65+Math.floor(i/6)*28:166+Math.floor(i/6)*19}" r="7" fill="#79e4d1"/>`;}if(value!=='open')s+=rect(335,52,180,9,'#a7cbd8');s+=text(35,260,'Water vapour is invisible; dots are a model.',19);}
+ if(t.type.startsWith('g5-')){s=grade5?grade5.draw(t,value,result):text(35,130,'Read the comparison observations below.',20);}
+ else if(t.type==='evaporation'){s=text(40,35,'Earlier: liquid water')+text(337,35,'After the observation',20)+vessel(35)+vessel(340)+dots('liquid',35);for(let i=0;i<18;i++){const vapour=i<(value==='open'?9:3);s+=`<circle class="floating" cx="${358+i%6*25}" cy="${vapour?65+Math.floor(i/6)*28:166+Math.floor(i/6)*19}" r="7" fill="#79e4d1"/>`;}if(value!=='open')s+=rect(335,52,180,9,'#a7cbd8');s+=text(35,260,'Water vapour is invisible; dots are a model.',19);}
  else if(['phase','shape','flow'].includes(t.type)){
   const state=t.type==='phase'?value==='cold'?'solid':value==='room'?'liquid':'gas':value==='wood'?'solid':value==='water'?'liquid':'gas';
   if(t.type==='phase'){const before=t.start==='ice'?'solid':t.start==='vapour'?'gas':'liquid';s=text(45,38,'Starting sample')+text(350,38,'After the test')+vessel(35)+vessel(340)+dots(before,35)+dots(state,340)+text(73,250,before)+text(380,250,state)+line(237,142,290,142,'#ffd389',5);}
