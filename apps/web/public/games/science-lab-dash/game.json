@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Investigate Nova Science Academy through thirty untimed Grade 4\u20139 Matter and Materials missions and ninety investigations. Explore materials, atoms, formulae, balanced equations, oxides, pH and neutralisation with animated characters, saved evidence and an element guide. The original 20-mission science dash remains available.",
+  "description": "Restore Nova Science Academy through 35 untimed adventure missions and 105 investigations covering selected Grades 4\u201310 chemistry topics. Predict, compare and explain evidence with animated characters, saved checkpoints, an element guide and separate audio controls. The original 20-mission science dash remains available.",
   "tags": [
     "education",
     "science",
@@ -59,7 +59,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "levels": 50,
+    "levels": 55,
     "storyMode": true,
     "curriculumProgression": true,
     "questionsAndExplanations": true,
@@ -73,8 +73,8 @@
     ],
     "badges": true,
     "safeLocalSave": true,
-    "adventureMissions": 30,
-    "investigations": 90,
+    "adventureMissions": 35,
+    "investigations": 105,
     "originalMissions": 20,
     "grades": [
       4,
@@ -82,12 +82,13 @@
       6,
       7,
       8,
-      9
+      9,
+      10
     ],
     "savedCheckpoints": true,
     "fieldNotebook": true,
     "separateAudioVolumes": true,
     "elementReference": true
   },
-  "version": "3.5.0"
+  "version": "3.6.0"
 }

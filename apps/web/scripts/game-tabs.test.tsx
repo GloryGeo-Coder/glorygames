@@ -15,7 +15,7 @@ for (const game of fallbackGames.filter((g: any) => g.slug !== SKY_TEMPLE.slug))
     const html = renderToStaticMarkup(React.createElement(PlayClient, game));
     assert.ok(!html.includes("<iframe"));
     assert.ok(html.includes(`href="/games/${game.slug}/index.html" target="_blank" rel="noopener noreferrer"`));
-    assert.ok(html.includes(`/games/${game.slug}/thumb.webp`));
+    assert.ok(html.includes(`/games/${game.slug}/thumb.${game.slug === "science-lab-dash" ? "png" : "webp"}`));
     assert.match(html, /Play Game/); assert.match(html, /Game Chat/); assert.match(html, /Live score/);
     assert.ok(!html.includes(SKY_TEMPLE.href));
   });

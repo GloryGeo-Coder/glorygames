@@ -1269,72 +1269,115 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "science-lab-dash": {
     "category": "Educational",
-    "summary": "Restore Nova Science Academy through 20 science missions, collect evidence, solve learning challenges and face the Glitch Experiment.",
+    "summary": "Restore Nova Science Academy through 35 untimed adventure missions and 105 investigations covering selected Grades 4–10 chemistry topics, with animated characters, saved evidence and an element guide, plus the original 20-mission science dash.",
     "overview": [
-      "Science Lab Dash: Element Core Mystery is a story-driven educational action game. It combines a lane-based challenge with science questions, collectible evidence, power-ups and encounters with hazards or enemies. The result is a broad science journey rather than a single-topic quiz.",
-      "The game covers laboratory safety, the scientific method, physics, chemistry, biology, Earth science, space, robotics and data science. Animated gameplay creates pressure, but careful reading still matters: players must complete missions, answer questions and use the tools available to the young scientist."
+      "Science Lab Dash: The Element Core Mystery is a chemistry adventure through Nova Science Academy. Explore 35 story missions and complete 105 investigations across seven learning paths for Grades 4–10. Move between laboratory stations, make predictions, compare labelled settings and explain the evidence that restores each room. The adventure is untimed, with progressive hints and recoverable movement challenges.",
+      "Animated scientists, helpers and patrol scanners bring the academy to life. Each adventure mission has its own original music arrangement, with sound effects, separate music and effects volumes, reduced decorative motion and optional fullscreen. The original 20-mission science dash remains available from the game menu, with lane switching, science questions, hazards, power-ups and boss encounters."
     ],
     "story": [
-      "The Element Core Mystery begins when Nova Science Academy needs restoring. The player works through a series of science missions, gathering evidence and overcoming challenges as the story advances.",
-      "Twenty stages take the young scientist through physics, chemistry, biology, Earth science, space, robotics and data science. Evidence gathering and fast-moving hazards lead to a final confrontation with the Glitch Experiment."
+      "The Glitch Experiment has scrambled Nova Science Academy’s records. Join Professor Nova as a young investigator and rebuild the Element Archive by testing which observations support each repair. A restored room becomes a route to the next part of the academy.",
+      "The journey grows from material properties and makers’ workshops into the waterworks, Element Registry, Particle Observatory and Reaction District. In the final laboratories, isotope records, chemical structures and quantities unlock the Element Core. Each learning path adds five missions and fifteen recorded investigations.",
+      "The finale reconnects the academy through the evidence you have gathered. Completing all seven paths resolves the Element Core mystery and awards the story title Element Core Investigator. Restored missions and their notebook records remain available to revisit."
     ],
     "howToPlay": [
-      "Start the current mission and read the objective or scientific prompt.",
-      "Move between the available lanes to avoid hazards or align with items.",
-      "Use a lab burst when you need to deal with a drone, slime, hazard or boss.",
-      "Collect useful evidence and power-ups while staying aware of the current science task.",
-      "Answer science questions and use their explanations to understand mistakes.",
-      "Continue through the academy's missions toward the Glitch Experiment encounter."
+      "Select Play Game to open the game in a new tab. Begin or continue the adventure; the Missions map shows restored and locked rooms.",
+      "Move through the laboratory, collect optional fragments and use Jump to pass patrol scanners. Scanner contact briefly slows movement; you can recover and continue.",
+      "Approach an investigation station and use Inspect. Record a prediction, choose a labelled sample or process setting and run a test.",
+      "Compare at least two different settings, then run a setting that meets the investigation’s goal. Use the diagrams, observation table and progressive hints to explain your evidence.",
+      "Choose the supported explanation and Apply the discovery. Complete all three investigations, then reach and activate the archive relay to restore the mission and unlock the next.",
+      "Use Menu for the Field notebook, mission replay, audio settings and reduced motion. Choose Play the original dash for the separate 20-mission action game."
     ],
     "desktop": [
-      "Arrow Up or W moves to an upper lane; Arrow Down or S moves to a lower lane.",
-      "Keys 1, 2 and 3 select a lane directly; Space fires a lab burst and Shift activates a shield when available."
+      "Adventure: A/D or Left/Right moves; Space, W or Up jumps; E inspects a nearby station or uses the archive relay; P opens the menu.",
+      "Use the pointer or keyboard to operate investigation buttons, selectors, reference cards and menus. Alt+Enter or an Enter Fullscreen control toggles fullscreen where supported.",
+      "Original dash: Up/W and Down/S change lanes; 1, 2 and 3 select lanes directly; Space fires a lab burst and Shift uses an available shield."
     ],
     "mobile": [
-      "Swipe up or down to change lanes.",
-      "Use the on-screen lightning/lab-burst and Shield controls."
+      "Adventure: hold the on-screen left/right buttons to move, tap Jump and use Inspect near a station or relay. Movement and jump can be used together.",
+      "Tap investigation choices and Run test, then scroll within the laboratory panel to review observations, explanations and Apply the discovery. Portrait and landscape layouts are supported.",
+      "Use the in-game fullscreen control where the browser supports it. Original dash uses swipe lane changes and on-screen lab-burst and Shield controls."
     ],
     "systems": [
       {
-        "title": "Science questions and explanations",
-        "body": "Missions include learning prompts with explanations, connecting academic content to the action."
+        "title": "Seven chemistry learning paths",
+        "body": "Grades 4–10 each add five adventure missions and fifteen investigations. The path progresses from materials and mixtures to atoms, bonding, reactions and introductory chemical quantities."
       },
       {
-        "title": "Lane control and combat",
-        "body": "Movement and lab bursts help the character navigate hazards, drones and boss encounters."
+        "title": "Predict, compare, explain and apply",
+        "body": "Predictions guide exploration. Distinct recorded trials, a tested working setting and a supported explanation are required to apply a discovery. Some briefs have more than one working choice; a larger amount or higher reading can overshoot a target."
       },
       {
-        "title": "Power-ups and badges",
-        "body": "Shield, slow motion, magnet and double discovery are available powers, alongside badges and local save functionality."
+        "title": "Diagrams and an element reference",
+        "body": "Labelled diagrams show particles, structures, indicator readings, inventories and calculations. The first-twenty element guide is available in designated Element Registry and later reference activities and their replays; selecting cards does not award score."
+      },
+      {
+        "title": "Saved evidence and replay",
+        "body": "The Field notebook retains applied discoveries and comparison records. Active investigations save choices, trial history, hints and answer order when device storage is available. Replaying a mission retains permanent discoveries and does not award the same discovery or completion score again."
+      },
+      {
+        "title": "Original science dash",
+        "body": "The preserved action mode has 20 missions across laboratory safety, scientific method, physics, chemistry, biology, Earth science, space, robotics and data science. It keeps its own progression, power-ups, badges and Glitch Experiment encounters."
       }
     ],
     "progression": [
-      "The game has twenty missions with curriculum progression, story moments and boss encounters. The main campaign works toward restoring the academy.",
-      "Score submissions are available, but completing the learning objectives and interpreting feedback are as important as a high score."
+      "The adventure contains 35 missions and 105 investigation records. Complete missions in order to unlock the next; each completed grade opens the following grade. Earlier restored rooms can be replayed from the mission map.",
+      "Adventure scoring awards 100 points for each first applied discovery, 300 for each first mission restoration and 5 per newly collected fragment. Reference-card taps and repeated completion do not duplicate those awards. Platform score displays remain available on the game information page.",
+      "Progress is saved on the current device when browser storage is available. The chemistry adventure and original dash keep separate saves. Clearing browser data or using a different device can remove or separate local progress; signing into the platform does not turn these local checkpoints into cloud saves."
     ],
     "tips": [
-      "Read the science task before acting; rushing past its explanation can make the next stage harder.",
-      "Switch lanes early when you see a cluster of approaching hazards.",
-      "Use a shield where it prevents a likely mistake, rather than whenever it becomes available.",
-      "Treat questions as opportunities to reason from evidence.",
-      "Pay attention to mission feedback and return to topics that remain confusing."
+      "Read the goal and fair-comparison note before changing equipment. Keep track of what changes and what stays the same.",
+      "A failed comparison is useful evidence. Record it, try another setting and return to a working setting before explaining the result.",
+      "Check the named substance, entity and units. Ionic formula ratios, molecules, atoms, mass and moles describe different things.",
+      "Use the reference guide where available and the Field notebook to review earlier discoveries. Open a hint when you need a starting point.",
+      "In quantity investigations, use the stated molar masses and final solution volume. A higher dose, pH or concentration is not automatically a better answer.",
+      "Take your time in the adventure. Use the original dash when you want the separate lane-based action challenge."
     ],
     "learning": [
-      "Introduces interdisciplinary science and the process of gathering evidence before reaching a conclusion.",
-      "Connects scientific reasoning with decisions under time pressure."
+      "The adventure covers selected CAPS chemistry topics, not a complete annual Natural Sciences or Physical Sciences course, a formal assessment or a substitute for supervised practical work. Virtual records use stated assumptions, schematic diagrams and supplied or rounded quantities.",
+      "Grade 4: material states and properties, water changes, suitable materials and strengthened structures.",
+      "Grade 5: metal properties, rust prevention, processing materials and choosing products for a purpose.",
+      "Grade 6: mixtures, solutions, separation, dissolving comparisons and water-treatment evidence.",
+      "Grade 7: material properties, separation methods, acids and bases, paired indicators and the first twenty elements.",
+      "Grade 8: atoms, compounds and mixtures, particle behaviour, density, expansion, pressure and chemical change.",
+      "Grade 9: formulae and balanced records, metal and non-metal oxides, corrosion, pH, neutralisation and restoration decisions.",
+      "Grade 10: isotopes and ions, electron arrangements, bonding and structures, system boundaries, moles, molar mass, concentration and basic reaction quantities."
     ],
     "faqs": [
       {
         "q": "How many missions are there?",
-        "a": "There are 20 science missions leading towards the Glitch Experiment, with evidence, learning questions, powers and boss encounters."
+        "a": "The chemistry adventure has 35 missions and 105 investigations across Grades 4–10. The original science dash adds 20 separate action missions. These are two game modes, with 55 missions in total."
       },
       {
-        "q": "Who is the final threat?",
-        "a": "The story includes a final challenge called the Glitch Experiment."
+        "q": "Is the adventure timed?",
+        "a": "No. Investigations, hints and retries are untimed. Patrol scanners can slow movement, but you can recover and continue. The original dash keeps its separate action format."
       },
       {
-        "q": "Can I play with touch controls?",
-        "a": "Yes. Use swipe lane switching and the on-screen action buttons."
+        "q": "Can I start at any grade?",
+        "a": "The adventure follows a continuous learning path. Complete each mission to unlock the next, and complete a grade to open the following grade. Restored missions remain available to replay."
+      },
+      {
+        "q": "Does refreshing lose my investigation?",
+        "a": "The adventure saves active choices, trials, hints and progress on this device when browser storage is available. Refreshing can resume an unfinished investigation. Device changes, private browsing restrictions or cleared browser data can affect local saves."
+      },
+      {
+        "q": "Does this cover the whole school curriculum?",
+        "a": "It covers selected CAPS chemistry topics for Grades 4–10. It supports learning and revision alongside teaching and textbooks; it does not cover the complete annual science syllabus or replace formal assessments and supervised practicals."
+      },
+      {
+        "q": "Can I use it on a phone?",
+        "a": "Yes. The adventure has touch movement, jump and inspection controls, scrollable investigation panels and portrait/landscape layouts. It fills its dedicated browser tab, with optional fullscreen where supported."
+      },
+      {
+        "q": "Can I control music and sound effects separately?",
+        "a": "Yes. Open Menu to adjust independent music and sound-effect volumes. Each of the 35 adventure missions has its own original music arrangement. Browser audio starts after player interaction."
+      },
+      {
+        "q": "Can I still play the original science dash?",
+        "a": "Yes. Choose Play the original dash from the game menu. Its 20 action missions, science questions, power-ups, badges, bosses and separate local progression remain available."
+      },
+      {
+        "q": "Do replays or element cards give extra discovery points?",
+        "a": "Replays retain permanent discoveries and notebook records. Repeating the same discovery or mission completion does not duplicate its points, and reference-card taps award no score."
       }
     ]
   },

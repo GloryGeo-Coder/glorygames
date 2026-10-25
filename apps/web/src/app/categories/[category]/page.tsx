@@ -40,7 +40,7 @@ const HUBS: Record<string, Hub> = {
     chooseTitle: "Find an educational game that fits your interests",
     choose: [
       "For places, countries and map reading, begin with Map Master Africa. Its explorer missions introduce coordinates, routes and location choices.",
-      "For curriculum-style science, compare Physics Force Lab with Science Lab Dash. The first centres on physical concepts, while the second connects several science subjects through an academy mystery.",
+      "Explore selected Grades 4–10 topics through Physics Force Lab’s physics investigations and Science Lab Dash’s 35-mission chemistry adventure, with saved evidence and untimed learning.",
       "For a practical environmental challenge, Recycle Rush focuses on sorting and contamination, while Climate Rescue Quest uses an arcade journey through environmental themes.",
       "For a different kind of problem solving, Math Sprint Arena explores mathematics gates and Cyber Shield Academy uses a fictional terminal investigation."
     ],
@@ -52,7 +52,7 @@ const HUBS: Record<string, Hub> = {
     games: [
       {slug:"map-master-africa",title:"Map Master Africa: Explorer Missions",whyPlay:"Choose pins, trace routes and work through African geography missions."},
       {slug:"physics-force-lab",title:"Physics Force Lab",whyPlay:"Explore force, motion, circuits and other physics concepts through missions."},
-      {slug:"science-lab-dash",title:"Science Lab Dash",whyPlay:"Work through an academy mystery using science questions, evidence and action."},
+      {slug:"science-lab-dash",title:"Science Lab Dash",whyPlay:"Restore an academy through 35 chemistry missions and 105 investigations for Grades 4–10, plus the original 20-mission dash."},
       {slug:"recycle-rush",title:"Recycle Rush",whyPlay:"Practise waste sorting and contamination prevention across community scenarios."},
       {slug:"climate-rescue-quest",title:"Climate Rescue Quest",whyPlay:"Travel through environmental stages inspired by energy, water and nature."},
       {slug:"math-sprint-arena",title:"Math Sprint Arena",whyPlay:"Solve arithmetic, fractions, geometry and algebra challenges in a neon arena."},

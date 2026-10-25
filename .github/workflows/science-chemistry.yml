@@ -35,7 +35,7 @@ jobs:
   science-browser:
     needs: science-chemistry
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       DATABASE_URL: postgresql://science:science@127.0.0.1:5432/science_ci
     steps:
@@ -44,13 +44,18 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Final Science game-page regression
+        working-directory: apps/web
+        run: node --import tsx --test scripts/science-page.test.tsx
       - name: Install isolated browser tools
         run: |
           npm install --prefix "$RUNNER_TEMP/science-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
           echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/science-browser/node_modules/playwright" >> "$GITHUB_ENV"
-      - name: Install Chromium
-        run: '"$RUNNER_TEMP/science-browser/node_modules/.bin/playwright" install --with-deps chromium'
-      - name: Grades 4–9 playthrough, mobile, saves and original dash regression
+      - name: Install Chromium headless shell
+        run: '"$RUNNER_TEMP/science-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium'
+      - name: Grades 4–10 playthrough, mobile, saves and original dash regression
         run: node apps/web/scripts/science-chemistry-browser.cjs
       - name: Next.js production build
         run: npm run build --prefix apps/web
+      - name: Final Science pages, thumbnails and standalone launch
+        run: node apps/web/scripts/science-page-browser.cjs
