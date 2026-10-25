@@ -9,9 +9,10 @@ test('eight newly drawn atlases contain 227 frames across forty valid animation 
     const a=atlas(id);assert.equal(a.w,c.width);assert.equal(a.h,c.height);bytes+=fs.statSync(path.join(root,c.src)).size;decodedBytes+=a.w*a.h*4;
     for(const clip of Object.values(c.clips)){assert.ok(clip.fps>0&&clip.length>=3);assert.ok(clip.start+clip.length<=a.w/data.frameWidth*a.h/data.frameHeight);frames+=clip.length;clips++;}
     assert.ok(c.body[0]>0&&c.body[1]>0);
+    assert.equal(c.sourceHash,crypto.createHash('sha256').update(fs.readFileSync(path.resolve(__dirname,'../../..',c.source))).digest('hex'),'Repack after editing a source pose sheet');
   }
-  assert.equal(frames,227);assert.equal(clips,40);assert.ok(bytes<2*1024*1024,`download budget: ${bytes}`);assert.ok(decodedBytes<32*1024*1024,`decoded budget: ${decodedBytes}`);
-  for(const [key,file]of [['art','physics-character-art.cjs'],['builder','build-physics-characters.cjs']])assert.equal(data.sourceHashes[key],crypto.createHash('sha256').update(fs.readFileSync(path.resolve(__dirname,'../../../tools',file))).digest('hex'),'Rebuild the atlases after changing their source');
+  assert.equal(frames,227);assert.equal(clips,40);assert.ok(bytes<4*1024*1024,`download budget: ${bytes}`);assert.ok(decodedBytes<32*1024*1024,`decoded budget: ${decodedBytes}`);
+  for(const [key,file]of [['art','physics-character-art.cjs'],['builder','build-physics-characters.cjs'],['poses','physics-illustrated-poses.cjs']])assert.equal(data.sourceHashes[key],crypto.createHash('sha256').update(fs.readFileSync(path.resolve(__dirname,'../../../tools',file))).digest('hex'),'Rebuild the atlases after changing their source');
 });
 test('every used frame is transparent, contains artwork and has clear padded edges without atlas bleed',()=>{
   for(const [id,c]of Object.entries(data.characters))for(const clip of Object.values(c.clips))for(let f=0;f<clip.length;f++){

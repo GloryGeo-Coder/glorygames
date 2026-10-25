@@ -6,7 +6,7 @@
   "category": "Educational",
   "description": "Join Newtonia and Pip to restore Nova through 30 untimed missions and 90 investigations covering selected Grades 4–10 physics topics, with saved discoveries, 55 revision checks and 12 animated action labs.",
   "orientation": "any",
-  "version": "4.9.0",
+  "version": "5.0.0",
   "features": {
     "levels": 42,
     "storyMode": true,

@@ -7,6 +7,7 @@
   const player={x:80,y:420,vx:0,vy:0,ground:true,facing:1,animation:0,flash:0,landing:0,cheer:0};
   const C=window.PhysicsCharacterSprites,sprites=C?{hero:new C.Animator('player'),professor:new C.Animator('professor'),pip:new C.Animator('helper'),patrols:Array.from({length:4},()=>new C.Animator('maintenance'))}:null;
   C?.load(['player','professor','helper','maintenance']);
+  const worldArt=window.PhysicsWorldArt;
   const patrolBumps=[0,0,0,0];
   let width=960,height=540,scale=1,camera=0,time=0,last=performance.now(),saveElapsed=0,nearest=null,images={};
   let terrain=A.route(m),stationX=terrain.stations,endX=terrain.end,length=terrain.length;
@@ -26,6 +27,7 @@
   function launch(i,retry=false){
     if(!A.isUnlocked(profile,i))return;
     checkpoint();closeAll();profile.current=i;m=A.missions[i];terrain=A.route(m);stationX=terrain.stations;endX=terrain.end;length=terrain.length;
+    worldArt?.load(m.bg);
     if(retry)delete profile.checkpoints[m.id];
     cp=profile.checkpoints[m.id]||{x:80,solved:[],cells:[],labs:{}};
     profile.checkpoints[m.id]=cp;Object.assign(player,{x:cp.x,y:420,vx:0,vy:0,ground:true,flash:0,landing:0,cheer:0});
@@ -300,13 +302,14 @@
   }
   function draw(){
     ctx.clearRect(0,0,width,height);const bg=images[m.bg];
-    if(bg){const factor=Math.max(width/bg.width,height/bg.height),bw=bg.width*factor,bh=bg.height*factor;ctx.drawImage(bg,(width-bw)/2,(height-bh)/2,bw,bh);}else{const g=ctx.createLinearGradient(0,0,0,height);g.addColorStop(0,'#21475b');g.addColorStop(1,'#122739');ctx.fillStyle=g;ctx.fillRect(0,0,width,height);}
-    ctx.fillStyle='#071a2a77';ctx.fillRect(0,0,width,height);
+    if(worldArt)worldArt.background(ctx,m.bg,width,height,time,profile.settings.reduced);
+    else if(bg){const factor=Math.max(width/bg.width,height/bg.height),bw=bg.width*factor,bh=bg.height*factor;ctx.drawImage(bg,(width-bw)/2,(height-bh)/2,bw,bh);}else{const g=ctx.createLinearGradient(0,0,0,height);g.addColorStop(0,'#21475b');g.addColorStop(1,'#122739');ctx.fillStyle=g;ctx.fillRect(0,0,width,height);}
+    if(!worldArt){ctx.fillStyle='#071a2a77';ctx.fillRect(0,0,width,height);}
     ctx.save();ctx.translate(-camera,height-460);
     // Foreground architecture gives the painted background a coherent, traversable scale.
-    for(let x=0;x<length;x+=160){rect(x,420,156,42,'#28495a',2);rect(x,420,156,5,'#82b7b2',1);rect(x+14,437,128,7,'#1c3546',2);}
+    for(let x=0;x<length;x+=160){if(worldArt){worldArt.platform(ctx,x,420,160,42,m.color);continue;}rect(x,420,156,42,'#28495a',2);rect(x,420,156,5,'#82b7b2',1);rect(x+14,437,128,7,'#1c3546',2);}
     for(let x=350;x<length;x+=800){rect(x,250,9,170,'#29485b',2);rect(x-15,245,48,12,'#557e8c',4);ellipse(x+8,255,16,7,m.color);}
-    for(const p of terrain.platforms){rect(p.x,p.y,p.w,11,'#8bacb7',3);rect(p.x+10,p.y+11,8,420-p.y-11,'#3c6174',2);rect(p.x+p.w-18,p.y+11,8,420-p.y-11,'#3c6174',2);for(let j=0;j<6;j++)rect(p.x+18+j*25,p.y+3,12,4,m.color,1);}
+    for(const p of terrain.platforms){if(worldArt)worldArt.platform(ctx,p.x,p.y,p.w,14,m.color);else rect(p.x,p.y,p.w,11,'#8bacb7',3);rect(p.x+10,p.y+11,8,420-p.y-11,'#3c6174',2);rect(p.x+p.w-18,p.y+11,8,420-p.y-11,'#3c6174',2);for(let j=0;j<6;j++)rect(p.x+18+j*25,p.y+3,12,4,m.color,1);}
     // Persistent, visible workshop restoration: photographs, plants and repaired equipment.
     const wallTop=270-Math.max(0,Math.ceil(A.missions.length/5)-3)*27;
     rect(20,wallTop-13,260,377-wallTop,'#132e40',9);rect(33,wallTop,234,363-wallTop,'#275367',4);
@@ -343,7 +346,8 @@
   ['music','effects'].forEach(k=>{const input=$(k+'Volume');input.value=profile.settings[k]*100;$(k+'Output').textContent=input.value+'%';input.oninput=()=>{profile.settings[k]=Number(input.value)/100;$(k+'Output').textContent=input.value+'%';audio.unlock();audio.volumes();checkpoint();};});
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;profile.settings.reduced||=reduced;$('reduceMotion').checked=profile.settings.reduced;document.body.classList.toggle('reduce-motion',profile.settings.reduced);
   $('reduceMotion').onchange=()=>{profile.settings.reduced=$('reduceMotion').checked;document.body.classList.toggle('reduce-motion',profile.settings.reduced);checkpoint();};
-  A.missions.forEach(mission=>{const im=new Image();im.onload=()=>images[mission.bg]=im;im.src='./assets/backgrounds/'+mission.bg;});
+  if(worldArt)worldArt.load(m.bg);
+  else for(const bg of new Set(A.missions.map(mission=>mission.bg))){const im=new Image();im.onload=()=>images[bg]=im;im.src='./assets/backgrounds/'+bg;}
   $('campaignCount').textContent=`${A.missions.length} adventure missions`;
   const completed=Object.values(profile.completed).filter(Boolean).length;$('homeProgress').textContent=completed?`${completed}/${A.missions.length} missions restored • Workshop reputation: ${A.score(profile)}`:'Your workshop is waiting. Meet Pip and begin the recovery.';$('startBtn').textContent=Object.keys(profile.checkpoints).length?'Continue adventure':'Begin adventure';
   window.PhysicsRevisionUI?.create({document,A,R:window.PhysicsRevision,profile,storage,open,close});
