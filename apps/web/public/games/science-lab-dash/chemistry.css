@@ -6,3 +6,9 @@
 .mission-hud>p{flex-basis:128px}@media(max-height:450px) and (orientation:landscape){.mission-hud>p{flex-basis:205px;font-size:11px;white-space:nowrap}.mission-hud h2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 
 .lab-visual .vibrating{animation:particle-vibrate .45s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}.reduce-motion .vibrating{animation:none}@keyframes particle-vibrate{to{transform:translate(1px,-1px)}}@media(prefers-reduced-motion:reduce){.lab-visual .vibrating{animation:none}}
+
+.element-guide-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:12px 0}.element-guide-grid button{min-height:76px;text-align:center;padding:8px;overflow-wrap:anywhere}.element-guide-grid strong{display:block;font-size:22px;line-height:1.3}.element-guide-grid span{display:block;font-size:12px;line-height:1.4;font-weight:500}.element-guide-grid button[aria-pressed=true]{border-color:#ffd389;background:#36596a}#elementReference{padding:12px;background:#193d53;border-radius:10px;overflow-wrap:anywhere}@media(max-width:480px){.element-guide-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+@media(max-width:380px){.element-guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+@media(min-width:481px) and (max-width:700px){.element-guide-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}

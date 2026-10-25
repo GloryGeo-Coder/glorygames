@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Investigate Nova Science Academy through fifteen untimed Grade 4–6 Matter and Materials missions and forty-five investigations. Restore the archive, reopen the makers’ wing and explore mixtures, solutions and water evidence, with animated characters and saved discoveries. The original 20-mission science dash remains available.",
+  "description": "Investigate Nova Science Academy through twenty untimed Grade 4–7 Matter and Materials missions and sixty investigations. Explore properties, processing, mixtures, indicators and the first twenty elements with animated characters, saved evidence and a field guide. The original 20-mission science dash remains available.",
   "tags": [
     "education",
     "science",
@@ -59,7 +59,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "levels": 35,
+    "levels": 40,
     "storyMode": true,
     "curriculumProgression": true,
     "questionsAndExplanations": true,
@@ -73,17 +73,19 @@
     ],
     "badges": true,
     "safeLocalSave": true,
-    "adventureMissions": 15,
-    "investigations": 45,
+    "adventureMissions": 20,
+    "investigations": 60,
     "originalMissions": 20,
     "grades": [
       4,
       5,
-      6
+      6,
+      7
     ],
     "savedCheckpoints": true,
     "fieldNotebook": true,
-    "separateAudioVolumes": true
+    "separateAudioVolumes": true,
+    "elementReference": true
   },
-  "version": "3.2.0"
+  "version": "3.3.0"
 }
