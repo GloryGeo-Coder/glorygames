@@ -56,6 +56,15 @@ test('the preserved Physics labs mount the same score and fullscreen bridge at t
   win.__wgaGameTab.scoreBridge.dispose();
 });
 
+test('the preserved Science dash mounts its existing score bridge and menu fullscreen at its explicit entry', () => {
+  const host = target(), doc = { ...target(), documentElement: { dataset: {} }, getElementById: () => ({ parentElement: host }) };
+  const win = { ...target(), document: doc, location: { pathname: '/games/science-lab-dash/original-dash.html', origin: 'https://example.test', search: '?scores=0' }, dispatchEvent() {}, Event: class {} };
+  win.top = win; win.self = win; mountGameTab(win);
+  assert.equal(win.__wgaGameTab.slug, 'science-lab-dash');
+  assert.equal(doc.documentElement.dataset.wgaTab, 'science-lab-dash');
+  win.__wgaGameTab.fullscreen.dispose();
+});
+
 test('standalone bootstrap accepts only its own origin/window scores and supports SDK object calls in practice mode', () => {
   const host = target(), storage = new Map();
   const doc = { ...target(), documentElement: { dataset: {} }, getElementById: () => ({ parentElement: host }) };

@@ -1,11 +1,11 @@
 {
-  "title": "Science Lab Dash 2.0: Element Core Mystery",
+  "title": "Science Lab Dash: The Element Core Mystery",
   "slug": "science-lab-dash",
   "entry": "index.html",
   "thumbnail": "thumb.png",
-  "orientation": "landscape",
+  "orientation": "any",
   "category": "Educational",
-  "description": "A story-driven curriculum-aligned science adventure where a young scientist restores Nova Science Academy by completing 20 science missions, collecting evidence, solving puzzles, answering questions, using power-ups, and defeating the Glitch Experiment.",
+  "description": "Investigate Nova Science Academy through five untimed Grade 4 Matter and Materials missions, fifteen investigations, animated characters and saved discoveries. The original 20-mission science dash remains available.",
   "tags": [
     "education",
     "science",
@@ -26,28 +26,28 @@
   ],
   "controls": [
     {
-      "key": "Arrow Up / W",
-      "action": "Move to the upper lane"
+      "key": "A / D or Left / Right",
+      "action": "Move through the chemistry adventure"
     },
     {
-      "key": "Arrow Down / S",
-      "action": "Move to the lower lane"
+      "key": "Space / W / Up",
+      "action": "Jump in the adventure"
     },
     {
-      "key": "1 / 2 / 3",
-      "action": "Jump directly to lane 1, 2, or 3"
+      "key": "E / Inspect",
+      "action": "Open an investigation or use the archive relay"
     },
     {
-      "key": "Space / Tap / \u26a1 button",
-      "action": "Fire a lab burst at hazards, drones, slimes and bosses"
+      "key": "P / Menu",
+      "action": "Pause and open the notebook or audio settings"
     },
     {
-      "key": "Shield button / Shift",
-      "action": "Activate a shield if available"
+      "key": "Alt + Enter / Fullscreen",
+      "action": "Toggle fullscreen where supported"
     },
     {
-      "key": "Swipe up/down",
-      "action": "Change lanes on mobile"
+      "key": "Original dash: Up / Down, Space, Shift",
+      "action": "Change lanes, fire a lab burst and use a shield"
     }
   ],
   "features": {
@@ -59,7 +59,7 @@
       "GG_SCORE",
       "gg:score"
     ],
-    "levels": 20,
+    "levels": 25,
     "storyMode": true,
     "curriculumProgression": true,
     "questionsAndExplanations": true,
@@ -72,6 +72,16 @@
       "Double Discovery"
     ],
     "badges": true,
-    "safeLocalSave": true
-  }
+    "safeLocalSave": true,
+    "adventureMissions": 5,
+    "investigations": 15,
+    "originalMissions": 20,
+    "grades": [
+      4
+    ],
+    "savedCheckpoints": true,
+    "fieldNotebook": true,
+    "separateAudioVolumes": true
+  },
+  "version": "3.0.0"
 }

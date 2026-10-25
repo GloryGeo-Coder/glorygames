@@ -1,0 +1,56 @@
+name: Science Lab Dash Chemistry
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/science-lab-dash/**'
+      - 'apps/web/scripts/science-*'
+      - 'tools/build-science-characters.cjs'
+      - 'tools/science-character-source/**'
+      - '.github/workflows/science-chemistry.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/science-lab-dash/**'
+      - 'apps/web/scripts/science-*'
+      - 'tools/build-science-characters.cjs'
+      - 'tools/science-character-source/**'
+      - '.github/workflows/science-chemistry.yml'
+permissions:
+  contents: read
+concurrency:
+  group: science-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  science-chemistry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: for file in apps/web/public/games/science-lab-dash/*.js; do node --check "$file"; done
+      - run: node --check tools/build-science-characters.cjs
+      - run: node --test apps/web/scripts/science-*.test.cjs
+  science-browser:
+    needs: science-chemistry
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://science:science@127.0.0.1:5432/science_ci
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install isolated browser tools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/science-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/science-browser/node_modules/playwright" >> "$GITHUB_ENV"
+      - name: Install Chromium
+        run: '"$RUNNER_TEMP/science-browser/node_modules/.bin/playwright" install --with-deps chromium'
+      - name: Grade 4 playthrough, mobile, saves and original dash regression
+        run: node apps/web/scripts/science-chemistry-browser.cjs
+      - name: Next.js production build
+        run: npm run build --prefix apps/web
