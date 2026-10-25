@@ -50,7 +50,7 @@ jobs:
           echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/science-browser/node_modules/playwright" >> "$GITHUB_ENV"
       - name: Install Chromium
         run: '"$RUNNER_TEMP/science-browser/node_modules/.bin/playwright" install --with-deps chromium'
-      - name: Grades 4–7 playthrough, mobile, saves and original dash regression
+      - name: Grades 4–8 playthrough, mobile, saves and original dash regression
         run: node apps/web/scripts/science-chemistry-browser.cjs
       - name: Next.js production build
         run: npm run build --prefix apps/web
