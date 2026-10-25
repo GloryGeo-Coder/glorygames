@@ -1,4 +1,4 @@
-(function(r,f){const grade5=typeof module==='object'&&module.exports?require('./chemistry-grade5.js'):r.ScienceChemistryGrade5;const api=f(grade5);if(typeof module==='object'&&module.exports)module.exports=api;else r.ScienceChemistry=api;})(typeof globalThis!=='undefined'?globalThis:this,function(grade5){
+(function(r,f){const grade5=typeof module==='object'&&module.exports?require('./chemistry-grade5.js'):r.ScienceChemistryGrade5;const grade6=typeof module==='object'&&module.exports?require('./chemistry-grade6.js'):r.ScienceChemistryGrade6;const api=f(grade5,grade6);if(typeof module==='object'&&module.exports)module.exports=api;else r.ScienceChemistry=api;})(typeof globalThis!=='undefined'?globalThis:this,function(grade5,grade6){
 'use strict';
 const SAVE_KEY='wga_science_chemistry_v1';
 const opt=(value,label)=>({value,label});
@@ -27,7 +27,8 @@ const missions=[
  mission('crossing','The bridge of ideas','Strengthening materials and structures','bg-energy-lab.png','#c3b3ff','The academy’s paper exhibition has collapsed. Change shapes, test hollow pillars and stabilise a frame. Let evidence guide which designs you keep.','The exhibition stands again. Your tested designs lead to the Element Archive, where the Glitch Experiment is still mixing the final records.',['beam','pillar','brace']),
  mission('archive','The Element Archive','Applying materials and state-change evidence','bg-science-boss.png','#ffbdca','Professor Nova opens the archive chamber. Protect its sample crate, investigate the drying tray and correct its final material record. Each verified repair brings the archive scanner back under control.','The Glitch Experiment’s faulty records are corrected. Nova’s materials wing reopens, your laboratory displays fifteen discoveries, and Professor Nova names you a Materials Investigator. Every experiment remains in your notebook.',['waterproof','evaporate','processing'])
 ];
-Object.assign(tasks,grade5.tasks);missions.push(...grade5.missions);
+Object.assign(tasks,grade5.tasks,grade6.tasks);missions.push(...grade5.missions,...grade6.missions);
+const gradeTitle=grade=>({4:"Materials Investigator",5:"Materials Maker",6:"Water Investigator"}[grade]||"Science Investigator");
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,Number.isFinite(Number(n))?Number(n):a));
 function task(mi,si){const m=typeof mi==='number'?missions[mi]:missions.find(m=>m.id===mi);return m&&tasks[m.tasks[si]];}
 function simulate(t,value){
@@ -46,7 +47,7 @@ function simulate(t,value){
  case 'brace':success=value==='diagonal';metric=success?'Frame stable':'Frame leans';caption=success?'The diagonal brace makes triangular sections and stabilises the frame.':'The frame still leans during the same sideways test.';break;
  case 'evaporation':success=value==='open';metric=success?'Water moves into surrounding air':'Vapour is largely trapped';state='liquid and vapour';caption=success?'Some liquid water changes to invisible water vapour and moves into the surrounding air, without boiling.':'Water can evaporate under this cover, but vapour is trapped and net drying is limited in this model.';break;
  case 'processing':success=value==='sand-glass';metric=success?'Record verified':'Record mismatch';caption=success?'Sand is a raw material used to manufacture glass.':'The archive pair does not describe the correct material relationship.';break;
- default:return grade5.simulate(t,value)||{valid:false,success:false,metric:'',caption:'No model is available for this setting.'};
+ default:return grade5.simulate(t,value)||grade6.simulate(t,value)||{valid:false,success:false,metric:'',caption:'No model is available for this setting.'};
  }return {valid:true,success,metric,caption,state,amount};
 }
 function permutation(a){return Array.isArray(a)&&a.length===3&&new Set(a).size===3&&a.every(n=>Number.isInteger(n)&&n>=0&&n<3);}
@@ -82,5 +83,5 @@ function resumeIndex(p){const i=Math.round(clamp(p.current,0,missions.length-1))
 function load(storage){try{return sanitize(JSON.parse(storage?.getItem(SAVE_KEY)||'null'));}catch{return blank();}}
 function save(storage,p){try{if(!storage)return false;storage.setItem(SAVE_KEY,JSON.stringify(p));return true;}catch{return false;}}
 function score(p){return missions.reduce((s,m)=>s+(p.completed[m.id]?300:0)+(p.discoveries[m.id]?.length||0)*100+(p.samples[m.id]?.length||0)*5,0);}
-return {SAVE_KEY,tasks,missions,task,simulate,cleanLab,ready,blank,checkpoint,sanitize,load,save,score,order,unlocked,resumeIndex,clamp};
+return {SAVE_KEY,tasks,missions,task,simulate,cleanLab,ready,blank,checkpoint,sanitize,load,save,score,order,unlocked,resumeIndex,clamp,gradeTitle};
 });
