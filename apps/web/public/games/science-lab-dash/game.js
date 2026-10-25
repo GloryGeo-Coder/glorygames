@@ -1441,8 +1441,8 @@
 
   function startAudio(){
     if(muted) return;
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
+    try { const AC=window.AudioContext || window.webkitAudioContext;if(!AC)return;if(!audioCtx)audioCtx=new AC(); } catch { return; }
+    if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
     startMusic();
   }
   function tone(freq, dur=0.12, type='sine', gain=0.055, delay=0){

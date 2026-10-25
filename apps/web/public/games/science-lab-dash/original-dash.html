@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#061426" />
+  <title>Science Lab Dash — Element Core Mystery</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+  <link rel="stylesheet" href="./legacy-mobile.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand">Science Lab Dash</div>
+        <div class="subtitle">Element Core Mystery • story missions • curriculum science adventure</div>
+      </div>
+      <div class="hud">
+        <div class="hud-card"><span>Level</span><b id="hudLevel">1</b></div>
+        <div class="hud-card"><span>Score</span><b id="hudScore">0</b></div>
+        <div class="hud-card"><span>Lives</span><b id="hudLives">3</b></div>
+        <div class="hud-card"><span>Stars</span><b id="hudStars">0</b></div>
+      </div>
+    </header>
+
+    <main class="game-layout">
+      <section class="stage-card">
+        <canvas id="gameCanvas" width="1600" height="900" aria-label="Science Lab Dash game canvas"></canvas>
+        <div class="mobile-controls" aria-label="Mobile controls">
+          <button id="btnLaneUp" class="control-btn">▲</button>
+          <button id="btnShoot" class="control-btn primary">⚡</button>
+          <button id="btnLaneDown" class="control-btn">▼</button>
+          <button id="btnShield" class="control-btn">Shield</button>
+        </div>
+      </section>
+
+      <aside class="mission-panel">
+        <div class="mentor-card">
+          <div class="mentor-avatar" id="mentorMood">🧪</div>
+          <div>
+            <div class="panel-kicker">Professor Nova</div>
+            <p id="mentorText">Welcome, young scientist. Restore the Element Core by completing experiments and collecting science evidence.</p>
+          </div>
+        </div>
+
+        <div class="mission-card">
+          <div class="panel-kicker">Current Mission</div>
+          <h2 id="missionTitle">Lab Safety Training</h2>
+          <p id="missionConcept">Safety symbols, goggles and correct lab behaviour.</p>
+          <div class="progress-line"><span>Evidence</span><b id="missionProgress">0 / 8</b></div>
+          <div class="meter"><i id="missionMeter"></i></div>
+          <div class="progress-line"><span>Questions</span><b id="questionProgress">0 / 2</b></div>
+          <div class="meter gold"><i id="questionMeter"></i></div>
+          <div class="progress-line"><span>Boss / Core</span><b id="bossProgress">Locked</b></div>
+          <div class="meter red"><i id="bossMeter"></i></div>
+        </div>
+
+        <div class="tools-card"><a class="arcade-back" href="./index.html">Chemistry adventure</a>
+          <button id="btnStart" class="main-btn">Start Mission</button>
+          <button id="btnMap" class="ghost-btn">World Map</button>
+          <button id="btnMusic" class="ghost-btn">Music: On</button>
+          <button id="btnReset" class="danger-btn">Restart Campaign</button>
+        </div>
+
+        <div class="badges-card">
+          <div class="panel-kicker">Science Badges</div>
+          <div id="badgeGrid" class="badge-grid"></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      <span>Controls: Arrow Up/Down or W/S to change lanes • Space/click ⚡ to shoot • collect power-ups • answer science puzzles</span>
+      <span>Explore, experiment and discover</span>
+    </footer>
+
+    <div id="overlay" class="overlay active">
+      <div class="overlay-panel">
+        <div class="poster">
+          <div class="poster-title">Science Lab Dash</div>
+          <div class="poster-sub">The Element Core Mystery</div>
+        </div>
+        <h1 id="overlayTitle">Restore Nova Science Academy</h1>
+        <p id="overlayText">The Element Core has glitched. Dash through 20 curriculum-aligned science missions, collect evidence, solve puzzles, and defeat the final lab anomaly.</p>
+        <div id="mapGrid" class="map-grid"></div>
+        <div class="overlay-actions"><a class="arcade-back" href="./index.html">Chemistry adventure</a>
+          <button id="overlayPrimary" class="main-btn">Begin Adventure</button>
+          <button id="overlaySecondary" class="ghost-btn">Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="questionModal" class="question-modal" aria-live="polite">
+      <div class="question-box">
+        <div class="panel-kicker">Science Challenge</div>
+        <h2 id="questionTitle">Question</h2>
+        <p id="questionText"></p>
+        <div id="answerGrid" class="answer-grid"></div>
+        <p id="questionFeedback" class="feedback"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="legacy-fullscreen"><a class="arcade-back" href="./index.html">Adventure</a><button data-science-fullscreen aria-label="Enter Fullscreen"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M8 3H3V8M16 3H21V8M3 16V21H8M21 16V21H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="full-label">Enter Fullscreen</span></button><p data-science-display-status role="status"></p></div>
+  <script src="./game.js"></script>
+  <script src="./chemistry-display.js"></script>
+  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
+</body>
+</html>
