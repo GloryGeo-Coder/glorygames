@@ -701,7 +701,7 @@
     $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1+missionOffset):profile.completed.every(Boolean)?(chapter?'Replay '+chapterName+' finale':'Replay Final Gate'):(chapter?'Begin '+chapterName:'Start Mission');
     const unlocked=chapterUnlocked();$('startBtn').disabled=!unlocked;
     if(!unlocked)$('startBtn').textContent='Complete Asterion to unlock';
-    const next=$('vulcanisLink');if(next){const ready=window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey).load(storage,5).completed.every(Boolean);next.hidden=!ready;$('vulcanisLock').hidden=ready;}
+    const next=$('vulcanisLink');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_vulcanis_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$('vulcanisLock').hidden=ready;}
     $('newBtn').hidden=!profile.run&&!profile.completed.some(Boolean);
     $('saveStatus').textContent=!chapterUnlocked()?'Complete all five Asterion missions on this browser to unlock Vulcanis. Browser storage must be available to carry completion between chapters.':!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
     $('missionList').replaceChildren();
