@@ -15,7 +15,7 @@
   function save(storage,profile){try{storage.setItem(KEY,JSON.stringify(profile));return true;}catch{return false;}}
   function checkpoint(world,index,offset){
     const p=world.platforms[integer(index,0,world.platforms.length-1,0)];
-    if(!p||p.type==='moving'||!Number.isFinite(p.x)||!Number.isFinite(p.y))return null;
+    if(!p||p.type==='moving'||p.type==='phase'||!Number.isFinite(p.x)||!Number.isFinite(p.y))return null;
     return {platform:world.platforms.indexOf(p),offset:number(offset,24,Math.max(24,p.w-24),Math.min(80,p.w/2)),x:p.x+number(offset,24,Math.max(24,p.w-24),Math.min(80,p.w/2)),y:p.y-29};
   }
   function snapshot(state,point){

@@ -24,6 +24,7 @@
     "missionInteractions": true,
     "animatedArtwork": true,
     "originalLevelMusic": true,
-    "vulcanisLevels": 5
+    "vulcanisLevels": 5,
+    "luminaraLevels": 5
   }
 }
