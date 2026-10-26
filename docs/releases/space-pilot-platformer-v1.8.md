@@ -20,7 +20,7 @@ The shared engine receives only chapter selection, next-chapter links, an option
 
 ## Verification
 
-- 61 Node tests pass locally, including all earlier route/chapter tests and 16 Cryon checks. JavaScript syntax checks cover the new chapter and test scripts.
+- 62 Node tests pass locally, including all earlier route/chapter tests and 17 Cryon checks. JavaScript syntax checks cover the new chapter and test scripts.
 - The established GitHub browser workflow now includes Cryon: 13 viewport sizes, carried settings, simultaneous touch/cancel, five actual-physics lower-route fixtures, blocked-action phone hints, frost timing, traction, hull shielding/projectiles, story progression and recovery/fallbacks.
 - Screenshots cover all five landscapes and the Mothership on portrait phone, landscape phone and desktop, alongside home, briefing, controls and completion states.
 - Existing CI retains all earlier browser suites, a Next.js production build and production-entry checks without fixture hooks, now including Cryon.

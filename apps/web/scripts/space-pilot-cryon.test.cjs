@@ -158,3 +158,15 @@ test('restored heater and coolant objectives reapply permanent terrain and jet c
   if(level===0)for(const p of next.platforms.filter(p=>p.control===0))assert.equal(p.icy,false);
  }
 });
+
+test('Cryon backgrounds clear inherited particle glow before rendering every landscape',()=>{
+ const vm=require('node:vm'),sandbox={SpacePilotArt:{draw:()=>false}};
+ vm.runInNewContext(fs.readFileSync(path.join(root,'cryon-art.js'),'utf8'),sandbox);
+ for(let level=0;level<5;level++)for(const reducedMotion of [false,true]){
+  let draws=0;
+  const raw={shadowBlur:12,shadowColor:'#ffd44a',createLinearGradient:()=>({addColorStop(){}})};
+  const ctx=new Proxy(raw,{get:(o,k)=>k in o?o[k]:(...args)=>{assert.equal(o.shadowBlur,0,'particle glow leaked into '+String(k));for(const arg of args)if(typeof arg==='number')assert.ok(Number.isFinite(arg));draws++;}});
+  sandbox.SpacePilotArt.draw('background',{ctx,view:{width:390,height:650},state:{world:V.createLevel(level),time:3.6,cameraX:100},settings:{reducedMotion}});
+  assert.equal(raw.shadowBlur,0);assert.ok(draws>30);
+ }
+});

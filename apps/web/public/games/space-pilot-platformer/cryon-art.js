@@ -17,6 +17,9 @@
     line(c,x+12,y+5,x+w-12,y+5,'#dbf8ff66',2);
   }
   function background(a,t){
+    // Particle effects in the shared renderer can leave a glow on the context.
+    // Begin this chapter's next frame clean so amber remains a danger cue.
+    a.ctx.shadowBlur=0;
     const {ctx:c,view:v,state}=a,index=state.world?.spec.bg||0,[sky,mist,accent]=palettes[index%5];
     const gradient=c.createLinearGradient(0,0,0,v.height);gradient.addColorStop(0,sky);gradient.addColorStop(.7,mist);gradient.addColorStop(1,'#091925');c.fillStyle=gradient;c.fillRect(0,0,v.width,v.height);
     const drift=(state.cameraX||0)*.1;
