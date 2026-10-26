@@ -20,7 +20,7 @@
   }
   function snapshot(state,point){
     const w=state.world;
-    return {level:state.level,score:state.score,health:state.health,shield:state.shield,lives:state.lives,time:state.time,failed:state.status==='ended'&&state.health<=0,point:{platform:point.platform,offset:point.offset},cores:w.cores.map(c=>!!c.taken),pickups:w.pickups.map(p=>!!p.taken),enemies:w.enemies.map(e=>Math.max(0,e.hp))};
+    return {level:state.level,score:state.score,health:state.health,shield:state.shield,lives:state.lives,time:state.time,failed:state.status==='ended'&&state.health<=0,point:{platform:point.platform,offset:point.offset},cores:w.cores.map(c=>!!c.taken),pickups:w.pickups.map(p=>!!p.taken),enemies:w.enemies.map(e=>Math.max(0,e.hp)),...(w.objectives?{objectives:w.objectives.map(n=>n.done===true)}:{})};
   }
   function restore(raw,world,level){
     if(!raw||raw.level!==level||!raw.point||!Number.isInteger(raw.point.platform)||raw.point.platform<0||raw.point.platform>=world.platforms.length)return null;
@@ -30,8 +30,10 @@
     world.cores.forEach((c,i)=>{c.taken=raw.cores?.[i]===true;});world.pickups.forEach((p,i)=>{p.taken=raw.pickups?.[i]===true;});
     world.enemies.forEach((e,i)=>{e.hp=number(raw.enemies?.[i],0,e.maxHp,e.maxHp);e.alive=e.hp>0;});
     const cores=world.cores.filter(c=>c.taken).length,enemiesDefeated=world.enemies.filter(e=>!e.alive).length;
-    world.portal.open=cores>=world.spec.cores&&world.enemies.every(e=>e.type!=='boss'||!e.alive);
+    if(world.objectives)world.objectives.forEach((n,i)=>{n.done=raw.objectives?.[i]===true;n.charge=0;});
+    world.portal.open=(!world.objectives||world.objectives.every(n=>n.done))&&cores>=world.spec.cores&&world.enemies.every(e=>e.type!=='boss'||!e.alive);
     return {score,time,health,shield,lives,cores,enemiesDefeated,point,failed};
   }
-  return {KEY,clean,settings,load,save,checkpoint,snapshot,restore};
+  function scope(key){return {KEY:key,clean,settings,checkpoint,snapshot,restore,load:(storage,count)=>load({getItem:()=>storage.getItem(key)},count),save:(storage,profile)=>save({setItem:(_,value)=>storage.setItem(key,value)},profile)};}
+  return {KEY,clean,settings,load,save,checkpoint,snapshot,restore,scope};
 });

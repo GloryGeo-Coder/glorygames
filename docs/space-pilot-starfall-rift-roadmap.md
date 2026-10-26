@@ -32,3 +32,9 @@ The final journey takes you inside the Rift Engine, where fragments of every wor
 8. Complete campaign QA and publish the exact approved storyline, final descriptions, controls, counts and FAQs on the information page. Keep thumbnail/new-tab launch, score, related games and sidebar chat. Cloudflare deployment remains with the owner.
 
 Each world adds mission variety, readable laser combat, original level music/effects and animated characters/environment elements. Later increments introduce the Wayfarer hub, rescued crew, upgrades, optional dimension chambers, selected ship missions and replay medals. Do not advertise unbuilt campaign levels on the public game page.
+
+## Completed increments
+
+- v1.4: Mobile foundation, merged in PR #83.
+- v1.5: Five Asterion missions, story briefings, mission interactions, new animated artwork, five backgrounds and five original music arrangements. The original eight-mission route and its saved progress remain accessible. See [release notes](releases/space-pilot-platformer-v1.5.md).
+- Next: Vulcanis, levels 6–10. The full approved game-page storyline above remains reserved for campaign completion.
