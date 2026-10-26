@@ -8,7 +8,7 @@ Mining cutters have a 3.6-second cycle: safe, amber warning at 1.6 seconds, then
 
 ## Saves and mobile reliability
 
-Vulcanis saves separately under `wga_space_pilot_vulcanis_v1`; Asterion's `wga_space_pilot_asterion_v1` and the original `wga_space_pilot_campaign_v1` are unchanged. Initial Vulcanis settings inherit Asterion preferences. Completed objectives, pickups and enemy/Captain damage recover together at safe checkpoints, while partial interaction holds reset. The unlock requires persisted Asterion completion on the same origin/browser; the mission screen explains that unavailable browser storage prevents cross-page chapter progression.
+Vulcanis saves separately under `wga_space_pilot_vulcanis_v1`; Asterion's `wga_space_pilot_asterion_v1` and the original `wga_space_pilot_campaign_v1` are unchanged. Initial Vulcanis settings inherit Asterion preferences. Completed objectives, pickups and enemy/Captain damage recover together at safe checkpoints, while partial interaction holds reset. The initial unlock requires persisted Asterion completion on the same origin/browser. Once Vulcanis has a run or completed mission, replaying Asterion as a new expedition cannot relock it; the mission screen explains that unavailable browser storage prevents cross-page chapter progression.
 
 Touch controls, cancellation, pause, orientation fitting, fullscreen, aiming assistance and checkpoint handling use the existing engine. The shared score bridge recognises only the explicit new chapter entry in addition to its existing paths.
 

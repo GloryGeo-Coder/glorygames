@@ -189,7 +189,7 @@
   const Progress = (window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
   const chapter = window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
   const chapterName=chapter?.name||'Asterion', missionOffset=chapter?.offset||0;
-  function chapterUnlocked(){return !window.SpacePilotVulcanis||window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey).load(storage,5).completed.every(Boolean);}
+  function chapterUnlocked(){return !window.SpacePilotVulcanis||profile.completed.some(Boolean)||!!Progress.restore(profile.run,chapter.createLevel(profile.current),profile.current)||window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey).load(storage,5).completed.every(Boolean);}
   const activeLevels = chapter ? chapter.levels : LEVELS;
   const buildLevel = index => chapter ? chapter.createLevel(index) : makeLevel(index);
   let storage=null;try { storage=window.localStorage; } catch {}
@@ -750,7 +750,7 @@
     ui.scoreText.textContent=Math.floor(state.score);ui.levelText.textContent=(state.level+1+missionOffset)+'/'+(activeLevels.length+missionOffset);ui.healthText.textContent=Math.max(0,Math.round(state.health))+'%';ui.shieldText.textContent=Math.max(0,Math.round(state.shield))+'%';
     ui.missionTitle.textContent=w.spec.name+' · '+w.spec.zone;
     const boss=w.enemies.find(e=>e.type==='boss');ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+(boss?.alive?boss.name+' '+Math.ceil(boss.hp)+'/'+boss.maxHp:'Boss defeated · Portal ready');
-    if(chapter){const near=w.objectives.find(n=>!n.done&&Math.abs(PLAYER.x-n.x)<75&&Math.abs(PLAYER.y-n.y)<70);ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+w.objectives.filter(n=>n.done).length+'/'+w.objectives.length+' '+w.spec.objective.toLowerCase()+(boss?.alive?' · '+boss.name+' '+Math.ceil(boss.hp)+'/'+boss.maxHp:'')+(near?' · Hold Fire here '+Math.floor(near.charge/.8*100)+'%':'');}
+    if(chapter){const near=w.objectives.find(n=>!n.done&&Math.abs(PLAYER.x-n.x)<75&&Math.abs(PLAYER.y-n.y)<70);ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+w.objectives.filter(n=>n.done).length+'/'+w.objectives.length+' '+w.spec.objective.toLowerCase()+(boss?.alive?' · '+boss.name+' '+Math.ceil(boss.hp)+'/'+boss.maxHp:'')+(near?' · '+(state.interactionHint||'Hold Fire here '+Math.floor(near.charge/.8*100)+'%'):'');}
     ui.missionMeter.style.width=Math.round(clamp(PLAYER.x/w.width,0,1)*100)+'%';ui.mentorText.textContent=state.interactionHint||w.spec.tip;
   }
   function damage(amount){
