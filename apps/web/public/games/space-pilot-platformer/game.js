@@ -186,17 +186,20 @@
     }
   ];
 
-  const Progress = (window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
-  const chapter = window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
+  const Progress = (window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
+  const chapter = window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
   const chapterName=chapter?.name||'Asterion', missionOffset=chapter?.offset||0;
-  function chapterUnlocked(){return !window.SpacePilotVulcanis||profile.completed.some(Boolean)||!!Progress.restore(profile.run,chapter.createLevel(profile.current),profile.current)||window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey).load(storage,5).completed.every(Boolean);}
+  const previousKey=chapter?.previousKey||(window.SpacePilotVulcanis?window.SpacePilotAsterion.saveKey:null);
+  const previousName=chapter?.previousName||'Asterion';
+  function hasChapterProgress(saved,scope,chapterApi){return saved.completed.some(Boolean)||!!scope.restore(saved.run,chapterApi.createLevel(saved.current),saved.current);}
+  function chapterUnlocked(){return !previousKey||hasChapterProgress(profile,Progress,chapter)||window.SpacePilotProgress.scope(previousKey).load(storage,5).completed.every(Boolean);}
   const activeLevels = chapter ? chapter.levels : LEVELS;
   const buildLevel = index => chapter ? chapter.createLevel(index) : makeLevel(index);
   let storage=null;try { storage=window.localStorage; } catch {}
   let profile=Progress.load(storage,activeLevels.length);
   try{if(!storage?.getItem(Progress.KEY))profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}catch{profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
   try{if(chapter&&!storage?.getItem(Progress.KEY)&&storage?.getItem(window.SpacePilotProgress.KEY))profile.settings=window.SpacePilotProgress.load(storage,8).settings;}catch{}
-  try{if(window.SpacePilotVulcanis&&!storage?.getItem(Progress.KEY))profile.settings=window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey).load(storage,5).settings;}catch{}
+  try{if(previousKey&&!storage?.getItem(Progress.KEY))profile.settings=window.SpacePilotProgress.scope(previousKey).load(storage,5).settings;}catch{}
   let point=null,dirty=false,saveClock=0,writeAvailable=true;
   const view={width:640,height:820,zoom:1,dpr:1,windowWidth:0,windowHeight:0};
   const held=new Map();
@@ -439,7 +442,7 @@
   loadImage("player", ASSETS.player);
 
   } else {
-    if(!window.SpacePilotVulcanis)['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
+    if(!window.SpacePilotVulcanis&&!window.SpacePilotLuminara)['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
     loadImage('chapterPilot','assets/asterion/pilot.webp');
     loadImage('chapterObjects','assets/asterion/objects.webp');
     loadImage('chapterDevices','assets/asterion/devices.webp');
@@ -700,10 +703,10 @@
   function homeStatus(){
     $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1+missionOffset):profile.completed.every(Boolean)?(chapter?'Replay '+chapterName+' finale':'Replay Final Gate'):(chapter?'Begin '+chapterName:'Start Mission');
     const unlocked=chapterUnlocked();$('startBtn').disabled=!unlocked;
-    if(!unlocked)$('startBtn').textContent='Complete Asterion to unlock';
-    const next=$('vulcanisLink');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_vulcanis_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$('vulcanisLock').hidden=ready;}
+    if(!unlocked)$('startBtn').textContent='Complete '+previousName+' to unlock';
+    for(const name of ['vulcanis','luminara']){const next=$(name+'Link');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_'+name+'_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$(name+'Lock').hidden=ready;}}
     $('newBtn').hidden=!profile.run&&!profile.completed.some(Boolean);
-    $('saveStatus').textContent=!chapterUnlocked()?'Complete all five Asterion missions on this browser to unlock Vulcanis. Browser storage must be available to carry completion between chapters.':!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
+    $('saveStatus').textContent=!chapterUnlocked()?'Complete all five '+previousName+' missions on this browser to unlock '+chapterName+'. Browser storage must be available to carry completion between chapters.':!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
     $('missionList').replaceChildren();
     activeLevels.forEach((level,index)=>{const button=document.createElement('button');button.textContent=(index+1+missionOffset)+'. '+level.name+(profile.completed[index]?' · Complete':'');button.disabled=!unlocked||index>profile.unlocked;button.onclick=()=>{state.level=index;startGame(false);};$('missionList').append(button);});
   }
@@ -833,6 +836,7 @@
     const w = state.world;
     const index = state.level;
     state.time += dt;
+    chapter?.updateWorld?.(w,state.time);
     PLAYER.jumpBuffer=Math.max(0,PLAYER.jumpBuffer-dt);
     PLAYER.shootCd = Math.max(0, PLAYER.shootCd - dt);
     PLAYER.dashCd = Math.max(0, PLAYER.dashCd - dt);
@@ -882,7 +886,7 @@
 
     // Horizontal platform collision.
     for (const p of w.platforms) {
-      if (!rectsOverlap(pr, p)) continue;
+      if (p.active===false||!rectsOverlap(pr, p)) continue;
       if (PLAYER.vx > 0) PLAYER.x = p.x - PLAYER.w / 2 - 0.1;
       if (PLAYER.vx < 0) PLAYER.x = p.x + p.w + PLAYER.w / 2 + 0.1;
       PLAYER.vx = 0;
@@ -894,7 +898,7 @@
     pr = playerRect();
 
     for (const p of w.platforms) {
-      if (!rectsOverlap(pr, p)) continue;
+      if (p.active===false||!rectsOverlap(pr, p)) continue;
       const wasAbove = pr.y + pr.h - PLAYER.vy * dt <= p.y + 8;
       const wasBelow = pr.y - PLAYER.vy * dt >= p.y + p.h - 8;
       if (PLAYER.vy >= 0 && wasAbove) {
@@ -904,7 +908,7 @@
         PLAYER.jumps = 0;
         if (p.type === "moving") PLAYER.x += (p.x - (p.prevX || p.x));
         if (p.type === "ice") PLAYER.vx *= 1.01;
-        if(p.type!=='moving'&&PLAYER.x>PLAYER.checkpointX+520){
+        if(p.type!=='moving'&&p.type!=='phase'&&PLAYER.x>PLAYER.checkpointX+520){
           const candidate=Progress.checkpoint(w,w.platforms.indexOf(p),PLAYER.x-p.x);
           const safe=candidate&&!w.hazards.some(h=>Math.abs(h.x-candidate.x)<85&&Math.abs(h.y-candidate.y)<85);
           if(safe){point=candidate;PLAYER.checkpointX=point.x;PLAYER.checkpointY=point.y;dirty=true;toast('Checkpoint reached');}
@@ -1023,7 +1027,7 @@
         const er = { x: e.x - e.w / 2, y: e.y - e.h / 2, w: e.w, h: e.h };
         if (rectsOverlap({ x: s.x - s.r, y: s.y - s.r, w: s.r * 2, h: s.r * 2 }, er)) {
           s.dead = true;
-          e.hp -= s.power;
+          e.hp -= s.power*(chapter?.damageMultiplier?.(e,w)??1);
           if (e.type === "boss") e.hitFlash = 0.22;
           addParticle(s.x, s.y, e.type === "boss" ? (e.bossColor || "#ff2fd6") : "#ff784a", 8);
           if (e.hp <= 0) {
@@ -1093,7 +1097,7 @@
       }
     }
 
-    if(chapter){const interaction=chapter.interact(w,PLAYER,useHeld,dt);state.interactionHint=interaction.blocked||'';if(interaction.completed){state.score+=400;dirty=true;audio.power();addParticle(interaction.completed.x,interaction.completed.y,'#64ffb8',14);toast(interaction.completed.label+' secured');persist();}}
+    if(chapter){const interaction=chapter.interact(w,PLAYER,useHeld,dt,state.time);state.interactionHint=interaction.blocked||(w.enemies.some(e=>e.alive&&e.shielded)?'Guardian shield: ground all prism anchors':'');if(interaction.completed){state.score+=400;dirty=true;audio.power();addParticle(interaction.completed.x,interaction.completed.y,'#64ffb8',14);toast(interaction.completed.label+' secured');persist();}}
     // Portal.
     w.portal.open = (!chapter||chapter.ready(w)) && state.cores >= w.spec.cores && (!w.spec.boss || w.enemies.every((e) => e.type !== "boss" || !e.alive));
     if (rectsOverlap(playerRect(), { x: w.portal.x, y: w.portal.y, w: w.portal.w, h: w.portal.h })) {

@@ -37,5 +37,7 @@ Each world adds mission variety, readable laser combat, original level music/eff
 
 - v1.4: Mobile foundation, merged in PR #83.
 - v1.5: Five Asterion missions, story briefings, mission interactions, new animated artwork, five backgrounds and five original music arrangements. The original eight-mission route and its saved progress remain accessible. See [release notes](releases/space-pilot-platformer-v1.5.md).
-- v1.6: Vulcanis, levels 6–10, prepared for review: pirate foundries, mining cutters, worker rescues, Mira and the Rogue Captain. See [release notes](releases/space-pilot-platformer-v1.6.md). The full approved game-page storyline above remains reserved for campaign completion.
+- v1.6: Vulcanis, levels 6–10, merged in PR #85: pirate foundries, mining cutters, worker rescues, Mira and the Rogue Captain. See [release notes](releases/space-pilot-platformer-v1.6.md). The full approved game-page storyline above remains reserved for campaign completion.
 
+
+- v1.7: Luminara, levels 11–15, prepared for draft review: crystal ruins, reflected beams, dimensional platforms and the Prism Guardian. See [release notes](releases/space-pilot-platformer-v1.7.md). Later worlds and the final information-page editorial remain deferred.
