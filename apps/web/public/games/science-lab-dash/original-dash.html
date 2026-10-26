@@ -4,17 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#061426" />
-  <title>Science Lab Dash — Element Core Mystery</title>
+  <title>Science Lab Dash — Original Science Dash</title>
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
   <link rel="stylesheet" href="./legacy-mobile.css" />
+  <link rel="stylesheet" href="./arcade-polish.css" />
 </head>
 <body>
   <div id="app" class="app">
     <header class="topbar">
       <div class="brand-wrap">
         <div class="brand">Science Lab Dash</div>
-        <div class="subtitle">Element Core Mystery • story missions • curriculum science adventure</div>
+        <div class="subtitle">Original science dash • 20 missions at Nova Science Academy</div>
       </div>
       <div class="hud">
         <div class="hud-card"><span>Level</span><b id="hudLevel">1</b></div>
@@ -26,18 +27,19 @@
 
     <main class="game-layout">
       <section class="stage-card">
-        <canvas id="gameCanvas" width="1600" height="900" aria-label="Science Lab Dash game canvas"></canvas>
+        <canvas id="gameCanvas" width="1600" height="900" tabindex="0" aria-label="Science dash playfield. Up and Down change lanes, Space fires a lab burst and Shift activates a shield."></canvas>
         <div class="mobile-controls" aria-label="Mobile controls">
-          <button id="btnLaneUp" class="control-btn">▲</button>
-          <button id="btnShoot" class="control-btn primary">⚡</button>
-          <button id="btnLaneDown" class="control-btn">▼</button>
-          <button id="btnShield" class="control-btn">Shield</button>
+          <button id="btnLaneUp" class="control-btn" aria-label="Move up a lane">▲</button>
+          <button id="btnShoot" class="control-btn primary" aria-label="Fire a lab burst"><span data-arcade-icon="energy" aria-hidden="true"></span><span>Fire</span></button>
+          <button id="btnLaneDown" class="control-btn" aria-label="Move down a lane">▼</button>
+          <button id="btnShield" class="control-btn"><span data-arcade-icon="shield" aria-hidden="true"></span><span>Shield</span></button>
         </div>
+        <div class="arcade-mission-status" id="arcadeMissionStatus" aria-live="off"></div>
       </section>
 
       <aside class="mission-panel">
         <div class="mentor-card">
-          <div class="mentor-avatar" id="mentorMood">🧪</div>
+          <canvas class="mentor-avatar" id="mentorMood" width="124" height="124" aria-label="Professor Nova"></canvas>
           <div>
             <div class="panel-kicker">Professor Nova</div>
             <p id="mentorText">Welcome, young scientist. Restore the Element Core by completing experiments and collecting science evidence.</p>
@@ -59,7 +61,7 @@
         <div class="tools-card"><a class="arcade-back" href="./index.html">Chemistry adventure</a>
           <button id="btnStart" class="main-btn">Start Mission</button>
           <button id="btnMap" class="ghost-btn">World Map</button>
-          <button id="btnMusic" class="ghost-btn">Music: On</button>
+          <button id="btnMusic" class="ghost-btn">Audio</button>
           <button id="btnReset" class="danger-btn">Restart Campaign</button>
         </div>
 
@@ -77,19 +79,29 @@
 
     <div id="overlay" class="overlay active">
       <div class="overlay-panel">
-        <div class="poster">
+        <div class="poster"><canvas id="arcadePosterHero" width="180" height="220" aria-hidden="true"></canvas>
           <div class="poster-title">Science Lab Dash</div>
-          <div class="poster-sub">The Element Core Mystery</div>
+          <div class="poster-sub">Original science dash</div>
         </div>
         <h1 id="overlayTitle">Restore Nova Science Academy</h1>
         <p id="overlayText">The Element Core has glitched. Dash through 20 curriculum-aligned science missions, collect evidence, solve puzzles, and defeat the final lab anomaly.</p>
-        <div id="mapGrid" class="map-grid"></div>
         <div class="overlay-actions"><a class="arcade-back" href="./index.html">Chemistry adventure</a>
-          <button id="overlayPrimary" class="main-btn">Begin Adventure</button>
+          <button id="overlayPrimary" class="main-btn">Start Science Dash</button>
           <button id="overlaySecondary" class="ghost-btn">Continue</button>
         </div>
+        <div id="mapGrid" class="map-grid"></div>
       </div>
     </div>
+    <dialog id="audioDialog" class="audio-dialog" aria-labelledby="audioTitle">
+      <div class="audio-heading"><h2 id="audioTitle">Lab audio</h2><button id="closeAudio" class="ghost-btn" aria-label="Close audio settings">Close</button></div>
+      <p>Each of the 20 labs has its own original music. Adjust music and effects separately.</p>
+      <label for="musicVolume">Background music <output id="musicValue" for="musicVolume">36%</output></label>
+      <input id="musicVolume" type="range" min="0" max="100" value="36" />
+      <label for="effectsVolume">Sound effects <output id="effectsValue" for="effectsVolume">64%</output></label>
+      <input id="effectsVolume" type="range" min="0" max="100" value="64" />
+      <p id="audioStatus" role="status"></p>
+      <button id="testEffects" class="main-btn">Test effects</button>
+    </dialog>
 
     <div id="questionModal" class="question-modal" aria-live="polite">
       <div class="question-box">
@@ -103,6 +115,12 @@
   </div>
 
   <div class="legacy-fullscreen"><a class="arcade-back" href="./index.html">Adventure</a><button data-science-fullscreen aria-label="Enter Fullscreen"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M8 3H3V8M16 3H21V8M3 16V21H8M21 16V21H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="full-label">Enter Fullscreen</span></button><p data-science-display-status role="status"></p></div>
+  <script src="./chemistry-art-data.js"></script>
+  <script src="./chemistry-art.js"></script>
+  <script src="./arcade-art-data.js"></script>
+  <script src="./arcade-icons.js"></script>
+  <script src="./arcade-art.js"></script>
+  <script src="./arcade-audio.js"></script>
   <script src="./game.js"></script>
   <script src="./chemistry-display.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>

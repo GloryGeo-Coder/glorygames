@@ -1316,7 +1316,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Original science dash",
-        "body": "The preserved action mode has 20 missions across laboratory safety, scientific method, physics, chemistry, biology, Earth science, space, robotics and data science. It keeps its own progression, power-ups, badges and Glitch Experiment encounters."
+        "body": "The original action mode has 20 missions across laboratory safety, scientific method, physics, chemistry, biology, Earth science, space, robotics and data science. Animated academy characters, slimes, robots, drones and Core guardians join illustrated evidence and power-ups. Every lab has its own original music, with independent music and effects volumes under Audio. It keeps its own progression, badges and Glitch Experiment encounters."
       }
     ],
     "progression": [
@@ -1369,11 +1369,11 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Can I control music and sound effects separately?",
-        "a": "Yes. Open Menu to adjust independent music and sound-effect volumes. Each of the 35 adventure missions has its own original music arrangement. Browser audio starts after player interaction."
+        "a": "Yes. Open Menu in the adventure or Audio in the original dash to adjust independent music and sound-effect volumes. Each of the 35 adventure missions has its own original music arrangement. The original dash adds 20 distinct lab arrangements. Browser audio starts after player interaction, and settings are saved on the device when storage is available."
       },
       {
         "q": "Can I still play the original science dash?",
-        "a": "Yes. Choose Play the original dash from the game menu. Its 20 action missions, science questions, power-ups, badges, bosses and separate local progression remain available."
+        "a": "Yes. Choose Play the original dash from the game menu. Its 20 action missions, science questions, power-ups, badges, bosses and separate local progression remain available, with animated characters, illustrated equipment and music for every lab."
       },
       {
         "q": "Do replays or element cards give extra discovery points?",

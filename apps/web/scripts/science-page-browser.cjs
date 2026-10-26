@@ -25,6 +25,7 @@ async function screenshot(page,name){if(shots){fs.mkdirSync(shots,{recursive:tru
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Overflow '+route+' '+width);
       if(route.includes('science-lab-dash')){
         assert.match(body,/Grade 10:/);assert.match(body,/Element Core Investigator/);
+        assert.match(body,/20 distinct lab arrangements/);
         assert.match(await page.locator('meta[name=description]').getAttribute('content'),/35 untimed adventure missions and 105 investigations/);
         assert.equal(await page.locator('iframe').count(),0);
         const image=page.locator('img[src="/games/science-lab-dash/thumb.png"]').first();
@@ -46,6 +47,17 @@ async function screenshot(page,name){if(shots){fs.mkdirSync(shots,{recursive:tru
       }
       console.log('Built Next page: '+route+' '+width+'x'+height+' passed.');
     }
+    const original=await page.goto(base+'/games/science-lab-dash/original-dash.html?scores=0');
+    assert.equal(original.status(),200);
+    await page.waitForFunction(()=>ScienceChemistryArt.status().ready&&ScienceArcadeArt.status().ready&&!!window.__scienceDisplay);
+    assert.equal(await page.evaluate(()=>typeof window.dashQA),'undefined','Production must not expose fixture internals');
+    await page.locator('#overlayPrimary').click();assert.equal(await page.locator('#overlay').evaluate(e=>e.classList.contains('active')),false);
+    assert.equal(await page.locator('#hudLevel').textContent(),'1');
+    await page.locator('#btnMusic').click();assert.equal(await page.locator('#audioDialog').evaluate(d=>d.open),true);
+    await page.locator('#closeAudio').click();assert.equal(await page.locator('#audioDialog').evaluate(d=>d.open),false);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await screenshot(page,'built-original-'+width);
+    console.log('Built original dash: '+width+'x'+height+' artwork, Audio and direct entry passed.');
     await context.close();
   }
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server?.kill('SIGTERM');});

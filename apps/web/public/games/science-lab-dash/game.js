@@ -4,7 +4,7 @@
   const GAME_SLUG = 'science-lab-dash';
   const SAVE_KEY = 'wga_science_lab_dash_2_save';
   const BEST_KEY = 'wga_science_lab_dash_2_best';
-  const CANVAS_W = 1600;
+  let CANVAS_W = 1600;
   const CANVAS_H = 900;
 
   const LEVELS = [
@@ -1330,7 +1330,8 @@
     images.set(src, img);
     return img;
   }
-  LEVELS.forEach(level => loadImage(level.bg));
+  // Backgrounds are retained and loaded when visited, rather than downloading
+  // the entire campaign before the first phone frame.
   const spritePaths = {
     scientist: 'assets/sprites/scientist-runner.png',
     beaker: 'assets/sprites/item-beaker.png',
@@ -1347,11 +1348,24 @@
     hazard: 'assets/sprites/item-hazard.png',
     method: 'assets/sprites/item-method.png'
   };
-  Object.values(spritePaths).forEach(loadImage);
+  if(!window.ScienceArcadeArt) Object.values(spritePaths).forEach(loadImage);
 
-  let audioCtx = null;
-  let musicTimer = null;
-  let muted = false;
+  const arcadeArt = window.ScienceArcadeArt;
+  const arcadeIcons = window.ScienceArcadeIcons;
+  const AudioEngine = window.ScienceArcadeAudio;
+  const motion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+  let audioSettings;
+  try { audioSettings = AudioEngine?.load(window.localStorage); } catch {}
+  const audio = AudioEngine ? new AudioEngine(audioSettings) : null;
+  const audioDialog = document.getElementById('audioDialog');
+  let audioResume = false;
+  let mentorMood = 'talk';
+  let badgeSignature = '';
+  let uiSignature = '';
+  arcadeArt?.load();
+  document.querySelectorAll('[data-arcade-icon]').forEach(node => {
+    node.innerHTML = arcadeIcons?.svg(node.dataset.arcadeIcon) || '';
+  });
 
   const save = loadSave();
   let game = resetRuntime();
@@ -1359,6 +1373,7 @@
   function resetRuntime(){
     return {
       mode: 'menu',
+      visualTime: 0,
       levelIndex: Math.min(save.unlocked || 0, LEVELS.length - 1),
       score: save.score || 0,
       best: readBest(),
@@ -1374,7 +1389,7 @@
       enemyShots: [],
       particles: [],
       floatText: [],
-      player: {x:190, lane:1, targetLane:1, y:0, radius:42, shield:0, slow:0, magnet:0, double:0, shootCd:0, inv:0},
+      player: {x:playerX(), lane:1, targetLane:1, y:0, radius:42, shield:0, slow:0, magnet:0, double:0, shootCd:0, inv:0},
       levelTime: 0,
       spawnTimer: 0,
       questionTimer: 0,
@@ -1395,6 +1410,27 @@
       messageTimer: 0,
       pressurePulse: 0
     };
+  }
+
+  function playerX(){ return Math.max(96,CANVAS_W*.11875); }
+  function worldScale(){ return (CANVAS_W-playerX())/1410; }
+  function worldX(x){ return playerX()+(x-190)*worldScale(); }
+  function resizeOriginalDisplay(){
+    if(!arcadeArt) return;
+    const box=canvas.getBoundingClientRect();
+    if(box.width<1 || box.height<1) return;
+    const width=Math.max(600,Math.min(3200,Math.round(900*box.width/box.height)));
+    if(width===CANVAS_W) return;
+    const oldPlayer=playerX(),oldScale=worldScale();
+    CANVAS_W=width;
+    const scale=worldScale()/oldScale,nextPlayer=playerX();
+    for(const list of [game.objects,game.shots,game.enemyShots,game.particles,game.floatText]) for(const item of list){
+      item.x=nextPlayer+(item.x-oldPlayer)*scale;
+      if(Number.isFinite(item.vx)) item.vx*=scale;
+    }
+    game.player.x=nextPlayer;
+    canvas.width=CANVAS_W;
+    canvas.height=CANVAS_H;
   }
 
   function readBest(){
@@ -1440,62 +1476,58 @@
   }
 
   function startAudio(){
-    if(muted) return;
-    try { const AC=window.AudioContext || window.webkitAudioContext;if(!AC)return;if(!audioCtx)audioCtx=new AC(); } catch { return; }
-    if(audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-    startMusic();
-  }
-  function tone(freq, dur=0.12, type='sine', gain=0.055, delay=0){
-    if(muted || !audioCtx) return;
-    const t = audioCtx.currentTime + delay;
-    const osc = audioCtx.createOscillator();
-    const amp = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t);
-    amp.gain.setValueAtTime(0.0001, t);
-    amp.gain.exponentialRampToValueAtTime(gain, t + 0.015);
-    amp.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    osc.connect(amp); amp.connect(audioCtx.destination);
-    osc.start(t); osc.stop(t + dur + 0.02);
+    const available = audio?.unlock() || false;
+    const status = document.getElementById('audioStatus');
+    status.textContent = available ? '' : 'Audio is unavailable in this browser. You can continue playing.';
+    return available;
   }
   function sfx(name){
-    if(muted) return;
-    startAudio();
-    if(name === 'collect') { tone(660, .07, 'triangle', .045); tone(990, .08, 'triangle', .03, .04); }
-    if(name === 'hurt') { tone(120, .22, 'sawtooth', .055); tone(90, .16, 'square', .025, .06); }
-    if(name === 'shoot') { tone(740, .05, 'square', .038); tone(1180, .06, 'triangle', .024, .03); }
-    if(name === 'correct') { tone(620, .08, 'triangle', .04); tone(780, .09, 'triangle', .04, .07); tone(1040, .12, 'triangle', .035, .14); }
-    if(name === 'wrong') { tone(210, .12, 'sawtooth', .04); tone(150, .14, 'sawtooth', .03, .08); }
-    if(name === 'level') { tone(392, .1, 'triangle', .045); tone(523, .11, 'triangle', .045, .1); tone(784, .16, 'triangle', .045, .2); }
-    if(name === 'boss') { tone(70, .4, 'sawtooth', .06); tone(140, .2, 'square', .04, .08); }
-    if(name === 'power') { tone(500, .08, 'sine', .04); tone(1000, .13, 'sine', .035, .06); }
+    if(!document.hidden) audio?.effect(name);
   }
   function startMusic(){
-    if(muted || !audioCtx) return;
-    stopMusic();
-    const level = LEVELS[game.levelIndex] || LEVELS[0];
-    const themeNotes = {
-      cyan: [262,330,392,523],
-      blue: [220,294,370,440],
-      green: [247,330,392,494],
-      gold: [196,247,330,392],
-      pink: [208,277,415,554],
-      purple: [196,262,311,392]
-    }[level.theme] || [262,330,392,523];
-    let step = 0;
-    musicTimer = setInterval(() => {
-      if(game.mode !== 'play' || game.pausedForQuestion) return;
-      const intensity = 1 + Math.min(2, game.combo / 8);
-      const note = themeNotes[step % themeNotes.length];
-      tone(note / 2, .12, 'sine', .012 * intensity);
-      if(step % 2 === 0) tone(note, .09, 'triangle', .01 * intensity, .02);
-      if(game.combo >= 6 && step % 4 === 0) tone(note * 1.5, .08, 'sine', .009, .05);
-      step++;
-    }, 240);
+    if(game.mode === 'play' && !game.pausedForQuestion && !document.hidden) audio?.play(game.levelIndex);
   }
-  function stopMusic(){
-    if(musicTimer) clearInterval(musicTimer);
-    musicTimer = null;
+  function stopMusic(){ audio?.stopMusic(); }
+  function artOptions(){ return {time:game.visualTime,width:CANVAS_W,labelScale:canvas.clientHeight<330?2:1,reduced:!!motion?.matches}; }
+  function saveAudio(){
+    try { if(audio) AudioEngine.save(window.localStorage,audio.settings); } catch {}
+  }
+  function syncAudio(){
+    for(const [channel,id] of [['music','music'],['effects','effects']]){
+      const value=Math.round((audio?.settings[channel] || 0)*100);
+      document.getElementById(id+'Volume').value=value;
+      document.getElementById(id+'Value').textContent=value+'%';
+      document.getElementById(id+'Volume').disabled=!audio;
+    }
+  }
+  function openAudio(){
+    startAudio();
+    audioResume=game.mode === 'play';
+    if(audioResume) game.mode='paused';
+    audio?.stop();
+    syncAudio();
+    audioDialog.showModal();
+  }
+  function closeAudio(){
+    audioDialog.close();
+    if(audioResume && !document.hidden && !els.overlay.classList.contains('active')){
+      game.mode='play';startAudio();startMusic();
+    }
+    audioResume=false;
+  }
+  function resumeMission(){
+    hideOverlay();
+    if(game.mode === 'paused'){
+      game.mode='play';startAudio();startMusic();
+    } else startLevel();
+  }
+  function pauseMission(){
+    touchY=null;
+    audio?.stop();
+    audioResume=false;
+    if(game.mode === 'play' || (game.mode === 'paused' && audioDialog.open)){
+      showOverlay('Paused', 'Your current lab run is saved in this tab. Resume when you are ready.', 'Resume');
+    }
   }
 
   function level(){
@@ -1510,16 +1542,21 @@
 
   function setMentor(text, mood='🧪'){
     els.mentorText.textContent = text;
-    els.mentorMood.textContent = mood;
+    mentorMood = ['🏅','✅'].includes(mood) ? 'cheer' : 'talk';
   }
 
   function initBadges(){
+    const signature=JSON.stringify(game.badges);
+    if(signature===badgeSignature) return;
+    badgeSignature=signature;
     els.badgeGrid.innerHTML = '';
     BADGES.forEach((name, i) => {
       const d = document.createElement('div');
       d.className = 'badge' + (game.badges[name] ? ' unlocked' : '');
       d.title = name;
-      d.textContent = name[0];
+      d.setAttribute('aria-label',name+(game.badges[name]?' badge earned':' badge locked'));
+      const ids=['goggles','observe','solid','filter','force','battery','wave','leaf','heart','web','atom','indicator','rock','planet','solar','dna','gear','graph','core','star'];
+      d.innerHTML=arcadeIcons?.svg(ids[i]) || name[0];
       els.badgeGrid.appendChild(d);
     });
   }
@@ -1548,6 +1585,7 @@
   }
 
   function showOverlay(title, text, primaryText='Start Mission'){
+    audio?.stop();
     game.mode = game.mode === 'play' ? 'paused' : game.mode;
     els.overlayTitle.textContent = title;
     els.overlayText.textContent = text;
@@ -1571,6 +1609,7 @@
     game.lives = 3;
     game.combo = 0;
     game.levelTime = 0;
+    game.visualTime = 0;
     game.spawnTimer = 0.35;
     game.questionTimer = 3.2;
     game.lessonTimer = 6.0;
@@ -1583,7 +1622,7 @@
     game.phase = 1;
     game.explanationIndex = 0;
     game.pressurePulse = 0;
-    game.player = {x:190, lane:1, targetLane:1, y:laneY(1), radius:42, shield:0, slow:0, magnet:0, double:0, shootCd:0, inv:0};
+    game.player = {x:playerX(), lane:1, targetLane:1, y:laneY(1), radius:42, shield:0, slow:0, magnet:0, double:0, shootCd:0, inv:0};
     setMentor(`Mission ${game.levelIndex + 1}: ${lv.principle} Collect ${lv.target} evidence items, answer ${lv.questionsRequired} science challenges, survive the full lab run, then defeat the boss.`, '🔬');
     startMusic();
     sfx('level');
@@ -1602,7 +1641,7 @@
     if(game.score > game.best){ game.best = game.score; writeBest(game.best); }
     writeSave();
     postScore(game.levelIndex === LEVELS.length - 1);
-    sfx('level');
+    stopMusic();
     setMentor(`Excellent! ${lv.principle}`, '🏅');
     syncUI();
     if(game.levelIndex >= LEVELS.length - 1){
@@ -1610,14 +1649,16 @@
     } else {
       showOverlay('Mission Complete', `${lv.title} cleared. Badge earned: ${lv.badge}. Next mission unlocked.`, 'Next Mission');
     }
+    sfx('level');
   }
 
   function failLevel(){
     game.mode = 'gameOver';
     game.combo = 0;
-    sfx('hurt');
+    stopMusic();
     setMentor('Circuit rebooted. Try the same mission again — scientists improve through careful repeats.', '⚠️');
-    showOverlay('Circuit Reboot', 'You ran out of lives. This version uses checkpoints, so you retry the current mission instead of restarting the whole campaign.', 'Retry Mission');
+    showOverlay('Circuit Reboot', 'You ran out of lives. Retry the current mission; your unlocked labs and badges are safe.', 'Retry Mission');
+    sfx('fail');
   }
 
   function spawnObject(){
@@ -1647,9 +1688,9 @@
     const obj = {
       kind,
       lane,
-      x: CANVAS_W + 90,
+      x: CANVAS_W + 90*worldScale(),
       y: laneY(lane),
-      vx: 300 + lv.difficulty * 58 + speedBoost + Math.random() * 105,
+      vx: (300 + lv.difficulty * 58 + speedBoost + Math.random() * 105)*worldScale(),
       radius: kind === 'enemy' ? 50 : kind === 'hazard' ? 38 : 35,
       age: 0,
       color: t.a,
@@ -1736,7 +1777,7 @@
     game.shots.push({
       x: game.player.x + 55,
       y: game.player.y,
-      vx: 860,
+      vx: 860*worldScale(),
       radius: 12,
       color: theme().a,
       life: 1.8
@@ -1745,11 +1786,11 @@
   }
 
   function useShield(){
-    if(game.mode !== 'play') return;
+    if(game.mode !== 'play' || game.pausedForQuestion) return;
     if(game.player.shield <= 0){
       game.player.shield = 4.5;
       addText(game.player.x, game.player.y - 75, 'Shield on', '#42dfff');
-      sfx('power');
+      sfx('shield');
     }
   }
 
@@ -1758,6 +1799,8 @@
     const lv = level();
     const q = choose(lv.questionSet);
     game.pausedForQuestion = true;
+    stopMusic();
+    sfx('question');
     game.pendingQuestion = q;
     els.questionTitle.textContent = lv.title;
     els.questionText.textContent = q[0];
@@ -1800,6 +1843,7 @@
       els.questionModal.classList.remove('active');
       game.pausedForQuestion = false;
       game.pendingQuestion = null;
+      startMusic();
       syncUI();
     }, 1300);
   }
@@ -1808,6 +1852,7 @@
     if(game.player.inv > 0) return;
     if(game.player.shield > 0){
       game.player.shield = 0;
+      sfx('shield');
       addText(game.player.x, game.player.y - 85, 'Shield saved you', '#42dfff');
       return;
     }
@@ -1847,6 +1892,8 @@
     const lv = level();
     const slowFactor = game.player.slow > 0 ? 0.52 : 1;
     game.levelTime += dt;
+    game.visualTime += dt;
+    if(audio) audio.pressure=Math.min(1,(game.bossActive ? .65 : 0)+game.combo/30);
     game.spawnTimer -= dt;
     game.questionTimer -= dt;
     game.lessonTimer -= dt;
@@ -1893,13 +1940,13 @@
       obj.y += Math.sin(obj.age * 4 + obj.lane) * 10 * dt;
       if(game.player.magnet > 0 && obj.kind === 'collect'){
         obj.y += (game.player.y - obj.y) * Math.min(1, dt * 3.5);
-        obj.x += (game.player.x + 45 - obj.x) * Math.min(1, dt * 2.5);
+        obj.x += (game.player.x + 45*worldScale() - obj.x) * Math.min(1, dt * 2.5);
       }
       if(obj.kind === 'enemy'){
         obj.shoot -= dt;
-        if(obj.shoot <= 0 && obj.x < CANVAS_W - 60 && obj.x > game.player.x + 120){
+        if(obj.shoot <= 0 && obj.x < CANVAS_W - 60*worldScale() && obj.x > game.player.x + 120*worldScale()){
           obj.shoot = Math.max(.55, level().enemyFireRate + Math.random() * .65);
-          game.enemyShots.push({x:obj.x - 30, y:obj.y, vx:-430 - level().difficulty * 58 - game.pressurePulse * 90, radius:13, color:obj.color, life:4.6});
+          game.enemyShots.push({x:obj.x - 30*worldScale(), y:obj.y, vx:(-430 - level().difficulty * 58 - game.pressurePulse * 90)*worldScale(), radius:13, color:obj.color, life:4.6});
         }
       }
       if(collide(game.player, obj)){
@@ -1962,16 +2009,17 @@
           burst(obj.x, obj.y, shot.color);
           addText(obj.x, obj.y - 45, 'Lab burst', '#42dfff');
           game.score += 18;
+          sfx('hit');
           if(obj.hp <= 0) obj.dead = true;
           break;
         }
       }
-      if(game.bossActive && game.bossHealth > 0 && shot.x > CANVAS_W - 260 && Math.abs(shot.y - CANVAS_H * .50) < 230){
+      if(game.bossActive && game.bossHealth > 0 && shot.x > worldX(1340) && Math.abs(shot.y - CANVAS_H * .50) < 230){
         shot.dead = true;
         game.bossHealth -= 5;
         game.score += 20;
-        burst(CANVAS_W - 230, shot.y, '#ffd452');
-        sfx('shoot');
+        burst(worldX(1370), shot.y, '#ffd452');
+        sfx('hit');
       }
     }
     game.shots = game.shots.filter(s => !s.dead && s.life > 0 && s.x < CANVAS_W + 80);
@@ -1990,9 +2038,9 @@
           id: i % 3 === 0 ? 'quiz' : 'glitch',
           label: i % 3 === 0 ? '?' : 'Glitch',
           lane,
-          x: CANVAS_W + 120 + i * 64,
+          x: CANVAS_W + (120 + i * 64)*worldScale(),
           y: laneY(lane),
-          vx: 390 + lv.difficulty * 86 + game.pressurePulse * 80,
+          vx: (390 + lv.difficulty * 86 + game.pressurePulse * 80)*worldScale(),
           radius: i % 3 === 0 ? 35 : 38,
           age: 0,
           color: i % 3 === 0 ? '#ffd452' : '#ff4fa2',
@@ -2023,7 +2071,7 @@
   }
 
   function burst(x,y,color){
-    for(let i=0;i<16;i++){
+    for(let i=0;i<(motion?.matches?4:16);i++){
       const a = Math.random() * Math.PI * 2;
       const s = 60 + Math.random() * 180;
       game.particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,r:5+Math.random()*8,life:.45+Math.random()*.35,color});
@@ -2037,7 +2085,7 @@
     const t = theme();
     ctx.save();
     ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
-    if(game.shake > 0) ctx.translate((Math.random()-.5)*game.shake, (Math.random()-.5)*game.shake);
+    if(game.shake > 0 && !motion?.matches) ctx.translate((Math.random()-.5)*game.shake, (Math.random()-.5)*game.shake);
     drawBackground(t);
     drawLabTrack(t);
     drawObjects();
@@ -2047,6 +2095,7 @@
     drawParticles();
     drawTopCanvasHud(t);
     ctx.restore();
+    drawPortraits();
   }
 
   function drawBackground(t){
@@ -2060,7 +2109,8 @@
 
     if(img.complete && img.naturalWidth > 0){
       ctx.globalAlpha = .96;
-      ctx.drawImage(img,0,0,CANVAS_W,CANVAS_H);
+      const cover=Math.max(CANVAS_W/img.naturalWidth,CANVAS_H/img.naturalHeight);
+      ctx.drawImage(img,(CANVAS_W-img.naturalWidth*cover)/2,(CANVAS_H-img.naturalHeight*cover)/2,img.naturalWidth*cover,img.naturalHeight*cover);
       ctx.globalAlpha = 1;
     } else {
       const fallback = ctx.createLinearGradient(0,0,CANVAS_W,CANVAS_H);
@@ -2087,15 +2137,6 @@
     ctx.fillStyle = glow;
     ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
 
-    drawGrid(t.a);
-    drawLabProps(t);
-
-    ctx.fillStyle = 'rgba(255,255,255,.96)';
-    ctx.font = '900 22px Inter, Arial';
-    ctx.fillText(lv.zone, 70, 82);
-    ctx.font = '800 18px Inter, Arial';
-    ctx.fillStyle = t.a;
-    ctx.fillText(lv.concept, 70, 110);
   }
 
   function drawGrid(color){
@@ -2115,7 +2156,7 @@
   }
 
   function drawLabProps(t){
-    const time = performance.now() / 1000;
+    const time = motion?.matches ? 0 : game.visualTime;
     for(let i=0;i<12;i++){
       const x = (i * 145 + (game.levelIndex*37)%90) % (CANVAS_W + 140) - 70;
       const h = 90 + ((i*47 + game.levelIndex*23) % 170);
@@ -2162,8 +2203,9 @@
   }
 
   function drawPlayer(t){
+    if(arcadeArt){ arcadeArt.player(ctx,game,{...artOptions(),laneY:laneY(game.player.targetLane)}); return; }
     const p = game.player;
-    const bob = Math.sin(performance.now()/130) * 5;
+    const bob = motion?.matches ? 0 : Math.sin(performance.now()/130) * 5;
     ctx.save();
     ctx.translate(p.x,p.y+bob);
     if(p.inv > 0 && Math.floor(p.inv*16)%2===0) ctx.globalAlpha=.45;
@@ -2210,7 +2252,7 @@
     for(const obj of game.objects){
       ctx.save();
       ctx.translate(obj.x, obj.y);
-      const pulse = Math.sin(obj.age*6)*3;
+      const pulse = motion?.matches ? 0 : Math.sin(obj.age*6)*3;
       if(obj.kind === 'collect'){
         drawToken(obj, obj.radius + pulse);
       } else if(obj.kind === 'hazard'){
@@ -2227,6 +2269,7 @@
   }
 
   function drawToken(obj, r){
+    if(arcadeArt){ arcadeArt.item(ctx,obj,artOptions()); return; }
     const img = obj.sprite ? loadImage(obj.sprite) : null;
     ctx.shadowColor = obj.color; ctx.shadowBlur = 20;
     if(img && img.complete && img.naturalWidth > 0){
@@ -2245,6 +2288,7 @@
   }
 
   function drawHazard(obj, r){
+    if(arcadeArt){ arcadeArt.item(ctx,obj,artOptions()); return; }
     ctx.shadowColor = '#ff5f78'; ctx.shadowBlur = 20;
     ctx.fillStyle = '#ff5f78';
     ctx.beginPath();
@@ -2260,6 +2304,7 @@
   }
 
   function drawEnemy(obj){
+    if(arcadeArt){ arcadeArt.enemy(ctx,obj,artOptions()); return; }
     ctx.shadowColor = obj.color; ctx.shadowBlur = 26;
     ctx.fillStyle = '#091326';
     roundRect(-46,-36,92,72,18,true,false);
@@ -2281,6 +2326,7 @@
   }
 
   function drawPower(obj){
+    if(arcadeArt){ arcadeArt.item(ctx,obj,artOptions()); return; }
     ctx.shadowColor = obj.color; ctx.shadowBlur = 30;
     ctx.strokeStyle = obj.color; ctx.lineWidth = 6;
     ctx.beginPath(); ctx.arc(0,0,38,0,Math.PI*2); ctx.stroke();
@@ -2293,6 +2339,7 @@
   }
 
   function drawQuestionCard(obj){
+    if(arcadeArt){ arcadeArt.item(ctx,obj,artOptions()); return; }
     ctx.shadowColor = '#ffd452'; ctx.shadowBlur = 26;
     ctx.fillStyle = '#071426';
     roundRect(-34,-42,68,84,13,true,false);
@@ -2304,6 +2351,7 @@
 
   function drawShots(){
     for(const shot of game.shots){
+      if(arcadeArt){ arcadeArt.shot(ctx,shot,false,game.visualTime,!!motion?.matches); continue; }
       ctx.save();
       ctx.shadowColor = shot.color; ctx.shadowBlur = 20;
       ctx.fillStyle = shot.color;
@@ -2311,6 +2359,7 @@
       ctx.restore();
     }
     for(const bolt of game.enemyShots){
+      if(arcadeArt){ arcadeArt.shot(ctx,bolt,true,game.visualTime,!!motion?.matches); continue; }
       ctx.save();
       ctx.shadowColor = bolt.color; ctx.shadowBlur = 18;
       ctx.fillStyle = bolt.color;
@@ -2320,6 +2369,7 @@
   }
 
   function drawBoss(t){
+    if(arcadeArt){ arcadeArt.boss(ctx,game,{...artOptions(),width:CANVAS_W,x:worldX(1370),final:!!level().boss}); return; }
     if(!game.bossActive || game.bossHealth <= 0) return;
     const x = CANVAS_W - 230, y = CANVAS_H * .50;
     const ratio = Math.max(0, game.bossHealth / game.bossMax);
@@ -2363,6 +2413,7 @@
   }
 
   function drawTopCanvasHud(t){
+    if(arcadeArt){ arcadeArt.hud(ctx,game,level(),CANVAS_W); return; }
     const lv = level();
     ctx.save();
     ctx.fillStyle = 'rgba(2,7,16,.56)';
@@ -2387,6 +2438,16 @@
     ctx.restore();
   }
 
+  function drawPortraits(){
+    const art=window.ScienceChemistryArt;
+    const portrait=els.mentorMood.getContext('2d');
+    portrait.clearRect(0,0,124,124);
+    art?.draw(portrait,'mentor',{x:30,y:0,w:64,h:116,state:mentorMood,...artOptions()});
+    const poster=document.getElementById('arcadePosterHero'),c=poster.getContext('2d');
+    c.clearRect(0,0,180,220);
+    art?.draw(c,'hero',{x:35,y:8,w:110,h:192,state:'cheer',...artOptions()});
+  }
+
   function roundRect(x,y,w,h,r,fill,stroke){
     const rr = Math.min(r, w/2, h/2);
     ctx.beginPath();
@@ -2402,6 +2463,9 @@
 
   function syncUI(){
     const lv = level();
+    const signature=JSON.stringify([game.levelIndex,game.score,game.lives,game.stars,game.progress,game.questionsAnswered,game.bossActive,Math.ceil(game.bossHealth),Math.max(0,Math.ceil(lv.minMissionSeconds-game.levelTime)),game.badges]);
+    if(signature===uiSignature) return;
+    uiSignature=signature;
     els.hudLevel.textContent = String(game.levelIndex + 1);
     els.hudScore.textContent = Math.round(game.score);
     els.hudLives.textContent = Math.max(0, game.lives);
@@ -2423,27 +2487,33 @@
       els.bossProgress.textContent = (game.progress >= lv.target && game.questionsAnswered >= lv.questionsRequired) ? (wait > 0 ? `${wait}s lab run` : 'Ready') : 'Locked';
       els.bossMeter.style.width = '0%';
     }
+    document.getElementById('arcadeMissionStatus').textContent=`${game.levelIndex+1}. ${lv.title} · Evidence ${Math.min(game.progress,lv.target)}/${lv.target} · Questions ${Math.min(game.questionsAnswered,lv.questionsRequired)}/${lv.questionsRequired}`;
     initBadges();
   }
 
   function moveLane(dir){
-    if(game.mode !== 'play') return;
+    if(game.mode !== 'play' || game.pausedForQuestion) return;
+    const previous=game.player.targetLane;
     game.player.targetLane = Math.max(0, Math.min(2, game.player.targetLane + dir));
+    if(previous!==game.player.targetLane) sfx('lane');
   }
 
   function key(e){
+    if(e.altKey || e.ctrlKey || e.metaKey || audioDialog.open || game.pausedForQuestion || game.mode!=='play' || ['INPUT','TEXTAREA','SELECT'].includes(e.target?.tagName)) return;
     const k = e.key.toLowerCase();
+    if((k===' ' || k==='enter') && ['BUTTON','A'].includes(e.target?.tagName)) return;
     if(k === 'arrowup' || k === 'w' || k === '1'){ moveLane(-1); e.preventDefault(); }
     if(k === 'arrowdown' || k === 's' || k === '3'){ moveLane(1); e.preventDefault(); }
     if(k === '2'){ game.player.targetLane = 1; e.preventDefault(); }
     if(k === ' ' || k === 'enter'){ shoot(); e.preventDefault(); }
     if(k === 'shift'){ useShield(); e.preventDefault(); }
-    if(k === 'escape'){ showOverlay('Paused', 'Continue the mission or choose another unlocked science zone.', 'Resume'); }
+    if(k === 'escape'){ pauseMission(); }
   }
 
   let touchY = null;
   canvas.addEventListener('pointerdown', (e) => {
     startAudio();
+    startMusic();
     touchY = e.clientY;
     if(game.mode === 'play') shoot();
   });
@@ -2453,25 +2523,36 @@
     if(Math.abs(dy) > 34) moveLane(dy > 0 ? 1 : -1);
     touchY = null;
   });
+  canvas.addEventListener('pointercancel',()=>{touchY=null;});
+  window.addEventListener('science-clear-input',()=>{touchY=null;});
+  window.addEventListener('blur',pauseMission);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseMission();});
+  window.addEventListener('pagehide',()=>audio?.stop());
   window.addEventListener('keydown', key);
 
   els.btnStart.addEventListener('click', () => { hideOverlay(); startLevel(); });
   els.btnMap.addEventListener('click', () => showOverlay('Science World Map', 'Choose any unlocked curriculum mission. Complete missions to earn badges and open the next lab zone.', 'Resume'));
   els.overlayPrimary.addEventListener('click', () => {
     hideOverlay();
-    if(game.mode === 'levelClear' && game.levelIndex < LEVELS.length - 1){
+    if(game.mode === 'paused'){
+      resumeMission();
+    } else if(game.mode === 'levelClear' && game.levelIndex < LEVELS.length - 1){
       game.levelIndex++;
       startLevel();
     } else {
       startLevel();
     }
   });
-  els.overlaySecondary.addEventListener('click', () => { hideOverlay(); if(game.mode !== 'play') startLevel(); });
-  els.btnMusic.addEventListener('click', () => {
-    muted = !muted;
-    els.btnMusic.textContent = muted ? 'Music: Off' : 'Music: On';
-    if(muted) stopMusic(); else startAudio();
-  });
+  els.overlaySecondary.addEventListener('click',resumeMission);
+  els.btnMusic.addEventListener('click',openAudio);
+  document.getElementById('closeAudio').addEventListener('click',closeAudio);
+  audioDialog.addEventListener('cancel',e=>{e.preventDefault();closeAudio();});
+  for(const channel of ['music','effects']){
+    document.getElementById(channel+'Volume').addEventListener('input',e=>{
+      startAudio();audio?.setVolume(channel,Number(e.target.value)/100);syncAudio();saveAudio();
+    });
+  }
+  document.getElementById('testEffects').addEventListener('click',()=>{startAudio();sfx('power');});
   els.btnReset.addEventListener('click', () => {
     if(!confirm('Restart the Science Lab Dash campaign from level 1?')) return;
     try { localStorage.removeItem(SAVE_KEY); } catch {}
@@ -2495,8 +2576,11 @@
     requestAnimationFrame(loop);
   }
 
+  resizeOriginalDisplay();
+  if(window.ResizeObserver) new ResizeObserver(resizeOriginalDisplay).observe(canvas);
+  window.addEventListener('resize',resizeOriginalDisplay);
   syncUI();
   buildMap();
-  showOverlay('Restore Nova Science Academy', 'Dash through 20 science curriculum missions, collect evidence, solve lab puzzles, and defeat the Glitch Experiment.', 'Begin Adventure');
+  showOverlay('Restore Nova Science Academy', 'Dash through 20 science missions, collect evidence, solve lab puzzles, and defeat the Glitch Experiment.', 'Start Science Dash');
   requestAnimationFrame(loop);
 })();

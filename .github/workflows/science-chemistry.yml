@@ -6,6 +6,8 @@ on:
       - 'apps/web/scripts/science-*'
       - 'tools/build-science-characters.cjs'
       - 'tools/science-character-source/**'
+      - 'tools/build-science-arcade.cjs'
+      - 'tools/science-arcade-source/**'
       - '.github/workflows/science-chemistry.yml'
   push:
     branches: [main]
@@ -14,6 +16,8 @@ on:
       - 'apps/web/scripts/science-*'
       - 'tools/build-science-characters.cjs'
       - 'tools/science-character-source/**'
+      - 'tools/build-science-arcade.cjs'
+      - 'tools/science-arcade-source/**'
       - '.github/workflows/science-chemistry.yml'
 permissions:
   contents: read
@@ -31,6 +35,7 @@ jobs:
           node-version: '24'
       - run: for file in apps/web/public/games/science-lab-dash/*.js; do node --check "$file"; done
       - run: node --check tools/build-science-characters.cjs
+      - run: node --check tools/build-science-arcade.cjs
       - run: node --test apps/web/scripts/science-*.test.cjs
   science-browser:
     needs: science-chemistry
@@ -55,6 +60,8 @@ jobs:
         run: '"$RUNNER_TEMP/science-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium'
       - name: Grades 4–10 playthrough, mobile, saves and original dash regression
         run: node apps/web/scripts/science-chemistry-browser.cjs
+      - name: Original dash artwork, audio, gameplay and phone regression
+        run: node apps/web/scripts/science-arcade-browser.cjs
       - name: Next.js production build
         run: npm run build --prefix apps/web
       - name: Final Science pages, thumbnails and standalone launch
