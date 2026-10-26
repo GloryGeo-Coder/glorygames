@@ -30,7 +30,10 @@ jobs:
       - run: node --check apps/web/public/games/space-pilot-platformer/asterion.js
       - run: node --check apps/web/public/games/space-pilot-platformer/asterion-art.js
       - run: node --check apps/web/public/games/space-pilot-platformer/asterion-audio.js
-      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs
+      - run: node --check apps/web/public/games/space-pilot-platformer/vulcanis.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/vulcanis-art.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/vulcanis-audio.js
+      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs
   pilot-browser:
     needs: space-pilot
     runs-on: ubuntu-latest
@@ -52,7 +55,17 @@ jobs:
         run: node apps/web/scripts/space-pilot-foundation-browser.cjs
       - name: Asterion mission interactions and five physical routes
         run: node apps/web/scripts/space-pilot-asterion-browser.cjs
+      - name: Vulcanis unlock, thirteen viewports, five routes and machinery
+        run: PILOT_SCREENSHOTS="$RUNNER_TEMP/pilot-screenshots" node apps/web/scripts/space-pilot-vulcanis-browser.cjs
+      - name: Upload Vulcanis review screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: vulcanis-browser-screenshots
+          path: ${{ runner.temp }}/pilot-screenshots
+          if-no-files-found: ignore
       - name: Next.js production build
         run: npm run build --prefix apps/web
       - name: Production entry and game-page launch
         run: node apps/web/scripts/space-pilot-built-browser.cjs
+

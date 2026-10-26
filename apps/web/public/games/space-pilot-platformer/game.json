@@ -23,6 +23,7 @@
     "storyBriefings": true,
     "missionInteractions": true,
     "animatedArtwork": true,
-    "originalLevelMusic": true
+    "originalLevelMusic": true,
+    "vulcanisLevels": 5
   }
 }
