@@ -186,8 +186,8 @@
     }
   ];
 
-  const Progress = (window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
-  const chapter = window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
+  const Progress = (window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
+  const chapter = window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
   const chapterName=chapter?.name||'Asterion', missionOffset=chapter?.offset||0;
   const previousKey=chapter?.previousKey||(window.SpacePilotVulcanis?window.SpacePilotAsterion.saveKey:null);
   const previousName=chapter?.previousName||'Asterion';
@@ -442,7 +442,7 @@
   loadImage("player", ASSETS.player);
 
   } else {
-    if(!window.SpacePilotVulcanis&&!window.SpacePilotLuminara)['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
+    if(!window.SpacePilotVulcanis&&!window.SpacePilotLuminara&&!window.SpacePilotCryon)['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
     loadImage('chapterPilot','assets/asterion/pilot.webp');
     loadImage('chapterObjects','assets/asterion/objects.webp');
     loadImage('chapterDevices','assets/asterion/devices.webp');
@@ -704,7 +704,7 @@
     $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1+missionOffset):profile.completed.every(Boolean)?(chapter?'Replay '+chapterName+' finale':'Replay Final Gate'):(chapter?'Begin '+chapterName:'Start Mission');
     const unlocked=chapterUnlocked();$('startBtn').disabled=!unlocked;
     if(!unlocked)$('startBtn').textContent='Complete '+previousName+' to unlock';
-    for(const name of ['vulcanis','luminara']){const next=$(name+'Link');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_'+name+'_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$(name+'Lock').hidden=ready;}}
+    for(const name of ['vulcanis','luminara','cryon']){const next=$(name+'Link');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_'+name+'_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$(name+'Lock').hidden=ready;}}
     $('newBtn').hidden=!profile.run&&!profile.completed.some(Boolean);
     $('saveStatus').textContent=!chapterUnlocked()?'Complete all five '+previousName+' missions on this browser to unlock '+chapterName+'. Browser storage must be available to carry completion between chapters.':!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
     $('missionList').replaceChildren();
@@ -860,7 +860,7 @@
       PLAYER.dir = 1;
     }
     if (!left && !right) {
-      PLAYER.vx *= Math.pow(0.0009, dt);
+      PLAYER.vx *= Math.pow(chapter?.groundDrag?.(w,PLAYER)??0.0009, dt);
     }
 
     if (shootHeld) shoot();
@@ -1097,7 +1097,7 @@
       }
     }
 
-    if(chapter){const interaction=chapter.interact(w,PLAYER,useHeld,dt,state.time);state.interactionHint=interaction.blocked||(w.enemies.some(e=>e.alive&&e.shielded)?'Guardian shield: ground all prism anchors':'');if(interaction.completed){state.score+=400;dirty=true;audio.power();addParticle(interaction.completed.x,interaction.completed.y,'#64ffb8',14);toast(interaction.completed.label+' secured');persist();}}
+    if(chapter){const interaction=chapter.interact(w,PLAYER,useHeld,dt,state.time);state.interactionHint=interaction.blocked||(w.enemies.some(e=>e.alive&&e.shielded)?(chapter.shieldHint||'Guardian shield: ground all prism anchors'):'');if(interaction.completed){state.score+=400;dirty=true;audio.power();addParticle(interaction.completed.x,interaction.completed.y,'#64ffb8',14);toast(interaction.completed.label+' secured');persist();}}
     // Portal.
     w.portal.open = (!chapter||chapter.ready(w)) && state.cores >= w.spec.cores && (!w.spec.boss || w.enemies.every((e) => e.type !== "boss" || !e.alive));
     if (rectsOverlap(playerRect(), { x: w.portal.x, y: w.portal.y, w: w.portal.w, h: w.portal.h })) {

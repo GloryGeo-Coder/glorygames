@@ -55,7 +55,7 @@ export function mountGameTab(win = globalThis.window) {
   const match = win.location.pathname.match(/^\/games\/([a-z0-9-]+)\/(?:index\.html)?$/);
   const originalPhysics = win.location.pathname === '/games/physics-force-lab/original-labs.html';
   const originalScience = win.location.pathname === '/games/science-lab-dash/original-dash.html';
-  const originalPilot = ['/games/space-pilot-platformer/original-route.html','/games/space-pilot-platformer/vulcanis.html','/games/space-pilot-platformer/luminara.html'].includes(win.location.pathname);
+  const originalPilot = ['/games/space-pilot-platformer/original-route.html','/games/space-pilot-platformer/vulcanis.html','/games/space-pilot-platformer/luminara.html','/games/space-pilot-platformer/cryon.html'].includes(win.location.pathname);
   const slug = originalPhysics ? 'physics-force-lab' : originalScience ? 'science-lab-dash' : originalPilot ? 'space-pilot-platformer' : match?.[1], startId = GAME_START_BUTTONS[slug];
   if (!startId) return;
   const doc = win.document;

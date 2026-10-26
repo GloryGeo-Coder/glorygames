@@ -36,7 +36,10 @@ jobs:
       - run: node --check apps/web/public/games/space-pilot-platformer/luminara.js
       - run: node --check apps/web/public/games/space-pilot-platformer/luminara-art.js
       - run: node --check apps/web/public/games/space-pilot-platformer/luminara-audio.js
-      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs
+      - run: node --check apps/web/public/games/space-pilot-platformer/cryon.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/cryon-art.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/cryon-audio.js
+      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs apps/web/scripts/space-pilot-cryon.test.cjs
   pilot-browser:
     needs: space-pilot
     runs-on: ubuntu-latest
@@ -75,6 +78,15 @@ jobs:
         with:
           name: luminara-browser-screenshots
           path: ${{ runner.temp }}/luminara-screenshots
+          if-no-files-found: ignore
+      - name: Cryon traction, frost machinery, Mothership and mobile progression
+        run: PILOT_SCREENSHOTS="$RUNNER_TEMP/cryon-screenshots" node apps/web/scripts/space-pilot-cryon-browser.cjs
+      - name: Upload Cryon review screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cryon-browser-screenshots
+          path: ${{ runner.temp }}/cryon-screenshots
           if-no-files-found: ignore
       - name: Next.js production build
         run: npm run build --prefix apps/web
