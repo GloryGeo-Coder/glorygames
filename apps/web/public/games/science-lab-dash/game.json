@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "Educational",
-  "description": "Restore Nova Science Academy through 35 untimed adventure missions and 105 investigations covering selected Grades 4\u201310 chemistry topics. Predict, compare and explain evidence with animated characters, saved checkpoints, an element guide and separate audio controls. The original 20-mission science dash remains available.",
+  "description": "Restore Nova Science Academy through 35 untimed adventure missions and 105 investigations covering selected Grades 4–10 chemistry topics. Predict, compare and explain evidence with animated characters, saved checkpoints, an element guide and separate audio controls. The original 20-mission science dash remains available.",
   "tags": [
     "education",
     "science",
@@ -88,7 +88,9 @@
     "savedCheckpoints": true,
     "fieldNotebook": true,
     "separateAudioVolumes": true,
-    "elementReference": true
+    "elementReference": true,
+    "originalDashAnimatedSprites": true,
+    "originalDashMusicTracks": 20
   },
-  "version": "3.6.0"
+  "version": "3.7.0"
 }
