@@ -26,6 +26,7 @@
           <button id="newBtn" class="secondary" hidden>New expedition</button>
         </div>
         <p><a class="route-link" href="./original-route.html">Play the original eight missions</a></p>
+        <p><a id="vulcanisLink" class="route-link" href="./vulcanis.html" hidden>Continue to Vulcanis · Levels 6–10</a><span id="vulcanisLock">Complete Asterion to unlock Vulcanis · Levels 6–10</span></p>
         <p id="saveStatus" role="status"></p>
         <details class="mission-select"><summary>Mission route</summary><div id="missionList"></div></details>
         <div id="controlsHelp" class="help">
@@ -39,7 +40,7 @@
       <div class="panel">
         <p id="endKicker" class="kicker">Mission Report</p>
         <h2 id="endTitle">Mission Complete</h2>
-        <p id="endText">Score sent to WebGameArena.</p>
+        <p id="endText">Score sent to WebGameArena.</p><p><a class="route-link" href="./vulcanis.html">Vulcanis · Levels 6–10 (requires Asterion completion)</a></p>
         <div class="button-row">
           <button id="retryBtn">Retry Level</button>
           <button id="restartBtn" class="secondary">Restart Game</button>
@@ -95,3 +96,4 @@
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
+

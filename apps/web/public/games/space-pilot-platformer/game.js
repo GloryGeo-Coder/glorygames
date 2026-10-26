@@ -186,14 +186,17 @@
     }
   ];
 
-  const Progress = window.SpacePilotAsterion ? window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey) : window.SpacePilotProgress;
-  const chapter = window.SpacePilotAsterion || null;
+  const Progress = (window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
+  const chapter = window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
+  const chapterName=chapter?.name||'Asterion', missionOffset=chapter?.offset||0;
+  function chapterUnlocked(){return !window.SpacePilotVulcanis||profile.completed.some(Boolean)||!!Progress.restore(profile.run,chapter.createLevel(profile.current),profile.current)||window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey).load(storage,5).completed.every(Boolean);}
   const activeLevels = chapter ? chapter.levels : LEVELS;
   const buildLevel = index => chapter ? chapter.createLevel(index) : makeLevel(index);
   let storage=null;try { storage=window.localStorage; } catch {}
   let profile=Progress.load(storage,activeLevels.length);
   try{if(!storage?.getItem(Progress.KEY))profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}catch{profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
   try{if(chapter&&!storage?.getItem(Progress.KEY)&&storage?.getItem(window.SpacePilotProgress.KEY))profile.settings=window.SpacePilotProgress.load(storage,8).settings;}catch{}
+  try{if(window.SpacePilotVulcanis&&!storage?.getItem(Progress.KEY))profile.settings=window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey).load(storage,5).settings;}catch{}
   let point=null,dirty=false,saveClock=0,writeAvailable=true;
   const view={width:640,height:820,zoom:1,dpr:1,windowWidth:0,windowHeight:0};
   const held=new Map();
@@ -436,7 +439,7 @@
   loadImage("player", ASSETS.player);
 
   } else {
-    ['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
+    if(!window.SpacePilotVulcanis)['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
     loadImage('chapterPilot','assets/asterion/pilot.webp');
     loadImage('chapterObjects','assets/asterion/objects.webp');
     loadImage('chapterDevices','assets/asterion/devices.webp');
@@ -695,11 +698,14 @@
     writeAvailable=Progress.save(storage,profile);dirty=false;saveClock=0;homeStatus();
   }
   function homeStatus(){
-    $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1):profile.completed.every(Boolean)?(chapter?'Replay Asterion finale':'Replay Final Gate'):(chapter?'Begin Asterion':'Start Mission');
+    $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1+missionOffset):profile.completed.every(Boolean)?(chapter?'Replay '+chapterName+' finale':'Replay Final Gate'):(chapter?'Begin '+chapterName:'Start Mission');
+    const unlocked=chapterUnlocked();$('startBtn').disabled=!unlocked;
+    if(!unlocked)$('startBtn').textContent='Complete Asterion to unlock';
+    const next=$('vulcanisLink');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_vulcanis_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$('vulcanisLock').hidden=ready;}
     $('newBtn').hidden=!profile.run&&!profile.completed.some(Boolean);
-    $('saveStatus').textContent=!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
+    $('saveStatus').textContent=!chapterUnlocked()?'Complete all five Asterion missions on this browser to unlock Vulcanis. Browser storage must be available to carry completion between chapters.':!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
     $('missionList').replaceChildren();
-    activeLevels.forEach((level,index)=>{const button=document.createElement('button');button.textContent=(index+1)+'. '+level.name+(profile.completed[index]?' · Complete':'');button.disabled=index>profile.unlocked;button.onclick=()=>{state.level=index;startGame(false);};$('missionList').append(button);});
+    activeLevels.forEach((level,index)=>{const button=document.createElement('button');button.textContent=(index+1+missionOffset)+'. '+level.name+(profile.completed[index]?' · Complete':'');button.disabled=!unlocked||index>profile.unlocked;button.onclick=()=>{state.level=index;startGame(false);};$('missionList').append(button);});
   }
   function placeAtCheckpoint(){
     if(!point)return;
@@ -707,14 +713,16 @@
     state.world.projectiles=[];state.world.enemyShots=[];clearInput();updateCamera(true);
   }
   function startGame(fresh=true){
+    if(!chapterUnlocked())return;
     clearInput();audio.ensure();if($('menuDialog').open)$('menuDialog').close();
     if(fresh){profile={...Progress.clean(null,activeLevels.length),settings:profile.settings,best:profile.best};state.level=0;state.score=0;state.lives=3;}
     state.status='playing';state.health=100;state.shield=0;state.cores=0;state.enemiesDefeated=0;state.time=0;state.shake=0;
     state.world=buildLevel(state.level);resetPlayer(false);point=Progress.checkpoint(state.world,0,80);placeAtCheckpoint();
     ui.startOverlay.classList.add('hidden');ui.gameOverOverlay.classList.add('hidden');
-    audio.startMusic(state.level);persist();if(chapter)showBriefing();toast('Mission '+(state.level+1)+': '+activeLevels[state.level].name);updateUI();
+    audio.startMusic(state.level);persist();if(chapter)showBriefing();toast('Mission '+(state.level+1+missionOffset)+': '+activeLevels[state.level].name);updateUI();
   }
   function continueCampaign(){
+    if(!chapterUnlocked())return;
     state.level=profile.current;state.world=buildLevel(state.level);
     const saved=Progress.restore(profile.run,state.world,state.level);
     if(!saved){state.score=profile.score;state.lives=3;startGame(false);return;}
@@ -734,16 +742,16 @@
     clearInput();state.status='ended';audio.stopMusic();persist();
     if(win){profile.run=null;Progress.save(storage,profile);homeStatus();}
     postScore(true);ui.gameOverOverlay.classList.remove('hidden');
-    $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?(chapter?'Asterion Restored':'Portal Route Restored'):'Pilot Down';
+    $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?(chapter?chapterName+' Restored':'Portal Route Restored'):'Pilot Down';
     $('endText').textContent=win?'Final score: '+Math.floor(state.score)+'. '+(chapter?chapter.levels[4].report:'The eight-mission Starfall route is complete.'):'Score: '+Math.floor(state.score)+'. Retry this mission for 300 points or begin a new expedition.';
   }
   function updateUI(){
     const w=state.world;if(!w)return;
-    ui.scoreText.textContent=Math.floor(state.score);ui.levelText.textContent=(state.level+1)+'/'+activeLevels.length;ui.healthText.textContent=Math.max(0,Math.round(state.health))+'%';ui.shieldText.textContent=Math.max(0,Math.round(state.shield))+'%';
+    ui.scoreText.textContent=Math.floor(state.score);ui.levelText.textContent=(state.level+1+missionOffset)+'/'+(activeLevels.length+missionOffset);ui.healthText.textContent=Math.max(0,Math.round(state.health))+'%';ui.shieldText.textContent=Math.max(0,Math.round(state.shield))+'%';
     ui.missionTitle.textContent=w.spec.name+' · '+w.spec.zone;
     const boss=w.enemies.find(e=>e.type==='boss');ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+(boss?.alive?boss.name+' '+Math.ceil(boss.hp)+'/'+boss.maxHp:'Boss defeated · Portal ready');
-    if(chapter){const near=w.objectives.find(n=>!n.done&&Math.abs(PLAYER.x-n.x)<75&&Math.abs(PLAYER.y-n.y)<70);ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+w.objectives.filter(n=>n.done).length+'/'+w.objectives.length+' '+w.spec.objective.toLowerCase()+(boss?.alive?' · Warden '+Math.ceil(boss.hp)+'/'+boss.maxHp:'')+(near?' · Hold Fire here '+Math.floor(near.charge/.8*100)+'%':'');}
-    ui.missionMeter.style.width=Math.round(clamp(PLAYER.x/w.width,0,1)*100)+'%';ui.mentorText.textContent=w.spec.tip;
+    if(chapter){const near=w.objectives.find(n=>!n.done&&Math.abs(PLAYER.x-n.x)<75&&Math.abs(PLAYER.y-n.y)<70);ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+w.objectives.filter(n=>n.done).length+'/'+w.objectives.length+' '+w.spec.objective.toLowerCase()+(boss?.alive?' · '+boss.name+' '+Math.ceil(boss.hp)+'/'+boss.maxHp:'')+(near?' · '+(state.interactionHint||'Hold Fire here '+Math.floor(near.charge/.8*100)+'%'):'');}
+    ui.missionMeter.style.width=Math.round(clamp(PLAYER.x/w.width,0,1)*100)+'%';ui.mentorText.textContent=state.interactionHint||w.spec.tip;
   }
   function damage(amount){
     if(PLAYER.invuln>0||state.status!=='playing')return;
@@ -995,6 +1003,7 @@
     // Hazards.
     for (const h of w.hazards) {
       if (h.temporary) h.temporary -= dt;
+      if(chapter?.hazardActive&&!chapter.hazardActive(h,state.time,w))continue;
       const pulse = Math.sin(state.time * 3 + h.phase);
       if (rectsOverlap(playerRect(), { x: h.x - h.w / 2, y: h.y - h.h / 2, w: h.w, h: h.h })) {
         damage(pulse > -0.45 ? 16 : 8);
@@ -1084,7 +1093,7 @@
       }
     }
 
-    if(chapter){const interaction=chapter.interact(w,PLAYER,useHeld,dt);if(interaction.completed){state.score+=400;dirty=true;audio.power();addParticle(interaction.completed.x,interaction.completed.y,'#64ffb8',14);toast(interaction.completed.label+' secured');persist();}}
+    if(chapter){const interaction=chapter.interact(w,PLAYER,useHeld,dt);state.interactionHint=interaction.blocked||'';if(interaction.completed){state.score+=400;dirty=true;audio.power();addParticle(interaction.completed.x,interaction.completed.y,'#64ffb8',14);toast(interaction.completed.label+' secured');persist();}}
     // Portal.
     w.portal.open = (!chapter||chapter.ready(w)) && state.cores >= w.spec.cores && (!w.spec.boss || w.enemies.every((e) => e.type !== "boss" || !e.alive));
     if (rectsOverlap(playerRect(), { x: w.portal.x, y: w.portal.y, w: w.portal.w, h: w.portal.h })) {
@@ -1717,9 +1726,9 @@
   window.addEventListener('resize',resize);if(window.ResizeObserver)new ResizeObserver(resize).observe(canvas.parentElement);
   function showBriefing(){
     clearInput();audio.stopMusic();state.status='briefing';
-    const spec=activeLevels[state.level],dialog=$('storyDialog');$('storyTitle').textContent=(state.level+1)+'. '+spec.name;
+    const spec=activeLevels[state.level],dialog=$('storyDialog');$('storyTitle').textContent=(state.level+1+missionOffset)+'. '+spec.name;
     $('storyLines').replaceChildren(...spec.briefing.map(text=>{const p=document.createElement('p');p.textContent=text;return p;}));
-    $('storyTask').textContent=spec.cores+' star cores · '+spec.objective+(spec.boss?' · Defeat the Asteroid Warden':'');
+    $('storyTask').textContent=spec.cores+' star cores · '+spec.objective+(spec.boss?' · Defeat '+spec.bossName:'');
     dialog.showModal();
   }
   function launchBriefing(){if(state.status!=='briefing')return;$('storyDialog').close();state.status='playing';clearInput();audio.ensure();audio.startMusic(state.level);}
@@ -1727,3 +1736,4 @@
   state.world=buildLevel(profile.current);applySettings();resize();fullscreenState();homeStatus();updateUI();
   requestAnimationFrame(loop);
 })();
+
