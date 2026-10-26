@@ -4,10 +4,20 @@
   "category": "Adventure",
   "description": "A sci-fi platform adventure where Pilot Nova jumps across asteroid platforms, fights drones, collects star cores, and defeats a unique animated boss at the end of every level.",
   "thumbnail": "thumb.png",
-  "orientation": "landscape",
+  "orientation": "any",
   "controls": [
     "keyboard",
     "touch"
   ],
-  "version": "1.3.0"
+  "version": "1.4.0",
+  "features": {
+    "levels": 8,
+    "mobileFirst": true,
+    "savedCheckpoints": true,
+    "pauseMenu": true,
+    "fullscreen": true,
+    "adjustableTouchControls": true,
+    "separateAudioVolumes": true,
+    "optionalAimAssist": true
+  }
 }

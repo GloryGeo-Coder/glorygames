@@ -1,0 +1,53 @@
+name: Space Pilot mobile foundation
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/space-pilot-platformer/**'
+      - 'apps/web/scripts/space-pilot-*'
+      - '.github/workflows/space-pilot-foundation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/space-pilot-platformer/**'
+      - 'apps/web/scripts/space-pilot-*'
+      - '.github/workflows/space-pilot-foundation.yml'
+permissions:
+  contents: read
+concurrency:
+  group: pilot-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  space-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/space-pilot-platformer/game.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/pilot-progress.js
+      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs
+  pilot-browser:
+    needs: space-pilot
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://pilot:pilot@127.0.0.1:5432/pilot_ci
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install isolated browser tools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pilot-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/pilot-browser/node_modules/playwright" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/pilot-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium
+      - name: Thirteen viewports, touch, saves and all eight boss fixtures
+        run: node apps/web/scripts/space-pilot-foundation-browser.cjs
+      - name: Next.js production build
+        run: npm run build --prefix apps/web
+      - name: Production entry and game-page launch
+        run: node apps/web/scripts/space-pilot-built-browser.cjs

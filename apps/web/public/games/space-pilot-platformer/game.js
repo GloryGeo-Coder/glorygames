@@ -186,6 +186,13 @@
     }
   ];
 
+  const Progress = window.SpacePilotProgress;
+  let storage=null;try { storage=window.localStorage; } catch {}
+  let profile=Progress.load(storage,LEVELS.length);
+  try{if(!storage?.getItem(Progress.KEY))profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}catch{profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
+  let point=null,dirty=false,saveClock=0,writeAvailable=true;
+  const view={width:640,height:820,zoom:1,dpr:1,windowWidth:0,windowHeight:0};
+  const held=new Map();
   const WORLD_H = 820;
   const PLAYER = {
     x: 80,
@@ -197,6 +204,7 @@
     dir: 1,
     onGround: false,
     jumps: 0,
+    jumpBuffer: 0,
     maxJumps: 2,
     shootCd: 0,
     dashCd: 0,
@@ -207,8 +215,8 @@
 
   const state = {
     status: "menu",
-    level: 0,
-    score: 0,
+    level: profile.current,
+    score: profile.score,
     health: 100,
     shield: 0,
     lives: 3,
@@ -241,8 +249,8 @@
           this.ctx = new (window.AudioContext || window.webkitAudioContext)();
           this.sfxGain = this.ctx.createGain();
           this.musicGain = this.ctx.createGain();
-          this.sfxGain.gain.value = 0.75;
-          this.musicGain.gain.value = 0.16;
+          this.sfxGain.gain.value = profile.settings.effects;
+          this.musicGain.gain.value = profile.settings.music;
           this.sfxGain.connect(this.ctx.destination);
           this.musicGain.connect(this.ctx.destination);
         }
@@ -268,7 +276,7 @@
       this.tone(freq, dur, type, gain, this.sfxGain);
     },
     startMusic(levelIndex = 0) {
-      if (this.muted) return;
+      if (this.muted || profile.settings.music===0) return;
       this.ensure();
       if (!this.ctx || this.muted) return;
       if (this.currentMusicLevel === levelIndex && this.music) return;
@@ -453,15 +461,22 @@
   }
 
   function resize() {
-    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-    const w = Math.max(320, window.innerWidth);
-    const h = Math.max(420, window.innerHeight);
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.imageSmoothingEnabled = true;
+    const viewportChanged=view.windowWidth!==window.innerWidth||view.windowHeight!==window.innerHeight;view.windowWidth=window.innerWidth;view.windowHeight=window.innerHeight;
+    const box=canvas.parentElement.getBoundingClientRect(),dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+    const width=Math.max(1,box.width),height=Math.max(1,box.height);
+    view.zoom=Math.min(1,width/640,height/360);view.width=width/view.zoom;view.height=height/view.zoom;view.dpr=dpr;
+    canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);
+    canvas.style.width='100%';canvas.style.height='100%';
+    ctx.setTransform(dpr*view.zoom,0,0,dpr*view.zoom,0,0);ctx.imageSmoothingEnabled=true;
+    if(state.world)updateCamera(true);
+    if(window.__wgaGameTab?.fullscreen){window.__wgaGameTab.fullscreen.dispose();window.__wgaGameTab.fullscreen=null;}
+    if(viewportChanged)clearInput();
+  }
+  function updateCamera(snap=false,dt=.033){
+    const w=state.world;if(!w)return;
+    const x=clamp(PLAYER.x-view.width*.35,0,Math.max(0,w.width-view.width));
+    const y=view.height>=WORLD_H?WORLD_H-view.height:clamp(PLAYER.y-view.height*.56,0,WORLD_H-view.height);
+    state.cameraX+=(x-state.cameraX)*(snap?1:Math.min(1,dt*7));state.cameraY+=(y-state.cameraY)*(snap?1:Math.min(1,dt*7));
   }
 
   function makeLevel(index) {
@@ -659,105 +674,72 @@
     }
   }
 
-  function startGame(fresh = true) {
-    audio.ensure();
-    if (fresh) {
-      state.level = 0;
-      state.score = 0;
-      state.lives = 3;
-    }
-    audio.startMusic(state.level);
-    state.status = "playing";
-    state.health = 100;
-    state.shield = 0;
-    state.cores = 0;
-    state.enemiesDefeated = 0;
-    state.time = 0;
-    state.shake = 0;
-    state.world = makeLevel(state.level);
-    resetPlayer(false);
-    ui.startOverlay.classList.add("hidden");
-    ui.gameOverOverlay.classList.add("hidden");
-    toast(`Mission ${state.level + 1}: ${LEVELS[state.level].name}`);
-    updateUI();
+  function persist(){
+    profile.current=state.level;profile.score=Math.floor(state.score);profile.best=Math.max(profile.best,Math.floor(state.score));
+    if(state.world&&point)profile.run=Progress.snapshot(state,point);
+    writeAvailable=Progress.save(storage,profile);dirty=false;saveClock=0;homeStatus();
   }
-
-  function retryLevel() {
-    state.score = Math.max(0, state.score - 300);
-    startGame(false);
+  function homeStatus(){
+    $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1):profile.completed.every(Boolean)?'Replay Final Gate':'Start Mission';
+    $('newBtn').hidden=!profile.run&&!profile.completed.some(Boolean);
+    $('saveStatus').textContent=!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
+    $('missionList').replaceChildren();
+    LEVELS.forEach((level,index)=>{const button=document.createElement('button');button.textContent=(index+1)+'. '+level.name+(profile.completed[index]?' · Complete':'');button.disabled=index>profile.unlocked;button.onclick=()=>{state.level=index;startGame(false);};$('missionList').append(button);});
   }
-
-  function nextLevel() {
-    postScore(false);
-    state.score += 1200 + state.level * 260 + state.lives * 150;
-    if (state.level >= LEVELS.length - 1) {
-      endGame(true);
-      return;
-    }
-    state.level += 1;
-    startGame(false);
+  function placeAtCheckpoint(){
+    if(!point)return;
+    PLAYER.x=point.x;PLAYER.y=point.y;PLAYER.checkpointX=point.x;PLAYER.checkpointY=point.y;PLAYER.vx=PLAYER.vy=0;PLAYER.jumps=0;PLAYER.jumpBuffer=0;PLAYER.onGround=true;PLAYER.invuln=1.5;
+    state.world.projectiles=[];state.world.enemyShots=[];clearInput();updateCamera(true);
   }
-
-  function endGame(win) {
-    state.status = "ended";
-    audio.stopMusic();
-    postScore(true);
-    ui.gameOverOverlay.classList.remove("hidden");
-    $("endKicker").textContent = win ? "Odyssey Report" : "Mission Failed";
-    $("endTitle").textContent = win ? "Portal Route Restored" : "Pilot Down";
-    $("endText").textContent = win
-      ? `Final score: ${Math.floor(state.score)}. Space Pilot Platformer is complete.`
-      : `Score: ${Math.floor(state.score)}. Retry the level or restart the campaign.`;
+  function startGame(fresh=true){
+    clearInput();audio.ensure();if($('menuDialog').open)$('menuDialog').close();
+    if(fresh){profile={...Progress.clean(null,LEVELS.length),settings:profile.settings,best:profile.best};state.level=0;state.score=0;state.lives=3;}
+    state.status='playing';state.health=100;state.shield=0;state.cores=0;state.enemiesDefeated=0;state.time=0;state.shake=0;
+    state.world=makeLevel(state.level);resetPlayer(false);point=Progress.checkpoint(state.world,0,80);placeAtCheckpoint();
+    ui.startOverlay.classList.add('hidden');ui.gameOverOverlay.classList.add('hidden');
+    audio.startMusic(state.level);persist();toast('Mission '+(state.level+1)+': '+LEVELS[state.level].name);updateUI();
   }
-
-  function updateUI() {
-    const w = state.world;
-    if (!w) return;
-    const progress = clamp(PLAYER.x / Math.max(1, w.width), 0, 1);
-    ui.scoreText.textContent = String(Math.floor(state.score));
-    ui.levelText.textContent = `${state.level + 1}/${LEVELS.length}`;
-    ui.healthText.textContent = `${Math.max(0, Math.round(state.health))}%`;
-    ui.shieldText.textContent = `${Math.max(0, Math.round(state.shield))}%`;
-    ui.missionTitle.textContent = `${w.spec.name} — ${w.spec.zone}`;
-    const defeatedDrones = w.enemies.filter((e) => e.type !== "boss" && !e.alive).length;
-    const boss = w.enemies.find((e) => e.type === "boss");
-    const bossText = boss ? (boss.alive ? `${boss.name || "Boss"} HP ${Math.max(0, Math.ceil(boss.hp))}/${boss.maxHp}` : `${boss.name || "Boss"} defeated`) : "portal route";
-    ui.missionText.textContent =
-      `${state.cores}/${w.spec.cores} cores • ${defeatedDrones}/${w.spec.enemies} drones • ${bossText}`;
-    ui.missionMeter.style.width = `${Math.round(progress * 100)}%`;
-    ui.mentorText.textContent = w.spec.tip;
+  function continueCampaign(){
+    state.level=profile.current;state.world=makeLevel(state.level);
+    const saved=Progress.restore(profile.run,state.world,state.level);
+    if(!saved){state.score=profile.score;state.lives=3;startGame(false);return;}
+    Object.assign(state,{score:saved.score,time:saved.time,health:saved.health,shield:saved.shield,lives:saved.lives,cores:saved.cores,enemiesDefeated:saved.enemiesDefeated});
+    point=saved.point;resetPlayer(false);placeAtCheckpoint();state.status='playing';
+    ui.startOverlay.classList.add('hidden');ui.gameOverOverlay.classList.add('hidden');
+    audio.ensure();if(saved.failed){endGame(false);return;}audio.startMusic(state.level);updateUI();toast('Checkpoint restored');
   }
-
-  function damage(amount) {
-    if (PLAYER.invuln > 0 || state.status !== "playing") return;
-    if (state.shield > 0) {
-      const blocked = Math.min(state.shield, amount * 1.3);
-      state.shield -= blocked;
-      amount = Math.max(0, amount - blocked * 0.65);
-    }
-    state.health -= amount;
-    PLAYER.invuln = 0.75;
-    state.shake = 0.28;
-    audio.hurt();
-    if (state.health <= 0) {
-      state.lives -= 1;
-      if (state.lives <= 0) {
-        endGame(false);
-      } else {
-        state.health = 100;
-        state.shield = 20;
-        PLAYER.x = PLAYER.checkpointX;
-        PLAYER.y = PLAYER.checkpointY;
-        PLAYER.vx = 0;
-        PLAYER.vy = 0;
-        toast(`Suit rebooted. Lives left: ${state.lives}`);
-      }
-    }
+  function retryLevel(){state.score=Math.max(0,state.score-300);state.lives=3;startGame(false);}
+  function nextLevel(){
+    profile.completed[state.level]=true;profile.unlocked=Math.min(LEVELS.length-1,Math.max(profile.unlocked,state.level+1));
+    state.score+=1200+state.level*260+state.lives*150;postScore(false);
+    if(state.level>=LEVELS.length-1){endGame(true);return;}
+    state.level++;startGame(false);
+  }
+  function endGame(win){
+    clearInput();state.status='ended';audio.stopMusic();persist();
+    if(win){profile.run=null;Progress.save(storage,profile);homeStatus();}
+    postScore(true);ui.gameOverOverlay.classList.remove('hidden');
+    $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?'Portal Route Restored':'Pilot Down';
+    $('endText').textContent=win?'Final score: '+Math.floor(state.score)+'. The eight-mission Starfall route is complete.':'Score: '+Math.floor(state.score)+'. Retry this mission for 300 points or begin a new expedition.';
+  }
+  function updateUI(){
+    const w=state.world;if(!w)return;
+    ui.scoreText.textContent=Math.floor(state.score);ui.levelText.textContent=(state.level+1)+'/'+LEVELS.length;ui.healthText.textContent=Math.max(0,Math.round(state.health))+'%';ui.shieldText.textContent=Math.max(0,Math.round(state.shield))+'%';
+    ui.missionTitle.textContent=w.spec.name+' · '+w.spec.zone;
+    const boss=w.enemies.find(e=>e.type==='boss');ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+(boss?.alive?boss.name+' '+Math.ceil(boss.hp)+'/'+boss.maxHp:'Boss defeated · Portal ready');
+    ui.missionMeter.style.width=Math.round(clamp(PLAYER.x/w.width,0,1)*100)+'%';ui.mentorText.textContent=w.spec.tip;
+  }
+  function damage(amount){
+    if(PLAYER.invuln>0||state.status!=='playing')return;
+    if(state.shield>0){const blocked=Math.min(state.shield,amount*1.3);state.shield-=blocked;amount=Math.max(0,amount-blocked*.65);}
+    state.health-=amount;PLAYER.invuln=.75;state.shake=.28;audio.hurt();
+    if(state.health<=0){state.lives--;if(state.lives<=0){endGame(false);return;}state.health=100;state.shield=20;placeAtCheckpoint();toast('Suit rebooted. Lives left: '+state.lives);}
+    persist();
   }
 
   function addParticle(x, y, color, count = 10) {
     const w = state.world;
-    for (let i = 0; i < count; i += 1) {
+    for (let i = 0; i < (profile.settings.reducedMotion?Math.min(3,count):count); i += 1) {
       w.particles.push({
         x, y,
         vx: (Math.random() - 0.5) * 260,
@@ -780,11 +762,13 @@
   function shoot() {
     if (PLAYER.shootCd > 0 || state.status !== "playing") return;
     const w = state.world;
+    let vx=PLAYER.dir*680,vy=-20;
+    if(profile.settings.aimAssist){const target=w.enemies.filter(e=>e.alive&&(e.x-PLAYER.x)*PLAYER.dir>25&&Math.abs(e.x-PLAYER.x)<520&&Math.abs(e.y-PLAYER.y)<220).sort((a,b)=>Math.hypot(a.x-PLAYER.x,a.y-PLAYER.y)-Math.hypot(b.x-PLAYER.x,b.y-PLAYER.y))[0];if(target){const dx=target.x-PLAYER.x,dy=target.y-PLAYER.y;if(Math.abs(dy/dx)<.6){const length=Math.hypot(dx,dy);vx=dx/length*680;vy=dy/length*680;}}}
     w.projectiles.push({
       x: PLAYER.x + PLAYER.dir * 24,
       y: PLAYER.y - 7,
-      vx: PLAYER.dir * 680,
-      vy: -20,
+      vx,
+      vy,
       r: 5,
       life: 1.2,
       power: 1
@@ -795,7 +779,13 @@
 
   function jump() {
     if (state.status !== "playing") return;
+    PLAYER.jumpBuffer=.14;
+    tryJump();
+  }
+  function tryJump(){
+    if(PLAYER.jumpBuffer<=0)return;
     if (PLAYER.onGround || PLAYER.jumps < PLAYER.maxJumps) {
+      PLAYER.jumpBuffer=0;
       PLAYER.vy = PLAYER.jumps === 0 ? -640 : -560;
       PLAYER.onGround = false;
       PLAYER.jumps += 1;
@@ -819,6 +809,7 @@
     const w = state.world;
     const index = state.level;
     state.time += dt;
+    PLAYER.jumpBuffer=Math.max(0,PLAYER.jumpBuffer-dt);
     PLAYER.shootCd = Math.max(0, PLAYER.shootCd - dt);
     PLAYER.dashCd = Math.max(0, PLAYER.dashCd - dt);
     PLAYER.invuln = Math.max(0, PLAYER.invuln - dt);
@@ -888,6 +879,11 @@
         PLAYER.jumps = 0;
         if (p.type === "moving") PLAYER.x += (p.x - (p.prevX || p.x));
         if (p.type === "ice") PLAYER.vx *= 1.01;
+        if(p.type!=='moving'&&PLAYER.x>PLAYER.checkpointX+520){
+          const candidate=Progress.checkpoint(w,w.platforms.indexOf(p),PLAYER.x-p.x);
+          const safe=candidate&&!w.hazards.some(h=>Math.abs(h.x-candidate.x)<85&&Math.abs(h.y-candidate.y)<85);
+          if(safe){point=candidate;PLAYER.checkpointX=point.x;PLAYER.checkpointY=point.y;dirty=true;toast('Checkpoint reached');}
+        }
         pr = playerRect();
       } else if (PLAYER.vy < 0 && wasBelow) {
         PLAYER.y = p.y + p.h + PLAYER.h / 2;
@@ -896,18 +892,14 @@
       }
     }
 
+    tryJump();
+
     if (PLAYER.y > WORLD_H + 180) {
       damage(35);
       PLAYER.x = PLAYER.checkpointX;
       PLAYER.y = PLAYER.checkpointY;
       PLAYER.vx = 0;
       PLAYER.vy = 0;
-    }
-
-    // Checkpoints.
-    if (PLAYER.x > PLAYER.checkpointX + 520) {
-      PLAYER.checkpointX = PLAYER.x;
-      PLAYER.checkpointY = Math.min(PLAYER.y, 520);
     }
 
     // Enemies.
@@ -927,7 +919,8 @@
       e.frame = (e.frame + dt * 7) % 4;
       e.shoot -= dt;
       const near = Math.abs(e.x - PLAYER.x) < (e.type === "boss" ? 900 : 520) && Math.abs(e.y - PLAYER.y) < 260;
-      if (near && e.shoot <= 0) {
+      const visible=e.x>=state.cameraX-e.w/2&&e.x<=state.cameraX+view.width+e.w/2&&e.y>=state.cameraY-e.h/2&&e.y<=state.cameraY+view.height+e.h/2;
+      if (near && visible && e.shoot <= 0) {
         const dx = PLAYER.x - e.x;
         const dy = PLAYER.y - e.y;
         const len = Math.hypot(dx, dy) || 1;
@@ -980,6 +973,7 @@
       }
     }
 
+    if(state.status!=='playing')return;
     // Hazards.
     for (const h of w.hazards) {
       if (h.temporary) h.temporary -= dt;
@@ -991,6 +985,7 @@
 
     w.hazards = w.hazards.filter((h) => !h.temporary || h.temporary > 0);
 
+    if(state.status!=='playing')return;
     // Projectiles.
     for (const s of w.projectiles) {
       s.x += s.vx * dt;
@@ -1005,6 +1000,7 @@
           if (e.type === "boss") e.hitFlash = 0.22;
           addParticle(s.x, s.y, e.type === "boss" ? (e.bossColor || "#ff2fd6") : "#ff784a", 8);
           if (e.hp <= 0) {
+            dirty=true;
             e.alive = false;
             state.enemiesDefeated += 1;
             state.score += e.type === "boss" ? 3000 + index * 550 : 240;
@@ -1033,12 +1029,14 @@
     w.projectiles = w.projectiles.filter((s) => !s.dead && s.life > 0 && s.x > -100 && s.x < w.width + 100);
     w.enemyShots = w.enemyShots.filter((s) => !s.dead && s.life > 0);
 
+    if(state.status!=='playing')return;
     // Collectibles.
     for (const c of w.cores) {
       if (c.taken) continue;
       const dx = PLAYER.x - c.x;
       const dy = PLAYER.y - c.y;
       if (dx * dx + dy * dy < 42 * 42) {
+        dirty=true;
         c.taken = true;
         state.cores += 1;
         state.score += 120;
@@ -1052,6 +1050,7 @@
       const dx = PLAYER.x - p.x;
       const dy = PLAYER.y - p.y;
       if (dx * dx + dy * dy < 46 * 46) {
+        dirty=true;
         p.taken = true;
         if (p.type === "shield") {
           state.shield = Math.min(100, state.shield + 45);
@@ -1094,13 +1093,8 @@
     }
     w.particles = w.particles.filter((p) => p.life > 0);
 
-    // Camera.
-    const sw = canvas.clientWidth || window.innerWidth;
-    const sh = canvas.clientHeight || window.innerHeight;
-    const targetX = clamp(PLAYER.x - sw * 0.38, 0, Math.max(0, w.width - sw));
-    const targetY = clamp(PLAYER.y - sh * 0.56, 0, Math.max(0, WORLD_H - sh));
-    state.cameraX += (targetX - state.cameraX) * Math.min(1, dt * 4.8);
-    state.cameraY += (targetY - state.cameraY) * Math.min(1, dt * 4.8);
+    updateCamera(false,dt);
+    saveClock+=dt;if(saveClock>=1&&(dirty||saveClock>=5))persist();
 
     updateUI();
     postScore(false);
@@ -1182,13 +1176,13 @@
     ctx.fillStyle = "rgba(255,255,255,.72)";
     ctx.font = "700 10px system-ui";
     ctx.textAlign = "center";
-    ctx.fillText("BOSS SPRITE LOADING", 0, 68);
+    ctx.fillText(e.name || "Guardian", 0, 68);
     ctx.restore();
   }
 
   function drawBackground() {
-    const sw = canvas.clientWidth || window.innerWidth;
-    const sh = canvas.clientHeight || window.innerHeight;
+    const sw = view.width;
+    const sh = view.height;
     const w = state.world;
     const bg = w ? images[`bg${w.spec.bg}`] : images.bg0;
 
@@ -1209,7 +1203,7 @@
     ctx.globalAlpha = 0.95;
     for (const planet of w.planets) {
       const px = planet.x - state.cameraX * planet.layer;
-      const py = planet.y - state.cameraY * planet.layer * 0.4 + Math.sin(state.time * 0.2 + planet.x) * 10;
+      const py = planet.y - state.cameraY * planet.layer * 0.4 + Math.sin((profile.settings.reducedMotion?0:state.time) * 0.2 + planet.x) * 10;
       if (px < -200 || px > sw + 200) continue;
       const grad = ctx.createRadialGradient(px - planet.r * 0.25, py - planet.r * 0.25, planet.r * 0.1, px, py, planet.r);
       grad.addColorStop(0, "#ffffff");
@@ -1224,7 +1218,7 @@
 
     for (const s of w.stars) {
       const px = (s.x - state.cameraX * s.layer) % (sw + 120);
-      const py = (s.y - state.cameraY * s.layer * 0.6 + state.time * (20 + s.layer * 40)) % (sh + 80);
+      const py = (s.y - state.cameraY * s.layer * 0.6 + (profile.settings.reducedMotion?0:state.time) * (20 + s.layer * 40)) % (sh + 80);
       ctx.globalAlpha = 0.38 + s.layer * 0.7;
       ctx.fillStyle = s.layer > 0.45 ? "#ffffff" : "#8feaff";
       ctx.beginPath();
@@ -1238,7 +1232,7 @@
     ctx.strokeStyle = "rgba(120,220,255,.20)";
     ctx.lineWidth = 1;
     for (let i = 0; i < 26; i += 1) {
-      const y = (i * 73 + state.time * 180) % (sh + 120) - 60;
+      const y = (i * 73 + (profile.settings.reducedMotion?0:state.time) * 180) % (sh + 120) - 60;
       const x = (i * 137 + state.cameraX * 0.11) % (sw + 160) - 80;
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -1249,8 +1243,8 @@
   }
 
   function worldToScreen(x, y) {
-    const shakeX = state.shake > 0 ? (Math.random() - 0.5) * state.shake * 16 : 0;
-    const shakeY = state.shake > 0 ? (Math.random() - 0.5) * state.shake * 12 : 0;
+    const shakeX = state.shake > 0 && !profile.settings.reducedMotion ? (Math.random() - 0.5) * state.shake * 16 : 0;
+    const shakeY = state.shake > 0 && !profile.settings.reducedMotion ? (Math.random() - 0.5) * state.shake * 12 : 0;
     return { x: x - state.cameraX + shakeX, y: y - state.cameraY + shakeY };
   }
 
@@ -1270,7 +1264,7 @@
 
   function drawPlatform(p) {
     const s = worldToScreen(p.x, p.y);
-    if (s.x > canvas.clientWidth + 200 || s.x + p.w < -200 || s.y > canvas.clientHeight + 120 || s.y + p.h < -120) return;
+    if (s.x > view.width + 200 || s.x + p.w < -200 || s.y > view.height + 120 || s.y + p.h < -120) return;
 
     const top = p.type === "ice" ? "#8feaff" : p.type === "moving" ? "#ffd44a" : "#6f7fa2";
     ctx.save();
@@ -1295,7 +1289,7 @@
   function drawPilot() {
     const s = worldToScreen(PLAYER.x, PLAYER.y);
     const moving = PLAYER.onGround && Math.abs(PLAYER.vx) > 35;
-    const blink = PLAYER.invuln > 0 && Math.floor(state.time * 18) % 2 === 0;
+    const blink = PLAYER.invuln > 0 && Math.floor((profile.settings.reducedMotion?0:state.time) * 18) % 2 === 0;
     if (blink) return;
 
     let animRow = PILOT_SPRITE.idle;
@@ -1311,8 +1305,8 @@
       animSpeed = 14;
     }
 
-    const frame = animRow * PILOT_SPRITE.cols + Math.floor(state.time * animSpeed) % PILOT_SPRITE.cols;
-    const bob = animRow === PILOT_SPRITE.idle ? Math.sin(state.time * 4) * 2 : 0;
+    const frame = animRow * PILOT_SPRITE.cols + Math.floor((profile.settings.reducedMotion?0:state.time) * animSpeed) % PILOT_SPRITE.cols;
+    const bob = animRow === PILOT_SPRITE.idle ? Math.sin((profile.settings.reducedMotion?0:state.time) * 4) * 2 : 0;
     const drawW = moving ? 86 : 82;
     const drawH = 96;
 
@@ -1321,7 +1315,7 @@
       ctx.save();
       const fx = s.x - PLAYER.dir * 30;
       const fy = s.y + 12 + bob;
-      const flame = 24 + Math.sin(state.time * 40) * 5;
+      const flame = 24 + Math.sin((profile.settings.reducedMotion?0:state.time) * 40) * 5;
       ctx.translate(fx, fy);
       ctx.scale(PLAYER.dir, 1);
       ctx.shadowColor = "#36dfff";
@@ -1367,7 +1361,7 @@
 
     if (state.shield > 0) {
       ctx.save();
-      ctx.globalAlpha = 0.36 + Math.sin(state.time * 8) * 0.08;
+      ctx.globalAlpha = 0.36 + Math.sin((profile.settings.reducedMotion?0:state.time) * 8) * 0.08;
       ctx.strokeStyle = "#64ffb8";
       ctx.shadowColor = "#64ffb8";
       ctx.shadowBlur = 18;
@@ -1380,7 +1374,7 @@
   }
 
   function drawProceduralPilot(s, moving, bob) {
-    const walk = Math.sin(state.time * 16) * (moving ? 1 : 0);
+    const walk = Math.sin((profile.settings.reducedMotion?0:state.time) * 16) * (moving ? 1 : 0);
     ctx.save();
     ctx.translate(s.x, s.y + bob);
     ctx.scale(PLAYER.dir, 1);
@@ -1436,7 +1430,7 @@
   function drawEnemy(e) {
     if (!e.alive) return;
     const s = worldToScreen(e.x, e.y);
-    if (s.x < -220 || s.x > canvas.clientWidth + 220 || s.y < -160 || s.y > canvas.clientHeight + 160) return;
+    if (s.x < -220 || s.x > view.width + 220 || s.y < -160 || s.y > view.height + 160) return;
 
     ctx.save();
     ctx.translate(s.x, s.y);
@@ -1449,8 +1443,8 @@
       const enraged = e.hp < e.maxHp * 0.42;
       const bossFrame = (e.hitFlash || enraged)
         ? BOSS_SPRITE.damaged
-        : (e.attackAnim > 0 ? BOSS_SPRITE.attack : (Math.sin(state.time * 2.6 + e.phase) > 0.72 ? BOSS_SPRITE.shield : BOSS_SPRITE.idle));
-      const pulse = 1 + Math.sin(state.time * 5 + e.phase) * 0.025;
+        : (e.attackAnim > 0 ? BOSS_SPRITE.attack : (Math.sin((profile.settings.reducedMotion?0:state.time) * 2.6 + e.phase) > 0.72 ? BOSS_SPRITE.shield : BOSS_SPRITE.idle));
+      const pulse = 1 + Math.sin((profile.settings.reducedMotion?0:state.time) * 5 + e.phase) * 0.025;
 
       if (bossImg) {
         drawSpriteSheet(
@@ -1498,10 +1492,10 @@
 
   function drawCore(c) {
     if (c.taken) return;
-    const s = worldToScreen(c.x, c.y + Math.sin(state.time * 3 + c.phase) * 8);
+    const s = worldToScreen(c.x, c.y + Math.sin((profile.settings.reducedMotion?0:state.time) * 3 + c.phase) * 8);
     ctx.save();
     ctx.translate(s.x, s.y);
-    ctx.rotate(state.time * 1.8 + c.phase);
+    ctx.rotate((profile.settings.reducedMotion?0:state.time) * 1.8 + c.phase);
     ctx.shadowColor = "#ffd44a";
     ctx.shadowBlur = 22;
     if (!drawSpriteSheet(images.core, 0, 0, 0, 38, 38)) {
@@ -1519,7 +1513,7 @@
 
   function drawPickup(p) {
     if (p.taken) return;
-    const s = worldToScreen(p.x, p.y + Math.sin(state.time * 3 + p.phase) * 8);
+    const s = worldToScreen(p.x, p.y + Math.sin((profile.settings.reducedMotion?0:state.time) * 3 + p.phase) * 8);
     ctx.save();
     ctx.shadowColor = p.type === "shield" ? "#64ffb8" : "#36dfff";
     ctx.shadowBlur = 20;
@@ -1565,7 +1559,7 @@
     ctx.lineWidth = 6;
     for (let i = 0; i < 3; i += 1) {
       ctx.save();
-      ctx.rotate(state.time * (0.8 + i * 0.25));
+      ctx.rotate((profile.settings.reducedMotion?0:state.time) * (0.8 + i * 0.25));
       ctx.beginPath();
       ctx.ellipse(0, 0, 36 + i * 9, 58 + i * 7, 0, 0, Math.PI * 2);
       ctx.stroke();
@@ -1591,14 +1585,15 @@
   }
 
   function draw() {
-    const sw = canvas.clientWidth || window.innerWidth;
-    const sh = canvas.clientHeight || window.innerHeight;
+    const sw = view.width;
+    const sh = view.height;
     ctx.clearRect(0, 0, sw, sh);
     drawBackground();
 
     const w = state.world;
     if (w) {
       w.platforms.forEach(drawPlatform);
+      if(point){const at=worldToScreen(point.x,point.y+29);ctx.save();ctx.strokeStyle='#8bffe0';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(at.x,at.y-3,28,6,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
       w.hazards.forEach(drawHazard);
       w.cores.forEach(drawCore);
       w.pickups.forEach(drawPickup);
@@ -1640,59 +1635,53 @@
     requestAnimationFrame(loop);
   }
 
-  function bindButton(btn, onDown, onUp) {
-    if (!btn) return;
-    const down = (e) => {
-      e.preventDefault();
-      audio.ensure();
-      onDown();
-    };
-    const up = (e) => {
-      if (e) e.preventDefault();
-      onUp();
-    };
-    btn.addEventListener("pointerdown", down);
-    btn.addEventListener("pointerup", up);
-    btn.addEventListener("pointercancel", up);
-    btn.addEventListener("pointerleave", up);
+  function clearInput(){
+    state.keys=Object.create(null);for(const key of Object.keys(state.touch))state.touch[key]=false;
+    for(const [id,item]of held){try{item.button.releasePointerCapture(id);}catch{}}held.clear();
+    document.querySelectorAll('[data-held]').forEach(b=>delete b.dataset.held);
   }
-
-  document.addEventListener("keydown", (e) => {
-    state.keys[e.code] = true;
-    audio.ensure();
-    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space", "KeyA", "KeyD", "KeyW", "KeyJ", "KeyK", "ShiftLeft", "ShiftRight"].includes(e.code)) {
-      e.preventDefault();
-    }
-    if (e.code === "Space" || e.code === "KeyW" || e.code === "ArrowUp") {
-      if (!e.repeat) jump();
-    }
-  });
-
-  document.addEventListener("keyup", (e) => {
-    state.keys[e.code] = false;
-  });
-
-  document.querySelectorAll("[data-dir]").forEach((btn) => {
-    const dir = btn.dataset.dir;
-    bindButton(
-      btn,
-      () => { state.touch[dir] = true; },
-      () => { state.touch[dir] = false; }
-    );
-  });
-
-  bindButton(ui.jumpBtn, () => { state.touch.jump = true; jump(); }, () => { state.touch.jump = false; });
-  bindButton(ui.shootBtn, () => { state.touch.shoot = true; }, () => { state.touch.shoot = false; });
-  bindButton(ui.dashBtn, () => { state.touch.dash = true; dash(); }, () => { state.touch.dash = false; });
-
-  ui.startBtn.addEventListener("click", () => startGame(true));
-  ui.retryBtn.addEventListener("click", retryLevel);
-  ui.restartBtn.addEventListener("click", () => startGame(true));
-  ui.howBtn.addEventListener("click", () => ui.help.classList.toggle("visible"));
-
-  window.addEventListener("resize", resize);
-  resize();
-  state.world = makeLevel(0);
-  updateUI();
+  function bindButton(button,key,action){
+    button.addEventListener('pointerdown',event=>{event.preventDefault();if(state.status!=='playing')return;audio.ensure();try{button.setPointerCapture(event.pointerId);}catch{}held.set(event.pointerId,{button,key});state.touch[key]=true;button.dataset.held='true';if(action)action();});
+    const release=event=>{const item=held.get(event.pointerId);if(!item)return;held.delete(event.pointerId);state.touch[key]=[...held.values()].some(v=>v.key===key);if(!state.touch[key])delete button.dataset.held;};
+    for(const name of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(name,release);
+  }
+  function applySettings(){
+    const prefs=profile.settings;document.documentElement.style.setProperty('--button-scale',prefs.buttonScale);document.body.classList.toggle('left-handed',prefs.leftHanded);
+    for(const [id,value,out]of [['musicVolume',Math.round(prefs.music*100),'musicValue'],['effectsVolume',Math.round(prefs.effects*100),'effectsValue'],['buttonScale',Math.round(prefs.buttonScale*100),'buttonValue']]){$(id).value=value;$(out).textContent=value+'%';}
+    for(const key of ['leftHanded','aimAssist','reducedMotion'])$(key).checked=prefs[key];
+    if(audio.ctx){audio.sfxGain.gain.setValueAtTime(prefs.effects,audio.ctx.currentTime);audio.musicGain.gain.setValueAtTime(prefs.music,audio.ctx.currentTime);}if(prefs.music===0)audio.stopMusic();
+  }
+  function pause(){
+    clearInput();audio.stopMusic();if(state.status!=='playing')return;
+    persist();state.status='paused';$('checkpointStatus').textContent=(writeAvailable?'Checkpoint saved on this device. ':'Storage is unavailable. ')+LEVELS[state.level].tip;
+    applySettings();if(!$('menuDialog').open)$('menuDialog').showModal();
+  }
+  function resume(){if(document.hidden)return;$('menuDialog').close();if(state.status==='paused'){clearInput();state.status='playing';audio.ensure();audio.startMusic(state.level);}}
+  document.querySelectorAll('[data-dir]').forEach(b=>bindButton(b,b.dataset.dir));
+  bindButton(ui.jumpBtn,'jump',jump);bindButton(ui.shootBtn,'shoot');bindButton(ui.dashBtn,'dash',dash);
+  document.addEventListener('keydown',event=>{
+    if(event.altKey||event.ctrlKey||event.metaKey||['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName))return;
+    if((event.code==='KeyP'||event.code==='Escape')&&state.status==='playing'){event.preventDefault();pause();return;}
+    if(state.status!=='playing'||$('menuDialog').open)return;
+    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','KeyA','KeyD','KeyW','KeyJ','KeyK','ShiftLeft','ShiftRight'].includes(event.code)){event.preventDefault();state.keys[event.code]=true;audio.ensure();}
+    if(['Space','KeyW','ArrowUp'].includes(event.code)&&!event.repeat)jump();
+  });document.addEventListener('keyup',e=>{state.keys[e.code]=false;});
+  $('menuBtn').onclick=pause;$('resumeBtn').onclick=resume;$('menuDialog').addEventListener('cancel',e=>{e.preventDefault();resume();});
+  $('homeBtn').onclick=()=>{$('menuDialog').close();state.status='menu';clearInput();ui.startOverlay.classList.remove('hidden');homeStatus();};
+  $('checkpointBtn').textContent='Return to checkpoint (−100)';$('checkpointBtn').onclick=()=>{state.score=Math.max(0,state.score-100);placeAtCheckpoint();persist();resume();};
+  $('menuRetryBtn').onclick=()=>{$('menuDialog').close();retryLevel();};
+  ui.startBtn.onclick=continueCampaign;ui.retryBtn.onclick=retryLevel;ui.restartBtn.onclick=()=>{if(confirm('Begin a new expedition? This replaces the current campaign. Your best score and settings are kept.'))startGame(true);};
+  $('newBtn').onclick=ui.restartBtn.onclick;ui.howBtn.onclick=()=>ui.help.classList.toggle('visible');
+  for(const [id,key,scale]of [['musicVolume','music',100],['effectsVolume','effects',100],['buttonScale','buttonScale',100]])$(id).addEventListener('input',e=>{profile.settings[key]=Number(e.target.value)/scale;applySettings();Progress.save(storage,profile);});
+  for(const key of ['leftHanded','aimAssist','reducedMotion'])$(key).onchange=e=>{profile.settings[key]=e.target.checked;applySettings();Progress.save(storage,profile);};
+  const root=document.documentElement,fullscreen=root.requestFullscreen||root.webkitRequestFullscreen;
+  function fullscreenState(){const active=!!(document.fullscreenElement||document.webkitFullscreenElement);document.querySelectorAll('[data-pilot-fullscreen]').forEach(b=>{b.hidden=typeof fullscreen!=='function'||document.fullscreenEnabled===false;b.setAttribute('aria-label',active?'Exit Fullscreen':'Enter Fullscreen');b.setAttribute('aria-pressed',String(active));if(!b.classList.contains('fullscreen-icon'))b.textContent=active?'Exit Fullscreen':'Enter Fullscreen';});clearInput();resize();}
+  async function toggleFullscreen(){if(typeof fullscreen!=='function')return;try{if(document.fullscreenElement||document.webkitFullscreenElement)await(document.exitFullscreen||document.webkitExitFullscreen).call(document);else await fullscreen.call(root);$('menuDialog').querySelector('[data-pilot-display-status]').textContent='';}catch{$('menuDialog').querySelector('[data-pilot-display-status]').textContent='Fullscreen is unavailable. You can keep playing in this tab.';}fullscreenState();}
+  document.querySelectorAll('[data-pilot-fullscreen]').forEach(b=>b.onclick=toggleFullscreen);
+  window.addEventListener('keydown',e=>{if(e.altKey&&e.key==='Enter'&&!e.repeat&&!['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName)){e.preventDefault();void toggleFullscreen();}},true);
+  document.addEventListener('fullscreenchange',fullscreenState);document.addEventListener('webkitfullscreenchange',fullscreenState);
+  window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',()=>{if(state.status==='playing')persist();audio.stopMusic();clearInput();});
+  window.addEventListener('resize',resize);if(window.ResizeObserver)new ResizeObserver(resize).observe(canvas.parentElement);
+  state.world=makeLevel(profile.current);applySettings();resize();fullscreenState();homeStatus();updateUI();
   requestAnimationFrame(loop);
 })();
