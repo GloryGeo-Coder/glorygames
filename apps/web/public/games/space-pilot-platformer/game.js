@@ -186,10 +186,14 @@
     }
   ];
 
-  const Progress = window.SpacePilotProgress;
+  const Progress = window.SpacePilotAsterion ? window.SpacePilotProgress.scope(window.SpacePilotAsterion.saveKey) : window.SpacePilotProgress;
+  const chapter = window.SpacePilotAsterion || null;
+  const activeLevels = chapter ? chapter.levels : LEVELS;
+  const buildLevel = index => chapter ? chapter.createLevel(index) : makeLevel(index);
   let storage=null;try { storage=window.localStorage; } catch {}
-  let profile=Progress.load(storage,LEVELS.length);
+  let profile=Progress.load(storage,activeLevels.length);
   try{if(!storage?.getItem(Progress.KEY))profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}catch{profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
+  try{if(chapter&&!storage?.getItem(Progress.KEY)&&storage?.getItem(window.SpacePilotProgress.KEY))profile.settings=window.SpacePilotProgress.load(storage,8).settings;}catch{}
   let point=null,dirty=false,saveClock=0,writeAvailable=true;
   const view={width:640,height:820,zoom:1,dpr:1,windowWidth:0,windowHeight:0};
   const held=new Map();
@@ -282,6 +286,7 @@
       if (this.currentMusicLevel === levelIndex && this.music) return;
       this.stopMusic();
 
+      if(chapter){this.music=window.SpacePilotChapterAudio.music(this,levelIndex,()=>state.world?PLAYER.x/state.world.width:0);this.currentMusicLevel=levelIndex;return;}
       const scale = [130.81, 146.83, 164.81, 196.00, 220.00, 246.94, 261.63, 293.66];
       const root = scale[levelIndex % scale.length];
       const now = this.ctx.currentTime;
@@ -370,6 +375,8 @@
     power() { this.beep(980, 0.1, "triangle", 0.04); }
   };
 
+  if(chapter){for(const name of ['jump','collect','shoot','hurt','boom','boss','power'])audio[name]=()=>window.SpacePilotChapterAudio.effect(audio,name);}
+
   function loadImage(key, src, options = {}) {
     const img = new Image();
     img.decoding = "async";
@@ -417,6 +424,7 @@
     return img;
   }
 
+  if (!chapter) {
   ASSETS.backgrounds.forEach((src, i) => loadImage(`bg${i}`, src));
   loadImage("enemy", ASSETS.enemy);
   loadImage("boss", ASSETS.boss, { cols: 2, rows: 2 });
@@ -426,6 +434,13 @@
   loadImage("shield", ASSETS.shield);
   loadImage("time", ASSETS.time);
   loadImage("player", ASSETS.player);
+
+  } else {
+    ['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
+    loadImage('chapterPilot','assets/asterion/pilot.webp');
+    loadImage('chapterObjects','assets/asterion/objects.webp');
+    loadImage('chapterDevices','assets/asterion/devices.webp');
+  }
 
   const PILOT_SPRITE = { cols: 6, rows: 4, idle: 0, run: 1, jump: 2, shoot: 3 };
   const BOSS_SPRITE = { cols: 2, rows: 2, idle: 0, shield: 1, attack: 2, damaged: 3 };
@@ -680,11 +695,11 @@
     writeAvailable=Progress.save(storage,profile);dirty=false;saveClock=0;homeStatus();
   }
   function homeStatus(){
-    $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1):profile.completed.every(Boolean)?'Replay Final Gate':'Start Mission';
+    $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1):profile.completed.every(Boolean)?(chapter?'Replay Asterion finale':'Replay Final Gate'):(chapter?'Begin Asterion':'Start Mission');
     $('newBtn').hidden=!profile.run&&!profile.completed.some(Boolean);
     $('saveStatus').textContent=!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
     $('missionList').replaceChildren();
-    LEVELS.forEach((level,index)=>{const button=document.createElement('button');button.textContent=(index+1)+'. '+level.name+(profile.completed[index]?' · Complete':'');button.disabled=index>profile.unlocked;button.onclick=()=>{state.level=index;startGame(false);};$('missionList').append(button);});
+    activeLevels.forEach((level,index)=>{const button=document.createElement('button');button.textContent=(index+1)+'. '+level.name+(profile.completed[index]?' · Complete':'');button.disabled=index>profile.unlocked;button.onclick=()=>{state.level=index;startGame(false);};$('missionList').append(button);});
   }
   function placeAtCheckpoint(){
     if(!point)return;
@@ -693,14 +708,14 @@
   }
   function startGame(fresh=true){
     clearInput();audio.ensure();if($('menuDialog').open)$('menuDialog').close();
-    if(fresh){profile={...Progress.clean(null,LEVELS.length),settings:profile.settings,best:profile.best};state.level=0;state.score=0;state.lives=3;}
+    if(fresh){profile={...Progress.clean(null,activeLevels.length),settings:profile.settings,best:profile.best};state.level=0;state.score=0;state.lives=3;}
     state.status='playing';state.health=100;state.shield=0;state.cores=0;state.enemiesDefeated=0;state.time=0;state.shake=0;
-    state.world=makeLevel(state.level);resetPlayer(false);point=Progress.checkpoint(state.world,0,80);placeAtCheckpoint();
+    state.world=buildLevel(state.level);resetPlayer(false);point=Progress.checkpoint(state.world,0,80);placeAtCheckpoint();
     ui.startOverlay.classList.add('hidden');ui.gameOverOverlay.classList.add('hidden');
-    audio.startMusic(state.level);persist();toast('Mission '+(state.level+1)+': '+LEVELS[state.level].name);updateUI();
+    audio.startMusic(state.level);persist();if(chapter)showBriefing();toast('Mission '+(state.level+1)+': '+activeLevels[state.level].name);updateUI();
   }
   function continueCampaign(){
-    state.level=profile.current;state.world=makeLevel(state.level);
+    state.level=profile.current;state.world=buildLevel(state.level);
     const saved=Progress.restore(profile.run,state.world,state.level);
     if(!saved){state.score=profile.score;state.lives=3;startGame(false);return;}
     Object.assign(state,{score:saved.score,time:saved.time,health:saved.health,shield:saved.shield,lives:saved.lives,cores:saved.cores,enemiesDefeated:saved.enemiesDefeated});
@@ -710,23 +725,24 @@
   }
   function retryLevel(){state.score=Math.max(0,state.score-300);state.lives=3;startGame(false);}
   function nextLevel(){
-    profile.completed[state.level]=true;profile.unlocked=Math.min(LEVELS.length-1,Math.max(profile.unlocked,state.level+1));
+    profile.completed[state.level]=true;profile.unlocked=Math.min(activeLevels.length-1,Math.max(profile.unlocked,state.level+1));
     state.score+=1200+state.level*260+state.lives*150;postScore(false);
-    if(state.level>=LEVELS.length-1){endGame(true);return;}
+    if(state.level>=activeLevels.length-1){endGame(true);return;}
     state.level++;startGame(false);
   }
   function endGame(win){
     clearInput();state.status='ended';audio.stopMusic();persist();
     if(win){profile.run=null;Progress.save(storage,profile);homeStatus();}
     postScore(true);ui.gameOverOverlay.classList.remove('hidden');
-    $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?'Portal Route Restored':'Pilot Down';
-    $('endText').textContent=win?'Final score: '+Math.floor(state.score)+'. The eight-mission Starfall route is complete.':'Score: '+Math.floor(state.score)+'. Retry this mission for 300 points or begin a new expedition.';
+    $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?(chapter?'Asterion Restored':'Portal Route Restored'):'Pilot Down';
+    $('endText').textContent=win?'Final score: '+Math.floor(state.score)+'. '+(chapter?chapter.levels[4].report:'The eight-mission Starfall route is complete.'):'Score: '+Math.floor(state.score)+'. Retry this mission for 300 points or begin a new expedition.';
   }
   function updateUI(){
     const w=state.world;if(!w)return;
-    ui.scoreText.textContent=Math.floor(state.score);ui.levelText.textContent=(state.level+1)+'/'+LEVELS.length;ui.healthText.textContent=Math.max(0,Math.round(state.health))+'%';ui.shieldText.textContent=Math.max(0,Math.round(state.shield))+'%';
+    ui.scoreText.textContent=Math.floor(state.score);ui.levelText.textContent=(state.level+1)+'/'+activeLevels.length;ui.healthText.textContent=Math.max(0,Math.round(state.health))+'%';ui.shieldText.textContent=Math.max(0,Math.round(state.shield))+'%';
     ui.missionTitle.textContent=w.spec.name+' · '+w.spec.zone;
     const boss=w.enemies.find(e=>e.type==='boss');ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+(boss?.alive?boss.name+' '+Math.ceil(boss.hp)+'/'+boss.maxHp:'Boss defeated · Portal ready');
+    if(chapter){const near=w.objectives.find(n=>!n.done&&Math.abs(PLAYER.x-n.x)<75&&Math.abs(PLAYER.y-n.y)<70);ui.missionText.textContent=state.cores+'/'+w.spec.cores+' cores · '+w.objectives.filter(n=>n.done).length+'/'+w.objectives.length+' '+w.spec.objective.toLowerCase()+(boss?.alive?' · Warden '+Math.ceil(boss.hp)+'/'+boss.maxHp:'')+(near?' · Hold Fire here '+Math.floor(near.charge/.8*100)+'%':'');}
     ui.missionMeter.style.width=Math.round(clamp(PLAYER.x/w.width,0,1)*100)+'%';ui.mentorText.textContent=w.spec.tip;
   }
   function damage(amount){
@@ -818,6 +834,7 @@
     const left = state.keys.ArrowLeft || state.keys.KeyA || state.touch.left;
     const right = state.keys.ArrowRight || state.keys.KeyD || state.touch.right;
     const shootHeld = state.keys.KeyJ || state.touch.shoot;
+    const useHeld = shootHeld || state.keys.KeyE;
     const dashHeld = state.keys.KeyK || state.keys.ShiftLeft || state.keys.ShiftRight || state.touch.dash;
 
     const accel = PLAYER.onGround ? 2200 : 1450;
@@ -914,12 +931,13 @@
         e.hitFlash = Math.max(0, (e.hitFlash || 0) - dt);
       } else if (e.type !== "turret") {
         e.x += e.vx * dt;
-        if (Math.abs(e.x - e.homeX) > e.range) e.vx *= -1;
+        if (Math.abs(e.x - e.homeX) > e.range) {if(chapter)e.x=clamp(e.x,e.homeX-e.range,e.homeX+e.range);e.vx *= -1;}
+        if(chapter&&e.type==='drone')e.y=e.homeY+Math.sin(state.time*2+e.phase)*18;
       }
       e.frame = (e.frame + dt * 7) % 4;
-      e.shoot -= dt;
       const near = Math.abs(e.x - PLAYER.x) < (e.type === "boss" ? 900 : 520) && Math.abs(e.y - PLAYER.y) < 260;
       const visible=e.x>=state.cameraX-e.w/2&&e.x<=state.cameraX+view.width+e.w/2&&e.y>=state.cameraY-e.h/2&&e.y<=state.cameraY+view.height+e.h/2;
+      if(!chapter||(near&&visible))e.shoot-=dt;else e.shoot=Math.max(.65,e.shoot);
       if (near && visible && e.shoot <= 0) {
         const dx = PLAYER.x - e.x;
         const dy = PLAYER.y - e.y;
@@ -943,7 +961,7 @@
             });
           }
           e.attackAnim = enraged ? 0.42 : 0.32;
-          if (Math.random() < 0.32 + index * 0.035) {
+          if (!chapter && Math.random() < 0.32 + index * 0.035) {
             w.hazards.push({
               x: clamp(PLAYER.x + (Math.random() - 0.5) * 260, 420, w.width - 260),
               y: clamp(PLAYER.y - 70, 230, 610),
@@ -954,7 +972,7 @@
               temporary: 4.5
             });
           }
-          e.shoot = enraged ? Math.max(0.36, 0.58 - index * 0.025) : Math.max(0.48, 0.72 - index * 0.02);
+          e.shoot = chapter ? (enraged?1.15:1.65) : enraged ? Math.max(0.36, 0.58 - index * 0.025) : Math.max(0.48, 0.72 - index * 0.02);
         } else {
           w.enemyShots.push({
             x: e.x,
@@ -1066,8 +1084,9 @@
       }
     }
 
+    if(chapter){const interaction=chapter.interact(w,PLAYER,useHeld,dt);if(interaction.completed){state.score+=400;dirty=true;audio.power();addParticle(interaction.completed.x,interaction.completed.y,'#64ffb8',14);toast(interaction.completed.label+' secured');persist();}}
     // Portal.
-    w.portal.open = state.cores >= w.spec.cores && (!w.spec.boss || w.enemies.every((e) => e.type !== "boss" || !e.alive));
+    w.portal.open = (!chapter||chapter.ready(w)) && state.cores >= w.spec.cores && (!w.spec.boss || w.enemies.every((e) => e.type !== "boss" || !e.alive));
     if (rectsOverlap(playerRect(), { x: w.portal.x, y: w.portal.y, w: w.portal.w, h: w.portal.h })) {
       if (w.portal.open) {
         nextLevel();
@@ -1078,6 +1097,8 @@
         toast(`Need ${Math.max(0, w.spec.cores - state.cores)} more core(s)`);
       } else if (boss) {
         toast(`Defeat ${boss.name || "the boss"} to open the portal`);
+      } else if(chapter&&!chapter.ready(w)){
+        toast(w.spec.objective+": "+w.objectives.filter(n=>!n.done).length+" remaining. Hold Fire nearby.");
       } else {
         toast("Portal is charging");
       }
@@ -1180,7 +1201,10 @@
     ctx.restore();
   }
 
+  function chapterDraw(name,arg){return !!(chapter&&window.SpacePilotArt.draw(name,{ctx,images,state,player:PLAYER,view,settings:profile.settings,screen:worldToScreen},arg));}
+
   function drawBackground() {
+    if(chapterDraw('background'))return;
     const sw = view.width;
     const sh = view.height;
     const w = state.world;
@@ -1263,6 +1287,7 @@
   }
 
   function drawPlatform(p) {
+    if(chapterDraw('platform',p))return;
     const s = worldToScreen(p.x, p.y);
     if (s.x > view.width + 200 || s.x + p.w < -200 || s.y > view.height + 120 || s.y + p.h < -120) return;
 
@@ -1287,6 +1312,7 @@
   }
 
   function drawPilot() {
+    if(chapterDraw('pilot'))return;
     const s = worldToScreen(PLAYER.x, PLAYER.y);
     const moving = PLAYER.onGround && Math.abs(PLAYER.vx) > 35;
     const blink = PLAYER.invuln > 0 && Math.floor((profile.settings.reducedMotion?0:state.time) * 18) % 2 === 0;
@@ -1428,6 +1454,7 @@
   }
 
   function drawEnemy(e) {
+    if(chapterDraw('enemy',e))return;
     if (!e.alive) return;
     const s = worldToScreen(e.x, e.y);
     if (s.x < -220 || s.x > view.width + 220 || s.y < -160 || s.y > view.height + 160) return;
@@ -1491,6 +1518,7 @@
   }
 
   function drawCore(c) {
+    if(chapterDraw('core',c))return;
     if (c.taken) return;
     const s = worldToScreen(c.x, c.y + Math.sin((profile.settings.reducedMotion?0:state.time) * 3 + c.phase) * 8);
     ctx.save();
@@ -1512,6 +1540,7 @@
   }
 
   function drawPickup(p) {
+    if(chapterDraw('pickup',p))return;
     if (p.taken) return;
     const s = worldToScreen(p.x, p.y + Math.sin((profile.settings.reducedMotion?0:state.time) * 3 + p.phase) * 8);
     ctx.save();
@@ -1522,6 +1551,7 @@
   }
 
   function drawHazard(h) {
+    if(chapterDraw('hazard',h))return;
     const s = worldToScreen(h.x, h.y);
     const pulse = 0.75 + Math.sin(state.time * 4 + h.phase) * 0.25;
     ctx.save();
@@ -1547,6 +1577,7 @@
   }
 
   function drawPortal() {
+    if(chapterDraw('portal'))return;
     const w = state.world;
     const p = w.portal;
     const s = worldToScreen(p.x + p.w / 2, p.y + p.h / 2);
@@ -1573,6 +1604,7 @@
   }
 
   function drawProjectile(s, enemy = false) {
+    if(chapterDraw('projectile',{...s,enemy}))return;
     const p = worldToScreen(s.x, s.y);
     ctx.save();
     ctx.shadowColor = enemy ? s.color || "#ff784a" : "#36dfff";
@@ -1593,6 +1625,7 @@
     const w = state.world;
     if (w) {
       w.platforms.forEach(drawPlatform);
+      if(chapter)chapterDraw('objectives');
       if(point){const at=worldToScreen(point.x,point.y+29);ctx.save();ctx.strokeStyle='#8bffe0';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(at.x,at.y-3,28,6,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
       w.hazards.forEach(drawHazard);
       w.cores.forEach(drawCore);
@@ -1653,7 +1686,7 @@
   }
   function pause(){
     clearInput();audio.stopMusic();if(state.status!=='playing')return;
-    persist();state.status='paused';$('checkpointStatus').textContent=(writeAvailable?'Checkpoint saved on this device. ':'Storage is unavailable. ')+LEVELS[state.level].tip;
+    persist();state.status='paused';$('checkpointStatus').textContent=(writeAvailable?'Checkpoint saved on this device. ':'Storage is unavailable. ')+activeLevels[state.level].tip;
     applySettings();if(!$('menuDialog').open)$('menuDialog').showModal();
   }
   function resume(){if(document.hidden)return;$('menuDialog').close();if(state.status==='paused'){clearInput();state.status='playing';audio.ensure();audio.startMusic(state.level);}}
@@ -1663,7 +1696,7 @@
     if(event.altKey||event.ctrlKey||event.metaKey||['INPUT','TEXTAREA','SELECT'].includes(event.target?.tagName))return;
     if((event.code==='KeyP'||event.code==='Escape')&&state.status==='playing'){event.preventDefault();pause();return;}
     if(state.status!=='playing'||$('menuDialog').open)return;
-    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','KeyA','KeyD','KeyW','KeyJ','KeyK','ShiftLeft','ShiftRight'].includes(event.code)){event.preventDefault();state.keys[event.code]=true;audio.ensure();}
+    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','KeyA','KeyD','KeyW','KeyJ','KeyK','KeyE','ShiftLeft','ShiftRight'].includes(event.code)){event.preventDefault();state.keys[event.code]=true;audio.ensure();}
     if(['Space','KeyW','ArrowUp'].includes(event.code)&&!event.repeat)jump();
   });document.addEventListener('keyup',e=>{state.keys[e.code]=false;});
   $('menuBtn').onclick=pause;$('resumeBtn').onclick=resume;$('menuDialog').addEventListener('cancel',e=>{e.preventDefault();resume();});
@@ -1682,6 +1715,15 @@
   document.addEventListener('fullscreenchange',fullscreenState);document.addEventListener('webkitfullscreenchange',fullscreenState);
   window.addEventListener('blur',pause);document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',()=>{if(state.status==='playing')persist();audio.stopMusic();clearInput();});
   window.addEventListener('resize',resize);if(window.ResizeObserver)new ResizeObserver(resize).observe(canvas.parentElement);
-  state.world=makeLevel(profile.current);applySettings();resize();fullscreenState();homeStatus();updateUI();
+  function showBriefing(){
+    clearInput();audio.stopMusic();state.status='briefing';
+    const spec=activeLevels[state.level],dialog=$('storyDialog');$('storyTitle').textContent=(state.level+1)+'. '+spec.name;
+    $('storyLines').replaceChildren(...spec.briefing.map(text=>{const p=document.createElement('p');p.textContent=text;return p;}));
+    $('storyTask').textContent=spec.cores+' star cores · '+spec.objective+(spec.boss?' · Defeat the Asteroid Warden':'');
+    dialog.showModal();
+  }
+  function launchBriefing(){if(state.status!=='briefing')return;$('storyDialog').close();state.status='playing';clearInput();audio.ensure();audio.startMusic(state.level);}
+  if(chapter){$('readStoryBtn').onclick=()=>{$('menuDialog').close();showBriefing();};$('launchMission').onclick=launchBriefing;$('storyDialog').addEventListener('cancel',e=>{e.preventDefault();launchBriefing();});}
+  state.world=buildLevel(profile.current);applySettings();resize();fullscreenState();homeStatus();updateUI();
   requestAnimationFrame(loop);
 })();

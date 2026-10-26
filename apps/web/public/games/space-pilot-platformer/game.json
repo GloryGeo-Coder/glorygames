@@ -1,23 +1,28 @@
 {
-  "title": "Space Pilot Platformer",
+  "title": "Space Pilot Platformer: The Starfall Rift",
   "slug": "space-pilot-platformer",
   "category": "Adventure",
-  "description": "A sci-fi platform adventure where Pilot Nova jumps across asteroid platforms, fights drones, collects star cores, and defeats a unique animated boss at the end of every level.",
+  "description": "Pilot Nova explores five Asterion missions, repairs the Wayfarer, rescues survivors and battles the Asteroid Warden. Includes the original eight-mission Starfall route.",
   "thumbnail": "thumb.png",
   "orientation": "any",
   "controls": [
     "keyboard",
     "touch"
   ],
-  "version": "1.4.0",
+  "version": "1.5.0",
   "features": {
-    "levels": 8,
+    "levels": 5,
     "mobileFirst": true,
     "savedCheckpoints": true,
     "pauseMenu": true,
     "fullscreen": true,
     "adjustableTouchControls": true,
     "separateAudioVolumes": true,
-    "optionalAimAssist": true
+    "optionalAimAssist": true,
+    "originalLevels": 8,
+    "storyBriefings": true,
+    "missionInteractions": true,
+    "animatedArtwork": true,
+    "originalLevelMusic": true
   }
 }

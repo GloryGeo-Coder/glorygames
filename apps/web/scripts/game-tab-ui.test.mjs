@@ -85,3 +85,11 @@ test('standalone bootstrap accepts only its own origin/window scores and support
   const sky = { ...win, __wgaGameTab: undefined, location: { ...win.location, pathname: '/games/sky-temple-3d-rise-of-the-relic-master/' } };
   sky.self = sky; sky.top = sky; mountGameTab(sky); assert.equal(sky.__wgaGameTab, undefined);
 });
+
+test('the original Space Pilot route retains the same score bridge at its explicit entry', () => {
+  const host=target(),doc={...target(),documentElement:{dataset:{}},getElementById:()=>({parentElement:host})};
+  const win={...target(),document:doc,location:{pathname:'/games/space-pilot-platformer/original-route.html',origin:'https://example.test',search:'?scores=0'},dispatchEvent(){},Event:class{}};
+  win.self=win;win.top=win;mountGameTab(win);
+  assert.equal(win.__wgaGameTab.slug,'space-pilot-platformer');win.GG.setScore(125);
+  assert.equal(win.__wgaGameTab.scoreBridge.state().latest,125);win.__wgaGameTab.scoreBridge.dispose();
+});
