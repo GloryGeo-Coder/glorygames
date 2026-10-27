@@ -186,8 +186,8 @@
     }
   ];
 
-  const Progress = (window.SpacePilotVerdantis || window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotVerdantis || window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
-  const chapter = window.SpacePilotVerdantis || window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
+  const Progress = (window.SpacePilotNovaX || window.SpacePilotVerdantis || window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion) ? window.SpacePilotProgress.scope((window.SpacePilotNovaX || window.SpacePilotVerdantis || window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion).saveKey) : window.SpacePilotProgress;
+  const chapter = window.SpacePilotNovaX || window.SpacePilotVerdantis || window.SpacePilotCryon || window.SpacePilotLuminara || window.SpacePilotVulcanis || window.SpacePilotAsterion || null;
   const chapterName=chapter?.name||'Asterion', missionOffset=chapter?.offset||0;
   const previousKey=chapter?.previousKey||(window.SpacePilotVulcanis?window.SpacePilotAsterion.saveKey:null);
   const previousName=chapter?.previousName||'Asterion';
@@ -442,7 +442,7 @@
   loadImage("player", ASSETS.player);
 
   } else {
-    if(!window.SpacePilotVulcanis&&!window.SpacePilotLuminara&&!window.SpacePilotCryon&&!window.SpacePilotVerdantis)['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
+    if(!window.SpacePilotVulcanis&&!window.SpacePilotLuminara&&!window.SpacePilotCryon&&!window.SpacePilotVerdantis&&!window.SpacePilotNovaX)['crash','salvage','refuge','relay','gate'].forEach((name,i)=>loadImage('chapterBg'+i,'assets/asterion/'+name+'.webp'));
     loadImage('chapterPilot','assets/asterion/pilot.webp');
     loadImage('chapterObjects','assets/asterion/objects.webp');
     loadImage('chapterDevices','assets/asterion/devices.webp');
@@ -704,7 +704,7 @@
     $('startBtn').textContent=profile.run?'Continue mission '+(profile.current+1+missionOffset):profile.completed.every(Boolean)?(chapter?'Replay '+chapterName+' finale':'Replay Final Gate'):(chapter?'Begin '+chapterName:'Start Mission');
     const unlocked=chapterUnlocked();$('startBtn').disabled=!unlocked;
     if(!unlocked)$('startBtn').textContent='Complete '+previousName+' to unlock';
-    for(const name of ['vulcanis','luminara','cryon','verdantis']){const next=$(name+'Link');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_'+name+'_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$(name+'Lock').hidden=ready;}}
+    for(const name of ['vulcanis','luminara','cryon','verdantis','novax']){const next=$(name+'Link');if(next){const saved=window.SpacePilotProgress.scope('wga_space_pilot_'+name+'_v1').load(storage,5),ready=profile.completed.every(Boolean)||saved.completed.some(Boolean)||!!saved.run;next.hidden=!ready;$(name+'Lock').hidden=ready;}}
     $('newBtn').hidden=!profile.run&&!profile.completed.some(Boolean);
     $('saveStatus').textContent=!chapterUnlocked()?'Complete all five '+previousName+' missions on this browser to unlock '+chapterName+'. Browser storage must be available to carry completion between chapters.':!writeAvailable?'Browser storage is unavailable. This run stays in this tab.':profile.run?'Checkpoint saved on this device · Best '+profile.best:'Progress saves on this device · Best '+profile.best;
     $('missionList').replaceChildren();
@@ -745,7 +745,7 @@
     clearInput();state.status='ended';audio.stopMusic();persist();
     if(win){profile.run=null;Progress.save(storage,profile);homeStatus();}
     postScore(true);ui.gameOverOverlay.classList.remove('hidden');
-    $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?(chapter?chapterName+' Restored':'Portal Route Restored'):'Pilot Down';
+    $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?(chapter?(chapter.winTitle||chapterName+' Restored'):'Portal Route Restored'):'Pilot Down';
     $('endText').textContent=win?'Final score: '+Math.floor(state.score)+'. '+(chapter?chapter.levels[4].report:'The eight-mission Starfall route is complete.'):'Score: '+Math.floor(state.score)+'. Retry this mission for 300 points or begin a new expedition.';
   }
   function updateUI(){

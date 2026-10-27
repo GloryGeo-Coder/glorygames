@@ -100,3 +100,10 @@ test('Verdantis mounts the existing Space Pilot score bridge at its explicit cha
   win.self=win;win.top=win;mountGameTab(win);assert.equal(win.__wgaGameTab.slug,'space-pilot-platformer');
   win.GG.setScore(400);assert.equal(win.__wgaGameTab.scoreBridge.state().latest,400);win.__wgaGameTab.scoreBridge.dispose();
 });
+
+test('NOVA-X mounts the existing Space Pilot score bridge at its final chapter entry', () => {
+  const host=target(),doc={...target(),documentElement:{dataset:{}},getElementById:()=>({parentElement:host})};
+  const win={...target(),document:doc,location:{pathname:'/games/space-pilot-platformer/novax.html',origin:'https://example.test',search:'?scores=0'},dispatchEvent(){},Event:class{}};
+  win.self=win;win.top=win;mountGameTab(win);assert.equal(win.__wgaGameTab.slug,'space-pilot-platformer');
+  win.GG.setScore(800);assert.equal(win.__wgaGameTab.scoreBridge.state().latest,800);win.__wgaGameTab.scoreBridge.dispose();
+});

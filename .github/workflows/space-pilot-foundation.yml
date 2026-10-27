@@ -42,7 +42,10 @@ jobs:
       - run: node --check apps/web/public/games/space-pilot-platformer/verdantis.js
       - run: node --check apps/web/public/games/space-pilot-platformer/verdantis-art.js
       - run: node --check apps/web/public/games/space-pilot-platformer/verdantis-audio.js
-      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs apps/web/scripts/space-pilot-cryon.test.cjs apps/web/scripts/space-pilot-verdantis.test.cjs
+      - run: node --check apps/web/public/games/space-pilot-platformer/novax.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/novax-art.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/novax-audio.js
+      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs apps/web/scripts/space-pilot-cryon.test.cjs apps/web/scripts/space-pilot-verdantis.test.cjs apps/web/scripts/space-pilot-novax.test.cjs
   pilot-browser:
     needs: space-pilot
     runs-on: ubuntu-latest
@@ -56,10 +59,16 @@ jobs:
           node-version: '24'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install isolated browser tools
+        timeout-minutes: 4
         run: |
-          npm install --prefix "$RUNNER_TEMP/pilot-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          npm install --prefix "$RUNNER_TEMP/pilot-browser" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund --fetch-timeout=60000 --fetch-retries=1 playwright@1.64.0
           echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/pilot-browser/node_modules/playwright" >> "$GITHUB_ENV"
-          "$RUNNER_TEMP/pilot-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium
+          if browser_path="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"; then
+            echo "CHROME_BIN=$browser_path" >> "$GITHUB_ENV"
+            "$browser_path" --version
+          else
+            "$RUNNER_TEMP/pilot-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium
+          fi
       - name: Thirteen viewports, touch, saves and all eight boss fixtures
         run: node apps/web/scripts/space-pilot-foundation-browser.cjs
       - name: Asterion mission interactions and five physical routes
@@ -99,6 +108,15 @@ jobs:
         with:
           name: verdantis-browser-screenshots
           path: ${{ runner.temp }}/verdantis-screenshots
+          if-no-files-found: ignore
+      - name: NOVA-X convoy, reactor fuses, Commander and escape progression
+        run: PILOT_SCREENSHOTS="$RUNNER_TEMP/novax-screenshots" node apps/web/scripts/space-pilot-novax-browser.cjs
+      - name: Upload NOVA-X review screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: novax-browser-screenshots
+          path: ${{ runner.temp }}/novax-screenshots
           if-no-files-found: ignore
       - name: Next.js production build
         run: npm run build --prefix apps/web
