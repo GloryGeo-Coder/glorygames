@@ -24,8 +24,8 @@ The shared engine receives only chapter selection, next-chapter links, an option
 - The established GitHub browser workflow now includes Cryon: 13 viewport sizes, carried settings, simultaneous touch/cancel, five actual-physics lower-route fixtures, blocked-action phone hints, frost timing, traction, hull shielding/projectiles, story progression and recovery/fallbacks.
 - Screenshots cover all five landscapes and the Mothership on portrait phone, landscape phone and desktop, alongside home, briefing, controls and completion states.
 - Existing CI retains all earlier browser suites, a Next.js production build and production-entry checks without fixture hooks, now including Cryon.
-- Browser tests are controlled fixtures, not full real-time combat playthroughs or physical-device certification. Local managed preview was unavailable; no alternate local browser path was used. Exact-head CI and independent code/visual review must be verified before handoff.
+- Browser tests are controlled fixtures, not full real-time combat playthroughs or physical-device certification. Local managed preview was unavailable; no alternate local browser path was used. Exact-head CI passed for `0d47547e415d16c517dca3193402703d51a3cbe8`: [chapter/mobile browser checks and production build](https://github.com/GloryGeo-Coder/glorygames/actions/runs/40397503223), plus shared game-tab checks.
 
 ## Release control
 
-Draft review only: no merge or deployment. Cloudflare deployment remains with the owner. Verdantis, NOVA-X and final campaign editorial remain separate future increments.
+Merged in [PR #87](https://github.com/GloryGeo-Coder/glorygames/pull/87) as `9b9aae7c5a635d5aaf09d5fb134f35199f9657f8` on 27 October 2026. [Post-merge main-branch checks](https://github.com/GloryGeo-Coder/glorygames/actions/runs/40453470901) passed, including earlier chapter browser suites, the production build and actual entries. Cloudflare deployment remains with the owner. Verdantis, NOVA-X and the final campaign editorial are separate increments.

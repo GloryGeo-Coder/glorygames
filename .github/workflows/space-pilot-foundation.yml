@@ -39,7 +39,10 @@ jobs:
       - run: node --check apps/web/public/games/space-pilot-platformer/cryon.js
       - run: node --check apps/web/public/games/space-pilot-platformer/cryon-art.js
       - run: node --check apps/web/public/games/space-pilot-platformer/cryon-audio.js
-      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs apps/web/scripts/space-pilot-cryon.test.cjs
+      - run: node --check apps/web/public/games/space-pilot-platformer/verdantis.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/verdantis-art.js
+      - run: node --check apps/web/public/games/space-pilot-platformer/verdantis-audio.js
+      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs apps/web/scripts/space-pilot-cryon.test.cjs apps/web/scripts/space-pilot-verdantis.test.cjs
   pilot-browser:
     needs: space-pilot
     runs-on: ubuntu-latest
@@ -87,6 +90,15 @@ jobs:
         with:
           name: cryon-browser-screenshots
           path: ${{ runner.temp }}/cryon-screenshots
+          if-no-files-found: ignore
+      - name: Verdantis seeds, spores, Titan, five soundtracks and mobile progression
+        run: PILOT_SCREENSHOTS="$RUNNER_TEMP/verdantis-screenshots" node apps/web/scripts/space-pilot-verdantis-browser.cjs
+      - name: Upload Verdantis review screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verdantis-browser-screenshots
+          path: ${{ runner.temp }}/verdantis-screenshots
           if-no-files-found: ignore
       - name: Next.js production build
         run: npm run build --prefix apps/web

@@ -23,11 +23,11 @@ The chapter retains simultaneous touch controls, cancellation, pause, orientatio
 ## Verification
 
 - 45 local Node checks pass, including all original-route, Asterion and Vulcanis tests plus 16 Luminara checks.
-- JavaScript syntax checks and independent code review are required before the draft PR handoff.
+- JavaScript syntax checks passed. The recorded independent code review found and corrected a browser-fixture reference before merge.
 - The added GitHub browser suite covers 13 viewport sizes, carried settings, simultaneous touch/cancellation, five actual-physics lower-route fixtures, visible blocked-interaction phone hints, beam/bridge timing, Guardian shield/projectile exchange, progression and save recovery. These controlled fixtures are not full real-time combat playthroughs or physical-phone certification.
 - Existing GitHub CI also runs all prior browser suites, the Next.js production build and production-entry checks, now including Luminara without fixture hooks. Screenshot artifacts support independent visual review.
-- Local managed-preview infrastructure was unavailable; no alternative local browser path was used. Browser/build results must be checked on the exact PR head before declaring it validated.
+- Exact-head CI passed for `f646518b6a232c22d016cea48853cc2f0f771aff`: [chapter/mobile browser checks and production build](https://github.com/GloryGeo-Coder/glorygames/actions/runs/40386665184), plus shared game-tab checks. Local managed-preview infrastructure was unavailable; no physical-device certification is claimed.
 
 ## Release control
 
-This increment is submitted as a draft PR for review only. It does not merge or deploy. The owner retains Cloudflare deployment, and a future merge requires authorization.
+Merged in [PR #86](https://github.com/GloryGeo-Coder/glorygames/pull/86) as `782e204863a07ac2ee114dd4ec178d25e3263d31` on 26 October 2026. Cloudflare deployment remains with the owner.
