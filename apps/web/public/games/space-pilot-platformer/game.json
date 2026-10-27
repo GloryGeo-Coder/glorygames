@@ -9,7 +9,7 @@
     "keyboard",
     "touch"
   ],
-  "version": "1.11.0",
+  "version": "1.12.0",
   "features": {
     "levels": 5,
     "mobileFirst": true,

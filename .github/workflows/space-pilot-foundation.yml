@@ -86,7 +86,14 @@ jobs:
           path: ${{ runner.temp }}/campaign-screenshots
           if-no-files-found: ignore
       - name: Thirteen viewports, touch, saves and all eight boss fixtures
-        run: node apps/web/scripts/space-pilot-foundation-browser.cjs
+        run: PILOT_SCREENSHOTS="$RUNNER_TEMP/original-art-screenshots" node apps/web/scripts/space-pilot-foundation-browser.cjs
+      - name: Upload original route artwork screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: original-pilot-art-review
+          path: ${{ runner.temp }}/original-art-screenshots
+          if-no-files-found: ignore
       - name: Asterion mission interactions and five physical routes
         run: node apps/web/scripts/space-pilot-asterion-browser.cjs
       - name: Vulcanis unlock, thirteen viewports, five routes and machinery
