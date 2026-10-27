@@ -193,8 +193,8 @@
   const previousName=chapter?.previousName||'Asterion';
   function hasChapterProgress(saved,scope,chapterApi){return saved.completed.some(Boolean)||!!scope.restore(saved.run,chapterApi.createLevel(saved.current),saved.current);}
   function chapterUnlocked(){return !previousKey||hasChapterProgress(profile,Progress,chapter)||window.SpacePilotProgress.scope(previousKey).load(storage,5).completed.every(Boolean);}
-  const activeLevels = chapter ? chapter.levels : LEVELS;
-  const buildLevel = index => chapter ? chapter.createLevel(index) : makeLevel(index);
+  const activeLevels = chapter ? window.SpacePilotCampaignBosses.prepare(chapter) : LEVELS;
+  const buildLevel = index => chapter ? window.SpacePilotCampaignBosses.build(chapter,activeLevels,index) : makeLevel(index);
   let storage=null;try { storage=window.localStorage; } catch {}
   let profile=Progress.load(storage,activeLevels.length);
   try{if(!storage?.getItem(Progress.KEY))profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}catch{profile.settings.reducedMotion=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
@@ -448,6 +448,7 @@
     loadImage('chapterPilot','assets/asterion/pilot.webp');
     loadImage('chapterObjects','assets/asterion/objects.webp');
     loadImage('chapterDevices','assets/asterion/devices.webp');
+    loadImage('campaignBosses','assets/campaign-bosses/'+window.SpacePilotCampaignBosses.designs[chapterName].file+'.webp');
   }
 
   const PILOT_SPRITE = { cols: 6, rows: 4, idle: 0, run: 1, jump: 2, shoot: 3 };
@@ -844,6 +845,7 @@
     const index = state.level;
     state.time += dt;
     chapter?.updateWorld?.(w,state.time);
+    for(const e of w.enemies)if(e.campaignGuardian)e.shielded=false;
     PLAYER.jumpBuffer=Math.max(0,PLAYER.jumpBuffer-dt);
     PLAYER.shootCd = Math.max(0, PLAYER.shootCd - dt);
     PLAYER.dashCd = Math.max(0, PLAYER.dashCd - dt);
@@ -1034,7 +1036,7 @@
         const er = { x: e.x - e.w / 2, y: e.y - e.h / 2, w: e.w, h: e.h };
         if (rectsOverlap({ x: s.x - s.r, y: s.y - s.r, w: s.r * 2, h: s.r * 2 }, er)) {
           s.dead = true;
-          e.hp -= s.power*(chapter?.damageMultiplier?.(e,w)??1);
+          e.hp -= s.power*(e.campaignGuardian?1:(chapter?.damageMultiplier?.(e,w)??1));
           if (e.type === "boss") e.hitFlash = 0.22;
           addParticle(s.x, s.y, e.type === "boss" ? (e.bossColor || "#ff2fd6") : "#ff784a", 8);
           if (e.hp <= 0) {
@@ -1487,6 +1489,7 @@
   }
 
   function drawEnemy(e) {
+    if(chapter&&e.alive&&e.campaignGuardian&&window.SpacePilotCampaignBosses.draw(ctx,images.campaignBosses,e,worldToScreen(e.x,e.y),state.time,profile.settings.reducedMotion))return;
     if(chapterDraw('enemy',e))return;
     if (!e.alive) return;
     const s = worldToScreen(e.x, e.y);
