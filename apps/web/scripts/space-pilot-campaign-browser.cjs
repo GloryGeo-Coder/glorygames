@@ -59,10 +59,6 @@ async function recover(page){
  await page.goto(base+'novax.html?scores=0');assert.equal(await page.locator('#startBtn').isDisabled(),true);
  await page.goto(base+'original-route.html?scores=0');await page.locator('#startBtn').click();await page.locator('#menuBtn').click();const original=await page.evaluate(()=>localStorage.getItem('wga_space_pilot_campaign_v1'));
  await page.goto(base+'index.html?scores=0');await page.waitForFunction(()=>!!window.pilotQA);
- if(await page.evaluate(()=>document.fullscreenEnabled&&!!document.documentElement.requestFullscreen)){
-  await page.locator('[data-pilot-fullscreen]').first().click();await page.waitForFunction(()=>!!document.fullscreenElement);
-  await page.locator('[data-pilot-fullscreen]').first().click();await page.waitForFunction(()=>!document.fullscreenElement);console.log('Actual browser fullscreen enter/exit passed.');
- }
  for(let chapterIndex=0;chapterIndex<6;chapterIndex++){
   if(chapterIndex===0)await page.goto(base+files[0]+'?scores=0');
   await page.waitForFunction(()=>!!window.pilotQA&&Object.values(pilotQA.images).every(i=>i.complete&&i.naturalWidth>0));
@@ -71,7 +67,13 @@ async function recover(page){
   await page.setViewportSize([{width:390,height:844},{width:844,height:390},{width:320,height:568},{width:1440,height:900},{width:390,height:844},{width:844,height:390}][chapterIndex]);
   await page.locator('#startBtn').click();await page.locator('#launchMission').click();
   if(chapterIndex===0){
-   await page.locator('#menuBtn').click();await page.locator('#musicVolume').fill('0');assert.equal(await page.evaluate(()=>pilotQA.audio.music),null);
+   await page.locator('#menuBtn').click();
+   if(await page.evaluate(()=>document.fullscreenEnabled&&!!document.documentElement.requestFullscreen)){
+    const fullscreen=page.locator('#menuDialog [data-pilot-fullscreen]');
+    await fullscreen.click();await page.waitForFunction(()=>!!document.fullscreenElement);
+    await fullscreen.click();await page.waitForFunction(()=>!document.fullscreenElement);console.log('Actual pause-menu fullscreen enter/exit passed.');
+   }
+   await page.locator('#musicVolume').fill('0');assert.equal(await page.evaluate(()=>pilotQA.audio.music),null);
    await page.locator('#musicVolume').fill('20');await page.locator('#effectsVolume').fill('34');await page.locator('#buttonScale').fill('125');
    for(const id of ['leftHanded','reducedMotion','aimAssist'])await page.locator('#'+id).check();await page.locator('#resumeBtn').click();
   }
