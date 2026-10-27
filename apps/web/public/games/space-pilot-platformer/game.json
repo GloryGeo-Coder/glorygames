@@ -2,14 +2,14 @@
   "title": "Space Pilot Platformer: The Starfall Rift",
   "slug": "space-pilot-platformer",
   "category": "Adventure",
-  "description": "Pilot Nova explores 30 Starfall Rift campaign missions across six worlds, rescues the expedition and confronts the NOVA-X Commander. Includes the original eight-mission route.",
+  "description": "Join Pilot Nova across 30 Starfall Rift missions in six worlds, rescue the expedition, restore the portal network and face the NOVA-X Commander, with saved checkpoints, original level music and the separate eight-mission route.",
   "thumbnail": "thumb.png",
   "orientation": "any",
   "controls": [
     "keyboard",
     "touch"
   ],
-  "version": "1.10.0",
+  "version": "1.11.0",
   "features": {
     "levels": 5,
     "mobileFirst": true,

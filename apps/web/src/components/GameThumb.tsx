@@ -14,7 +14,7 @@ export function GameThumb({ slug, title = "Game" }: Props) {
   const sources = useMemo(
     () => {
       // Science ships a PNG; make its server-rendered source resolve immediately.
-      const order = slug === "science-lab-dash"
+      const order = ["science-lab-dash", "space-pilot-platformer"].includes(slug)
         ? ["png", ...EXT_ORDER.filter((ext) => ext !== "png")]
         : EXT_ORDER;
       return order.map((ext) => `/games/${slug}/thumb.${ext}`);
