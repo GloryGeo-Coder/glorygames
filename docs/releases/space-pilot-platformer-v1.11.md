@@ -1,6 +1,6 @@
 # Space Pilot Platformer v1.11 — Campaign QA and final guide
 
-The Starfall Rift campaign has 30 missions across Asterion, Vulcanis, Luminara, Cryon, Verdantis and NOVA-X. The original eight-mission route remains separate. This increment completes the campaign regression pass and publishes the owner's exact approved storyline, final description, world/mission counts, controls, checkpoint rules and FAQs on `/play/space-pilot-platformer` and `/games/space-pilot-platformer`. The catalog title and description override stale database/fallback copy without a migration. The existing thumbnail, dedicated game tab, score interface, related games and chat remain in place.
+The Starfall Rift campaign has 30 missions across Asterion, Vulcanis, Luminara, Cryon, Verdantis and NOVA-X. The original eight-mission route remains separate. This increment completes the campaign regression pass and publishes the owner's exact approved storyline, final description, world/mission counts, controls, checkpoint rules and FAQs on `/play/space-pilot-platformer` and `/games/space-pilot-platformer`. The catalog title and description override stale database/fallback copy without a migration. The existing PNG thumbnail is selected directly, and the dedicated game tab, score interface, related games and chat remain in place.
 
 ## QA fixes
 
@@ -34,14 +34,16 @@ Worker `webgamearena` and `apps/web/wrangler.jsonc` are unchanged. This work doe
 
 ## Exact files
 
-Modified (8):
+Modified (10):
 
 - `.github/workflows/space-pilot-foundation.yml`
 - `apps/web/public/games/space-pilot-platformer/game.js`
 - `apps/web/public/games/space-pilot-platformer/game.json`
 - `apps/web/scripts/space-pilot-built-browser.cjs`
+- `apps/web/scripts/game-tabs.test.tsx`
 - `apps/web/scripts/space-pilot-novax.test.cjs`
 - `apps/web/src/content/gameEditorials.ts`
+- `apps/web/src/components/GameThumb.tsx`
 - `apps/web/src/lib/gameCatalog.ts`
 - `docs/space-pilot-starfall-rift-roadmap.md`
 

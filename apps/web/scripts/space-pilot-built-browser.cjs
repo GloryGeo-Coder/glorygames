@@ -8,7 +8,7 @@ async function reviewInformation(page,width){
   const story=page.getByRole('heading',{name:'Story and setting',exact:true}).locator('..');assert.deepEqual(await story.locator('p').allTextContents(),approved);
   assert.match(await page.locator('meta[name="description"]').getAttribute('content'),/30.*six worlds/);
   assert.equal(await page.getByRole('heading',{name:'How many missions and worlds are included?',exact:true}).count(),1);
-  assert.equal(await page.locator('iframe').count(),0);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  assert.equal(await page.locator('iframe').count(),0);await page.waitForFunction(()=>[...document.images].some(i=>i.currentSrc.includes('/space-pilot-platformer/thumb.png')&&i.complete&&i.naturalWidth>0));assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
   if(process.env.PILOT_SCREENSHOTS){fs.mkdirSync(process.env.PILOT_SCREENSHOTS,{recursive:true});await page.screenshot({path:path.join(process.env.PILOT_SCREENSHOTS,route+'-'+width+'.png')});await story.screenshot({path:path.join(process.env.PILOT_SCREENSHOTS,route+'-story-'+width+'.png')});}
  }
  await page.goto('http://127.0.0.1:3018/play/space-pilot-platformer');

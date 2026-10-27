@@ -42,7 +42,7 @@ test('stale database and fallback details use the final title and summary withou
 });
 test('the rendered launch preserves the thumbnail, direct new tab, scores and chat',()=>{
  const html=renderToStaticMarkup(React.createElement(PlayClient,getFallbackGameBySlug(slug)));
- assert.doesNotMatch(html,/<iframe/);assert.match(html,/\/games\/space-pilot-platformer\/thumb.webp/);
+ assert.doesNotMatch(html,/<iframe/);assert.match(html,/\/games\/space-pilot-platformer\/thumb.png/);
  assert.match(html,/href="\/games\/space-pilot-platformer\/index.html" target="_blank" rel="noopener noreferrer"/);
  assert.match(html,/Game Chat/);assert.match(html,/Live score/);
 });
