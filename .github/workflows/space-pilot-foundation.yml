@@ -29,6 +29,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '24'
+      - run: node --check apps/web/public/games/space-pilot-platformer/campaign-bosses.js
       - run: node --check apps/web/public/games/space-pilot-platformer/game.js
       - run: node --check apps/web/public/games/space-pilot-platformer/pilot-progress.js
       - run: node --check apps/web/public/games/space-pilot-platformer/asterion.js
@@ -49,7 +50,7 @@ jobs:
       - run: node --check apps/web/public/games/space-pilot-platformer/novax.js
       - run: node --check apps/web/public/games/space-pilot-platformer/novax-art.js
       - run: node --check apps/web/public/games/space-pilot-platformer/novax-audio.js
-      - run: node --test apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs apps/web/scripts/space-pilot-cryon.test.cjs apps/web/scripts/space-pilot-verdantis.test.cjs apps/web/scripts/space-pilot-novax.test.cjs
+      - run: node --test apps/web/scripts/space-pilot-bosses.test.cjs apps/web/scripts/space-pilot-foundation.test.cjs apps/web/scripts/space-pilot-asterion.test.cjs apps/web/scripts/space-pilot-vulcanis.test.cjs apps/web/scripts/space-pilot-luminara.test.cjs apps/web/scripts/space-pilot-cryon.test.cjs apps/web/scripts/space-pilot-verdantis.test.cjs apps/web/scripts/space-pilot-novax.test.cjs
   pilot-browser:
     needs: space-pilot
     runs-on: ubuntu-latest

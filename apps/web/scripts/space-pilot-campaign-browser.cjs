@@ -84,9 +84,9 @@ async function recover(page){
    await fight(page,false);
    const count=await page.evaluate(()=>pilotQA.state.world.objectives.length),preBoss=chapterIndex===5&&mission===4?3:count;
    for(let i=0;i<preBoss;i++){await hold(page,i);if(mission===2&&i===0)await recover(page);}
-   if(mission===4){
-    const battle=await fight(page,true);assert.ok(battle.shots>0,'Boss must fire during the full-health fight');
-    if(chapterIndex===5){assert.match(battle.toast,/secure the escape sequence/);assert.equal(await page.evaluate(()=>pilotQA.state.world.portal.open),false);await recover(page);for(let i=3;i<count;i++)await hold(page,i);}
+   {
+    const battle=await fight(page,true);if(mission===4)assert.ok(battle.shots>0,'Final boss must fire during the full-health fight');
+    if(chapterIndex===5&&mission===4){assert.match(battle.toast,/secure the escape sequence/);assert.equal(await page.evaluate(()=>pilotQA.state.world.portal.open),false);await recover(page);for(let i=3;i<count;i++)await hold(page,i);}
    }
    const result=await page.evaluate(()=>{
     const q=pilotQA,w=q.state.world;q.PLAYER.invuln=10000;
