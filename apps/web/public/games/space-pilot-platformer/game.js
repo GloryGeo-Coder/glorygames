@@ -36,23 +36,23 @@
       "assets/backgrounds/bg-crystal-comet-field.png",
       "assets/backgrounds/bg-asteroid-battlefield.png"
     ],
-    enemy: "assets/sprites/enemy_ship_sheet.png",
+    enemy: "assets/original-v2/enemy.webp",
     boss: "assets/sprites/boss_mothership_sheet.png",
     bosses: [
-      "assets/sprites/boss_01_asteroid_warden_sheet.png",
-      "assets/sprites/boss_02_belt_crusher_sheet.png",
-      "assets/sprites/boss_03_rogue_captain_sheet.png",
-      "assets/sprites/boss_04_crystal_sentinel_sheet.png",
-      "assets/sprites/boss_05_orbital_enforcer_sheet.png",
-      "assets/sprites/boss_06_frost_mothership_sheet.png",
-      "assets/sprites/boss_07_gate_commander_sheet.png",
-      "assets/sprites/boss_08_nova_x_commander_sheet.png"
+      "assets/original-v2/boss-1.webp",
+      "assets/original-v2/boss-2.webp",
+      "assets/original-v2/boss-3.webp",
+      "assets/original-v2/boss-4.webp",
+      "assets/original-v2/boss-5.webp",
+      "assets/original-v2/boss-6.webp",
+      "assets/original-v2/boss-7.webp",
+      "assets/original-v2/boss-8.webp"
     ],
     asteroid: "assets/sprites/asteroid_sheet.png",
     core: "assets/sprites/star_crystal.png",
     shield: "assets/sprites/shield_pickup.png",
     time: "assets/sprites/time_pickup.png",
-    player: "assets/sprites/pilot_nova_sheet.png"
+    player: "assets/original-v2/pilot.webp"
   };
 
   const LEVELS = [
@@ -434,7 +434,9 @@
   ASSETS.backgrounds.forEach((src, i) => loadImage(`bg${i}`, src));
   loadImage("enemy", ASSETS.enemy);
   loadImage("boss", ASSETS.boss, { cols: 2, rows: 2 });
-  ASSETS.bosses.forEach((src, i) => loadImage(`boss${i}`, src, { cols: 2, rows: 2 }));
+  loadImage(`boss${profile.current}`, ASSETS.bosses[profile.current], { cols: 2, rows: 2 });
+  loadImage("platformArt", "assets/original-v2/platforms.webp");
+  loadImage("itemArt", "assets/original-v2/items.webp");
   loadImage("asteroid", ASSETS.asteroid);
   loadImage("core", ASSETS.core);
   loadImage("shield", ASSETS.shield);
@@ -1188,6 +1190,7 @@
   function getBossImage(e) {
     const rawIndex = typeof e.bossSprite === "number" ? e.bossSprite : state.level;
     const bossIndex = clamp(Math.floor(rawIndex), 0, ASSETS.bosses.length - 1);
+    if (!images[`boss${bossIndex}`]) loadImage(`boss${bossIndex}`, ASSETS.bosses[bossIndex], {cols:2,rows:2});
     const preferredKeys = Array.from(new Set([`boss${bossIndex}`, `boss${state.level}`]));
 
     for (const key of preferredKeys) {
@@ -1292,6 +1295,7 @@
   }
 
   function roundRect(x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
     ctx.beginPath();
     ctx.moveTo(x + r, y);
     ctx.lineTo(x + w - r, y);
@@ -1309,6 +1313,16 @@
     if(chapterDraw('platform',p))return;
     const s = worldToScreen(p.x, p.y);
     if (s.x > view.width + 200 || s.x + p.w < -200 || s.y > view.height + 120 || s.y + p.h < -120) return;
+
+    if (ready(images.platformArt)) {
+      const art=images.platformArt, cell=art.naturalWidth/4;
+      const kind=p.type==='ice'?3:p.type==='moving'?1:state.level%4;
+      ctx.save();
+      ctx.drawImage(art,kind*cell,art.naturalHeight*.19,cell,art.naturalHeight*.58,s.x,s.y-8,p.w,p.h+70);
+      ctx.strokeStyle=p.type==='moving'?'#ffe59a':'#a9f3ff';ctx.globalAlpha=profile.settings.reducedMotion?.6:.5+Math.sin(state.time*2+p.x*.01)*.15;
+      ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s.x+5,s.y);ctx.lineTo(s.x+p.w-5,s.y);ctx.stroke();
+      ctx.restore();return;
+    }
 
     const top = p.type === "ice" ? "#8feaff" : p.type === "moving" ? "#ffd44a" : "#6f7fa2";
     ctx.save();
@@ -1352,8 +1366,8 @@
 
     const frame = animRow * PILOT_SPRITE.cols + Math.floor((profile.settings.reducedMotion?0:state.time) * animSpeed) % PILOT_SPRITE.cols;
     const bob = animRow === PILOT_SPRITE.idle ? Math.sin((profile.settings.reducedMotion?0:state.time) * 4) * 2 : 0;
-    const drawW = moving ? 86 : 82;
-    const drawH = 96;
+    const drawW = 64;
+    const drawH = 64;
 
     // Thumbnail-inspired jet flame and neon landing dust.
     if (!PLAYER.onGround || PLAYER.dashCd > 0.98) {
@@ -1519,7 +1533,8 @@
       roundRect(-98, -84, 196 * (e.hp / e.maxHp), 10, 999);
       ctx.fill();
     } else {
-      if (!drawSpriteSheet(images.enemy, e.frame, 0, 0, 72, 54, 0, e.vx < 0 ? -1 : 1)) {
+      const enemyFrame=(e.shoot<.35?4:e.hp<e.maxHp?8:0)+Math.floor(e.frame)%4;
+      if (!drawSpriteSheet(images.enemy, enemyFrame, 0, 0, 72, 54, 0, e.vx < 0 ? -1 : 1, 4, 4)) {
         ctx.fillStyle = "#11182c";
         ctx.strokeStyle = "#ff784a";
         ctx.lineWidth = 3;
@@ -1545,7 +1560,7 @@
     ctx.rotate((profile.settings.reducedMotion?0:state.time) * 1.8 + c.phase);
     ctx.shadowColor = "#ffd44a";
     ctx.shadowBlur = 22;
-    if (!drawSpriteSheet(images.core, 0, 0, 0, 38, 38)) {
+    if (!(drawSpriteSheet(images.itemArt, 0, 0, 0, 44, 44, 0, 1, 4, 1) || drawSpriteSheet(images.core, 0, 0, 0, 38, 38))) {
       ctx.fillStyle = "#ffd44a";
       ctx.beginPath();
       ctx.moveTo(0, -18);
@@ -1565,7 +1580,7 @@
     ctx.save();
     ctx.shadowColor = p.type === "shield" ? "#64ffb8" : "#36dfff";
     ctx.shadowBlur = 20;
-    drawSpriteSheet(p.type === "shield" ? images.shield : images.time, 0, s.x, s.y, 44, 44);
+    if(!drawSpriteSheet(images.itemArt,p.type==='shield'?1:2,s.x,s.y,48,48,0,1,4,1))drawSpriteSheet(p.type === "shield" ? images.shield : images.time, 0, s.x, s.y, 44, 44);
     ctx.restore();
   }
 
@@ -1589,7 +1604,7 @@
       ctx.stroke();
     } else {
       ctx.rotate(state.time * 2 + h.phase);
-      drawSpriteSheet(images.asteroid, h.phase * 3, 0, 0, h.w * pulse, h.h * pulse);
+      if(!drawSpriteSheet(images.platformArt,state.level%4,0,0,h.w*pulse,h.h*pulse,0,1,4,1))drawSpriteSheet(images.asteroid, h.phase * 3, 0, 0, h.w * pulse, h.h * pulse);
     }
     ctx.restore();
     ctx.globalAlpha = 1;
@@ -1603,6 +1618,11 @@
     ctx.save();
     ctx.translate(s.x, s.y);
     const color = p.open ? "#64ffb8" : "#8a7dff";
+    if(ready(images.itemArt)){
+      ctx.globalAlpha=p.open?1:.65;
+      drawSpriteSheet(images.itemArt,3,0,0,112,144,(profile.settings.reducedMotion?0:state.time)*.18,1,4,1);
+      ctx.restore();return;
+    }
     ctx.shadowColor = color;
     ctx.shadowBlur = 30;
     ctx.strokeStyle = color;
