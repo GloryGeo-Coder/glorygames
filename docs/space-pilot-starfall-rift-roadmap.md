@@ -40,4 +40,6 @@ Each world adds mission variety, readable laser combat, original level music/eff
 - v1.6: Vulcanis, levels 6–10, merged in PR #85: pirate foundries, mining cutters, worker rescues, Mira and the Rogue Captain. See [release notes](releases/space-pilot-platformer-v1.6.md). The full approved game-page storyline above remains reserved for campaign completion.
 
 
-- v1.7: Luminara, levels 11–15, prepared for draft review: crystal ruins, reflected beams, dimensional platforms and the Prism Guardian. See [release notes](releases/space-pilot-platformer-v1.7.md). Later worlds and the final information-page editorial remain deferred.
+- v1.7: Luminara, levels 11–15, merged in PR #86: crystal ruins, reflected beams, dimensional platforms and the Prism Guardian. See [release notes](releases/space-pilot-platformer-v1.7.md). Later worlds and the final information-page editorial remain deferred.
+
+- v1.8: Cryon, levels 16–20, prepared for draft review: ice caverns, thermal relays, derelict station rescue, coolant isolation and the Frost Mothership. See [release notes](releases/space-pilot-platformer-v1.8.md). No merge or deployment in this increment.

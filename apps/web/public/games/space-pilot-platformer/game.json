@@ -25,6 +25,7 @@
     "animatedArtwork": true,
     "originalLevelMusic": true,
     "vulcanisLevels": 5,
-    "luminaraLevels": 5
+    "luminaraLevels": 5,
+    "cryonLevels": 5
   }
 }
