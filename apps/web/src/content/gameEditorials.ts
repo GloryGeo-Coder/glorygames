@@ -1518,70 +1518,111 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "space-pilot-platformer": {
     "category": "Adventure",
-    "summary": "Guide Pilot Nova through eight space platforming missions, collect star cores, cross moving platforms, battle drones and defeat an animated boss in every level.",
+    "summary": "Join Pilot Nova across 30 Starfall Rift missions in six worlds, rescue the expedition, restore the portal network and face the NOVA-X Commander, with saved checkpoints, original level music and the separate eight-mission route.",
     "overview": [
-      "Space Pilot Platformer follows Pilot Nova through eight missions, from Crash Landing to Final Gate. Longer asteroid routes, moving platforms, rising star-core targets and hostile drones lead to an animated boss at the end of every level.",
-      "Platform timing and collection are closely linked. Star cores reward exploration, while hostile drones and level-ending bosses keep the route from becoming a simple jumping exercise."
+      "Space Pilot Platformer: The Starfall Rift is a 2D space adventure with 30 campaign missions across six worlds. Play as Nova, cross asteroid paths and alien landscapes, battle laser-firing sentries, rescue stranded allies and restore the gates leading home. Every mission has its own setting, briefing, objectives and original music arrangement.",
+      "Five missions form each chapter. Repair ORBIT on Asterion, find Mira in the Vulcanis foundries, explore Luminara’s crystal ruins, thaw Cryon’s orbital station, help the pathfinders of Verdantis and enter the NOVA-X Rift Citadel. Each world ends with its own boss; the final mission continues into a staged Wayfarer escape after the Commander falls.",
+      "The original eight missions remain available as a separate route, from Crash Landing to Final Gate, with a boss in every mission. Its progress is kept separately from the six story chapters."
     ],
     "story": [
-      "Pilot Nova's expedition crosses dangerous asteroid-platform environments. The character collects star cores and battles robotic opponents on the way to distinctive animated bosses.",
-      "Nova gathers star cores while battling drones and travelling toward an animated boss at the end of each stage. The journey rewards careful landings, thoughtful exploration and learning when to attack or wait."
+      "Pilot Nova is escorting a research expedition through the Starfall Gate when a distress signal interrupts the journey.",
+      "Something enormous moves inside the portal.",
+      "The gate fractures. Nova’s ship, the Wayfarer, is thrown into an asteroid field, scattering the expedition across several planets and unstable dimensions. Nova survives, but the ship is crippled. Its navigation AI, ORBIT, can recover only fragments of the crew’s last transmissions.",
+      "One message comes through clearly:",
+      "“Nova… the gates aren’t collapsing. Someone is moving them.”",
+      "Nova discovers that the NOVA-X Commander is extracting star cores from inhabited worlds to power a colossal Rift Engine. Each stolen core destabilises another planet. The shattered portal network has become a trap for stranded crews and entire colonies.",
+      "Your initial goal is personal: repair the Wayfarer and find your missing engineer, Mira. Rescued survivors gradually become your crew, restoring the ship’s workshop, navigation room and defence systems. Alien communities reveal hidden routes and help you understand the gates.",
+      "The final journey takes you inside the Rift Engine, where fragments of every world collide. Defeating the Commander opens the way to a final escape: rescue the expedition, stabilise the network and guide the Wayfarer home."
     ],
     "howToPlay": [
-      "Start a level and note the nearest stable platform and your intended next landing point.",
-      "Move toward the edge carefully and jump across gaps or up to new ledges.",
-      "Avoid enemy fire and deal with drones when a safe attack opportunity is available.",
-      "Collect star cores when they are within reach without creating unnecessary risk.",
-      "Reach the end-of-level boss and learn its movement before attempting a fast victory.",
-      "Continue to the next platforming area and refine your timing."
+      "Select Play Game to open the adventure in a dedicated tab. Begin Asterion or continue a checkpoint saved on this browser. Later missions and chapters unlock through completion.",
+      "Read ORBIT’s briefing, then launch the mission. Move, double jump and shield dash between stable platforms; optional upper routes offer spare cores and firing positions.",
+      "Collect the mission’s required star cores. Hold Fire beside a marked device, shelter or rescue capsule until its interaction ring fills; E also interacts on a keyboard.",
+      "Follow each mission’s order and timing rules. Clear nearby sentries before releasing guarded survivors, wait for blue machinery indicators and carry seeds or relay fuses to their matching numbered stations.",
+      "In a chapter finale, complete the required devices and watch the boss’s attack warnings or exposed core. The NOVA-X Commander also requires three gate seals and the Wayfarer beacon after the fight.",
+      "Enter the open portal after meeting every requirement. Finish all five missions in a world, then use Continue on the chapter report to enter the next world."
     ],
     "desktop": [
-      "Use the movement, jump and attack keys shown in the game's control instructions. Study the next platform before committing to a jump."
+      "A/D or Left/Right arrows move. Space, W or Up arrow jumps; press again in the air for a double jump.",
+      "Hold J to fire lasers. Hold J or E beside mission markers to interact. K or Shift activates a shield dash when its cooldown is ready.",
+      "P or Escape pauses play. Use Menu to resume, return to a checkpoint, restart a mission, reread its briefing or adjust settings. Alt+Enter toggles fullscreen where supported."
     ],
     "mobile": [
-      "Touch controls are supported. Use the on-screen directions and action controls identified by the running game."
+      "Hold the on-screen arrows to move while pressing Jump, Fire or Dash with another finger. Tap Jump again in the air for a double jump; hold Fire beside mission markers to interact.",
+      "Portrait and landscape layouts fit the available viewport. Menu offers larger touch buttons, swapped movement/action sides, optional aim assistance and reduced camera effects.",
+      "Use the fullscreen control where the browser supports it. The game pauses when its tab loses focus; select Resume to continue."
     ],
     "systems": [
       {
-        "title": "Asteroid platforms",
-        "body": "Gaps, heights and landings define the movement challenge."
+        "title": "Six worlds, thirty missions",
+        "body": "Asterion (1–5) restores the Wayfarer’s emergency systems. Vulcanis (6–10) brings pirate foundries and Mira’s rescue. Luminara (11–15) introduces crystal archives and phase routes. Cryon (16–20) adds icy momentum and thermal machinery. Verdantis (21–25) brings living roots and seed cargo. NOVA-X (26–30) closes the story with convoy evacuation, reactor relays and the Rift Engine."
       },
       {
-        "title": "Drones and star cores",
-        "body": "Enemies encourage careful positioning, and collectibles give the player a reason to explore beyond the shortest path."
+        "title": "Animated worlds and laser combat",
+        "body": "Nova, drone sentries, crawlers, turrets and the six campaign bosses animate during movement and attacks. Platform heights, moving lifts, optional phase ledges and telegraphed hazards create opportunities to change position instead of trading hits."
       },
       {
-        "title": "Boss encounters",
-        "body": "A distinctive animated boss closes each level, shifting attention from travel to pattern recognition."
+        "title": "Mission interactions",
+        "body": "Devices respond to a sustained nearby hold rather than automatic collection. Some systems require earlier controls, cleared guards or a safe blue interval. Seed and fuse cargo, rescued allies and secured controls are reconstructed from saved mission progress."
+      },
+      {
+        "title": "Six chapter finales",
+        "body": "Face the Asteroid Warden, Rogue Captain, Prism Guardian, Frost Mothership, Brood Titan and NOVA-X Commander. Later bosses protect themselves until their support systems are disabled; cooling or post-volley windows reveal when to attack."
+      },
+      {
+        "title": "Music, effects and accessibility",
+        "body": "All 30 campaign missions have original music arrangements, alongside laser, jump, collection, impact and machinery effects. Music and effects volumes are independently adjustable. Aim assistance, reduced motion, larger touch buttons and swapped controls can be changed in Menu."
       }
     ],
     "progression": [
-      "Complete eight missions in order, gathering each route’s required star cores, overcoming its hazards and defeating its animated boss before entering the rescue portal.",
-      "A strong attempt balances safe traversal with optional collecting rather than treating every jump as a sprint."
+      "Complete five missions in each chapter to unlock the next world. Earlier unlocked missions can be replayed from that chapter’s Mission route. Each chapter stores its own score, settings and checkpoint; beginning a new expedition replaces that chapter’s run while retaining its best score and settings.",
+      "Progress saves on this device when browser storage is available. Checkpoints retain collected cores, pickups, defeated enemies, boss damage and completed objectives. Refresh returns Nova to a stable checkpoint; it does not erase completed mission tasks. The original route uses its own save.",
+      "Collect cores, secure objectives, defeat sentries and finish missions to earn points. Each mission begins with restored health; remaining lives carry through the chapter. Losing all three lives ends the attempt. Restarting a mission costs 300 points; voluntarily returning to a checkpoint costs 100 points, with scores clamped at zero.",
+      "In The Last Gate, cut the three Aegis feeds, defeat the Commander during exposed core windows, seal the three gate controls and activate the Wayfarer beacon. The home portal opens only after the escape objectives, core quota and boss requirement are complete."
     ],
     "tips": [
-      "Check the distance and height of the next landing before leaving a platform.",
-      "Use a safe ledge to observe a drone rather than entering its path immediately.",
-      "Do not chase a star core when it would remove your only stable landing.",
-      "Study a boss pattern for a moment before approaching.",
-      "Practice difficult jumps deliberately instead of repeating the same mistimed input."
+      "Land on a stable lower platform before working on a device. Upper ledges and lifts are optional routes with spare cores.",
+      "Read the mission hint when an interaction stops: it identifies missing cargo, nearby guards, the earlier control or the safe timing window.",
+      "Use short jumps and changes of height to avoid laser volleys. Aim assistance helps with enemies ahead, but positioning still matters.",
+      "On Cryon, release movement early to account for icy momentum. Watch amber warnings before entering hazardous cycles or disappearing ledges.",
+      "During the Commander fight, the Aegis feeds and blue core windows matter more than firing constantly. After victory, finish the seals and beacon before heading for the home portal."
     ],
     "faqs": [
       {
-        "q": "How many levels or missions can I play?",
-        "a": "There are eight missions: Crash Landing, Asteroid Platforms, Pirate Outpost, Crystal Nebula Ruins, Space Station Wreckage, Comet Foundry, NOVA-X Fortress and Final Gate. Each ends with a boss."
+        "q": "How many missions and worlds are included?",
+        "a": "The Starfall Rift campaign has 30 missions across six worlds, with five missions and one finale boss in each. The original eight-mission route is also available separately, giving 38 playable missions across the two routes."
       },
       {
-        "q": "Who is the playable character?",
-        "a": "The game description identifies the pilot as Pilot Nova."
+        "q": "What is the story about?",
+        "a": "Pilot Nova searches for the scattered research expedition after the Starfall Gate fractures. With ORBIT, Mira and rescued allies, Nova follows the stolen star cores to the NOVA-X Commander’s Rift Engine and guides the Wayfarer home."
       },
       {
-        "q": "What do I collect?",
-        "a": "Star cores are the collectibles."
+        "q": "How do I unlock the next world?",
+        "a": "Complete all five missions in the current world on the same browser, then choose Continue on its chapter report. The next world also appears on the mission screen. Browser storage must be available to carry completion between chapters."
       },
       {
-        "q": "Does it support mobile play?",
-        "a": "Yes. Play with the touch controls shown on screen for movement and actions."
+        "q": "Does the game save my progress?",
+        "a": "Yes, when browser storage is available. Each chapter saves checkpoints, mission completion, scores and settings locally. Clearing site data, private-browsing restrictions or changing devices can remove access to those local saves; signing in does not make them cloud saves."
+      },
+      {
+        "q": "How do I repair machinery or rescue allies?",
+        "a": "Stand near the marked objective and hold Fire until its ring fills. E also interacts on a keyboard. Read the HUD if the action is blocked: you may need an earlier control, a matching seed or fuse, cleared guards or a blue timing interval."
+      },
+      {
+        "q": "Can I play on a phone or in fullscreen?",
+        "a": "Yes. Portrait and landscape layouts include simultaneous touch controls, adjustable button sizes and swapped sides. Fullscreen is available where the browser supports it; the dedicated game tab also uses the available viewport."
+      },
+      {
+        "q": "Can I change the music or aiming settings?",
+        "a": "Menu has separate music and effects volumes, optional aim assistance and reduced motion. New chapters inherit settings from the previous chapter before keeping their own saved preferences."
+      },
+      {
+        "q": "Is this a 3D game?",
+        "a": "The Starfall Rift is a 2D side-scrolling platform adventure with animated characters and layered space environments."
+      },
+      {
+        "q": "Is the original game still available?",
+        "a": "Yes. Choose Play the original eight missions from a chapter’s mission screen. Its progress is separate from the 30-mission story campaign."
       }
     ]
   },

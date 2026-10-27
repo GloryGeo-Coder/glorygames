@@ -747,6 +747,11 @@
     postScore(true);ui.gameOverOverlay.classList.remove('hidden');
     $('endKicker').textContent=win?'Odyssey Report':'Mission Failed';$('endTitle').textContent=win?(chapter?(chapter.winTitle||chapterName+' Restored'):'Portal Route Restored'):'Pilot Down';
     $('endText').textContent=win?'Final score: '+Math.floor(state.score)+'. '+(chapter?chapter.levels[4].report:'The eight-mission Starfall route is complete.'):'Score: '+Math.floor(state.score)+'. Retry this mission for 300 points or begin a new expedition.';
+    const next=chapter&&document.querySelector('#startOverlay a[id$="Link"]');
+    let continuation=ui.gameOverOverlay.querySelector('.route-link');
+    if(next&&!continuation){const row=document.createElement('p');continuation=document.createElement('a');continuation.className='route-link';row.append(continuation);ui.gameOverOverlay.querySelector('.button-row').before(row);}
+    if(continuation){continuation.hidden=!win||!next;if(next){continuation.href=next.href;continuation.dataset.chapterContinue='';continuation.textContent=next.textContent.replace(/\s*\(requires.*$/,'');}}
+    updateUI();
   }
   function updateUI(){
     const w=state.world;if(!w)return;
@@ -1037,7 +1042,8 @@
             state.score += e.type === "boss" ? 3000 + index * 550 : 240;
             addParticle(e.x, e.y, e.type === "boss" ? (e.bossColor || "#ff2fd6") : "#ff784a", e.type === "boss" ? 38 : 18);
             if (e.type === "boss") {
-              toast(`${e.name || "Boss"} defeated — portal unlocking`);
+              const remaining=chapter&&!chapter.ready(w)?w.spec.objective.toLowerCase():state.cores<w.spec.cores?'collect remaining star cores':null;
+              toast(`${e.name || "Boss"} defeated — ${remaining||'portal unlocking'}`);
               audio.boss();
             } else {
               audio.boom();
