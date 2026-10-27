@@ -2,7 +2,7 @@
 
 The original eight missions have a new female Pilot Nova, animated drone and eight redesigned boss sprite sheets. Their idle, movement, attack, shield and damage poses work with the existing engine states. Four floating-platform styles, refreshed star cores, shield and time pickups, and the portal use new artwork and animated lighting. The established space backgrounds remain in use. Artwork is loaded only for the original route; the 30-mission Starfall Rift campaign is unchanged.
 
-The twelve new sprite atlases are encoded as WebP with transparency. Only the current boss sheet is loaded initially; later sheets load when needed. The player artwork is sized to the existing collision box, and platform surfaces align with the unchanged landing geometry. The original image fallbacks remain available when assets fail to load.
+The twelve new sprite atlases are encoded as WebP with transparency. Only the current boss sheet is loaded initially; later sheets load when needed. The player artwork is sized to the existing collision box, and platform surfaces align with the unchanged landing geometry. Existing fallback drawings and pickup images remain available when assets fail to load. A rounded-rectangle radius fix prevents the boss health bar from covering the playfield.
 
 ## Validation
 

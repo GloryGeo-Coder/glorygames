@@ -36,7 +36,9 @@ async function clickStart(p){await p.locator('#startBtn').click();await p.waitFo
   await page.waitForFunction(i=>pilotQA.images['boss'+i]?.complete&&pilotQA.images['boss'+i].naturalWidth>0,i);
   const stats=await page.evaluate(i=>{const img=pilotQA.images['boss'+i],c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext('2d');x.drawImage(img,0,0);let counts=[0,0,0,0];const data=x.getImageData(0,0,c.width,c.height).data;for(let y=0;y<c.height;y+=12)for(let xx=0;xx<c.width;xx+=12)if(data[(y*c.width+xx)*4+3]>128)counts[(y>=c.height/2?2:0)+(xx>=c.width/2?1:0)]++;return {counts,corner:data[3]};},i);
   assert.ok(stats.counts.every(n=>n>20),JSON.stringify({i,...stats}));assert.ok(stats.corner<10,JSON.stringify({i,...stats}));
-  await page.evaluate(()=>{pilotQA.state.status='paused';pilotQA.PLAYER.invuln=0;pilotQA.draw();});await shot(page,'original-boss-'+(i+1));
+  await page.evaluate(()=>{pilotQA.state.status='paused';pilotQA.PLAYER.invuln=0;pilotQA.draw();});
+  const flat=await page.evaluate(()=>{const c=document.querySelector('#gameCanvas'),x=c.getContext('2d'),d=x.getImageData(0,0,c.width,c.height).data,b=pilotQA.state.world.enemies.find(e=>e.type==='boss'),hex=(b.bossColor||'#ff2fd6').slice(1),rgb=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16));let count=0;for(let i=0;i<d.length;i+=4)if(rgb.every((v,j)=>Math.abs(d[i+j]-v)<2))count++;return count/(c.width*c.height);});
+  assert.ok(flat<.2,'Boss health-bar rendering obscures the playfield: '+flat);await shot(page,'original-boss-'+(i+1));
  }
  // Fixtures retain the eight existing bosses, actual laser damage, core gates,
  // completion bonus and continuous unlock transitions.
