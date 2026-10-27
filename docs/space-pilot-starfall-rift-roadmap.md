@@ -45,3 +45,5 @@ Each world adds mission variety, readable laser combat, original level music/eff
 - v1.8: Cryon, levels 16–20, merged in PR #87: ice caverns, thermal relays, derelict station rescue, coolant isolation and the Frost Mothership. See [release notes](releases/space-pilot-platformer-v1.8.md). Cloudflare deployment remains with the owner.
 
 - v1.9: Verdantis, levels 21–25: living root nodes, alien calls, pathfinder rescues, saved seed cargo, vine bridges and the Brood Titan. See [release notes](releases/space-pilot-platformer-v1.9.md). The campaign contains 25 missions across five worlds; NOVA-X (26–30) and final editorial/QA follow.
+
+- v1.10: NOVA-X, missions 26–30: Citadel access locks, convoy evacuation, reactor relays, five-world tethers, the Commander and the staged Wayfarer escape. See [release notes](releases/space-pilot-platformer-v1.10.md). All six chapter routes are implemented; final whole-campaign QA and the approved public editorial remain the next phase.
