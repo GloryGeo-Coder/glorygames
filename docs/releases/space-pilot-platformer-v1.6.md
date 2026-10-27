@@ -12,14 +12,18 @@ Vulcanis saves separately under `wga_space_pilot_vulcanis_v1`; Asterion's `wga_s
 
 Touch controls, cancellation, pause, orientation fitting, fullscreen, aiming assistance and checkpoint handling use the existing engine. The shared score bridge recognises only the explicit new chapter entry in addition to its existing paths.
 
-## Validation status
+## Validation
 
 - 29 Node checks pass locally: original mission/generator preservation, previous chapter behavior and twelve Vulcanis geometry/interaction/machinery/save regressions.
 - JavaScript syntax and whitespace checks pass.
 - New browser regression script covers Asterion unlock/link navigation, 13 viewport sizes, simultaneous touch/cancellation, five actual-physics lower-route traversal fixtures, mission objectives/core gates, Captain laser exchange, machinery damage timing, refresh recovery and capability fallbacks. These controlled fixtures are not full real-time combat playthroughs.
 - Production browser checks now include the real Vulcanis entry and score-bridge registration without fixture hooks.
-- Browser scripts and production build must pass on the exact PR commit in CI before merge. Local managed preview infrastructure timed out; no local browser or physical-device certification is claimed.
+- Exact-head CI passed for `101b115ae3da8d0adb7efa02898775c19b972b08`: [chapter/mobile browser checks and production build](https://github.com/GloryGeo-Coder/glorygames/actions/runs/40384549602), plus the shared game-tab checks. Local managed preview infrastructure timed out; no physical-device certification is claimed.
 
 ## Deployment
 
 No dependency, database, Cloudflare configuration, thumbnail or final information-page editorial changes. The owner performs Cloudflare deployment after merge using the existing process. This work does not deploy.
+
+## Release record
+
+Merged in [PR #85](https://github.com/GloryGeo-Coder/glorygames/pull/85) as `454c0690ecb417c323e817f04d35c43f0b0e28c5` on 26 October 2026. Cloudflare deployment remains with the owner.

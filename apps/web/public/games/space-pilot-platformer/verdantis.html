@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Space Pilot Platformer: The Starfall Rift</title>
+  <meta name="theme-color" content="#020510" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="/games/_shared/game-tab.css?v=1" />
+  <link rel="stylesheet" href="./pilot-shell.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <section class="playfield"><canvas id="gameCanvas" tabindex="0" aria-label="Space Pilot playfield. Move with A or D, jump with Space, fire with J and shield dash with K."></canvas></section>
+
+    <section id="startOverlay" class="overlay">
+      <div class="panel hero-panel">
+        <p class="kicker">The Starfall Rift · Verdantis · Levels 21–25</p>
+        <h1>Space Pilot<br><em>The Starfall Rift</em></h1>
+        <p>
+          Awaken living roots, answer alien signals, rescue pathfinders and face the Brood Titan. Five missions unlocked by completing Cryon.
+        </p>
+        <div class="button-row">
+          <button id="startBtn">Start Mission</button>
+          <button id="howBtn" class="secondary">Controls</button>
+          <button id="newBtn" class="secondary" hidden>New expedition</button>
+        </div>
+        <p><a class="route-link" href="./original-route.html">Play the original eight missions</a> · <a class="route-link" href="./index.html">Return to Asterion (1–5)</a> · <a class="route-link" href="./vulcanis.html">Return to Vulcanis (6–10)</a> · <a class="route-link" href="./luminara.html">Return to Luminara (11–15)</a> · <a class="route-link" href="./cryon.html">Return to Cryon (16–20)</a></p>
+        <p id="saveStatus" role="status"></p>
+        <details class="mission-select"><summary>Mission route</summary><div id="missionList"></div></details>
+        <div id="controlsHelp" class="help">
+          <b>Keyboard:</b> A/D or arrows to move, Space/W to jump, J to shoot, K or Shift to shield dash.
+          <br><b>Mobile:</b> use the on-screen buttons. Hold Fire beside mission markers to repair, rescue or align them. E also interacts on a keyboard.
+        </div>
+      </div>
+    </section>
+
+    <section id="gameOverOverlay" class="overlay hidden">
+      <div class="panel">
+        <p id="endKicker" class="kicker">Mission Report</p>
+        <h2 id="endTitle">Mission Complete</h2>
+        <p id="endText">Score sent to WebGameArena.</p>
+        <div class="button-row">
+          <button id="retryBtn">Retry Level</button>
+          <button id="restartBtn" class="secondary">Restart Game</button>
+        </div>
+      </div>
+    </section>
+
+    <header class="hud">
+      <div><span>Score</span><b id="scoreText">0</b></div>
+      <div><span>Level</span><b id="levelText">21/25</b></div>
+      <div><span>Health</span><b id="healthText">100%</b></div>
+      <div><span>Shield</span><b id="shieldText">0%</b></div>
+      <button id="menuBtn" class="secondary" aria-label="Pause and open menu">Menu</button>
+      <button data-pilot-fullscreen class="secondary fullscreen-icon" aria-label="Enter Fullscreen"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M8 3H3V8M16 3H21V8M3 16V21H8M21 16V21H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </header>
+
+    <aside class="mission-card">
+      <h2 id="missionTitle">Crash Landing</h2>
+      <p id="missionText">Collect star cores and reach the portal.</p>
+      <div class="meter"><i id="missionMeter"></i></div>
+      <small id="mentorText">ORBIT: Hold Fire beside mission markers to interact.</small>
+    </aside>
+
+    <div id="toast" class="toast hidden">Power up!</div>
+
+    <nav class="mobile-controls" aria-label="Game controls">
+      <div class="movement-controls"><button data-dir="left" aria-label="Move left">◀</button>
+      <button data-dir="right" aria-label="Move right">▶</button></div><div class="action-controls">
+      <button id="jumpBtn" aria-label="Jump">Jump</button>
+      <button id="shootBtn" aria-label="Fire laser">Fire</button>
+      <button id="dashBtn" aria-label="Shield dash">Dash</button></div>
+    </nav>
+  </main>
+
+  <dialog id="menuDialog" aria-labelledby="menuTitle"><article>
+    <h2 id="menuTitle">Flight paused</h2><p id="checkpointStatus" role="status"></p>
+    <div class="button-row"><button id="resumeBtn">Resume</button><button id="checkpointBtn" class="secondary">Return to checkpoint</button><button id="menuRetryBtn" class="secondary">Restart mission (−300)</button><button id="homeBtn" class="secondary">Mission screen</button><button id="readStoryBtn" class="secondary">Read mission briefing</button><button data-pilot-fullscreen class="secondary">Enter Fullscreen</button></div>
+    <p data-pilot-display-status role="status"></p>
+    <label for="musicVolume">Music <output id="musicValue"></output></label><input id="musicVolume" type="range" min="0" max="100" step="1">
+    <label for="effectsVolume">Sound effects <output id="effectsValue"></output></label><input id="effectsVolume" type="range" min="0" max="100" step="1">
+    <label for="buttonScale">Touch button size <output id="buttonValue"></output></label><input id="buttonScale" type="range" min="100" max="125" step="5">
+    <label class="check"><input id="leftHanded" type="checkbox"> Swap movement and action sides</label>
+    <label class="check"><input id="aimAssist" type="checkbox"> Assist aiming at enemies ahead</label>
+    <label class="check"><input id="reducedMotion" type="checkbox"> Reduce camera shake and decorative motion</label>
+    <p class="help-text">A/D or arrows move · Space/W jumps · J fires · K/Shift dashes · P/Escape pauses · Alt+Enter toggles fullscreen. Progress saves on this device when storage is available.</p>
+  </article></dialog>
+  <dialog id="storyDialog" aria-labelledby="storyTitle"><article><p class="kicker">ORBIT · Mission briefing</p><h2 id="storyTitle"></h2><div id="storyLines"></div><p id="storyTask"></p><button id="launchMission">Launch mission</button></article></dialog>
+  <script src="./pilot-progress.js"></script>
+  <script src="./asterion.js"></script>
+  <script src="./verdantis.js"></script>
+  <script src="./asterion-art.js"></script>
+  <script src="./verdantis-art.js"></script>
+  <script src="./verdantis-audio.js"></script>
+  <script src="./game.js"></script>
+  <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
+</body>
+</html>
+

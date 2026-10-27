@@ -2,14 +2,14 @@
   "title": "Space Pilot Platformer: The Starfall Rift",
   "slug": "space-pilot-platformer",
   "category": "Adventure",
-  "description": "Pilot Nova explores five Asterion missions, repairs the Wayfarer, rescues survivors and battles the Asteroid Warden. Includes the original eight-mission Starfall route.",
+  "description": "Pilot Nova explores 25 Starfall Rift campaign missions across Asterion, Vulcanis, Luminara, Cryon and Verdantis, restoring worlds and rescuing the expedition. Includes the original eight-mission route.",
   "thumbnail": "thumb.png",
   "orientation": "any",
   "controls": [
     "keyboard",
     "touch"
   ],
-  "version": "1.5.0",
+  "version": "1.9.0",
   "features": {
     "levels": 5,
     "mobileFirst": true,
@@ -26,6 +26,9 @@
     "originalLevelMusic": true,
     "vulcanisLevels": 5,
     "luminaraLevels": 5,
-    "cryonLevels": 5
+    "cryonLevels": 5,
+    "verdantisLevels": 5,
+    "campaignLevels": 25,
+    "campaignWorlds": 5
   }
 }
