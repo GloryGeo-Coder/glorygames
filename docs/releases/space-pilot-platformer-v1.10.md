@@ -28,6 +28,7 @@ Artwork is canvas-native in `novax-art.js`, retaining Nova's existing transparen
 - The existing workflow retains earlier chapter browser regressions and adds NOVA-X: 13 viewport sizes, simultaneous touch/cancel, inherited settings, readable blocked-action hints, five complete lower-route physics fixtures, order/timing rules, fuse reload, Commander shield/projectile exchanges, post-boss save recovery and the staged homeward finale.
 - Five real offline audio renders check finite, audible, distinct waveforms below clipping. The production build and actual-entry suite include NOVA-X without fixture hooks.
 - Screenshot artifacts cover all five environments, phone portrait/landscape and desktop, plus the menu, briefings, blocked hints and escape states. Controlled fixtures are not full real-time campaign playthroughs or physical-device certification.
+- CI browser setup uses installed Chrome when available and falls back to Playwright Chromium, with a four-minute setup bound to prevent stalled downloads.
 - Local managed preview was unavailable in this workspace. Browser/visual validation uses the GitHub workflow and its `novax-browser-screenshots` artifact; no alternate local browser was used.
 
 ## Scope and next phase

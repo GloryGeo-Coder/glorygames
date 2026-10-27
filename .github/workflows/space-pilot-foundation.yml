@@ -59,10 +59,16 @@ jobs:
           node-version: '24'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install isolated browser tools
+        timeout-minutes: 4
         run: |
-          npm install --prefix "$RUNNER_TEMP/pilot-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          npm install --prefix "$RUNNER_TEMP/pilot-browser" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund --fetch-timeout=60000 --fetch-retries=1 playwright@1.64.0
           echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/pilot-browser/node_modules/playwright" >> "$GITHUB_ENV"
-          "$RUNNER_TEMP/pilot-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium
+          if browser_path="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"; then
+            echo "CHROME_BIN=$browser_path" >> "$GITHUB_ENV"
+            "$browser_path" --version
+          else
+            "$RUNNER_TEMP/pilot-browser/node_modules/.bin/playwright" install --with-deps --only-shell chromium
+          fi
       - name: Thirteen viewports, touch, saves and all eight boss fixtures
         run: node apps/web/scripts/space-pilot-foundation-browser.cjs
       - name: Asterion mission interactions and five physical routes
