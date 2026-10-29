@@ -60,6 +60,8 @@
     CH = Math.max(1, Math.floor(rect.height || window.innerHeight));
     if (state.running && oldW > 0 && CW !== oldW) {
       const scale = CW / oldW;
+      // Keep the loss/spawn threshold in the same horizontal space as the tower.
+      state.minWidth *= scale;
       for (const b of [...state.stack, ...state.falling, ...(state.current ? [state.current] : [])]) { b.x *= scale; b.w *= scale; }
       for (const p of [...state.particles, ...state.floaters]) p.x *= scale;
     }
@@ -204,6 +206,7 @@
   const MIN_W = 34;
 
   const state = {
+    minWidth: MIN_W,
     running: false,
     paused: false,
     gameOver: false,
@@ -274,6 +277,7 @@
     state.running = false;
     state.paused = false;
     state.gameOver = false;
+    state.minWidth = MIN_W;
     state.height = 0;
     state.combo = 0;
     state.score = 0;
@@ -342,7 +346,7 @@
 
   function spawnNextBlock() {
     const top = state.stack[state.stack.length - 1];
-    const w = Math.max(MIN_W, top.w);
+    const w = Math.max(state.minWidth, top.w);
     const y = top.y - (BLOCK_H + GAP);
     const fromLeft = state.height % 2 === 0;
     const speedBase = 175 + Math.min(260, state.height * 10) + Math.min(110, state.combo * 7);
@@ -442,7 +446,7 @@
     createBurst(newX, cur.y + 8, perfect ? 'rgba(250,204,21,.72)' : 'rgba(255,255,255,.35)', perfect ? 14 : 8);
     state.current = null;
 
-    if (newW < MIN_W) {
+    if (newW < state.minWidth) {
       endGame('The tower became too narrow!');
       return;
     }

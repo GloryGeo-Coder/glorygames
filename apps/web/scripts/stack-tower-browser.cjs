@@ -9,6 +9,82 @@ for(let height=1;height<=21;height++){await p.evaluate(()=>{const q=stackQA;q.st
 assert.match(await p.locator('#worldLabel').textContent(),/Aurora Summit/);assert.equal(await p.evaluate(()=>stackQA.state.progress.stage),2);assert.ok(await p.evaluate(()=>stackQA.state.progress.repairs)>0);await p.evaluate(()=>{stackQA.state.stack.at(-1).w=60;stackQA.state.current.w=60;});await p.locator('#btnRepair').click();assert.ok(await p.evaluate(()=>stackQA.state.current.w)>60);
 await p.locator('#btnPause').click();const frozen=await p.evaluate(()=>{let q=stackQA;q.state.focusTimer=4;q.step(1);return q.state.focusTimer});assert.equal(frozen,4);await p.locator('#btnStart').click();await p.locator('#btnMute').click();assert.equal(await p.locator('#btnMute').textContent(),'Effects off');await p.locator('#btnMusic').click();assert.equal(await p.locator('#btnMusic').textContent(),'Music off');
 await p.evaluate(()=>{const q=stackQA;q.state.current.x=-10000;q.dropBlock()});assert.equal(await p.evaluate(()=>stackQA.state.gameOver),true);assert.ok(Number(await p.evaluate(()=>localStorage.getItem('wga_stack_tower_best_v2')))>=21);await p.reload();assert.ok(Number(await p.locator('#best').textContent())>=21);
+// Rotate a genuinely active, narrow tower, not only the idle start screen.
+const rotate = async size => {
+  await p.setViewportSize(size);
+  await p.evaluate(() => stackQA.resize());
+};
+const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`);
+await rotate({width:844,height:390});
+await p.locator('#btnStart').click();
+await p.evaluate(() => {
+  const q = stackQA;
+  for (let i = 0; i < 9; i++) { q.state.current.x = q.state.stack.at(-1).x; q.dropBlock(); }
+  q.state.stack.at(-1).w = q.state.current.w = 60;
+  q.state.current.x = q.state.stack.at(-1).x;
+  q.state.current.vx = 0;
+});
+const beforeRotation = await p.evaluate(() => ({
+  width: Math.floor(document.getElementById('c').getBoundingClientRect().width),
+  height: stackQA.state.height, score: stackQA.state.score,
+  progress: {...stackQA.state.progress}, combo: stackQA.state.combo
+}));
+await rotate({width:390,height:844});
+const rotated = await p.evaluate(() => ({
+  width: Math.floor(document.getElementById('c').getBoundingClientRect().width),
+  top: stackQA.state.stack.at(-1).w, current: stackQA.state.current.w,
+  height: stackQA.state.height, score: stackQA.state.score,
+  progress: {...stackQA.state.progress}, combo: stackQA.state.combo
+}));
+const scale = rotated.width / beforeRotation.width;
+near(rotated.top, 60 * scale);
+near(rotated.current, rotated.top);
+for (const key of ['height', 'score', 'progress', 'combo']) assert.deepEqual(rotated[key], beforeRotation[key]);
+assert.ok(rotated.top < 32, 'fixture must reproduce a width that previously lost even after a perfect drop');
+await p.evaluate(() => stackQA.dropBlock());
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), false, 'rotation must not turn a perfect placement into a loss');
+assert.equal(await p.evaluate(() => stackQA.state.height), 10);
+assert.equal(await p.evaluate(() => stackQA.state.progress.stage), 1);
+near(await p.evaluate(() => stackQA.state.current.w), rotated.top + 2);
+near(await p.evaluate(() => stackQA.state.minWidth), 34 * scale);
+
+// Repeat a full rotation while paused. It must preserve the run and its threshold.
+await p.locator('#btnPause').click();
+await rotate({width:844,height:390});
+near(await p.evaluate(() => stackQA.state.minWidth), 34);
+await rotate({width:390,height:844});
+near(await p.evaluate(() => stackQA.state.minWidth), 34 * scale);
+assert.equal(await p.evaluate(() => stackQA.state.paused), true);
+await p.evaluate(() => { const q = stackQA; q.state.current.x = q.state.stack.at(-1).x; q.state.current.vx = 0; });
+await p.locator('#btnStart').click();
+await p.locator('#btnDrop').click();
+assert.equal(await p.evaluate(() => stackQA.state.height), 11);
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), false);
+
+// A real bad placement still loses against the scaled minimum.
+await p.evaluate(() => {
+  const q = stackQA, top = q.state.stack.at(-1);
+  q.state.current.x = top.x + top.w - q.state.minWidth / 2;
+  q.dropBlock();
+});
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), true);
+assert.match(await p.locator('#panelText').textContent(), /too narrow/);
+
+// Restart is a fresh run: neither rotation nor height-only resizing leaks a smaller minimum.
+await p.locator('#btnRestart').click();
+near(await p.evaluate(() => stackQA.state.minWidth), 34);
+await rotate({width:390,height:700});
+near(await p.evaluate(() => stackQA.state.minWidth), 34);
+await p.evaluate(() => {
+  const q = stackQA, top = q.state.stack.at(-1);
+  top.w = q.state.current.w = 50;
+  q.state.current.x = top.x + 20;
+  q.dropBlock();
+});
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), true);
+assert.match(await p.locator('#panelText').textContent(), /too narrow/);
+console.log('Stack Tower: active/paused narrow-tower rotation, continued placement, scaled loss and restart regression passed.');
+
 assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);console.log('Stack Tower: portrait/landscape/desktop controls, 21 placements, worlds, contracts, repairs, pause, audio and saved best passed.');await context.close();
 const blocked=await browser.newContext({viewport:{width:320,height:568}});await blocked.addInitScript(()=>{Object.defineProperty(window,'localStorage',{get(){throw Error('blocked')}});window.AudioContext=undefined;window.webkitAudioContext=undefined;});const b=await blocked.newPage();b.on('pageerror',e=>errors.push(e.message));await b.goto(url);await b.locator('#btnStart').click();assert.equal(await b.evaluate(()=>stackQA.state.running),true);assert.deepEqual(errors,[]);await blocked.close();
 })().catch(e=>{console.error(e,errors,missing);process.exitCode=1}).finally(async()=>{await browser?.close();server.close();});
