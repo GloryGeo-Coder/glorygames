@@ -1,0 +1,39 @@
+name: Stack Tower game checks
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/stack-tower/**'
+      - 'apps/web/scripts/stack-tower-*'
+      - '.github/workflows/stack-tower.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/stack-tower/**'
+      - 'apps/web/scripts/stack-tower-*'
+      - '.github/workflows/stack-tower.yml'
+permissions:
+  contents: read
+jobs:
+  stack-tower:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/stack-tower/game.js && node --check apps/web/public/games/stack-tower/skyline-logic.js
+      - run: node --test apps/web/scripts/stack-tower-logic.test.cjs
+      - run: npm install --prefix "$RUNNER_TEMP/stack-browser" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.64.0
+      - name: Playable mobile and desktop regression
+        env:
+          PLAYWRIGHT_PATH: ${{ runner.temp }}/stack-browser/node_modules/playwright
+          CHROME_BIN: /usr/bin/google-chrome
+          STACK_SCREENSHOTS: ${{ runner.temp }}/stack-screenshots
+        run: node apps/web/scripts/stack-tower-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: stack-tower-screenshots
+          path: ${{ runner.temp }}/stack-screenshots
+          if-no-files-found: ignore

@@ -1628,73 +1628,37 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "stack-tower": {
     "category": "Puzzle",
-    "summary": "Time each block drop, build perfect-placement combos, charge Focus Mode and keep climbing in an endless tower-building score challenge.",
+    "summary": "Build an endless tower through three skylines, complete precision contracts, earn repairs and charge Focus Mode.",
     "overview": [
-      "Stack Tower is a timing challenge built around a single satisfying action: dropping a moving block onto the structure below it. Each new block tests your sense of rhythm, alignment and the small corrections needed to keep a tower stable as it grows.",
-      "The polished presentation features glowing pseudo-3D blocks, sound and background music, while the game systems give accurate players extra goals. Perfect placements can build combinations, and Focus Mode becomes a tactical tool when timing is difficult."
+      "Stack Tower: Skyline Adventure turns a timing challenge into a journey above three spectacular environments. Line up each moving block, build your tower and see how high you can climb.",
+      "Perfect placements build combos and charge Focus Mode. Complete stage contracts for bonus points and earn repairs to restore width when the tower gets narrow."
     ],
     "story": [
-      "There is no named hero or cinematic story. Your construction project is the challenge itself: build a tower as high as your precision allows.",
-      "The tower becomes a visible record of every earlier decision. A slight misalignment may not end the session at once, but it can make the next placement harder."
+      "Your ambitious construction project begins at Harbour Heights. Keep building through the Cloud Gardens and onward to the Aurora Summit, with a new precision contract at every stage.",
+      "The skyline changes as your tower rises, and the challenge continues beyond the summit for players chasing a higher score."
     ],
     "howToPlay": [
-      "Start a round and observe the movement of the next block.",
-      "Wait for the moving block to line up with the top of the tower.",
-      "Tap, click or press the drop key to place it.",
-      "Aim for accurate placement and repeated perfect drops to build combos.",
-      "Notice when Focus Mode becomes available and use it to help with difficult timing.",
-      "Continue building until the round ends, then compare your height and score with earlier attempts."
+      "Start a round and tap, click or press Space when the moving block lines up with the top of the tower.",
+      "Perfect placements build combos and automatically charge Focus Mode. Misaligned blocks lose the overhanging portion.",
+      "Land three perfect drops within a stage to earn its contract bonus. Stages change every ten floors.",
+      "Earn a repair after four perfect drops in a stage, then press Repair to widen a narrow tower. You can hold up to two repairs.",
+      "Continue building for as long as you can. The round ends if a block misses or the tower becomes too narrow."
     ],
-    "desktop": [
-      "Press Space or Enter to drop a block; clicking the drop control also works.",
-      "Use the on-screen Pause, Drop, Submit, Restart and Sound options."
-    ],
-    "mobile": [
-      "Tap the screen or Drop control to place the current block.",
-      "Keep your view on the tower's top edge rather than the moving block alone."
-    ],
+    "desktop": ["Press Space, Enter or Down Arrow to drop; P pauses and R restarts. Use the on-screen controls to repair or submit a score."],
+    "mobile": ["Tap the game area or Drop button to place a block. Use Repair when it is available.", "Open the game in its dedicated tab and use Enter Fullscreen when your browser supports it."],
     "systems": [
-      {
-        "title": "Alignment-based gameplay",
-        "body": "The relationship between the moving block and the existing tower determines a strong placement."
-      },
-      {
-        "title": "Perfect-drop combos",
-        "body": "Repeated accurate placements reward consistency rather than frantic tapping."
-      },
-      {
-        "title": "Focus Mode",
-        "body": "The game features a charged Focus Mode that supports more deliberate timing."
-      }
+      {"title":"Perfect combos and Focus Mode","body":"Accurate placements build a combo and automatically activate a short period of slower movement when Focus is full."},
+      {"title":"Stage contracts","body":"Land three perfect drops within a ten-floor stage for a 400-point bonus."},
+      {"title":"Earned repairs","body":"Four perfect drops in a stage earn a repair. Use it to widen the top of the tower, up to the permitted width."}
     ],
-    "progression": [
-      "Stack Tower is an endless-style replayable timing challenge, not a campaign with characters and level dialogue.",
-      "Progress is measured in height, accuracy and the result of successive drops. The challenge naturally changes as small alignment mistakes accumulate."
-    ],
-    "tips": [
-      "Watch for the instant when the moving block crosses the centre of the supporting block.",
-      "Choose a visual reference on the stack and time your input against it.",
-      "Prioritise a safe placement over a risky perfect attempt when the tower becomes narrow.",
-      "Use Focus Mode when it can prevent a mistake, rather than automatically when available.",
-      "Try to establish a steady rhythm; inconsistent tapping makes alignment harder."
-    ],
+    "progression": ["The endless challenge travels through Harbour Heights, Cloud Gardens and Aurora Summit at heights 0, 10 and 20. New contracts continue after the summit.", "Your best height is stored in the browser when local storage is available."],
+    "tips": ["Watch the top block and time the crossing rather than tapping repeatedly.", "Earn repairs through accurate drops, then save them for a narrow tower.", "Use the slower Focus Mode to line up the next drop.", "A safe overlap is better than missing while attempting a perfect placement."],
     "faqs": [
-      {
-        "q": "Does this game have a fixed campaign?",
-        "a": "The tower is an endless score challenge. Keep placing blocks while enough of the top surface remains to continue; there is no fixed final campaign level."
-      },
-      {
-        "q": "Which keys drop a block?",
-        "a": "Space and Enter are desktop drop controls."
-      },
-      {
-        "q": "Does the game have power-ups?",
-        "a": "It includes a charged Focus Mode,."
-      },
-      {
-        "q": "How do I get a taller tower?",
-        "a": "Prioritise consistent alignment of each block with the top of the stack."
-      }
+      {"q":"How many environments are there?","a":"There are three: Harbour Heights, Cloud Gardens and Aurora Summit. The endless tower continues beyond the summit."},
+      {"q":"How do repairs work?","a":"Earn a repair for every four perfect placements in a stage, up to two held at once. Press Repair to widen a narrow tower; a repair is not consumed when the tower is already at its maximum width."},
+      {"q":"Can I play on mobile?","a":"Yes. Tap the game area or use the Drop button; the controls adapt to portrait and landscape screens."},
+      {"q":"Can I turn off music or effects?","a":"Yes. Music and effects have separate on-screen controls."},
+      {"q":"What is saved?","a":"Your best height is saved in this browser when local storage is available. Each new run starts at the harbour."}
     ]
   },
   "swipe-racer": {

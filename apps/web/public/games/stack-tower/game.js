@@ -27,6 +27,10 @@
   const btnSubmit = $('btnSubmit');
   const btnRestart = $('btnRestart');
   const btnMute = $('btnMute');
+  const btnMusic = $('btnMusic'), btnRepair = $('btnRepair');
+  const skyline = window.StackSkyline;
+  const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
+  const saveBest = value => { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} };
 
   const GAME_SLUG = 'stack-tower';
   const BEST_KEY = 'wga_stack_tower_best_v2';
@@ -39,8 +43,7 @@
       const title = META.title || 'Stack Tower';
       document.title = title;
       if (elTitle) elTitle.textContent = title;
-      if (panelTitle) panelTitle.textContent = title;
-      if (META.description && panelText) panelText.textContent = META.description;
+      if (!state.running && !state.gameOver && panelTitle) panelTitle.textContent = title;
       if (elSub) elSub.textContent = 'Tap to drop • Perfect stacks charge Focus Mode';
       try { window.GG?.init?.({ title }); } catch {}
       try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
@@ -52,13 +55,21 @@
   function resize() {
     const rect = canvas.getBoundingClientRect();
     DPR = Math.min(2, window.devicePixelRatio || 1);
+    const oldW = CW, oldH = CH;
     CW = Math.max(1, Math.floor(rect.width || window.innerWidth));
     CH = Math.max(1, Math.floor(rect.height || window.innerHeight));
+    if (state.running && oldW > 0 && CW !== oldW) {
+      const scale = CW / oldW;
+      for (const b of [...state.stack, ...state.falling, ...(state.current ? [state.current] : [])]) { b.x *= scale; b.w *= scale; }
+      for (const p of [...state.particles, ...state.floaters]) p.x *= scale;
+    }
+    if(state.running && CH !== oldH) updateCamera();
     canvas.width = Math.floor(CW * DPR);
     canvas.height = Math.floor(CH * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    if (!state.running) {
+    if (!state.running && !state.gameOver) {
       positionBase();
+      spawnNextBlock();
       updateCamera(true);
     }
   }
@@ -69,6 +80,9 @@
 
   const images = {};
   const assetPaths = {
+    sky0: './assets/backgrounds/skyline-city.webp',
+    sky1: './assets/backgrounds/skyline-clouds.webp',
+    sky2: './assets/backgrounds/skyline-aurora.webp',
     bg1: './assets/backgrounds/bg-tower-city.png',
     bg2: './assets/backgrounds/bg-tower-city-alt.png',
     emerald: './assets/blocks/block-emerald.png',
@@ -89,9 +103,8 @@
   Promise.all(Object.entries(assetPaths).map(([k, src]) => loadImage(k, src)));
 
   // Audio
-  let AC = null, master = null, musicTimer = null, musicStep = 0, muted = false;
+  let AC = null, master = null, musicTimer = null, musicStep = 0, muted = false, musicMuted = false;
   function ensureAudio() {
-    if (muted) return null;
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
     if (!AC) {
@@ -103,9 +116,9 @@
     if (AC.state === 'suspended') AC.resume().catch(() => {});
     return AC;
   }
-  function tone(freq, dur = 0.08, type = 'sine', gain = 0.05, delay = 0) {
+  function tone(freq, dur = 0.08, type = 'sine', gain = 0.05, delay = 0, music = false) {
     const ac = ensureAudio();
-    if (!ac || muted) return;
+    if (!ac || (music ? musicMuted : muted)) return;
     const t0 = ac.currentTime + delay;
     const osc = ac.createOscillator();
     const g = ac.createGain();
@@ -140,13 +153,13 @@
     if (name === 'gameover') { tone(220,.12,'sawtooth',.055); tone(155,.16,'sine',.045,.10); tone(105,.20,'sine',.038,.24); return; }
   }
   function musicTick() {
-    if (!state.running || state.paused || muted) return;
-    const notes = [147, 196, 247, 294, 247, 196, 220, 294];
+    if (!state.running || state.paused || musicMuted) return;
+    const notes = skyline.worldForStage(state.progress.stage).notes;
     const n = notes[musicStep++ % notes.length];
-    tone(n, .11, 'triangle', .010);
-    if (musicStep % 2 === 0) tone(n * 2, .06, 'sine', .007, .03);
+    tone(n, .11, 'triangle', .010, 0, true);
+    if (musicStep % 2 === 0) tone(n * 2, .06, 'sine', .007, .03, true);
   }
-  function startMusic() { if (!musicTimer && !muted) musicTimer = setInterval(musicTick, 250); }
+  function startMusic() { if (!musicTimer && !musicMuted) musicTimer = setInterval(musicTick, 250); }
   function stopMusic() { if (musicTimer) clearInterval(musicTimer); musicTimer = null; }
 
   // GG score bridge
@@ -197,7 +210,8 @@
     height: 0,
     combo: 0,
     score: 0,
-    best: Number(localStorage.getItem(BEST_KEY) || '0') || 0,
+    best: readBest(),
+    progress: skyline.create(),
     camY: 0,
     targetCamY: 0,
     stack: [],
@@ -231,6 +245,11 @@
   }
 
   function updateHUD() {
+    $('worldLabel').textContent = skyline.worldForStage(state.progress.stage).name + ' · Stage ' + (state.progress.stage + 1);
+    const contract = state.progress.rewarded ? 'Contract complete · +400' : 'Contract: ' + Math.min(3,state.progress.perfects) + '/3 perfect drops · +400';
+    if($('contractLabel').textContent !== contract) $('contractLabel').textContent = contract;
+    btnRepair.textContent = 'Repair ' + state.progress.repairs;
+    btnRepair.disabled = !state.running || state.paused || state.progress.repairs < 1;
     if (elHeight) elHeight.textContent = String(state.height | 0);
     if (elScore) elScore.textContent = String(Math.floor(state.score));
     if (elCombo) elCombo.textContent = String(state.combo | 0);
@@ -266,13 +285,14 @@
     state.focus = 0;
     state.focusTimer = 0;
     state.precision = 0;
+    state.progress = skyline.create();
     state.shake = 0;
     lastLiveScore = -1;
     positionBase();
     spawnNextBlock();
     updateCamera(true);
     updateHUD();
-    showPanel(META.title || 'Stack Tower', META.description || 'Tap to drop blocks. Perfect stacks build combo points.');
+    showPanel('Stack Tower: Skyline Adventure', 'Build from the harbour to the clouds and the aurora. Land three perfect drops in each stage for a contract bonus. Four perfect drops earn a repair; use it to widen your tower.');
   }
 
   function startGame() {
@@ -305,7 +325,7 @@
     stopMusic();
     if (state.height > state.best) {
       state.best = state.height;
-      localStorage.setItem(BEST_KEY, String(state.best));
+      saveBest(state.best);
     }
     updateHUD();
     postScore('game_over');
@@ -326,7 +346,7 @@
     const y = top.y - (BLOCK_H + GAP);
     const fromLeft = state.height % 2 === 0;
     const speedBase = 175 + Math.min(260, state.height * 10) + Math.min(110, state.combo * 7);
-    const speed = speedBase * (state.focusTimer > 0 ? 0.62 : 1);
+    const speed = speedBase;
     const x = fromLeft ? -w * 0.65 : cw() + w * 0.65;
     const colorIdx = (state.height + state.combo) % TEXTURES.length;
     state.current = {
@@ -415,6 +435,10 @@
     state.stack.push(settled);
     state.height += 1;
     state.score += 15 * state.height;
+    const milestone = skyline.placement(state.progress, perfect, state.height);
+    if(milestone.contract){state.score += 400;addFloater(newX,cur.y-65,'CONTRACT +400','#a6ffe1',21);sfx('focus');}
+    if(milestone.repair)addFloater(newX,cur.y-90,'REPAIR READY','#a6ffe1',20);
+    if(milestone.stage){addFloater(newX,cur.y-110,skyline.worldForStage(state.progress.stage).name.toUpperCase(),'#b7edff',22);sfx('start');}
     createBurst(newX, cur.y + 8, perfect ? 'rgba(250,204,21,.72)' : 'rgba(255,255,255,.35)', perfect ? 14 : 8);
     state.current = null;
 
@@ -465,6 +489,7 @@
   }
   canvas.addEventListener('pointerdown', handleDropInteraction, { passive: false });
   window.addEventListener('keydown', (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey || /^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(e.target?.tagName || '')) return;
     if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowDown') {
       e.preventDefault();
       handleDropInteraction(e);
@@ -483,13 +508,15 @@
   btnOverlay.onclick = () => {
     state.paused = state.running && !state.gameOver ? true : state.paused;
     stopMusic();
-    showPanel('How to play', 'Tap when the moving block lines up with the tower.\n\n• Perfect drops build combo\n• Mistakes cut away the overhang\n• Perfect chains charge Focus Mode\n• Focus Mode slows the next blocks\n• Keep the tower wide and climb higher');
+    showPanel('How to play', 'Tap when the moving block lines up with the tower.\n\n• Perfect drops build combo\n• Mistakes cut away the overhang\n• Perfect chains charge Focus Mode\n• Focus Mode slows the next blocks\n• Three perfect drops complete each stage contract\n• Four perfect drops earn a repair\n• Build through the harbour, clouds and aurora');
   };
   btnPause.onclick = togglePause;
   btnDrop.onclick = (e) => handleDropInteraction(e);
   btnRestart.onclick = () => { resetGame(); startGame(); };
   btnSubmit.onclick = () => postScore('manual_submit');
-  btnMute.onclick = () => { muted = !muted; btnMute.textContent = muted ? 'Muted' : 'Sound'; if (muted) stopMusic(); else if (state.running && !state.paused) startMusic(); };
+  btnMute.onclick = () => { muted = !muted; btnMute.textContent = muted ? 'Effects off' : 'Effects on'; };
+  btnMusic.onclick = () => { musicMuted = !musicMuted; btnMusic.textContent = musicMuted ? 'Music off' : 'Music on'; if(musicMuted)stopMusic();else if(state.running&&!state.paused){ensureAudio();startMusic();} };
+  btnRepair.onclick = () => { if(!state.running || state.paused)return; const max=Math.min(300,cw()*.62); if(skyline.repair(state.progress,state.stack.at(-1),state.current,max)){sfx('focus');addFloater(state.current.x,state.current.y-65,'TOWER REPAIRED','#a6ffe1',20);updateHUD();} };
 
   window.addEventListener('message', (ev) => {
     const data = ev.data || {};
@@ -500,8 +527,9 @@
     }
     if (type === 'GG_MUTE') {
       muted = !!(data.payload?.muted ?? data.muted);
-      btnMute.textContent = muted ? 'Muted' : 'Sound';
-      if (muted) stopMusic();
+      btnMute.textContent = muted ? 'Effects off' : 'Effects on';
+      musicMuted = muted; btnMusic.textContent = musicMuted ? 'Music off' : 'Music on';
+      if (muted) stopMusic(); else if(state.running&&!state.paused)startMusic();
     }
     if (type === 'GG_RESTART') { resetGame(); startGame(); }
   });
@@ -517,7 +545,7 @@
   }
 
   function step(dt) {
-    if (state.focusTimer > 0) state.focusTimer = Math.max(0, state.focusTimer - dt);
+    if (state.running && !state.paused && state.focusTimer > 0) state.focusTimer = Math.max(0, state.focusTimer - dt);
     state.shake = Math.max(0, state.shake - dt * 28);
     state.bgShift += dt * 6;
 
@@ -617,8 +645,8 @@
   function drawBackground() {
     ctx.fillStyle = '#050814';
     ctx.fillRect(0, 0, cw(), ch());
-    if (images.bg1) drawCover(images.bg1, 0, state.camY * 0.08 + state.bgShift * 0.15, 0.66);
-    if (images.bg2) drawCover(images.bg2, state.bgShift * 0.05, state.camY * 0.16 + state.bgShift * 0.3, 0.38);
+    const scene = images['sky'+Math.min(2,state.progress.stage)] || images.bg1;
+    if(scene) drawCover(scene, 0, 0, 1);
 
     const grad = ctx.createRadialGradient(cw() * 0.5, ch() * 0.45, 40, cw() * 0.5, ch() * 0.5, Math.max(cw(), ch()) * 0.7);
     grad.addColorStop(0, 'rgba(255,255,255,.04)');
@@ -629,10 +657,10 @@
 
   function drawCover(img, ox = 0, oy = 0, alpha = 1) {
     const iw = img.width, ih = img.height;
-    const scale = Math.max(cw() / iw, ch() / ih) * 1.05;
+    const scale = Math.max(cw() / iw, ch() / ih);
     const dw = iw * scale, dh = ih * scale;
-    const x = (cw() - dw) / 2 + (ox % 60);
-    const y = (ch() - dh) / 2 + ((oy % 80) - 40);
+    const x = (cw() - dw) / 2;
+    const y = (ch() - dh) / 2;
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.drawImage(img, x, y, dw, dh);
@@ -670,7 +698,7 @@
     ctx.lineWidth = 2;
     ctx.beginPath();
     const y = top.y + state.camY - BLOCK_H - 4;
-    ctx.rect(top.x - overlap / 2, y, overlap, BLOCK_H);
+    ctx.rect(Math.max(curL,topL), y, overlap, BLOCK_H);
     ctx.stroke();
     ctx.restore();
   }
