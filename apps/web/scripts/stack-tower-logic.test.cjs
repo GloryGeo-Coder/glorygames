@@ -12,15 +12,15 @@ function runtime() {
   let width = 844, height = 390;
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
-      style: {}, textContent: '', addEventListener() {},
+      style: {}, textContent: '', addEventListener() {}, replaceChildren() {},
       getContext: () => ({setTransform() {}}),
       getBoundingClientRect: () => ({width, height}),
     });
     return elements.get(id);
   };
-  const window = {StackSkyline: game, addEventListener() {}};
+  const window = {StackSkyline: game, StackChallenges: require('../public/games/stack-tower/challenges.js'), addEventListener() {}};
   const context = vm.createContext({
-    window, document: {getElementById: element, addEventListener() {}},
+    window, document: {getElementById: element, addEventListener() {}, createElement: () => ({})},
     localStorage: {getItem: () => null, setItem() {}},
     performance: {now: () => 0}, requestAnimationFrame() {},
     setInterval: () => 1, clearInterval() {}, Image: class {},

@@ -31,6 +31,7 @@
 
     <div class="meters">
       <div class="contract" id="contractLabel" aria-live="polite">Contract: 0/3 perfect drops</div>
+      <div class="contract" id="challengeLabel" aria-live="polite" hidden></div>
       <div class="meterCard">
         <div class="meterTop"><span>Focus</span><b id="focusLabel">0%</b></div>
         <div class="meter"><div id="focusFill"></div></div>
@@ -52,6 +53,14 @@
           Tap to drop each moving block. Align perfectly to build combos, charge Focus Mode, and keep your tower wide.
         </div>
 
+        <div class="setup" id="setup">
+          <label for="modeSelect">Build mode</label>
+          <select id="modeSelect"><option value="endless">Skyline Adventure</option><option value="daily">Daily construction challenge</option><option value="timed">Timed objective · 90 seconds</option></select>
+          <p id="modeDetails" class="setupDetails"></p>
+          <label for="styleSelect">Block and tower style</label>
+          <select id="styleSelect"></select>
+          <p id="styleDetails" class="setupDetails"></p>
+        </div>
         <div class="panelButtons">
           <button class="btn primary" id="btnStart">Start</button>
           <button class="btn" id="btnOverlay">How to play</button>
@@ -78,7 +87,8 @@
   </main>
 
   <script src="./skyline-logic.js?v=1"></script>
-  <script src="./game.js?v=3"></script>
+  <script src="./challenges.js?v=1"></script>
+  <script src="./game.js?v=4"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
