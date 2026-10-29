@@ -169,3 +169,6 @@ button:disabled{opacity:.48;cursor:not-allowed}
 @media(max-width:420px){.setup{grid-template-columns:1fr}.setup label[for="modeSelect"],.setup #modeSelect,.setup #modeDetails,.setup label[for="styleSelect"],.setup #styleSelect,.setup #styleDetails{grid-column:1;grid-row:auto}}
 
 .panelInner{touch-action:pan-y}
+/* The setup panel scrolls inside the safe area, above the action bar. */
+.panel{position:fixed;z-index:30}
+.panelInner{min-height:0;max-height:100%;overflow:auto}
