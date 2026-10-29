@@ -154,3 +154,39 @@ button{font:inherit}
   .panelTop h2{font-size:20px}
   .featureList{margin-top:10px}
 }
+
+/* Compact, scrollable controls keep the road and the Start button usable on phones. */
+.overlay { overflow-y:auto; touch-action:pan-y; overscroll-behavior:contain; }
+.panelCard { max-height:calc(100dvh - 24px); overflow-y:auto; touch-action:pan-y; }
+.audioControls { display:flex; flex-wrap:wrap; gap:10px 20px; margin-top:12px; }
+.audioControls label { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:800; }
+.audioControls input { width:100px; accent-color:#45dcff; touch-action:pan-x; }
+@media (max-width:760px) {
+  .hud { grid-template-columns:1fr; }
+  .brandCard { padding:8px 10px; }
+  .brandCard h1 { font-size:17px; }
+  .brandCard .eyebrow,.subcopy,.missionLabel { display:none; }
+  .missionBlock { margin-top:4px; gap:2px; }
+  #zoneName { font-size:13px; }
+  #missionText { font-size:11px; }
+  .statsCard { padding:5px 7px; }
+  .statGrid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:3px; }
+  .stat { padding:4px 2px; text-align:center; border:0; }
+  .stat .k { font-size:8px; letter-spacing:0; }
+  .stat .v { font-size:12px; }
+  .meters { top:133px; left:8px; width:min(190px,54vw); gap:3px; }
+  .meterCard { padding:4px 7px; }
+  .meterHead { font-size:9px; margin-bottom:2px; }
+  .meter { height:5px; }
+  .gestureHint { display:none; }
+  .overlay { align-items:safe center; }
+  .btnRow { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-height:620px) and (orientation:landscape) {
+  .hud { grid-template-columns:1fr 1fr; }
+  .meters { top:auto; bottom:8px; width:min(170px,27vw); }
+  .panelCard { max-height:calc(100dvh - 20px); }
+  .featureList { display:none; }
+  .btnRow { display:flex; margin-top:8px; }
+  .btn { width:auto; min-height:44px; }
+}

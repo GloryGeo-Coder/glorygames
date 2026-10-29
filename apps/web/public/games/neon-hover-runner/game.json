@@ -1,6 +1,6 @@
 {
   "title": "Neon Hover Runner",
-  "description": "Swipe, jump, boost, and survive a neon cyber track. Collect energy orbs, shields, magnets and boosts while avoiding barriers and mines.",
+  "description": "Carry the last backup signal across five neon districts, evade drones and restore the city\u2019s power in a hoverboard adventure.",
   "tags": [
     "arcade",
     "runner",
@@ -36,7 +36,10 @@
     "scoreEvents": [
       "GG_SCORE",
       "gg:score"
-    ]
+    ],
+    "backgroundMusic": true,
+    "separateAudioControls": true,
+    "storyZones": 5
   },
-  "version": "2.0.0"
+  "version": "3.0.0"
 }

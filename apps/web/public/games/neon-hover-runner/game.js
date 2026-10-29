@@ -40,28 +40,28 @@
   const rand = (a, b) => a + Math.random() * (b - a);
   const choose = (arr) => arr[(Math.random() * arr.length) | 0];
 
+  // Every path exists; the original sprites remain as resilient fallbacks.
   const IMAGE_SOURCES = {
-    player: ["./assets/sprites/hovercraft-animated.png", "./assets/sprites/hovercraft.png"],
-    playerBoost: ["./assets/sprites/hovercraft-boost.png", "./assets/sprites/hovercraft.png"],
-    orb: ["./assets/sprites/data-orb.png", "./assets/sprites/energy-orb.png"],
-    shard: ["./assets/sprites/data-shard.png", "./assets/sprites/energy-orb.png"],
-    boost: ["./assets/sprites/boost-core.png", "./assets/sprites/boost.png"],
-    shield: ["./assets/sprites/shield-core.png", "./assets/sprites/shield.png"],
-    magnet: ["./assets/sprites/magnet-core.png", "./assets/sprites/magnet.png"],
-    barrier: ["./assets/sprites/barrier-neon.png", "./assets/sprites/barrier.png"],
-    mine: ["./assets/sprites/mine.png"],
-    drone: ["./assets/sprites/drone.png"],
-    bg1: ["./assets/backgrounds/level-01-skyline.png", "./assets/backgrounds/cyber-track.png"],
-    bg2: ["./assets/backgrounds/level-02-metro.png", "./assets/backgrounds/cyber-track-alt.png"],
-    bg3: ["./assets/backgrounds/level-03-data-tunnel.png", "./assets/backgrounds/cyber-track.png"],
-    bg4: ["./assets/backgrounds/level-04-reactor-bridge.png", "./assets/backgrounds/cyber-track-alt.png"],
-    bg5: ["./assets/backgrounds/level-05-apex-grid.png", "./assets/backgrounds/cyber-track.png"],
-    surf1: ["./assets/surfaces/track-grid.png"],
-    surf2: ["./assets/surfaces/track-energy.png"],
-    surf3: ["./assets/surfaces/track-tunnel.png"],
-    surf4: ["./assets/surfaces/track-reactor.png"],
-    surf5: ["./assets/surfaces/track-apex.png"],
+    player: ["./assets/v3/hovercraft.webp", "./assets/sprites/hovercraft.png"],
+    riderAtlas: ["./assets/v3/rider.webp"],
+    playerBoost: ["./assets/v3/hovercraft.webp", "./assets/sprites/hovercraft.png"],
+    orb: ["./assets/v3/energy-orb.webp", "./assets/sprites/energy-orb.png"], shard: ["./assets/v3/energy-orb.webp", "./assets/sprites/energy-orb.png"],
+    boost: ["./assets/v3/boost.webp", "./assets/sprites/boost.png"], shield: ["./assets/v3/shield.webp", "./assets/sprites/shield.png"],
+    magnet: ["./assets/v3/magnet.webp", "./assets/sprites/magnet.png"], barrier: ["./assets/v3/barrier.webp", "./assets/sprites/barrier.png"],
+    mine: ["./assets/v3/mine.webp", "./assets/sprites/mine.png"], drone: ["./assets/v3/drone.webp"],
+    bg1: ["./assets/v3/cyber-track.webp", "./assets/backgrounds/cyber-track.png"], bg2: ["./assets/v3/cyber-track-alt.webp", "./assets/backgrounds/cyber-track-alt.png"],
+    bg3: ["./assets/v3/data-tunnel.webp", "./assets/v3/cyber-track.webp", "./assets/backgrounds/cyber-track.png"],
+    bg4: ["./assets/v3/reactor-bridge.webp", "./assets/v3/cyber-track-alt.webp", "./assets/backgrounds/cyber-track-alt.png"],
+    bg5: ["./assets/v3/cyber-track.webp", "./assets/backgrounds/cyber-track.png"]
   };
+
+  const STORY = [
+    "A rolling blackout swallows the skyline. The city’s last courier carries a backup signal to the power spine; gather energy to keep the board moving.",
+    "A message from grid engineer Aya breaks through the static: the metro relay is failing. Boost across the transit lines before its signal fades.",
+    "The blackout has corrupted the data tunnel. Chain pickups to stabilise Aya’s transmission and find a safe route to the reactor.",
+    "The reactor bridge is under attack from security drones. Hold your line and survive long enough for Aya to open the core uplink.",
+    "The final signal is scattered through Apex. Recover the data shards and race to the uplink to bring the city’s lights home."
+  ];
 
   const LEVELS = [
     {
@@ -146,7 +146,8 @@
   let storyComplete = false;
 
   let score = 0;
-  let best = Number(localStorage.getItem(BEST_KEY) || 0) || 0;
+  let best = 0;
+  try { best = Number(localStorage.getItem(BEST_KEY) || 0) || 0; } catch {}
   let lives = 3;
   let rewards = 0;
   let distance = 0;
@@ -195,6 +196,8 @@
 
   let AC = null;
   let master = null;
+  let musicGain = null;
+  let effectsGain = null;
   let musicTimer = null;
   let musicStep = 0;
 
@@ -238,6 +241,7 @@
   function setPanel(title, text, show = true) {
     if (refs.panelTitle) refs.panelTitle.textContent = title;
     if (refs.panelText) refs.panelText.textContent = text;
+    if (refs.btnStart) refs.btnStart.textContent = running && !dead ? "Continue" : "Start Run";
     if (refs.panel) refs.panel.style.display = show ? "flex" : "none";
   }
 
@@ -299,16 +303,20 @@
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
     if (!AC) {
-      AC = new Ctx();
+      try { AC = new Ctx(); } catch { return null; }
       master = AC.createGain();
       master.gain.value = 0.12;
       master.connect(AC.destination);
+      musicGain = AC.createGain(); effectsGain = AC.createGain();
+      musicGain.gain.value = Number($("musicVolume")?.value ?? 60) / 100;
+      effectsGain.gain.value = Number($("effectsVolume")?.value ?? 80) / 100;
+      musicGain.connect(master); effectsGain.connect(master);
     }
     if (AC.state === "suspended") AC.resume().catch(() => {});
     return AC;
   }
 
-  function tone(freq, dur = 0.08, type = "triangle", gain = 0.05, delay = 0) {
+  function tone(freq, dur = 0.08, type = "triangle", gain = 0.05, delay = 0, channel = "effects", endFreq = freq) {
     const ac = ensureAudio();
     if (!ac || muted) return;
     const start = ac.currentTime + delay;
@@ -316,16 +324,17 @@
     const g = ac.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, start);
+    if (endFreq !== freq) osc.frequency.exponentialRampToValueAtTime(Math.max(1,endFreq), start + dur);
     g.gain.setValueAtTime(0.0001, start);
     g.gain.exponentialRampToValueAtTime(gain, start + 0.01);
     g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
     osc.connect(g);
-    g.connect(master || ac.destination);
+    g.connect((channel === "music" ? musicGain : effectsGain) || master || ac.destination);
     osc.start(start);
     osc.stop(start + dur + 0.04);
   }
 
-  function noise(dur = 0.1, gain = 0.04) {
+  function noise(dur = 0.1, gain = 0.04, channel = "effects") {
     const ac = ensureAudio();
     if (!ac || muted) return;
     const buffer = ac.createBuffer(1, Math.floor(ac.sampleRate * dur), ac.sampleRate);
@@ -336,7 +345,7 @@
     src.buffer = buffer;
     g.gain.value = gain;
     src.connect(g);
-    g.connect(master || ac.destination);
+    g.connect((channel === "music" ? musicGain : effectsGain) || master || ac.destination);
     src.start();
     src.stop(ac.currentTime + dur);
   }
@@ -346,21 +355,27 @@
     if (name === "jump") { tone(520, 0.06, "sine", 0.05); tone(820, 0.07, "triangle", 0.03, 0.03); return; }
     if (name === "lane") { tone(430, 0.04, "triangle", 0.03); return; }
     if (name === "pickup") { tone(1040, 0.05, "triangle", 0.04); tone(1560, 0.05, "sine", 0.024, 0.02); return; }
-    if (name === "boost") { tone(320, 0.07, "sawtooth", 0.045); tone(640, 0.12, "triangle", 0.032, 0.04); return; }
+    if (name === "boost") { tone(120, 0.28, "sawtooth", 0.055, 0, "effects", 580); noise(0.16, 0.04); tone(640, 0.12, "triangle", 0.032, 0.04); return; }
     if (name === "shield") { tone(580, 0.08, "sine", 0.045); tone(410, 0.12, "triangle", 0.03, 0.06); return; }
-    if (name === "hit") { noise(0.17, 0.07); tone(140, 0.18, "sawtooth", 0.05); return; }
+    if (name === "hit") { noise(0.22, 0.07); tone(180, 0.22, "sawtooth", 0.06, 0, "effects", 42); return; }
     if (name === "zone") { tone(330, 0.10, "triangle", 0.05); tone(440, 0.12, "triangle", 0.04, 0.06); tone(660, 0.18, "sine", 0.03, 0.12); return; }
     if (name === "mission") { tone(494, 0.08, "triangle", 0.045); tone(659, 0.10, "triangle", 0.035, 0.05); return; }
     if (name === "gameover") { tone(220, 0.10, "sawtooth", 0.055); tone(165, 0.14, "sine", 0.04, 0.08); tone(110, 0.20, "sine", 0.03, 0.18); return; }
   }
 
+  // Five changing electronic themes, with pulse bass, kick and light percussion.
   function musicTick() {
     if (!running || paused || muted) return;
     const notes = currentLevel().music;
-    const n = notes[musicStep++ % notes.length];
-    tone(n, 0.14, "triangle", 0.013);
-    if (musicStep % 2 === 0) tone(n * 2, 0.06, "sine", 0.009, 0.03);
-    if (musicStep % 4 === 0) tone(n / 2, 0.05, "sawtooth", 0.008, 0.02);
+    const step = musicStep++;
+    const n = notes[step % notes.length];
+    tone(n, 0.16, "triangle", 0.045, 0, "music");
+    if (step % 2 === 0) tone(n * 2, 0.09, "sine", 0.023, 0.04, "music");
+    if (step % 4 === 0) {
+      tone(125, 0.16, "sine", 0.12, 0, "music", 44);
+      tone(n / 2, 0.22, "sawtooth", 0.025, 0, "music");
+    }
+    if (step % 4 === 2) noise(0.045, 0.016, "music");
   }
 
   function startMusic() {
@@ -602,6 +617,7 @@
       rewards += missionComplete ? 1 : 0;
       lives = clamp(lives + 1, 1, 5);
       zoneIndex += 1;
+      musicStep = 0;
       zoneDistance = 0;
       spawnTimer = 0;
       pickupTimer = 0;
@@ -610,7 +626,7 @@
       addFloater(W * 0.5, H * 0.28, `ZONE ${zoneIndex + 1}`, "#ffffff", 28);
       addParticles(W * 0.5, H * 0.28, "rgba(69,220,255,.9)", 26, 280);
       sfx("zone");
-      setPanel(currentLevel().name, `Checkpoint reached!\n\n${currentLevel().objective}\n\nTap Start or the screen to continue.`, true);
+      setPanel(currentLevel().name, `${STORY[zoneIndex]}\n\nMission: ${currentLevel().objective}\n\nPress Continue to ride.`, true);
       paused = true;
       stopMusic();
       updateHUD();
@@ -619,7 +635,7 @@
       rewards += missionComplete ? 1 : 0;
       score += 750;
       sfx("zone");
-      gameOver("Core restored! You completed the Neon Hover Runner campaign.");
+      gameOver("The courier delivers the signal to the Apex uplink. The core pulses back to life and the city lights return, district by district. The blackout is over.");
     }
   }
 
@@ -702,10 +718,8 @@
     running = false;
     dead = true;
     stopMusic();
-    if (score > best) {
-      best = Math.floor(score);
-      localStorage.setItem(BEST_KEY, String(best));
-    }
+    best = Math.max(best, Math.floor(score));
+    try { localStorage.setItem(BEST_KEY, String(best)); } catch {}
     sfx("gameover");
     ggScore("game_over");
     const text = `${reason}\n\nScore: ${Math.floor(score)}\nBest: ${Math.floor(best)}\nRewards earned: ${rewards}\nZone reached: ${Math.min(zoneIndex + 1, LEVELS.length)} / ${LEVELS.length}\n\nTap Start Run or Restart to go again.`;
@@ -718,6 +732,8 @@
   let downY = 0;
   let lastX = 0;
   let lastY = 0;
+  let anchorX = 0;
+  let anchorY = 0;
   let moved = false;
 
   function pointerPos(ev) {
@@ -741,30 +757,25 @@
     }
     pointerActive = true;
     const p = pointerPos(ev);
-    downX = lastX = p.x;
-    downY = lastY = p.y;
+    downX = lastX = anchorX = p.x;
+    downY = lastY = anchorY = p.y;
     moved = false;
   }, { passive: false });
 
   canvas.addEventListener("pointermove", (ev) => {
     if (!pointerActive || !running || paused) return;
     const p = pointerPos(ev);
-    const dx = p.x - lastX;
-    const dy = p.y - lastY;
+    const dx = p.x - anchorX;
+    const dy = p.y - anchorY;
+    lastX = p.x; lastY = p.y;
     if (Math.abs(p.x - downX) > 10 || Math.abs(p.y - downY) > 10) moved = true;
     if (Math.abs(dx) > 26 && Math.abs(dx) > Math.abs(dy)) {
       changeLane(dx > 0 ? 1 : -1);
-      lastX = p.x;
-      downX = p.x;
-    } else {
-      lastX = p.x;
+      anchorX = p.x;
     }
     if (dy < -34 && Math.abs(dy) > Math.abs(dx) * 1.1) {
       activateBoost();
-      lastY = p.y;
-      downY = p.y;
-    } else {
-      lastY = p.y;
+      anchorY = p.y;
     }
   }, { passive: true });
 
@@ -955,8 +966,9 @@
     const level = currentLevel();
     const bg = images[level.bg];
     if (bg) {
-      const sway = Math.sin(t * 0.00025) * 10;
-      ctx.drawImage(bg, -8, sway - 14, W + 16, H + 28);
+      const cover = Math.max(W / bg.naturalWidth, H / bg.naturalHeight);
+      const bw = bg.naturalWidth * cover, bh = bg.naturalHeight * cover;
+      ctx.drawImage(bg, (W-bw)/2, (H-bh)/2, bw, bh);
       ctx.fillStyle = "rgba(4,8,18,.24)";
       ctx.fillRect(0, 0, W, H);
     } else {
@@ -1190,7 +1202,7 @@
         ctx.save();
         ctx.shadowColor = obj.kind === "drone" ? "rgba(69,220,255,.85)" : "rgba(255,91,136,.9)";
         ctx.shadowBlur = 18 * s.scale;
-        if (img) drawImageCentered(img, s.x, s.y, size, size * (obj.kind === "barrier" ? 0.72 : 1), obj.rot, alpha);
+        if (img) drawImageCentered(img, s.x, s.y + (obj.kind === "drone" ? Math.sin(t * .008 + obj.progress * 5) * 5 * s.scale : 0), size, size * (obj.kind === "barrier" ? 0.72 : 1), obj.kind === "mine" ? obj.rot : 0, alpha);
         else drawObstacleShape(obj, s.x, s.y, size);
         ctx.restore();
       }
@@ -1251,7 +1263,12 @@
     }
     ctx.globalAlpha = player.invuln > 0 && Math.sin(t * 0.03) > 0 ? 0.52 : 1;
     const img = boostTimer > 0 ? (images.playerBoost || images.player) : images.player;
-    if (img) {
+    if (images.riderAtlas) {
+      const atlas = images.riderAtlas;
+      const frame = boostTimer > 0 ? 3 : player.jump > 3 ? 2 : Math.abs(player.laneTarget - player.laneIndex) > .18 ? 1 : 0;
+      const sw = atlas.naturalWidth / 2, sh = atlas.naturalHeight / 2;
+      ctx.drawImage(atlas, (frame % 2) * sw, Math.floor(frame / 2) * sh, sw, sh, -w / 2, -h / 2, w, h);
+    } else if (img) {
       ctx.drawImage(img, -w / 2, -h / 2, w, h);
     } else {
       ctx.fillStyle = "rgba(69,220,255,.95)";
@@ -1381,6 +1398,12 @@
     else if (running && !paused) startMusic();
   });
 
+  for (const [id, channel] of [["musicVolume", "music"], ["effectsVolume", "effects"]]) {
+    $(id)?.addEventListener("input", event => {
+      const node = channel === "music" ? musicGain : effectsGain;
+      if (node) node.gain.value = Number(event.target.value) / 100;
+    });
+  }
   window.addEventListener("resize", resize, { passive: true });
   window.addEventListener("message", (ev) => {
     const data = ev.data || {};
@@ -1401,7 +1424,7 @@
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      paused = true;
+      if (running && !dead && !paused) { paused = true; setPanel("Paused", "Your run is paused. Press Continue when you are ready to ride.", true); }
       stopMusic();
     } else {
       lastT = performance.now();
@@ -1412,7 +1435,7 @@
     resize();
     makeStars();
     await loadAssets();
-    setPanel("Neon Hover Runner", "The city grid is failing. Race through five neon districts, complete missions, and deliver the core signal before the blackout spreads.\n\nTap Start Run to begin.", true);
+    setPanel("Neon Hover Runner", STORY[0] + "\n\nRide through five districts, collect the signal and reach the Apex uplink before the blackout spreads.\n\nTap Start Run to begin.", true);
     updateHUD();
     try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
     requestAnimationFrame(loop);
