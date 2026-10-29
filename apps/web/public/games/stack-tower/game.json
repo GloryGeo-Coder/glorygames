@@ -1,6 +1,6 @@
 {
   "title": "Stack Tower",
-  "description": "Enhanced timing game. Tap to drop glowing pseudo-3D blocks, build perfect combos, charge Focus Mode, and climb as high as possible.",
+  "description": "Build from Harbour Heights to Cloud Gardens and Aurora Summit. Complete precision contracts, earn repairs and climb higher in an endless tower adventure.",
   "tags": [
     "arcade",
     "mobile",
@@ -22,7 +22,7 @@
     },
     {
       "key": "Buttons",
-      "action": "Pause / Drop / Submit / Restart / Sound"
+      "action": "Pause / Drop / Repair / Submit / Restart / Effects / Music"
     }
   ],
   "features": {
@@ -37,8 +37,9 @@
     ],
     "assets": {
       "backgrounds": [
-        "bg-tower-city.png",
-        "bg-tower-city-alt.png"
+        "skyline-city.webp",
+        "skyline-clouds.webp",
+        "skyline-aurora.webp"
       ],
       "blocks": [
         "block-emerald.png",
@@ -47,7 +48,10 @@
         "block-gold.png",
         "block-red.png"
       ]
-    }
+    },
+    "stageContracts": true,
+    "earnedRepairs": true,
+    "separateAudioControls": true
   },
-  "version": "2.0.0"
+  "version": "3.0.0"
 }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#060a16" />
   <title>Stack Tower • WebGameArena</title>
   <meta name="description" content="Stack Tower — tap to drop glowing 3D blocks, build perfect combos, and climb higher." />
@@ -15,7 +15,7 @@
     <div class="hudLeft">
       <div class="brand" id="ggTitle">Stack Tower</div>
       <div class="sub" id="ggSub">Tap to drop • Perfect stacks charge Focus Mode</div>
-      <span class="badge">Enhanced Mobile Stack</span>
+      <span class="badge" id="worldLabel">Harbour Heights · Stage 1</span>
     </div>
 
     <div class="hudRight">
@@ -30,6 +30,7 @@
     <canvas id="c" aria-label="Stack Tower game canvas"></canvas>
 
     <div class="meters">
+      <div class="contract" id="contractLabel" aria-live="polite">Contract: 0/3 perfect drops</div>
       <div class="meterCard">
         <div class="meterTop"><span>Focus</span><b id="focusLabel">0%</b></div>
         <div class="meter"><div id="focusFill"></div></div>
@@ -68,13 +69,16 @@
     <nav class="actions">
       <button class="chip" id="btnPause">Pause</button>
       <button class="chip primary" id="btnDrop">Drop</button>
+      <button class="chip" id="btnRepair" disabled>Repair 0</button>
       <button class="chip" id="btnSubmit">Submit</button>
       <button class="chip" id="btnRestart">Restart</button>
-      <button class="chip" id="btnMute">Sound</button>
+      <button class="chip" id="btnMute">Effects on</button>
+      <button class="chip" id="btnMusic">Music on</button>
     </nav>
   </main>
 
-  <script src="./game.js"></script>
+  <script src="./skyline-logic.js?v=1"></script>
+  <script src="./game.js?v=3"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>
