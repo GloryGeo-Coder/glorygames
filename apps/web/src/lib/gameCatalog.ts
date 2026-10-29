@@ -28,7 +28,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "sky-temple-3d-rise-of-the-relic-master": { category: "ADVENTURE", description: "Explore four 3D worlds, collect five relics in each and defeat their Guardians using jumps, gliding and relic blasts, with world music and saved checkpoints." },
   "space-dodger": { category: "ACTION", description: "Pilot a GLB spacecraft through 18 story sectors with cinematic space backgrounds, rescue and escort objectives, reactive bosses, saved checkpoints and separate audio controls." },
   "space-pilot-platformer": { title: "Space Pilot Platformer: The Starfall Rift", category: "PLATFORMER", description: "Join Pilot Nova across 30 Starfall Rift missions in six worlds, rescue the expedition, restore the portal network and face the NOVA-X Commander, with saved checkpoints, original level music and the separate eight-mission route." },
-  "stack-tower": { category: "PUZZLE", description: "Build an endless tower through three skylines, complete precision contracts, earn repairs and charge Focus Mode." },
+  "stack-tower": { category: "PUZZLE", description: "Build through three skylines, take on daily and timed construction challenges, and unlock tower styles." },
   "swipe-racer": { category: "RACING", description: "Race through four city, mountain, coastal and neon-night missions. Swipe around traffic, collect pickups, use nitro and complete route objectives." },
   "word-dash": { category: "WORD_TRIVIA", description: "Complete four themed word missions by typing or tapping letters, building spelling streaks and using Hint, Freeze and extra-time powers." },
 };

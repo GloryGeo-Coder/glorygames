@@ -29,6 +29,22 @@
   const btnMute = $('btnMute');
   const btnMusic = $('btnMusic'), btnRepair = $('btnRepair');
   const skyline = window.StackSkyline;
+  const challenges = window.StackChallenges;
+  const modeSelect = $('modeSelect'), styleSelect = $('styleSelect'), setup = $('setup');
+  let localStore = null; try { localStore = window.localStorage; } catch {}
+  let challengeProfile = challenges.load(localStore);
+  let selectedMode = 'endless';
+  function refreshSetup() {
+    const day=challenges.utcDay(), goal=challenges.objective(selectedMode,day);
+    $('modeDetails').textContent = selectedMode==='daily' ? `Today (${day} UTC): build ${goal.height} floors and land ${goal.perfects} perfect drops. Resets at 00:00 UTC.` : selectedMode==='timed' ? `Build ${goal.height} floors and land ${goal.perfects} perfect drops within ${goal.seconds} seconds.` : 'Build as high as you can across three skyline worlds.';
+    styleSelect.replaceChildren(...challenges.styles.map(style=>{const o=document.createElement('option');o.value=style.id;const unlocked=challenges.unlocked(style.id,state.best,challengeProfile);o.disabled=!unlocked;o.textContent=style.name+(unlocked?'':' · '+style.need);return o;}));
+    if(!challenges.unlocked(challengeProfile.style,state.best,challengeProfile))challengeProfile.style='classic';
+    styleSelect.value=challengeProfile.style;
+    const next=challenges.styles.filter(x=>!challenges.unlocked(x.id,state.best,challengeProfile));
+    $('styleDetails').textContent=next.length?'Unlock styles: '+next.map(x=>x.name+' — '+x.need).join(' · '):'All tower styles unlocked.';
+  }
+  modeSelect.onchange=()=>{selectedMode=modeSelect.value;refreshSetup();};
+  styleSelect.onchange=()=>{if(challenges.unlocked(styleSelect.value,state.best,challengeProfile)){challengeProfile.style=styleSelect.value;challenges.save(localStore,challengeProfile);refreshSetup();}};
   const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
   const saveBest = value => { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} };
 
@@ -60,6 +76,8 @@
     CH = Math.max(1, Math.floor(rect.height || window.innerHeight));
     if (state.running && oldW > 0 && CW !== oldW) {
       const scale = CW / oldW;
+      // Keep the loss/spawn threshold in the same horizontal space as the tower.
+      state.minWidth *= scale;
       for (const b of [...state.stack, ...state.falling, ...(state.current ? [state.current] : [])]) { b.x *= scale; b.w *= scale; }
       for (const p of [...state.particles, ...state.floaters]) p.x *= scale;
     }
@@ -204,6 +222,8 @@
   const MIN_W = 34;
 
   const state = {
+    minWidth: MIN_W,
+    mode: 'endless', goal: null, remaining: 0, totalPerfects: 0,
     running: false,
     paused: false,
     gameOver: false,
@@ -248,6 +268,9 @@
     $('worldLabel').textContent = skyline.worldForStage(state.progress.stage).name + ' · Stage ' + (state.progress.stage + 1);
     const contract = state.progress.rewarded ? 'Contract complete · +400' : 'Contract: ' + Math.min(3,state.progress.perfects) + '/3 perfect drops · +400';
     if($('contractLabel').textContent !== contract) $('contractLabel').textContent = contract;
+    const challengeLabel=$('challengeLabel');
+    challengeLabel.hidden=!state.goal;
+    if(state.goal){const timer=state.mode==='timed'?' · '+Math.ceil(state.remaining)+'s':'';const text=(state.mode==='daily'?'Daily':'Timed')+': '+Math.min(state.height,state.goal.height)+'/'+state.goal.height+' floors · '+Math.min(state.totalPerfects,state.goal.perfects)+'/'+state.goal.perfects+' perfect'+timer;if(challengeLabel.textContent!==text)challengeLabel.textContent=text;}
     btnRepair.textContent = 'Repair ' + state.progress.repairs;
     btnRepair.disabled = !state.running || state.paused || state.progress.repairs < 1;
     if (elHeight) elHeight.textContent = String(state.height | 0);
@@ -274,6 +297,7 @@
     state.running = false;
     state.paused = false;
     state.gameOver = false;
+    state.minWidth = MIN_W;
     state.height = 0;
     state.combo = 0;
     state.score = 0;
@@ -286,19 +310,25 @@
     state.focusTimer = 0;
     state.precision = 0;
     state.progress = skyline.create();
+    state.mode=selectedMode;state.goal=null;state.remaining=0;state.totalPerfects=0;
     state.shake = 0;
     lastLiveScore = -1;
     positionBase();
     spawnNextBlock();
     updateCamera(true);
     updateHUD();
+    setup.hidden=false;refreshSetup();
     showPanel('Stack Tower: Skyline Adventure', 'Build from the harbour to the clouds and the aurora. Land three perfect drops in each stage for a contract bonus. Four perfect drops earn a repair; use it to widen your tower.');
   }
 
   function startGame() {
+    if(!state.running && !state.goal){state.mode=selectedMode;state.goal=challenges.objective(state.mode,challenges.utcDay());state.remaining=state.goal?.seconds||0;state.totalPerfects=0;}
+    setup.hidden=true;
+    last=performance.now();
     state.running = true;
     state.paused = false;
     state.gameOver = false;
+    updateHUD();
     hidePanel();
     ensureAudio();
     sfx('start');
@@ -310,14 +340,16 @@
     state.paused = !state.paused;
     if (state.paused) {
       stopMusic();
+      setup.hidden=true;
       showPanel('Paused', 'Tap Start or Pause to continue.');
     } else {
       hidePanel();
+      last=performance.now();
       startMusic();
     }
   }
 
-  function endGame(reason) {
+  function endGame(reason, won = false) {
     if (state.gameOver) return;
     state.gameOver = true;
     state.running = false;
@@ -327,10 +359,16 @@
       state.best = state.height;
       saveBest(state.best);
     }
+    if(won && state.goal){
+      if(state.mode==='daily'&&!challengeProfile.dates.includes(state.goal.day))challengeProfile.dates.push(state.goal.day);
+      if(state.mode==='timed')challengeProfile.timedWins++;
+      challenges.save(localStore,challengeProfile);
+    }
     updateHUD();
     postScore('game_over');
-    sfx('gameover');
-    showPanel('Game Over', `${reason}\n\nHeight: ${state.height} • Score: ${Math.floor(state.score)} • Best: ${state.best}\nTap Start to try again.`);
+    sfx(won?'focus':'gameover');
+    setup.hidden=false;refreshSetup();
+    showPanel(won?'Challenge complete':'Game Over', `${reason}\n\nHeight: ${state.height} • Score: ${Math.floor(state.score)} • Best: ${state.best}\nTap Start to try again.`);
   }
 
   function updateCamera(immediate = false) {
@@ -342,7 +380,7 @@
 
   function spawnNextBlock() {
     const top = state.stack[state.stack.length - 1];
-    const w = Math.max(MIN_W, top.w);
+    const w = Math.max(state.minWidth, top.w);
     const y = top.y - (BLOCK_H + GAP);
     const fromLeft = state.height % 2 === 0;
     const speedBase = 175 + Math.min(260, state.height * 10) + Math.min(110, state.combo * 7);
@@ -434,6 +472,7 @@
     };
     state.stack.push(settled);
     state.height += 1;
+    if(perfect)state.totalPerfects++;
     state.score += 15 * state.height;
     const milestone = skyline.placement(state.progress, perfect, state.height);
     if(milestone.contract){state.score += 400;addFloater(newX,cur.y-65,'CONTRACT +400','#a6ffe1',21);sfx('focus');}
@@ -442,10 +481,11 @@
     createBurst(newX, cur.y + 8, perfect ? 'rgba(250,204,21,.72)' : 'rgba(255,255,255,.35)', perfect ? 14 : 8);
     state.current = null;
 
-    if (newW < MIN_W) {
+    if (newW < state.minWidth) {
       endGame('The tower became too narrow!');
       return;
     }
+    if(challenges.achieved(state.goal,state.height,state.totalPerfects)){endGame('Construction objective complete!',true);return;}
 
     spawnNextBlock();
     updateHUD();
@@ -484,7 +524,7 @@
     ensureAudio();
     if (!state.running && !state.gameOver) { startGame(); return; }
     if (state.gameOver) { resetGame(); startGame(); return; }
-    if (state.paused) { state.paused = false; hidePanel(); startMusic(); return; }
+    if (state.paused) { state.paused = false; hidePanel(); last=performance.now(); startMusic(); return; }
     dropBlock();
   }
   canvas.addEventListener('pointerdown', handleDropInteraction, { passive: false });
@@ -502,12 +542,13 @@
     ensureAudio();
     if (state.gameOver) resetGame();
     if (!state.running) startGame();
-    else if (state.paused) { state.paused = false; hidePanel(); startMusic(); }
+    else if (state.paused) { state.paused = false; hidePanel(); last=performance.now(); startMusic(); }
     else startGame();
   };
   btnOverlay.onclick = () => {
     state.paused = state.running && !state.gameOver ? true : state.paused;
     stopMusic();
+    setup.hidden=state.running;
     showPanel('How to play', 'Tap when the moving block lines up with the tower.\n\n• Perfect drops build combo\n• Mistakes cut away the overhang\n• Perfect chains charge Focus Mode\n• Focus Mode slows the next blocks\n• Three perfect drops complete each stage contract\n• Four perfect drops earn a repair\n• Build through the harbour, clouds and aurora');
   };
   btnPause.onclick = togglePause;
@@ -537,14 +578,19 @@
 
   let last = performance.now();
   function loop(now) {
-    const dt = Math.min(0.033, Math.max(0.001, (now - last) / 1000));
+    const elapsed = Math.max(0, (now - last) / 1000);
+    const dt = Math.min(0.033, elapsed);
     last = now;
-    step(dt);
+    step(dt,elapsed);
     draw(now);
     requestAnimationFrame(loop);
   }
 
-  function step(dt) {
+  function step(dt,elapsed=dt) {
+    if(state.running&&!state.paused&&!state.gameOver&&state.mode==='timed'){
+      state.remaining=Math.max(0,state.remaining-elapsed);
+      if(state.remaining<=0){endGame('Time is up! Try the timed objective again.');return;}
+    }
     if (state.running && !state.paused && state.focusTimer > 0) state.focusTimer = Math.max(0, state.focusTimer - dt);
     state.shake = Math.max(0, state.shake - dt * 28);
     state.bgShift += dt * 6;
@@ -723,7 +769,9 @@
     const d = b.d;
     if (y > ch() + 120 || y < -200) return;
 
-    const colors = FACE_COLORS[b.colorIdx % FACE_COLORS.length];
+    const style=challenges.styles.find(x=>x.id===challengeProfile.style);
+    const palette=style?.colors||FACE_COLORS;
+    const colors = palette[b.colorIdx % palette.length];
     const topCol = colors[0];
     const frontCol = colors[1];
     const sideCol = colors[2];
@@ -739,7 +787,7 @@
     // Top face
     const topPts = [[x0, 0], [x1, 0], [x1 + d, -d * 0.6], [x0 + d, -d * 0.6]];
     drawPoly(topPts, topCol);
-    const tex = images[b.texture];
+    const tex = challengeProfile.style === 'classic' ? images[b.texture] : null;
     if (tex) {
       ctx.save();
       pathPoly(topPts);

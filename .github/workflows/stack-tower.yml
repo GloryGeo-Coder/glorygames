@@ -22,8 +22,8 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
-      - run: node --check apps/web/public/games/stack-tower/game.js && node --check apps/web/public/games/stack-tower/skyline-logic.js
-      - run: node --test apps/web/scripts/stack-tower-logic.test.cjs
+      - run: node --check apps/web/public/games/stack-tower/game.js && node --check apps/web/public/games/stack-tower/skyline-logic.js && node --check apps/web/public/games/stack-tower/challenges.js
+      - run: node --test apps/web/scripts/stack-tower-logic.test.cjs apps/web/scripts/stack-tower-challenges.test.cjs
       - run: npm install --prefix "$RUNNER_TEMP/stack-browser" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.64.0
       - name: Playable mobile and desktop regression
         env:

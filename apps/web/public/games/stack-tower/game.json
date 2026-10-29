@@ -1,6 +1,6 @@
 {
   "title": "Stack Tower",
-  "description": "Build from Harbour Heights to Cloud Gardens and Aurora Summit. Complete precision contracts, earn repairs and climb higher in an endless tower adventure.",
+  "description": "Build from Harbour Heights to the aurora, complete daily construction challenges and timed objectives, and unlock new tower styles.",
   "tags": [
     "arcade",
     "mobile",
@@ -51,7 +51,10 @@
     },
     "stageContracts": true,
     "earnedRepairs": true,
-    "separateAudioControls": true
+    "separateAudioControls": true,
+    "dailyChallenges": true,
+    "timedObjectives": true,
+    "unlockableStyles": true
   },
-  "version": "3.0.0"
+  "version": "4.0.0"
 }

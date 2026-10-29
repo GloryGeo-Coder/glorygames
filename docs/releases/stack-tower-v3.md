@@ -11,3 +11,15 @@ The built-in image-generation tool created three full-bleed vertical backgrounds
 ## Checks
 
 `node --test apps/web/scripts/stack-tower-logic.test.cjs` tests the stage, bonus and repair rules. `apps/web/scripts/stack-tower-browser.cjs` covers portrait, landscape and desktop layouts, real placement interactions, 21 floors, stage transitions, repair, pause, audio controls, best-height persistence and unavailable storage/audio. The GitHub workflow runs both checks and saves screenshots. Production deployment is performed separately by the site owner.
+
+## Rotation reliability follow-up
+
+The active run now scales its minimum playable width with the tower when the
+playfield changes width, including while paused. Perfect placements and newly
+spawned blocks therefore remain playable after landscape-to-portrait rotation;
+genuinely too-narrow placements still end the run. Restart restores the standard
+minimum for the new run.
+
+Runtime and browser regressions cover a 60px tower rotated from 844px to 390px,
+continued placement and stage progression, repeated paused rotations, scaled
+losses, height-only resizing, and restart isolation.

@@ -1628,10 +1628,10 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "stack-tower": {
     "category": "Puzzle",
-    "summary": "Build an endless tower through three skylines, complete precision contracts, earn repairs and charge Focus Mode.",
+    "summary": "Build through three skylines, take on daily and timed construction challenges, and unlock tower styles.",
     "overview": [
       "Stack Tower: Skyline Adventure turns a timing challenge into a journey above three spectacular environments. Line up each moving block, build your tower and see how high you can climb.",
-      "Perfect placements build combos and charge Focus Mode. Complete stage contracts for bonus points and earn repairs to restore width when the tower gets narrow."
+      "Perfect placements build combos and charge Focus Mode. Complete stage contracts, earn repairs and take on construction challenges to unlock new block and tower styles."
     ],
     "story": [
       "Your ambitious construction project begins at Harbour Heights. Keep building through the Cloud Gardens and onward to the Aurora Summit, with a new precision contract at every stage.",
@@ -1642,6 +1642,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Perfect placements build combos and automatically charge Focus Mode. Misaligned blocks lose the overhanging portion.",
       "Land three perfect drops within a stage to earn its contract bonus. Stages change every ten floors.",
       "Earn a repair after four perfect drops in a stage, then press Repair to widen a narrow tower. You can hold up to two repairs.",
+      "Choose a daily challenge or timed objective from the start screen. Complete both the floor and perfect-drop targets to win.",
       "Continue building for as long as you can. The round ends if a block misses or the tower becomes too narrow."
     ],
     "desktop": ["Press Space, Enter or Down Arrow to drop; P pauses and R restarts. Use the on-screen controls to repair or submit a score."],
@@ -1649,16 +1650,18 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "systems": [
       {"title":"Perfect combos and Focus Mode","body":"Accurate placements build a combo and automatically activate a short period of slower movement when Focus is full."},
       {"title":"Stage contracts","body":"Land three perfect drops within a ten-floor stage for a 400-point bonus."},
-      {"title":"Earned repairs","body":"Four perfect drops in a stage earn a repair. Use it to widen the top of the tower, up to the permitted width."}
+      {"title":"Earned repairs","body":"Four perfect drops in a stage earn a repair. Use it to widen the top of the tower, up to the permitted width."},
+      {"title":"Daily and timed challenges","body":"Daily objectives change at midnight UTC. Timed mode gives you 90 seconds to reach both construction targets."},
+      {"title":"Unlockable tower styles","body":"Reach height milestones and complete challenges to unlock new colour styles for your blocks and tower."}
     ],
-    "progression": ["The endless challenge travels through Harbour Heights, Cloud Gardens and Aurora Summit at heights 0, 10 and 20. New contracts continue after the summit.", "Your best height is stored in the browser when local storage is available."],
+    "progression": ["The endless challenge travels through Harbour Heights, Cloud Gardens and Aurora Summit at heights 0, 10 and 20. New contracts continue after the summit.", "Your best height, unlocked styles and challenge achievements are stored in the browser when local storage is available."],
     "tips": ["Watch the top block and time the crossing rather than tapping repeatedly.", "Earn repairs through accurate drops, then save them for a narrow tower.", "Use the slower Focus Mode to line up the next drop.", "A safe overlap is better than missing while attempting a perfect placement."],
     "faqs": [
       {"q":"How many environments are there?","a":"There are three: Harbour Heights, Cloud Gardens and Aurora Summit. The endless tower continues beyond the summit."},
       {"q":"How do repairs work?","a":"Earn a repair for every four perfect placements in a stage, up to two held at once. Press Repair to widen a narrow tower; a repair is not consumed when the tower is already at its maximum width."},
       {"q":"Can I play on mobile?","a":"Yes. Tap the game area or use the Drop button; the controls adapt to portrait and landscape screens."},
       {"q":"Can I turn off music or effects?","a":"Yes. Music and effects have separate on-screen controls."},
-      {"q":"What is saved?","a":"Your best height is saved in this browser when local storage is available. Each new run starts at the harbour."}
+      {"q":"What is saved?","a":"Your best height, selected style and challenge achievements are saved in this browser when local storage is available. Each new run starts at the harbour."}
     ]
   },
   "swipe-racer": {
