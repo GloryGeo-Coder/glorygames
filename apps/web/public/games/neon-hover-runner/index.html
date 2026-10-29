@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#060917" />
   <title>Neon Hover Runner • GloryGames</title>
   <meta name="description" content="A neon cyber-runner with missions, levels, animated sprites, synth sound effects and responsive controls." />
@@ -70,7 +70,7 @@
               <div class="eyebrow">Story Mode</div>
               <h2 id="panelTitle">Neon Hover Runner</h2>
             </div>
-            <span class="tag">Responsive Edition</span>
+            <span class="tag">Five districts</span>
           </div>
 
           <div class="panelBody" id="panelText">The city grid is failing. You are the lead hover courier racing across five neon districts to restore the power spine.
@@ -85,12 +85,16 @@ Complete missions, earn rewards, and master each district before the blackout re
             <span>Mobile friendly controls</span>
           </div>
 
+          <div class="audioControls" aria-label="Audio settings">
+            <label>Music <input id="musicVolume" type="range" min="0" max="100" value="60" aria-label="Music volume"></label>
+            <label>Effects <input id="effectsVolume" type="range" min="0" max="100" value="80" aria-label="Sound effects volume"></label>
+          </div>
           <div class="btnRow">
             <button class="btn primary" id="btnStart">Start Run</button>
             <button class="btn" id="btnOverlay">How to Play</button>
           </div>
 
-          <div class="tiny">Sound unlocks on first interaction. Works in standalone play or embedded play.</div>
+          <div class="tiny">Sound begins after you start the run. Adjust music and effects above.</div>
         </div>
       </div>
 
@@ -102,7 +106,7 @@ Complete missions, earn rewards, and master each district before the blackout re
     </main>
   </div>
 
-  <script src="./game.js"></script>
+  <script src="./game.js?v=3"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

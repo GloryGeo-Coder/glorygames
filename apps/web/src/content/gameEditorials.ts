@@ -928,14 +928,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "neon-hover-runner": {
     "category": "Racing",
-    "summary": "Carry the core through five neon zones. Switch lanes, jump barriers, collect energy and data shards, use boosts and shields, and complete each zone objective.",
+    "summary": "Carry the last backup signal through five neon districts, evade security drones and restore the city’s lights with help from engineer Aya.",
     "overview": [
       "Neon Hover Runner takes you through five zones: Skyline Warmup, Metro Surge, Data Tunnel, Reactor Bridge and Apex Night Run. Each has a distance goal and an objective involving energy, boosts, combos, survival or data shards. Finish the final zone to restore the core.",
       "The gameplay combines steering, jumping and occasional bursts of extra speed. Energy orbs, shields and magnets encourage you to make choices about which lanes are worth entering instead of simply steering away from everything you see."
     ],
     "story": [
-      "A hover pilot speeds along a futuristic track of glowing lanes, barriers and mines. Helpful energy pickups are scattered among the obstacles, turning every movement into a choice between a safer route and a potentially rewarding detour.",
-      "The setting changes the feeling of the challenge: glowing lanes, barriers and mines turn the track into a constantly moving navigation puzzle."
+      "A rolling blackout is swallowing the city district by district. With the power spine failing, a hoverboard courier carries the last backup signal across the skyline while grid engineer Aya guides him over a breaking radio link.",
+      "The route runs through the metro, a corrupted data tunnel and the reactor bridge. Security drones and collapsing systems stand between the courier and the Apex uplink, where restoring the signal can bring the city’s lights back."
     ],
     "howToPlay": [
       "Begin a run and observe the next obstacles and pickup locations.",
@@ -946,7 +946,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Continue for as long as the game allows and use the resulting score as a target for another run."
     ],
     "desktop": [
-      "Drag the pointer horizontally to steer. Tap or click for the jump action, and follow the game's boost prompts when enough energy has been collected."
+      "Use the arrow keys or A and D to change lanes, Space or W to jump, and Shift or B to boost. Drag or click also works."
     ],
     "mobile": [
       "Swipe or drag horizontally to steer and tap to jump.",

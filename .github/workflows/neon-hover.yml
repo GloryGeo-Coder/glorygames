@@ -1,0 +1,38 @@
+name: Neon Hover Runner checks
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/neon-hover-runner/**'
+      - 'apps/web/scripts/neon-hover-*'
+      - '.github/workflows/neon-hover.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/neon-hover-runner/**'
+      - 'apps/web/scripts/neon-hover-*'
+      - '.github/workflows/neon-hover.yml'
+permissions:
+  contents: read
+jobs:
+  neon-hover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/neon-hover-runner/game.js && node --check apps/web/scripts/neon-hover-browser.cjs
+      - run: npm install --prefix "$RUNNER_TEMP/hover-browser" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.64.0
+      - name: Mobile and story regression
+        env:
+          PLAYWRIGHT_PATH: ${{ runner.temp }}/hover-browser/node_modules/playwright
+          CHROME_BIN: /usr/bin/google-chrome
+          HOVER_SCREENSHOTS: ${{ runner.temp }}/hover-screenshots
+        run: node apps/web/scripts/neon-hover-browser.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: neon-hover-screenshots
+          path: ${{ runner.temp }}/hover-screenshots
+          if-no-files-found: ignore
