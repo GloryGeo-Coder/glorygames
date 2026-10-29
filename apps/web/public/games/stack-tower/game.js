@@ -328,6 +328,7 @@
     state.running = true;
     state.paused = false;
     state.gameOver = false;
+    updateHUD();
     hidePanel();
     ensureAudio();
     sfx('start');
