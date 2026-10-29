@@ -76,8 +76,9 @@
     CH = Math.max(1, Math.floor(rect.height || window.innerHeight));
     if (state.running && oldW > 0 && CW !== oldW) {
       const scale = CW / oldW;
-      // Keep the loss/spawn threshold in the same horizontal space as the tower.
+      // Keep both width limits in the same horizontal space as the tower.
       state.minWidth *= scale;
+      state.maxWidth *= scale;
       for (const b of [...state.stack, ...state.falling, ...(state.current ? [state.current] : [])]) { b.x *= scale; b.w *= scale; }
       for (const p of [...state.particles, ...state.floaters]) p.x *= scale;
     }
@@ -220,9 +221,11 @@
   const BLOCK_D = 20;
   const GAP = 0;
   const MIN_W = 34;
+  const MAX_W = 300;
 
   const state = {
     minWidth: MIN_W,
+    maxWidth: MAX_W,
     mode: 'endless', goal: null, remaining: 0, totalPerfects: 0,
     running: false,
     paused: false,
@@ -248,6 +251,7 @@
 
   function cw() { return CW || 360; }
   function ch() { return CH || 640; }
+  function maxBlockWidth() { return Math.min(state.maxWidth, cw() * 0.62); }
 
   function positionBase() {
     const baseY = ch() * 0.80;
@@ -298,6 +302,7 @@
     state.paused = false;
     state.gameOver = false;
     state.minWidth = MIN_W;
+    state.maxWidth = MAX_W;
     state.height = 0;
     state.combo = 0;
     state.score = 0;
@@ -413,7 +418,8 @@
 
     sfx('drop');
 
-    if (overlap <= 4) {
+    // The near-miss tolerance must scale too, including wide-to-mobile resizes.
+    if (overlap <= 4 * (state.minWidth / MIN_W)) {
       createFalling(cur.x, cur.y, cur.w, cur.h, cur.d, cur.colorIdx, cur.texture, cur.vx * 0.25);
       state.current = null;
       state.shake = 10;
@@ -428,7 +434,7 @@
     let newX = (overlapL + overlapR) / 2;
 
     if (perfect) {
-      newW = Math.min(top.w + 2, Math.min(300, cw() * 0.62));
+      newW = Math.min(top.w + 2, maxBlockWidth());
       newX = top.x;
       state.combo += 1;
       state.focus = Math.min(1, state.focus + 0.16);
@@ -557,7 +563,7 @@
   btnSubmit.onclick = () => postScore('manual_submit');
   btnMute.onclick = () => { muted = !muted; btnMute.textContent = muted ? 'Effects off' : 'Effects on'; };
   btnMusic.onclick = () => { musicMuted = !musicMuted; btnMusic.textContent = musicMuted ? 'Music off' : 'Music on'; if(musicMuted)stopMusic();else if(state.running&&!state.paused){ensureAudio();startMusic();} };
-  btnRepair.onclick = () => { if(!state.running || state.paused)return; const max=Math.min(300,cw()*.62); if(skyline.repair(state.progress,state.stack.at(-1),state.current,max)){sfx('focus');addFloater(state.current.x,state.current.y-65,'TOWER REPAIRED','#a6ffe1',20);updateHUD();} };
+  btnRepair.onclick = () => { if(!state.running || state.paused)return; const max=maxBlockWidth(); if(skyline.repair(state.progress,state.stack.at(-1),state.current,max)){sfx('focus');addFloater(state.current.x,state.current.y-65,'TOWER REPAIRED','#a6ffe1',20);updateHUD();} };
 
   window.addEventListener('message', (ev) => {
     const data = ev.data || {};

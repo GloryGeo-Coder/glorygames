@@ -7,9 +7,9 @@ test('repair inventory cannot exceed two and missed contracts do not block progr
 // Exercise the real runtime without rendering or an audio device.
 const fs = require('node:fs');
 const vm = require('node:vm');
-function runtime() {
+function runtime(initialWidth = 844, initialHeight = 390) {
   const elements = new Map();
-  let width = 844, height = 390;
+  let width = initialWidth, height = initialHeight;
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
       style: {}, textContent: '', addEventListener() {}, replaceChildren() {},
@@ -103,4 +103,98 @@ test('restart resets the minimum width in the current viewport', () => {
   q.dropBlock();
   assert.equal(q.state.gameOver, true);
   assert.match(q.elements.get('panelText').textContent, /too narrow/);
+});
+
+// The minimum and width cap must stay in the same coordinate space on expansion.
+test('untouched portrait tower survives perfect drops after expansion to a 4K display', () => {
+  const q = runtime(390, 844);
+  const originalWidth = q.state.stack.at(-1).w;
+  q.resize(3840, 2160);
+  assert.ok(q.state.minWidth > 300, 'fixture must exceed the old fixed cap');
+  for (let i = 0; i < 10; i++) {
+    q.state.current.x = q.state.stack.at(-1).x;
+    q.dropBlock();
+    assert.equal(q.state.gameOver, false, 'enlargement must not make perfect drops lose');
+  }
+  near(q.state.stack.at(-1).w, originalWidth * 3840 / 390 + 20);
+  near(q.state.current.w, q.state.stack.at(-1).w);
+  near(q.state.maxWidth, 300 * 3840 / 390);
+  assert.equal(q.state.height, 10);
+  assert.equal(q.state.progress.stage, 1);
+});
+
+test('paused wide resizing is reversible and retains the original loss threshold', () => {
+  const q = runtime(390, 844);
+  narrow(q, 60);
+  q.state.paused = true;
+  const progress = JSON.stringify(q.state.progress), score = q.state.score;
+  for (const width of [3840, 844, 390, 3840, 390]) {
+    q.resize(width, 900);
+    near(q.state.minWidth, 34 * width / 390);
+    near(q.state.maxWidth, 300 * width / 390);
+    near(q.state.stack.at(-1).w, 60 * width / 390);
+    assert.equal(q.state.paused, true);
+  }
+  assert.equal(JSON.stringify(q.state.progress), progress);
+  assert.equal(q.state.score, score);
+  q.state.paused = false;
+  q.state.current.x = q.state.stack.at(-1).x;
+  q.dropBlock();
+  assert.equal(q.state.gameOver, false);
+  q.state.current.x = q.state.stack.at(-1).x + q.state.stack.at(-1).w - 30;
+  q.dropBlock();
+  assert.equal(q.state.gameOver, true);
+  assert.match(q.elements.get('panelText').textContent, /too narrow/);
+});
+
+test('repairs share the scaled placement cap and genuine narrow drops still lose at 4K', () => {
+  const q = runtime(390, 844);
+  narrow(q, 60);
+  q.state.progress.repairs = 2;
+  q.resize(3840, 2160);
+  const before = q.state.current.w;
+  q.elements.get('btnRepair').onclick();
+  assert.ok(q.state.current.w > before, 'a wide display must not disable a usable repair');
+  assert.equal(q.state.progress.repairs, 1);
+  const cap = Math.min(q.state.maxWidth, 3840 * 0.62);
+  q.state.stack.at(-1).w = q.state.current.w = cap;
+  q.elements.get('btnRepair').onclick();
+  assert.equal(q.state.progress.repairs, 1, 'repair at the cap must not consume a charge');
+  q.state.current.x = q.state.stack.at(-1).x;
+  q.dropBlock();
+  near(q.state.current.w, cap);
+  q.state.current.x = q.state.stack.at(-1).x + cap - q.state.minWidth / 2;
+  q.dropBlock();
+  assert.equal(q.state.gameOver, true);
+  assert.match(q.elements.get('panelText').textContent, /too narrow/);
+});
+
+test('restart after expansion restores both standard limits and height-only resize preserves them', () => {
+  const q = runtime(390, 844);
+  q.resize(3840, 2160);
+  q.resetGame();
+  q.startGame();
+  near(q.state.minWidth, 34);
+  near(q.state.maxWidth, 300);
+  q.resize(3840, 900);
+  near(q.state.minWidth, 34);
+  near(q.state.maxWidth, 300);
+  narrow(q, 300);
+  q.dropBlock();
+  assert.equal(q.state.gameOver, false);
+  near(q.state.current.w, 300);
+});
+
+test('fresh 4K narrow tower survives shrinking below the old 4px miss threshold', () => {
+  const q = runtime(3840, 2160);
+  narrow(q, 36);
+  q.resize(390, 844);
+  assert.ok(q.state.current.w < 4 && q.state.current.w > q.state.minWidth);
+  q.dropBlock();
+  assert.equal(q.state.gameOver, false, 'a playable overlap must not become a miss solely due to scaling');
+  assert.equal(q.state.height, 1);
+  q.state.current.x = q.state.stack.at(-1).x + q.state.stack.at(-1).w + 1;
+  q.dropBlock();
+  assert.equal(q.state.gameOver, true);
+  assert.match(q.elements.get('panelText').textContent, /missed/);
 });
