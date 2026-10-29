@@ -928,7 +928,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "neon-hover-runner": {
     "category": "Racing",
-    "summary": "Carry the core through five neon zones. Switch lanes, jump barriers, collect energy and data shards, use boosts and shields, and complete each zone objective.",
+    "summary": "Carry the last backup signal through five neon districts, evade security drones and restore the city’s lights with help from engineer Aya.",
     "overview": [
       "Neon Hover Runner takes you through five zones: Skyline Warmup, Metro Surge, Data Tunnel, Reactor Bridge and Apex Night Run. Each has a distance goal and an objective involving energy, boosts, combos, survival or data shards. Finish the final zone to restore the core.",
       "The gameplay combines steering, jumping and occasional bursts of extra speed. Energy orbs, shields and magnets encourage you to make choices about which lanes are worth entering instead of simply steering away from everything you see."
