@@ -5,7 +5,7 @@
   "thumbnail": "thumb.png",
   "orientation": "any",
   "category": "2D Adventure",
-  "description": "Follow Ari through 25 long jungle routes to find their missing mentor, recover the five Sun Seals and restore the Temple of the Sun. Animated enemies, checkpoint beacons, relic blasters, ancient traps and guardian battles reward careful exploration.",
+  "description": "Follow Ari through 25 long jungle routes, battle a guardian at the end of every level, recover the five Sun Seals and restore the Temple of the Sun.",
   "tags": [
     "2d",
     "adventure",
@@ -118,7 +118,8 @@
     "fiveStoryChapters": true,
     "multiTouch": true,
     "safeAreaViewport": true,
-    "heldShooting": true
+    "heldShooting": true,
+    "bossesEveryLevel": true
   },
-  "version": "2.5.0"
+  "version": "2.6.0"
 }

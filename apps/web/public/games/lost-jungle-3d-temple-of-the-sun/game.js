@@ -530,12 +530,13 @@
     game.enemies=game.enemies.filter(e=>!e.dead||e.deadTime<.55);
     const b=game.boss;
     if(b?.alive&&near(b.x)){
-      b.hurt=Math.max(0,b.hurt-dt);b.x=b.baseX+Math.sin(game.time*.9)*65;b.dir=player.x<b.x?-1:1;
+      b.hurt=Math.max(0,b.hurt-dt);const pace=b.originalBoss?.9:b.name==='Spider Queen'?1.35:b.name==='Monkey King'?1.1:.8;b.x=b.baseX+Math.sin(game.time*pace)*65;b.dir=player.x<b.x?-1:1;
       if(b.windup>0){b.windup-=dt;if(b.windup<=0){b.attackCount++;const dx=player.x-b.x,dy=player.y+player.h*.5-(b.y+b.h*.45),len=Math.max(1,Math.hypot(dx,dy)),speed=330+lv.id*3;
-        for(const spread of b.hp<b.maxHp*.5?[-.14,0,.14]:[0]){const a=Math.atan2(dy,dx)+spread;game.darts.push({x:b.x+b.w/2,y:b.y+b.h*.45,w:30,h:15,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:3,boss:true});}
-        b.shootTimer=Math.max(1.2,2.4-lv.id*.025);
+        const spreads=b.hp<b.maxHp*.5?[-.14,0,.14]:!b.originalBoss&&lv.id>=16&&b.name==='Sun Guardian'?[-.10,.10]:[0];
+        for(const spread of spreads){const a=Math.atan2(dy,dx)+spread;game.darts.push({x:b.x+b.w/2,y:b.y+b.h*.45,w:30,h:15,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:3,boss:true});}
+        b.shootTimer=Math.max(1.2,2.4-lv.id*.025)+(b.originalBoss?0:b.name==='Spider Queen'?.15:b.name==='Monkey King'?.3:0);
       }}else{b.shootTimer-=dt;if(b.shootTimer<=0&&Math.abs(player.x-b.x)<700)b.windup=.8;}
-      if(rects(player,b)){if(player.dashTimer>0||player.torchTimer>0)damageBoss();else if(player.invuln<=0)loseLife(b.name+' slammed you.');}
+      if(rects(player,b)){if(player.dashTimer>0||player.torchTimer>0)damageBoss();else if(player.invuln<=0)loseLife((b.displayName||b.name)+' slammed you.');}
     }
     if(game.boulder?.active){const b=game.boulder;b.x+=b.vx*(b.x<player.x-760?1:.32)*dt;if(rects(player,b)&&player.invuln<=0)loseLife('Rolling boulder!');}
     for(const h of game.hazards){if(!h.active||h.type==='dartTrap'||h.type==='fallingRock'&&!h.falling)continue;
@@ -707,7 +708,7 @@
     if(b.hp<=0)bossDefeated();else sfx('boss');
   }
   function bossDefeated(){
-    const b=game.boss;if(!b?.alive)return;b.alive=false;state.score+=1500;game.darts=[];game.speech=b.name+' is freed from the broken signal. The portal awakens.';game.speechTimer=4;sfx('win');postScore('live');
+    const b=game.boss;if(!b?.alive)return;b.alive=false;state.score+=1500;game.darts=[];game.speech=(b.displayName||b.name)+' is freed from the broken signal. The portal awakens.';game.speechTimer=4;sfx('win');postScore('live');
   }
 
   function enemyLabel(t) {
@@ -747,7 +748,7 @@
         game.speechTimer = 1.7;
       }
       if (!game.gate.locked && Math.abs(player.x - game.gate.x) < 100) {
-        game.speech = game.boss?.alive ? `Defeat ${game.boss.name}.` : 'Gate open. Reach the sun portal.';
+        game.speech = game.boss?.alive ? `Defeat ${game.boss.displayName||game.boss.name}.` : 'Gate open. Reach the sun portal.';
         game.speechTimer = 1.1;
       }
     }
@@ -1180,7 +1181,7 @@
     const s=worldToScreen(b.x,b.y),clip=b.hurt>0?'hurt':b.windup>0?'windup':b.shootTimer>1?'attack':'run';
     if(!art.draw(ctx,b.name,clip,s.x,s.y,b.w,b.h,b.dir,game.time))drawImageOrOrb(ASSETS.sprites[b.name],b.x,b.y,b.w,b.h,currentLevel().theme,false,b.dir);
     ctx.fillStyle='#06130cbb';ctx.fillRect(s.x,s.y-26,b.w,10);ctx.fillStyle=b.windup>0?'#ffd66f':'#ff6b6b';ctx.fillRect(s.x,s.y-26,b.w*Math.max(0,b.hp/b.maxHp),10);
-    ctx.fillStyle='#fff8d8';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText(b.name,s.x+b.w/2,s.y-34);
+    ctx.fillStyle='#fff8d8';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText(b.displayName||b.name,s.x+b.w/2,s.y-34);
     if(b.windup>0){ctx.strokeStyle='#ffd66f';ctx.lineWidth=3;ctx.strokeRect(s.x-5,s.y-5,b.w+10,b.h+10);}
   }
 
@@ -1368,7 +1369,7 @@
     if (game.relics < lv.relicTarget) mission = `Collect ${lv.relicTarget - game.relics} more Sun Relic(s).`;
     else if (game.keys < lv.keyTarget) mission = `Find ${lv.keyTarget - game.keys} more Temple Key(s).`;
     else if (!game.plateActive) mission = 'Step on the glowing pressure plate.';
-    else if (game.boss?.alive) mission = `Defeat ${game.boss.name}.`;
+    else if (game.boss?.alive) mission = `Defeat ${game.boss.displayName||game.boss.name}.`;
     else mission = 'Reach the glowing exit portal.';
     ui.missionText.textContent = mission;
     ui.storyText.textContent = game.speech || lv.discovery;
@@ -1391,7 +1392,7 @@
       const btn = document.createElement('button');
       btn.className = `map-node ${unlocked ? 'unlocked' : 'locked'}`;
       btn.disabled = !unlocked;
-      btn.innerHTML = `<strong>${lv.id}. ${lv.title}</strong><small>${lv.chapter}<br>${lv.relicTarget} relics • ${lv.keyTarget} key(s)${lv.boss?' • '+lv.boss:''}</small>`;
+      btn.innerHTML = `<strong>${lv.id}. ${lv.title}</strong><small>${lv.chapter}<br>${lv.relicTarget} relics • ${lv.keyTarget} key(s)${lv.boss?' • '+(lv.bossTitle||lv.boss):''}</small>`;
       btn.addEventListener('click',()=>{
         if(lv.id>state.unlockedLevel)return;state.started=true;game.onMap=false;
         state.levelIndex = lv.id - 1;

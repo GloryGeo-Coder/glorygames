@@ -29,10 +29,19 @@
     ['Eclipse Stair',6,'wasp,monkey,sentry,crawler',null,'The last light drains from the stair. Mara\'s compass points straight toward the Sun Guardian. Carry the recovered relics through the final locks.','Mara: You are not taking the jungle\'s light, Ari. You are bringing it home.'],
     ['Temple of the Returning Sun',10,'sentry,wasp,boar,crawler','Sun Guardian','The final Sun Guardian holds the Dawn Seal at the broken heart chamber. Break its corrupted shell, reunite the five seals and restore the Sun Lattice before the valley loses its last dawn.','Mara: You know the road now. Let the jungle see the sunrise.']
   ];
+  // Every route ends in a guardian. The six original seal encounters retain
+  // their established identities and mechanics; other routes use themed variants.
+  const guardianVariants=[
+    ['Monkey King','Canopy Watcher'],['Sun Guardian','River Sentinel'],['Sun Guardian','Waterfall Oracle'],['Spider Queen','Cavern Weaver'],null,
+    ['Sun Guardian','Stone Sentinel'],['Spider Queen','Crystal Weaver'],null,['Sun Guardian','Ember Sentinel'],null,
+    ['Sun Guardian','Aqueduct Warden'],['Spider Queen','Orchid Weaver'],['Monkey King','Canopy Challenger'],['Spider Queen','Root Weaver'],null,
+    ['Sun Guardian','Archive Sentinel'],['Monkey King','Thunderfall Watcher'],['Spider Queen','Amber Weaver'],['Sun Guardian','Floodgate Sentinel'],null,
+    ['Sun Guardian','Ash Guardian'],['Spider Queen','Garden Weaver'],['Sun Guardian','Crown Sentinel'],['Sun Guardian','Eclipse Sentinel'],null
+  ];
   const oldBackgrounds=['jungle-entrance','river-crossing','waterfall-ruins','spider-cave','monkey-bridge','stone-puzzle-temple','crystal-cave','lost-village','volcano-path','sun-temple-boss'];
   const textureNames=['jungle','river','ruins','cave','bridge','puzzle','crystal','village','volcano','sun-temple'];
   const colors=['#74f2a8','#57d9ff','#6ee6ff','#be6eff','#ffd66f','#ffb347','#66e7ff','#ffb347','#ff6f47','#ffd66f'];
-  const levels=routes.map((r,i)=>({id:i+1,title:r[0],themeId:r[1],enemies:r[2].split(','),boss:r[3],story:r[4],discovery:r[5],chapter:chapters[Math.floor(i/5)],length:9600+i*480,relicTarget:6+Math.floor(i/3),keyTarget:1+Math.floor(i/8),plateRequired:i%3===2||[6,10,15,20,25].includes(i+1),theme:colors[r[1]-1],dark:[4,7,14,18].includes(i+1),
+  const levels=routes.map((r,i)=>({id:i+1,title:r[0],themeId:r[1],enemies:r[2].split(','),boss:r[3]||guardianVariants[i][0],bossTitle:r[3]||guardianVariants[i][1],originalBoss:!!r[3],story:r[4],discovery:r[5],chapter:chapters[Math.floor(i/5)],length:9600+i*480,relicTarget:6+Math.floor(i/3),keyTarget:1+Math.floor(i/8),plateRequired:i%3===2||[6,10,15,20,25].includes(i+1),theme:colors[r[1]-1],dark:[4,7,14,18].includes(i+1),
     bg:i<10?'./assets/backgrounds/level-'+String(i+1).padStart(2,'0')+'-'+oldBackgrounds[i]+'.png':'./assets/backgrounds/level-'+(i+1)+'-expedition.png',texture:'./assets/textures/platform-'+textureNames[r[1]-1]+'.png',hazards:i<2?['spikes','water']:i<5?['spikes','water','dart']:i<8?['spikes','pit','dart','fallingRock']:['spikes','pit','dart','fallingRock','swingBlade',...(r[1]===9?['lava','rollingBoulder']:[])]}));
   const enemySizes={snake:[74,56],frog:[66,54],bat:[78,52],spider:[78,58],monkey:[68,82],boar:[94,66],crawler:[84,52],wasp:[72,54],sentry:[72,92]};
   function build(lv){
@@ -80,7 +89,7 @@
     world.checkpoints.unshift({x:120,y:484,index:0});world.checkpoints.push({x:finalStart+40,y:484,index:world.checkpoints.length});
     world.storyMarks=[{x:lv.length*.32,text:lv.discovery,read:false},{x:lv.length*.69,text:'Ari\'s field note: '+lv.chapter+'. The next beacon marks a safe place to regroup.',read:false}];
     world.gate={x:lv.length-650,y:390,w:110,h:180,locked:true};world.exit={x:lv.length+110,y:420,w:110,h:150};
-    if(lv.boss){const hp=16+Math.floor(lv.id*.7);world.boss={name:lv.boss,x:lv.length-350,y:350,w:180,h:220,baseX:lv.length-350,baseY:350,hp,maxHp:hp,dir:-1,alive:true,shootTimer:2.1,windup:0,hurt:0,attackCount:0,attackDir:-1};}
+    if(lv.boss){const hp=lv.originalBoss?16+Math.floor(lv.id*.7):12+Math.floor(lv.id*.55);world.boss={name:lv.boss,displayName:lv.bossTitle||lv.boss,originalBoss:lv.originalBoss,x:lv.length-350,y:350,w:180,h:220,baseX:lv.length-350,baseY:350,hp,maxHp:hp,dir:-1,alive:true,shootTimer:2.1,windup:0,hurt:0,attackCount:0,attackDir:-1};}
     if(lv.themeId===9)world.boulder={x:-600,y:450,w:115,h:115,vx:170,active:true};
     return world;
   }
