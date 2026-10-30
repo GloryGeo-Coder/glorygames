@@ -110,3 +110,11 @@ for(let n=0;n<25;n++)test(`route ${n+1}: normal movement reaches every mandatory
  }
  assert.ok(r.game.levelComplete,`stopped at ${r.player.x}, ${r.player.y}; ${r.game.relics} relics, ${r.game.keys} keys`);assert.equal(r.state.lives,3);assert.ok(r.game.relics>=r.LEVELS[n].relicTarget);assert.equal(r.game.keys,r.LEVELS[n].keyTarget);assert.equal(r.game.checkpointIndex,r.game.checkpoints.length-1);
 });
+
+for(let n=0;n<25;n++)test(`route ${n+1}: guardian blocks exit and is beatable with dash even without ammo`,async()=>{
+ const r=await play({width:n%2?844:390,height:n%2?390:844,saved:savedAt(n)}),w=r.game,b=w.boss,lv=r.LEVELS[n];
+ assert.ok(b?.alive);assert.equal(b.name,lv.boss);assert.equal(b.displayName,lv.bossTitle);assert.ok(w.items.some(i=>i.power==='ammo'&&i.x>lv.length-1000));
+ w.enemies=[];w.hazards=[];w.boulder=null;w.relics=lv.relicTarget;w.keys=lv.keyTarget;w.plateActive=true;Object.assign(r.player,w.exit);r.checkGateAndExit();assert.equal(w.levelComplete,false);
+ r.player.ammo=0;r.player.shootPowerTimer=0;r.player.dashTimer=.2;const attacks=Math.ceil(b.hp/2);for(let i=0;i<attacks;i++){b.hurt=0;r.damageBoss();}
+ assert.equal(b.alive,false);Object.assign(r.player,w.exit);r.checkGateAndExit();assert.equal(w.levelComplete,true);
+});

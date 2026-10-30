@@ -619,7 +619,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "story": [
       "Ari, an apprentice cartographer, follows the trail of their missing mentor Mara. Relic hunter Voss has broken the Sun Lattice, and five chapters take Ari across the jungle to recover its Sun Seals and return daylight to the valley.",
-      "Among the threats are snakes, frogs, spiders, bats, stone monkeys, boars, armored crawlers, sun wasps and stone sentries. Boss encounters include the Monkey King, Spider Queen and Sun Guardian, giving the adventure a clear sense of escalation as the player pushes toward the Sun Relics."
+      "Among the threats are snakes, frogs, spiders, bats, stone monkeys, boars, armored crawlers, sun wasps and stone sentries. Every route ends with a guardian encounter, including the Monkey King, Spider Queen and Sun Guardian. Their corrupted allies challenge Ari throughout the expedition."
     ],
     "howToPlay": [
       "Move through the level while watching the ground, platforms and upcoming traps.",
@@ -648,7 +648,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "title": "Enemies and guardian bosses",
-        "body": "Ordinary enemies build combat pressure, while major guardians create set-piece challenges."
+        "body": "Ordinary enemies build combat pressure, and each level ends with a guardian whose attacks grow more demanding through the expedition."
       }
     ],
     "progression": [
@@ -677,7 +677,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Are there boss fights?",
-        "a": "Yes. The bosses include the Monkey King, Spider Queen and Sun Guardian."
+        "a": "Yes. Every one of the 25 levels ends with a guardian. The animated boss families include the Monkey King, Spider Queen and Sun Guardian."
       }
     ]
   },

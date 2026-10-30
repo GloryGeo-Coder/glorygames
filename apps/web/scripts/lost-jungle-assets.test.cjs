@@ -5,10 +5,10 @@ const {levels,build}=require('../public/games/lost-jungle-3d-temple-of-the-sun/j
 const data=require('../public/games/lost-jungle-3d-temple-of-the-sun/jungle-animation-data.js');
 const hash=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 
-test('25 long routes are deterministic, with increasing encounter density and six guardian milestones',()=>{
+test('25 long routes are deterministic, with increasing encounter density and a guardian on every route',()=>{
  assert.equal(levels.length,25);let count=0;
  for(const l of levels){const a=build(l),b=build(l);assert.deepEqual(a,b);assert.ok(l.length>=9600);assert.ok(a.enemies.length>=count-1);count=a.enemies.length;assert.ok(a.items.filter(i=>i.type==='relic').length>=l.relicTarget);assert.equal(a.items.filter(i=>i.type==='key').length,l.keyTarget);}
- assert.ok(build(levels[24]).enemies.length>build(levels[0]).enemies.length*3);assert.deepEqual(levels.filter(l=>l.boss).map(l=>l.id),[5,8,10,15,20,25]);assert.equal(new Set(levels.map(l=>l.chapter)).size,5);assert.equal(new Set(levels.map(l=>l.story)).size,25);assert.equal(new Set(levels.map(l=>l.bg)).size,25);
+ assert.ok(build(levels[24]).enemies.length>build(levels[0]).enemies.length*3);assert.equal(levels.filter(l=>l.boss).length,25);assert.deepEqual(levels.filter(l=>l.originalBoss).map(l=>l.id),[5,8,10,15,20,25]);assert.equal(new Set(levels.map(l=>l.bossTitle)).size,22);assert.equal(new Set(levels.map(l=>l.chapter)).size,5);assert.equal(new Set(levels.map(l=>l.story)).size,25);assert.equal(new Set(levels.map(l=>l.bg)).size,25);
 });
 
 test('all recovery points, required items and patrol bounds have safe stable footing',()=>{
