@@ -7,6 +7,21 @@ for(const size of [{width:320,height:568},{width:360,height:640},{width:390,heig
 await p.setViewportSize({width:390,height:844});await p.locator('#btnStart').click();assert.equal(await p.evaluate(()=>hoverQA.running),true);
 // Slow swipes must accumulate movement across pointer events.
 await p.evaluate(()=>{let c=document.querySelector('#c');for(const [type,x] of [['pointerdown',160],['pointermove',170],['pointermove',180],['pointermove',190],['pointerup',190]])c.dispatchEvent(new PointerEvent(type,{clientX:x,clientY:420,bubbles:true,pointerId:1,pointerType:'touch'}));});assert.equal(await p.evaluate(()=>hoverQA.state.player.laneTarget),3);
+// Direction changes within one uninterrupted touch must not retain old axis drift.
+const directionChanges = await p.evaluate(() => {
+  const c = document.querySelector('#c'), q = hoverQA, lanes = [];
+  q.state.player.laneTarget = 2;
+  for (const [type, x, y] of [
+    ['pointerdown', 160, 420], ['pointermove', 160, 520],
+    ['pointermove', 190, 520], ['pointermove', 220, 520],
+    ['pointermove', 190, 520], ['pointerup', 190, 520]
+  ]) {
+    c.dispatchEvent(new PointerEvent(type, { clientX:x, clientY:y, bubbles:true, pointerId:2, pointerType:'touch' }));
+    lanes.push(q.state.player.laneTarget);
+  }
+  return lanes;
+});
+assert.deepEqual(directionChanges, [2, 2, 3, 4, 3, 3]);
 await p.keyboard.press('Space');assert.ok(await p.evaluate(()=>hoverQA.state.player.vy)>0);await p.evaluate(()=>{hoverQA.boost=1;hoverQA.activateBoost()});assert.ok(await p.evaluate(()=>hoverQA.boostTimer)>0);
 const frames=await p.evaluate(()=>{const q=hoverQA,ctx=document.querySelector('#c').getContext('2d'),orig=ctx.drawImage,result=[];ctx.drawImage=function(img,...args){if(img===q.images.riderAtlas)result.push(args.slice(0,2));return orig.call(this,img,...args)};q.boostTimer=0;q.state.player.jump=0;q.state.player.laneIndex=q.state.player.laneTarget;q.drawPlayer(1);q.state.player.laneIndex=0;q.state.player.laneTarget=4;q.drawPlayer(1);q.state.player.jump=10;q.drawPlayer(1);q.boostTimer=1;q.drawPlayer(1);ctx.drawImage=orig;return result});assert.deepEqual(frames,[[0,0],[512,0],[0,512],[512,512]]);
 await p.locator('#uiPause').click();assert.equal(await p.evaluate(()=>hoverQA.paused),true);await p.locator('#musicVolume').fill('20');await p.locator('#effectsVolume').fill('40');assert.ok(Math.abs(await p.evaluate(()=>hoverQA.musicGain.gain.value)-.2)<.001);assert.ok(Math.abs(await p.evaluate(()=>hoverQA.effectsGain.gain.value)-.4)<.001);await p.locator('#btnStart').click();assert.equal(await p.evaluate(()=>hoverQA.paused),false);
