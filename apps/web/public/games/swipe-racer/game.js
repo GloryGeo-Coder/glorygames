@@ -4,6 +4,7 @@
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d', { alpha: false });
   if (!canvas || !ctx) return;
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)');
 
   const $ = (id) => document.getElementById(id);
   const elDistance = $('distance');
@@ -74,10 +75,13 @@
   const images = {};
   const assetPaths = {
     bgCity: './assets/backgrounds/bg-city-day.png',
+    cityHorizon: './assets/backgrounds/city-horizon-v2.webp',
     bgMountain: './assets/backgrounds/bg-mountain-pass.png',
     bgCoast: './assets/backgrounds/bg-coast-sunset.png',
     bgNeon: './assets/backgrounds/bg-neon-night.png',
     player: './assets/sprites/player-car-blue.png',
+    racerV2: './assets/sprites/racer-blue-v2.webp',
+    truckV2: './assets/sprites/truck-city-v2.webp',
     red: './assets/sprites/traffic-red.png',
     yellow: './assets/sprites/traffic-yellow.png',
     green: './assets/sprites/traffic-green.png',
@@ -562,11 +566,21 @@
 
   function drawBackground() {
     ctx.fillStyle = '#070b16'; ctx.fillRect(0, 0, CW, CH);
-    const img = images[currentLevel().bg];
-    if (img) drawCover(img, 1);
+    const img = (currentLevel().scenery === 'city' && images.cityHorizon) || images[currentLevel().bg];
+    if (img && img === images.cityHorizon) drawCityBackdrop(img);
+    else if (img) drawCover(img, 1);
     const grad = ctx.createLinearGradient(0, 0, 0, CH);
     grad.addColorStop(0, 'rgba(0,0,0,.05)'); grad.addColorStop(1, 'rgba(0,0,0,.22)');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, CW, CH);
+  }
+  function drawCityBackdrop(img) {
+    // Align the illustration's horizon with the projected road on every screen shape.
+    const sourceW = Math.min(img.width, img.height * CW / CH * 1.2);
+    const sourceX = (img.width - sourceW) / 2;
+    const sourceHorizon = img.height * 0.67;
+    const hy = horizonY();
+    ctx.drawImage(img, sourceX, 0, sourceW, sourceHorizon, 0, 0, CW, hy);
+    ctx.drawImage(img, sourceX, sourceHorizon, sourceW, img.height - sourceHorizon, 0, hy, CW, CH - hy);
   }
   function drawCover(img, alpha = 1) {
     const iw = img.width, ih = img.height; const scale = Math.max(CW / iw, CH / ih) * 1.05;
@@ -599,8 +613,16 @@
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
       }
     }
-    // center glow
-    ctx.fillStyle = 'rgba(255,255,255,.04)'; ctx.fillRect(roadCenter() - 2, hy, 4, py - hy);
+    // The moving reflections reinforce forward motion without obscuring the lane markings.
+    if (currentLevel().scenery === 'city') {
+      ctx.save(); ctx.strokeStyle = 'rgba(255,187,105,.14)';
+      for (let i = 0; i < 8; i++) {
+        const t = ((i * 0.14 + state.roadScroll * 0.00042) % 1);
+        const y = lerp(hy, py, t * t); const width = roadWidthAt(y) * 0.42;
+        ctx.lineWidth = 0.5 + t * 1.5; ctx.beginPath(); ctx.moveTo(roadCenter() - width, y); ctx.lineTo(roadCenter() + width, y); ctx.stroke();
+      }
+      ctx.restore();
+    }
   }
 
   function drawRoadsideProps(now) {
@@ -621,10 +643,22 @@
   function drawTraffic(tr) {
     const p = tr._p; if (!p) return;
     ctx.save();
-    ctx.translate(p.x, p.y);
-    const img = images[tr.key];
+    const bob = state.running && !state.paused && !reducedMotion?.matches ? Math.sin(state.roadScroll * 0.025 + tr.lane * 2) * Math.min(1.3, p.h * 0.012) : 0;
+    ctx.translate(p.x, p.y + bob);
+    ctx.fillStyle = 'rgba(4,9,18,.35)'; ctx.beginPath(); ctx.ellipse(0, p.h * 0.04, p.w * 0.46, p.h * 0.44, 0, 0, Math.PI * 2); ctx.fill();
+    const img = tr.type === 'truck' ? (images.truckV2 || images.truck) : (images.racerV2 || images[tr.key]);
+    if (tr.type !== 'truck' && images.racerV2) {
+      const tint = {red:'hue-rotate(145deg)', yellow:'hue-rotate(190deg) saturate(1.3)', green:'hue-rotate(260deg) saturate(1.2)'};
+      ctx.filter = tint[tr.key] || 'none';
+    }
     if (img) ctx.drawImage(img, -p.w * 0.5, -p.h * 0.5, p.w, p.h);
     else { ctx.fillStyle = '#f43f5e'; ctx.fillRect(-p.w * 0.5, -p.h * 0.5, p.w, p.h); }
+    ctx.filter = 'none';
+    // Tail lamps pulse gently, remaining tied to the sprite and never the hit box.
+    ctx.fillStyle = 'rgba(255,82,55,.8)';
+    const lampY = p.h * 0.38, lampW = Math.max(1, p.w * 0.08);
+    ctx.fillRect(-p.w * 0.25, lampY, lampW, Math.max(1, p.h * 0.018));
+    ctx.fillRect(p.w * 0.17, lampY, lampW, Math.max(1, p.h * 0.018));
     ctx.restore();
   }
 
@@ -639,8 +673,10 @@
   }
 
   function drawPlayer() {
-    ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.tilt);
+    const bob = state.running && !state.paused && !reducedMotion?.matches ? Math.sin(state.roadScroll * 0.035) * 0.8 : 0;
+    ctx.save(); ctx.translate(player.x, player.y + bob); ctx.rotate(player.tilt);
     ctx.scale(player.w / 76, player.h / 142);
+    ctx.fillStyle = 'rgba(4,9,18,.38)'; ctx.beginPath(); ctx.ellipse(0, 6, 34, 61, 0, 0, Math.PI * 2); ctx.fill();
     if (state.boosting > 0) {
       ctx.save(); ctx.shadowColor = 'rgba(250,204,21,.95)'; ctx.shadowBlur = 24; ctx.fillStyle = 'rgba(250,204,21,.85)';
       ctx.beginPath(); ctx.moveTo(-18, 52); ctx.lineTo(-8, 86 + Math.random() * 12); ctx.lineTo(2, 52); ctx.closePath(); ctx.fill();
@@ -649,7 +685,7 @@
     if (state.invuln > 0) {
       ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.shadowColor = 'rgba(59,130,246,.9)'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.ellipse(0, 0, 76 * 0.55, 142 * 0.42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     }
-    const img = images.player;
+    const img = images.racerV2 || images.player;
     if (img) ctx.drawImage(img, -38, -71, 76, 142);
     else { ctx.fillStyle = '#3b82f6'; ctx.fillRect(-38, -71, 76, 142); }
     ctx.restore();
