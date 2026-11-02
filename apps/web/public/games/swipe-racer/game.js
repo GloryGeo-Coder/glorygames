@@ -30,11 +30,15 @@
   const btnSubmit = $('btnSubmit');
   const btnRestart = $('btnRestart');
   const btnMute = $('btnMute');
+  const eventPicker = $('eventPicker');
+  const eventSelect = $('eventSelect');
 
   const GAME_SLUG = 'swipe-racer';
   const BEST_KEY = 'wga_swipe_racer_best_v2';
   let META = { title: 'Swipe Racer', description: '' };
-  let best = Number(localStorage.getItem(BEST_KEY) || '0') || 0;
+  const PROGRESS_KEY = 'wga_swipe_racer_horizon_v1';
+  let best = 0;
+  try { best = Number(localStorage.getItem(BEST_KEY) || '0') || 0; } catch {}
 
   async function loadMeta() {
     try {
@@ -42,8 +46,6 @@
       META = await res.json();
       document.title = META.title || 'Swipe Racer';
       if (elTitle) elTitle.textContent = META.title || 'Swipe Racer';
-      if (panelTitle) panelTitle.textContent = META.title || 'Swipe Racer';
-      if (META.description && panelText) panelText.textContent = META.description;
       if (elSub) elSub.textContent = 'Swipe to steer • Tap or press Boost to use nitro';
       try { window.GG?.init?.({ title: META.title || 'Swipe Racer' }); } catch {}
       try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
@@ -181,11 +183,27 @@
   }
 
   const LEVELS = [
-    { name: 'Metro Rush', bg: 'bgCity', lanes: 3, baseSpeed: 250, spawnEvery: 1.00, targetDistance: 900, targetNear: 2, targetBoosts: 1, targetScore: 0, scenery: 'city' },
-    { name: 'Summit Run', bg: 'bgMountain', lanes: 3, baseSpeed: 275, spawnEvery: 0.88, targetDistance: 1100, targetNear: 1, targetBoosts: 2, targetScore: 0, scenery: 'mountain' },
-    { name: 'Coast Cruise', bg: 'bgCoast', lanes: 4, baseSpeed: 295, spawnEvery: 0.82, targetDistance: 1300, targetNear: 3, targetBoosts: 2, targetScore: 1600, scenery: 'coast' },
-    { name: 'Neon Highway', bg: 'bgNeon', lanes: 4, baseSpeed: 320, spawnEvery: 0.76, targetDistance: 1600, targetNear: 4, targetBoosts: 2, targetScore: 2600, scenery: 'neon' }
+    { name:'Metro Rush', bg:'bgCity', lanes:3, baseSpeed:250, spawnEvery:1, targetDistance:900, scenery:'city', type:'sprint', story:'Maya: Welcome to the Horizon Circuit. Show the crew what you can do on the city roads.' },
+    { name:'City Clock', bg:'bgCity', lanes:3, baseSpeed:255, spawnEvery:.95, targetDistance:1000, scenery:'city', type:'time', timeLimit:32, story:'Maya: The crew has set a qualifying time. Find a clear line and keep your momentum.' },
+    { name:'Summit Run', bg:'bgMountain', lanes:3, baseSpeed:275, spawnEvery:.88, targetDistance:1100, scenery:'mountain', type:'sprint', story:'Maya: The mountain route is open. Stay alert as the traffic gets faster.' },
+    { name:'Summit Delivery', bg:'bgMountain', lanes:3, baseSpeed:270, spawnEvery:.94, targetDistance:1100, scenery:'mountain', type:'delivery', maxHits:1, story:'Maya: A customer needs a careful driver. Deliver the cargo with no more than one collision.' },
+    { name:'Coast Cruise', bg:'bgCoast', lanes:4, baseSpeed:295, spawnEvery:.82, targetDistance:1300, scenery:'coast', type:'sprint', story:'Maya: The coast is yours. Read the traffic and make the most of the open road.' },
+    { name:'Coastal Countdown', bg:'bgCoast', lanes:4, baseSpeed:295, spawnEvery:.85, targetDistance:1350, scenery:'coast', type:'time', timeLimit:38, story:'Maya: A fast run here will earn the crew a place on the night circuit.' },
+    { name:'Neon Highway', bg:'bgNeon', lanes:4, baseSpeed:320, spawnEvery:.76, targetDistance:1500, scenery:'neon', type:'sprint', story:'Maya: The lights are on and the city is watching. Keep your focus through the traffic.' },
+    { name:'Night Delivery', bg:'bgNeon', lanes:4, baseSpeed:315, spawnEvery:.80, targetDistance:1600, scenery:'neon', type:'delivery', maxHits:1, story:'Maya: One final delivery. Bring the cargo home and the Horizon crew will know your name.' }
   ];
+  function readProgress() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
+      if (saved && saved.version === 1 && Number.isInteger(saved.unlocked) && Array.isArray(saved.stars)) {
+        return { version:1, unlocked:Math.max(0, Math.min(LEVELS.length - 1, saved.unlocked)), stars:LEVELS.map((_, i) => Math.max(0, Math.min(3, Number.isInteger(saved.stars[i]) ? saved.stars[i] : 0))) };
+      }
+    } catch {}
+    return { version:1, unlocked:0, stars:LEVELS.map(() => 0) };
+  }
+  const progress = readProgress();
+  function saveProgress() { try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch {} }
+  function saveBest() { try { localStorage.setItem(BEST_KEY, String(best)); } catch {} }
 
   const state = {
     running: false,
@@ -213,6 +231,8 @@
     shake: 0,
     collisionSlow: 0,
     levelStartScore: 0,
+    raceElapsed: 0,
+    hits: 0,
   };
 
   const pointer = { down: false, id: null, x: 0, y: 0, startX: 0, startY: 0, tDown: 0 };
@@ -235,25 +255,40 @@
     const rw = roadWidthAt(y); const lw = rw / lanes;
     return roadCenter() - rw * 0.5 + lw * (lane + 0.5);
   }
-  // Distance is the guaranteed objective. Skill goals remain optional score challenges.
   function missionProgressValue() {
     return clamp(state.distance / currentLevel().targetDistance, 0, 1);
   }
   function missionText() {
     const lvl = currentLevel();
-    return `Finish ${Math.floor(state.distance)} / ${lvl.targetDistance}m • Bonus: near misses ${state.near} / ${lvl.targetNear}, nitro pickups ${state.boostsCollected} / ${lvl.targetBoosts}`;
+    const finish = `Finish ${Math.floor(state.distance)} / ${lvl.targetDistance}m`;
+    if (lvl.type === 'time') return `${finish} • Time left ${Math.max(0, Math.ceil(lvl.timeLimit - state.raceElapsed))}s`;
+    if (lvl.type === 'delivery') return `${finish} • Collisions ${state.hits} / ${lvl.maxHits} allowed`;
+    return `${finish} • Near misses ${state.near} / 2 for a star`;
   }
-  function missionSummaryTitle() {
-    return `Level ${state.levelIndex + 1} • ${currentLevel().name}`;
-  }
+  function missionSummaryTitle() { return `Event ${state.levelIndex + 1} • ${currentLevel().name}`; }
   function levelIntroText() {
     const lvl = currentLevel();
-    return `${missionSummaryTitle()}\n\nMission:\n${missionText()}\n\nSwipe to steer around traffic. Tap for a nitro burst when you have charge.`;
+    const goal = lvl.type === 'time' ? `Finish ${lvl.targetDistance}m in ${lvl.timeLimit} seconds.` :
+      lvl.type === 'delivery' ? `Finish ${lvl.targetDistance}m with at most ${lvl.maxHits} collision.` : `Finish ${lvl.targetDistance}m.`;
+    return `${lvl.story}\n\n${goal}\nStars: finish, finish without a collision, and make two near misses.`;
+  }
+  function refreshEventPicker() {
+    if (!eventSelect) return;
+    eventSelect.innerHTML = '';
+    LEVELS.forEach((lvl, i) => {
+      const option = document.createElement('option');
+      option.value = String(i); option.disabled = i > progress.unlocked;
+      option.textContent = `${i + 1}. ${lvl.name}${option.disabled ? ' • Locked' : ` • ${progress.stars[i]}/3 stars`}`;
+      eventSelect.appendChild(option);
+    });
+    eventSelect.value = String(state.levelIndex);
   }
   function showPanel(title, text, startLabel = 'Start') {
     if (panelTitle) panelTitle.textContent = title;
     if (panelText) panelText.textContent = text;
     if (btnStart) btnStart.textContent = startLabel;
+    if (eventPicker) eventPicker.hidden = state.running;
+    if (!state.running) refreshEventPicker();
     if (panel) panel.style.display = 'flex';
   }
   function hidePanel() { if (panel) panel.style.display = 'none'; }
@@ -266,7 +301,7 @@
   }
 
   function resetLevelState() {
-    state.distance = 0; state.near = 0; state.boostsCollected = 0; state.lives = 3;
+    state.distance = 0; state.near = 0; state.boostsCollected = 0; state.lives = 3; state.hits = 0; state.raceElapsed = 0;
     state.boostEnergy = 1; state.boosting = 0; state.invuln = 0; state.traffic = []; state.pickups = [];
     state.particles = []; state.floaters = []; state.spawnT = 0.8; state.pickupT = 2.0; state.time = 0; state.roadScroll = 0; state.shake = 0; state.collisionSlow = 0;
     setPlayerBase();
@@ -274,12 +309,12 @@
   function resetRun() {
     state.running = false; state.paused = false; state.gameOver = false; state.levelClear = false; state.victory = false;
     state.levelIndex = 0; state.totalScore = 0; state.levelStartScore = 0;
-    resetLevelState(); updateHUD(); showPanel(META.title || 'Swipe Racer', META.description || 'Swipe to steer and complete missions.', 'Start');
+    resetLevelState(); updateHUD(); showPanel('Swipe Racer • Horizon Circuit', `A new driver joins Maya's crew to earn a place on the Horizon Circuit. Race through the city, mountains, coast and neon streets.\n\n${levelIntroText()}`, 'Start event');
   }
   function loadLevel(index) {
     state.levelStartScore = state.totalScore;
     state.levelIndex = index; state.running = false; state.paused = false; state.gameOver = false; state.levelClear = false;
-    state.victory = false; resetLevelState(); updateHUD(); showPanel(missionSummaryTitle(), levelIntroText(), index === 0 ? 'Start level' : 'Start next level');
+    state.victory = false; resetLevelState(); updateHUD(); showPanel(missionSummaryTitle(), levelIntroText(), 'Start event');
   }
   function startLevel() {
     state.running = true; state.paused = false; state.gameOver = false; state.levelClear = false; state.victory = false;
@@ -287,18 +322,22 @@
   }
   function completeLevel() {
     state.running = false; state.levelClear = true; stopMusic(); sfx('level');
-    if (state.totalScore > best) { best = Math.floor(state.totalScore); localStorage.setItem(BEST_KEY, String(best)); }
+    if (state.totalScore > best) { best = Math.floor(state.totalScore); saveBest(); }
+    const stars = 1 + (state.hits === 0 ? 1 : 0) + (state.near >= 2 ? 1 : 0);
+    progress.stars[state.levelIndex] = Math.max(progress.stars[state.levelIndex], stars);
+    progress.unlocked = Math.max(progress.unlocked, Math.min(LEVELS.length - 1, state.levelIndex + 1));
+    saveProgress();
     if (state.levelIndex >= LEVELS.length - 1) {
       state.victory = true; postScore('victory');
-      showPanel('Champion Run!', `You completed all ${LEVELS.length} levels.\n\nFinal score: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nTap Start to play again.`, 'Play again');
+      showPanel('Horizon Circuit Complete!', `Maya: You earned your place on the circuit!\n\nEvent stars: ${stars} / 3\nScore: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nChoose an unlocked event to race again.`, 'Race again');
     } else {
-      showPanel('Level Complete!', `${missionSummaryTitle()} cleared.\n\nScore: ${Math.floor(state.totalScore)}\nNext: Level ${state.levelIndex + 2} • ${LEVELS[state.levelIndex + 1].name}`, 'Next level');
+      showPanel('Event Complete!', `${missionSummaryTitle()} cleared.\nStars: ${stars} / 3\n\nScore: ${Math.floor(state.totalScore)}\nNext: Event ${state.levelIndex + 2} • ${LEVELS[state.levelIndex + 1].name}`, 'Next event');
     }
     updateHUD();
   }
   function endGame(reason) {
     state.running = false; state.gameOver = true; state.paused = false; stopMusic(); sfx('gameover');
-    if (state.totalScore > best) { best = Math.floor(state.totalScore); localStorage.setItem(BEST_KEY, String(best)); }
+    if (state.totalScore > best) { best = Math.floor(state.totalScore); saveBest(); }
     updateHUD(); postScore('game_over');
     showPanel('Race Over', `${reason}\n\nReached: Level ${state.levelIndex + 1} • ${currentLevel().name}\nScore: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nRetry this level with your score from its start.`, 'Retry level');
   }
@@ -381,7 +420,7 @@
     pointer.down = true; pointer.id = e.pointerId; pointer.x = p.x; pointer.y = p.y; pointer.startX = p.x; pointer.startY = p.y; pointer.tDown = performance.now();
     if (!state.running && !state.gameOver && !state.levelClear && !state.victory) startLevel();
     else if (state.gameOver) { state.totalScore = state.levelStartScore; loadLevel(state.levelIndex); startLevel(); }
-    else if (state.victory) { resetRun(); startLevel(); }
+    else if (state.victory) { state.totalScore = 0; loadLevel(state.levelIndex); startLevel(); }
     else if (state.levelClear) { loadLevel(state.levelIndex + 1); startLevel(); }
     else if (state.paused) { state.paused = false; hidePanel(); startMusic(); }
   }, { passive: true });
@@ -402,6 +441,7 @@
   canvas.addEventListener('pointercancel', onPointerUp, { passive: true });
 
   window.addEventListener('keydown', (e) => {
+    if (e.target && /^(SELECT|BUTTON|INPUT)$/.test(e.target.tagName)) return;
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); useBoost(); }
     if (e.key.toLowerCase() === 'p') togglePause();
     if (e.key.toLowerCase() === 'r') { resetRun(); startLevel(); }
@@ -417,17 +457,23 @@
     else { hidePanel(); startMusic(); }
   }
 
+  eventSelect?.addEventListener('change', () => {
+    const index = Number(eventSelect.value);
+    if (!Number.isInteger(index) || index < 0 || index > progress.unlocked || index >= LEVELS.length) { refreshEventPicker(); return; }
+    state.totalScore = 0; loadLevel(index);
+  });
+
   btnStart.onclick = () => {
     ensureAudio();
     if (state.gameOver) { state.totalScore = state.levelStartScore; loadLevel(state.levelIndex); startLevel(); return; }
-    if (state.victory) { resetRun(); startLevel(); return; }
+    if (state.victory) { state.totalScore = 0; loadLevel(state.levelIndex); startLevel(); return; }
     if (state.levelClear) { loadLevel(state.levelIndex + 1); startLevel(); return; }
     if (!state.running) startLevel();
     else if (state.paused) { state.paused = false; hidePanel(); startMusic(); }
   };
   btnInfo.onclick = () => {
     if (state.running && !state.paused) { state.paused = true; stopMusic(); }
-    showPanel('How to play', 'Swipe or drag to steer your car across the road.\n\n• Quick tap or Boost button = nitro burst\n• Pick up yellow nitro charges\n• Pick up green repair kits when damaged\n• Complete each level mission to unlock the next route\n• Multiple traffic types and faster roads appear later');
+    showPanel('How to play', 'Swipe or drag to steer your car across the road.\n\n• Quick tap or Boost button = nitro burst\n• Pick up yellow nitro charges\n• Pick up green repair kits when damaged\n• Finish each event to unlock the next\n• Time trials have a countdown; deliveries allow only one collision\n• Earn stars for finishing, clean driving and two near misses');
   };
   btnPause.onclick = togglePause;
   btnBoost.onclick = useBoost;
@@ -468,7 +514,9 @@
     if (state.boosting > 0) state.boosting = Math.max(0, state.boosting - dt);
     if (state.invuln > 0) state.invuln = Math.max(0, state.invuln - dt);
     state.collisionSlow = Math.max(0, state.collisionSlow - dt);
+    state.raceElapsed += dt;
     const lvl = currentLevel();
+    if (lvl.type === 'time' && state.raceElapsed > lvl.timeLimit) { endGame('Time ran out.'); return; }
     const effectiveSpeed = (lvl.baseSpeed + Math.min(240, state.distance * 0.07) + (state.boosting > 0 ? 220 : 0)) * (state.collisionSlow > 0 ? 0.65 + 0.35 * (1 - state.collisionSlow / 2) : 1);
     state.distance += dt * effectiveSpeed * 0.20;
     state.totalScore += dt * effectiveSpeed * 0.08 + (state.boosting > 0 ? dt * 18 : dt * 6);
@@ -507,8 +555,9 @@
         }
       }
       if (state.invuln <= 0 && rectsOverlap(player.x, player.y, player.w * 0.58, player.h * 0.66, p.x, p.y, p.w * 0.60, p.h * 0.66)) {
-        state.traffic.splice(i, 1); state.lives -= 1; state.invuln = 1.05; state.collisionSlow = 2; state.boosting = 0; state.shake = 9; state.totalScore = Math.max(0, state.totalScore - 120);
+        state.traffic.splice(i, 1); state.lives -= 1; state.hits += 1; state.invuln = 1.05; state.collisionSlow = 2; state.boosting = 0; state.shake = 9; state.totalScore = Math.max(0, state.totalScore - 120);
         popParticles(player.x, player.y, 26, 'rgba(244,63,94,.95)'); addFloater(player.x, player.y - 34, '-1 Life', '#ff8aa0'); sfx('hit');
+        if (lvl.type === 'delivery' && state.hits > lvl.maxHits) { endGame('The delivery took too much damage.'); return; }
         if (state.lives <= 0) { endGame('You ran out of lives.'); return; }
         continue;
       }

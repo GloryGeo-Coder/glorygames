@@ -67,3 +67,5 @@ html,body{height:100%;height:100dvh}
   .panel{padding:calc(42px + var(--sat)) 8px calc(54px + var(--sab))}.panelHint{display:none}.panelText{font-size:12px;line-height:1.2}.panelButtons{margin-top:6px}.btn{padding:7px}
 }
 @media (prefers-reduced-motion:reduce){.btn:active,.chip:active{transform:none}}
+.eventPicker{display:grid;gap:5px;margin-top:12px}.eventPicker[hidden]{display:none}.eventPicker label{font-weight:800;font-size:13px;color:#fff}.eventPicker select{width:100%;min-height:44px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.3);background:#10243a;color:#fff;font:inherit;font-weight:700}.eventPicker select:focus-visible{outline:3px solid #fff;outline-offset:2px}.eventPicker small{font-size:11px;line-height:1.3;color:rgba(255,255,255,.8)}
+@media (max-height:500px){.eventPicker{margin-top:5px;gap:2px}.eventPicker select{min-height:36px;padding:5px}.eventPicker small{font-size:10px}}
