@@ -27,25 +27,29 @@ function game(seed = {}, blocked = false) {
 test('migrates completed original campaign while preserving stars and unfinished saves', () => {
   const complete = {version:1, unlocked:7, stars:[3,2,1,1,1,1,1,2]};
   const migrated = game({[key]:JSON.stringify(complete)}).api.progress;
-  assert.equal(migrated.unlocked,8); assert.equal(migrated.stars.length,15); assert.equal(migrated.stars[7],2);
+  assert.equal(migrated.unlocked,8); assert.equal(migrated.stars.length,25); assert.equal(migrated.stars[7],2);
   const unfinished = game({[key]:JSON.stringify({...complete, stars:[3,2,1,1,1,1,1,0]})}).api.progress;
   assert.equal(unfinished.unlocked,7);
+  const fifteen={version:1,unlocked:14,stars:Array(15).fill(2)};
+  assert.equal(game({[key]:JSON.stringify(fifteen)}).api.progress.unlocked,15);
+  fifteen.stars[14]=0;
+  assert.equal(game({[key]:JSON.stringify(fifteen)}).api.progress.unlocked,14);
   assert.equal(game({[key]:'not json'}).api.progress.unlocked,0);
   assert.equal(game({},true).api.progress.unlocked,0);
 });
 
-test('all 15 events finish naturally on a clean run and persist sequential progress', () => {
+test('all 25 events finish naturally on a clean run and persist sequential progress', () => {
   const {api, storage} = game();
-  assert.equal(api.LEVELS.length,15);
+  assert.equal(api.LEVELS.length,25);
   for (let i=0; i<api.LEVELS.length; i++) {
     api.loadLevel(i); api.startLevel(); api.state.spawnT=Infinity; api.state.pickupT=Infinity;
     for (let n=0; n<10000 && api.state.running; n++) api.step(.033);
     assert.equal(api.state.gameOver,false, `event ${i+1} should be achievable without random pickups`);
     assert.equal(api.state.levelClear,true, `event ${i+1} completed`);
-    assert.equal(api.progress.unlocked,Math.min(i+1,14));
+    assert.equal(api.progress.unlocked,Math.min(i+1,24));
   }
-  const saved=JSON.parse(storage[key]); assert.equal(saved.unlocked,14); assert.equal(saved.stars.length,15);
-  const reloaded=game(storage).api.progress; assert.equal(reloaded.unlocked,14); assert.equal(reloaded.stars[14],2);
+  const saved=JSON.parse(storage[key]); assert.equal(saved.unlocked,24); assert.equal(saved.stars.length,25);
+  const reloaded=game(storage).api.progress; assert.equal(reloaded.unlocked,24); assert.equal(reloaded.stars[24],2);
 });
 
 test('rival advances, pauses, wins or loses consistently with the player', () => {
