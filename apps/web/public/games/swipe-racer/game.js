@@ -59,6 +59,12 @@
     canvas.width = Math.floor(CW * DPR);
     canvas.height = Math.floor(CH * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const scale = Math.min(1, CW / 420, CH / 520);
+    player.w = 76 * scale; player.h = 142 * scale;
+    player.y = playerY();
+    const limit = roadWidthAt(player.y) * 0.5 - player.w * 0.33;
+    player.x = clamp(player.x || roadCenter(), roadCenter() - limit, roadCenter() + limit);
+    player.targetX = clamp(player.targetX || player.x, roadCenter() - limit, roadCenter() + limit);
   }
   requestAnimationFrame(() => {
     resize();
@@ -201,6 +207,8 @@
     time: 0,
     roadScroll: 0,
     shake: 0,
+    collisionSlow: 0,
+    levelStartScore: 0,
   };
 
   const pointer = { down: false, id: null, x: 0, y: 0, startX: 0, startY: 0, tDown: 0 };
@@ -223,23 +231,13 @@
     const rw = roadWidthAt(y); const lw = rw / lanes;
     return roadCenter() - rw * 0.5 + lw * (lane + 0.5);
   }
+  // Distance is the guaranteed objective. Skill goals remain optional score challenges.
   function missionProgressValue() {
-    const lvl = currentLevel();
-    const values = [];
-    if (lvl.targetDistance > 0) values.push(state.distance / lvl.targetDistance);
-    if (lvl.targetNear > 0) values.push(state.near / lvl.targetNear);
-    if (lvl.targetBoosts > 0) values.push(state.boostsCollected / lvl.targetBoosts);
-    if (lvl.targetScore > 0) values.push(state.totalScore / lvl.targetScore);
-    return clamp(Math.min(...values), 0, 1);
+    return clamp(state.distance / currentLevel().targetDistance, 0, 1);
   }
   function missionText() {
     const lvl = currentLevel();
-    const parts = [];
-    if (lvl.targetDistance > 0) parts.push(`Distance ${Math.floor(state.distance)} / ${lvl.targetDistance}m`);
-    if (lvl.targetNear > 0) parts.push(`Near misses ${state.near} / ${lvl.targetNear}`);
-    if (lvl.targetBoosts > 0) parts.push(`Boost pickups ${state.boostsCollected} / ${lvl.targetBoosts}`);
-    if (lvl.targetScore > 0) parts.push(`Score ${Math.floor(state.totalScore)} / ${lvl.targetScore}`);
-    return parts.join(' • ');
+    return `Finish ${Math.floor(state.distance)} / ${lvl.targetDistance}m • Bonus: near misses ${state.near} / ${lvl.targetNear}, nitro pickups ${state.boostsCollected} / ${lvl.targetBoosts}`;
   }
   function missionSummaryTitle() {
     return `Level ${state.levelIndex + 1} • ${currentLevel().name}`;
@@ -266,15 +264,16 @@
   function resetLevelState() {
     state.distance = 0; state.near = 0; state.boostsCollected = 0; state.lives = 3;
     state.boostEnergy = 1; state.boosting = 0; state.invuln = 0; state.traffic = []; state.pickups = [];
-    state.particles = []; state.floaters = []; state.spawnT = 0.8; state.pickupT = 2.0; state.time = 0; state.roadScroll = 0; state.shake = 0;
+    state.particles = []; state.floaters = []; state.spawnT = 0.8; state.pickupT = 2.0; state.time = 0; state.roadScroll = 0; state.shake = 0; state.collisionSlow = 0;
     setPlayerBase();
   }
   function resetRun() {
     state.running = false; state.paused = false; state.gameOver = false; state.levelClear = false; state.victory = false;
-    state.levelIndex = 0; state.totalScore = 0;
+    state.levelIndex = 0; state.totalScore = 0; state.levelStartScore = 0;
     resetLevelState(); updateHUD(); showPanel(META.title || 'Swipe Racer', META.description || 'Swipe to steer and complete missions.', 'Start');
   }
   function loadLevel(index) {
+    state.levelStartScore = state.totalScore;
     state.levelIndex = index; state.running = false; state.paused = false; state.gameOver = false; state.levelClear = false;
     state.victory = false; resetLevelState(); updateHUD(); showPanel(missionSummaryTitle(), levelIntroText(), index === 0 ? 'Start level' : 'Start next level');
   }
@@ -297,7 +296,7 @@
     state.running = false; state.gameOver = true; state.paused = false; stopMusic(); sfx('gameover');
     if (state.totalScore > best) { best = Math.floor(state.totalScore); localStorage.setItem(BEST_KEY, String(best)); }
     updateHUD(); postScore('game_over');
-    showPanel('Race Over', `${reason}\n\nReached: Level ${state.levelIndex + 1} • ${currentLevel().name}\nScore: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nTap Start to retry from level 1.`, 'Restart run');
+    showPanel('Race Over', `${reason}\n\nReached: Level ${state.levelIndex + 1} • ${currentLevel().name}\nScore: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nRetry this level with your score from its start.`, 'Retry level');
   }
 
   function updateHUD() {
@@ -339,9 +338,11 @@
   function spawnTraffic() {
     const lvl = currentLevel();
     const lanes = lvl.lanes;
-    const recent = new Set(state.traffic.filter(t => t.t < 0.22).map(t => t.lane));
+    const recent = new Set(state.traffic.filter(t => t.t < 0.9).map(t => t.lane));
+    // Keep a continuous clear lane while traffic is approaching the player.
     const options = [...Array(lanes).keys()].filter(i => !recent.has(i));
-    const lane = options.length ? options[Math.floor(Math.random() * options.length)] : Math.floor(Math.random() * lanes);
+    if (options.length <= 1) return;
+    const lane = options[Math.floor(Math.random() * options.length)];
     const type = Math.random() < 0.18 + state.levelIndex * 0.05 ? 'truck' : 'car';
     const key = type === 'truck' ? 'truck' : ['red', 'yellow', 'green'][Math.floor(Math.random() * 3)];
     state.traffic.push({ type, key, lane, t: 0.02, speedF: 0.92 + Math.random() * 0.28, nearGiven: false });
@@ -358,15 +359,16 @@
     const ease = Math.pow(t, 1.10);
     const y = lerp(horizonY(), playerY() + 120, ease);
     const laneX = laneCenterAt(ent.lane, y, currentLevel().lanes);
-    const baseW = ent.type === 'truck' ? 84 : 62;
-    const baseH = ent.type === 'truck' ? 142 : 118;
+    const size = player.w / 76;
+    const baseW = (ent.type === 'truck' ? 84 : 62) * size;
+    const baseH = (ent.type === 'truck' ? 142 : 118) * size;
     const scale = 0.36 + ease * 1.08;
     return { x: laneX, y, w: baseW * scale, h: baseH * scale };
   }
 
   function levelDone() {
     const lvl = currentLevel();
-    return state.distance >= lvl.targetDistance && state.near >= lvl.targetNear && state.boostsCollected >= lvl.targetBoosts && state.totalScore >= lvl.targetScore;
+    return state.distance >= lvl.targetDistance;
   }
 
   function canvasPoint(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
@@ -374,21 +376,22 @@
     ensureAudio(); canvas.setPointerCapture?.(e.pointerId); const p = canvasPoint(e);
     pointer.down = true; pointer.id = e.pointerId; pointer.x = p.x; pointer.y = p.y; pointer.startX = p.x; pointer.startY = p.y; pointer.tDown = performance.now();
     if (!state.running && !state.gameOver && !state.levelClear && !state.victory) startLevel();
-    else if (state.gameOver || state.victory) { resetRun(); startLevel(); }
+    else if (state.gameOver) { state.totalScore = state.levelStartScore; loadLevel(state.levelIndex); startLevel(); }
+    else if (state.victory) { resetRun(); startLevel(); }
     else if (state.levelClear) { loadLevel(state.levelIndex + 1); startLevel(); }
     else if (state.paused) { state.paused = false; hidePanel(); startMusic(); }
   }, { passive: true });
   canvas.addEventListener('pointermove', (e) => {
     if (!pointer.down || pointer.id !== e.pointerId) return;
-    const p = canvasPoint(e); pointer.x = p.x; pointer.y = p.y;
+    const p = canvasPoint(e); const dx = p.x - pointer.x; pointer.x = p.x; pointer.y = p.y;
     const rw = roadWidthAt(player.y); const minX = roadCenter() - rw * 0.5 + player.w * 0.33; const maxX = roadCenter() + rw * 0.5 - player.w * 0.33;
-    player.targetX = clamp(p.x, minX, maxX);
+    player.targetX = clamp(player.targetX + dx, minX, maxX);
   }, { passive: true });
   function onPointerUp(e) {
     if (!pointer.down || (e && pointer.id !== e.pointerId)) return;
     const p = e ? canvasPoint(e) : { x: pointer.x, y: pointer.y };
     const dt = performance.now() - pointer.tDown; const dx = p.x - pointer.startX; const dy = p.y - pointer.startY;
-    if (dt < 220 && dx * dx + dy * dy < 18 * 18) useBoost();
+    if (e?.type !== 'pointercancel' && dt < 220 && dx * dx + dy * dy < 18 * 18) useBoost();
     pointer.down = false; pointer.id = null;
   }
   canvas.addEventListener('pointerup', onPointerUp, { passive: true });
@@ -398,6 +401,7 @@
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); useBoost(); }
     if (e.key.toLowerCase() === 'p') togglePause();
     if (e.key.toLowerCase() === 'r') { resetRun(); startLevel(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') e.preventDefault();
     if (e.key === 'ArrowLeft') player.targetX -= roadWidthAt(player.y) / currentLevel().lanes;
     if (e.key === 'ArrowRight') player.targetX += roadWidthAt(player.y) / currentLevel().lanes;
   });
@@ -411,7 +415,8 @@
 
   btnStart.onclick = () => {
     ensureAudio();
-    if (state.gameOver || state.victory) { resetRun(); startLevel(); return; }
+    if (state.gameOver) { state.totalScore = state.levelStartScore; loadLevel(state.levelIndex); startLevel(); return; }
+    if (state.victory) { resetRun(); startLevel(); return; }
     if (state.levelClear) { loadLevel(state.levelIndex + 1); startLevel(); return; }
     if (!state.running) startLevel();
     else if (state.paused) { state.paused = false; hidePanel(); startMusic(); }
@@ -432,7 +437,7 @@
     if (type === 'GG_MUTE') { muted = !!(data.payload?.muted ?? data.muted); btnMute.textContent = muted ? 'Muted' : 'Sound'; if (muted) stopMusic(); }
     if (type === 'GG_RESTART') { resetRun(); startLevel(); }
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { state.paused = true; stopMusic(); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && state.running && !state.paused) togglePause(); });
 
   let last = performance.now();
   function loop(now) {
@@ -442,8 +447,7 @@
 
   function step(dt) {
     state.time += dt; state.shake = Math.max(0, state.shake - dt * 16);
-    if (state.boosting > 0) state.boosting = Math.max(0, state.boosting - dt);
-    if (state.invuln > 0) state.invuln = Math.max(0, state.invuln - dt);
+
 
     // ambient updates even when paused
     for (let i = state.particles.length - 1; i >= 0; i--) {
@@ -457,8 +461,11 @@
 
     if (!state.running || state.paused || state.gameOver || state.levelClear || state.victory) { updateHUD(); return; }
 
+    if (state.boosting > 0) state.boosting = Math.max(0, state.boosting - dt);
+    if (state.invuln > 0) state.invuln = Math.max(0, state.invuln - dt);
+    state.collisionSlow = Math.max(0, state.collisionSlow - dt);
     const lvl = currentLevel();
-    const effectiveSpeed = lvl.baseSpeed + Math.min(240, state.distance * 0.07) + (state.boosting > 0 ? 220 : 0);
+    const effectiveSpeed = (lvl.baseSpeed + Math.min(240, state.distance * 0.07) + (state.boosting > 0 ? 220 : 0)) * (state.collisionSlow > 0 ? 0.65 + 0.35 * (1 - state.collisionSlow / 2) : 1);
     state.distance += dt * effectiveSpeed * 0.20;
     state.totalScore += dt * effectiveSpeed * 0.08 + (state.boosting > 0 ? dt * 18 : dt * 6);
     state.roadScroll += dt * effectiveSpeed;
@@ -496,7 +503,7 @@
         }
       }
       if (state.invuln <= 0 && rectsOverlap(player.x, player.y, player.w * 0.58, player.h * 0.66, p.x, p.y, p.w * 0.60, p.h * 0.66)) {
-        state.traffic.splice(i, 1); state.lives -= 1; state.invuln = 1.05; state.shake = 9; state.totalScore = Math.max(0, state.totalScore - 120);
+        state.traffic.splice(i, 1); state.lives -= 1; state.invuln = 1.05; state.collisionSlow = 2; state.boosting = 0; state.shake = 9; state.totalScore = Math.max(0, state.totalScore - 120);
         popParticles(player.x, player.y, 26, 'rgba(244,63,94,.95)'); addFloater(player.x, player.y - 34, '-1 Life', '#ff8aa0'); sfx('hit');
         if (state.lives <= 0) { endGame('You ran out of lives.'); return; }
         continue;
@@ -509,9 +516,9 @@
       pu.t += dt * (0.24 + pu.t * 1.55) * (effectiveSpeed / 360) * pu.speedF;
       const y = lerp(horizonY(), playerY() + 100, Math.pow(clamp(pu.t, 0, 1.2), 1.10));
       const x = laneCenterAt(pu.lane, y, currentLevel().lanes);
-      const size = 24 + Math.pow(pu.t, 1.15) * 40;
+      const size = (24 + Math.pow(pu.t, 1.15) * 40) * (player.w / 76);
       pu._p = { x, y, size };
-      if ((player.x - x) ** 2 + (player.y - y) ** 2 < (size * 0.42 + 30) ** 2) {
+      if ((player.x - x) ** 2 + (player.y - y) ** 2 < (size * 0.42 + player.w * 0.4) ** 2) {
         state.pickups.splice(i, 1);
         if (pu.kind === 'boost') { state.boostEnergy = Math.min(3, state.boostEnergy + 1); state.boostsCollected += 1; state.totalScore += 55; addFloater(x, y, '+Nitro', '#ffe08a'); }
         else { state.lives = Math.min(3, state.lives + 1); state.totalScore += 40; addFloater(x, y, '+Repair', '#9cffba'); }
@@ -633,17 +640,18 @@
 
   function drawPlayer() {
     ctx.save(); ctx.translate(player.x, player.y); ctx.rotate(player.tilt);
+    ctx.scale(player.w / 76, player.h / 142);
     if (state.boosting > 0) {
       ctx.save(); ctx.shadowColor = 'rgba(250,204,21,.95)'; ctx.shadowBlur = 24; ctx.fillStyle = 'rgba(250,204,21,.85)';
       ctx.beginPath(); ctx.moveTo(-18, 52); ctx.lineTo(-8, 86 + Math.random() * 12); ctx.lineTo(2, 52); ctx.closePath(); ctx.fill();
       ctx.beginPath(); ctx.moveTo(18, 52); ctx.lineTo(8, 86 + Math.random() * 12); ctx.lineTo(-2, 52); ctx.closePath(); ctx.fill(); ctx.restore();
     }
     if (state.invuln > 0) {
-      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.shadowColor = 'rgba(59,130,246,.9)'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.ellipse(0, 0, player.w * 0.55, player.h * 0.42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.shadowColor = 'rgba(59,130,246,.9)'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.ellipse(0, 0, 76 * 0.55, 142 * 0.42, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     }
     const img = images.player;
-    if (img) ctx.drawImage(img, -player.w * 0.5, -player.h * 0.5, player.w, player.h);
-    else { ctx.fillStyle = '#3b82f6'; ctx.fillRect(-player.w * 0.5, -player.h * 0.5, player.w, player.h); }
+    if (img) ctx.drawImage(img, -38, -71, 76, 142);
+    else { ctx.fillStyle = '#3b82f6'; ctx.fillRect(-38, -71, 76, 142); }
     ctx.restore();
   }
 
