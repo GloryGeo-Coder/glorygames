@@ -41,3 +41,29 @@ button{font:inherit}
 .actions{position:fixed;left:0;right:0;bottom:0;padding:10px calc(12px + var(--sar)) calc(10px + var(--sab)) calc(12px + var(--sal));display:flex;gap:10px;justify-content:space-between;border-top:1px solid var(--stroke);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);z-index:25}.chip{flex:1;min-height:48px}
 @media (max-width:760px){.hud{flex-direction:column;align-items:flex-start}.hudRight{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.stat{min-width:0;padding:8px 6px}.label{font-size:10px}.value{font-size:14px}.stage{padding-top:calc(140px + var(--sat))}.meters{top:calc(152px + var(--sat));left:8px;width:min(230px,calc(100vw - 16px))}.gestureHint{bottom:72px}.hintPill{font-size:11px}.panel{align-items:flex-end;padding:12px}.panelButtons{display:grid;grid-template-columns:1fr}.btn{width:100%}.actions{gap:6px}.chip{font-size:12px;padding:10px 8px}}
 @media (min-width:900px){.stage{padding-top:84px;padding-bottom:82px}.actions{max-width:980px;left:50%;transform:translateX(-50%);border-radius:18px 18px 0 0}}
+
+/* Keep the road visible and the primary controls reachable on small screens. */
+html,body{height:100%;height:100dvh}
+#c{touch-action:none}
+.actions{padding-bottom:calc(8px + var(--sab))}
+.chip:focus-visible,.btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.meters{pointer-events:none}
+@media (max-width:760px), (max-height:500px) and (orientation:landscape){
+  .hud{display:flex;flex-direction:row;align-items:center;gap:6px;padding:calc(5px + var(--sat)) calc(8px + var(--sar)) 5px calc(8px + var(--sal))}
+  .hudLeft{flex:0 1 112px;min-width:0}.brand{font-size:13px}.sub{display:none}.badge{font-size:9px;padding:3px 5px;margin-top:3px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+  .hudRight{flex:1;min-width:0;gap:3px}.stat{padding:4px; border-radius:8px}.label{font-size:8px}.value{font-size:12px}
+  .stage{padding-top:calc(55px + var(--sat));padding-bottom:calc(62px + var(--sab))}
+  .meters{top:calc(60px + var(--sat));left:calc(6px + var(--sal));width:min(200px,58vw);gap:3px}
+  .meterCard{padding:5px 7px;border-radius:9px}.meterTop{font-size:10px;margin-bottom:2px}.missionText{font-size:10px;line-height:1.15}.meter{height:5px}
+  .gestureHint{display:none}.actions{gap:4px;padding:6px calc(6px + var(--sar)) calc(6px + var(--sab)) calc(6px + var(--sal))}
+  .chip{min-width:0;min-height:44px;padding:6px 3px;font-size:11px;border-radius:10px}
+  .panel{align-items:center;padding:calc(58px + var(--sat)) 10px calc(68px + var(--sab))}
+  .panelInner{max-height:100%;overflow:auto;padding:12px}.panelTitle{font-size:19px}.panelText{font-size:13px}.panelButtons{grid-template-columns:repeat(2,minmax(0,1fr))}.pill{font-size:10px}
+}
+@media (max-height:500px) and (orientation:landscape){
+  .hud{padding-top:calc(2px + var(--sat));padding-bottom:2px}.badge{margin-top:0}.hudLeft{display:flex;gap:6px;align-items:center}
+  .stage{padding-top:calc(38px + var(--sat));padding-bottom:calc(52px + var(--sab))}
+  .meters{top:calc(42px + var(--sat));width:min(190px,28vw)}.meterCard{padding:3px 5px}.missionText{font-size:9px}
+  .panel{padding:calc(42px + var(--sat)) 8px calc(54px + var(--sab))}.panelHint{display:none}.panelText{font-size:12px;line-height:1.2}.panelButtons{margin-top:6px}.btn{padding:7px}
+}
+@media (prefers-reduced-motion:reduce){.btn:active,.chip:active{transform:none}}
