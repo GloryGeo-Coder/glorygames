@@ -200,15 +200,25 @@
     { name:'Canyon Cargo', bg:'bgDesert', fallbackBg:'bgMountain', lanes:3, baseSpeed:305, spawnEvery:.95, targetDistance:1550, scenery:'desert', type:'delivery', maxHits:1, story:'Maya: The crew needs these parts across the canyon. Keep the cargo safe.' },
     { name:'Frostline Run', bg:'bgSnow', fallbackBg:'bgMountain', lanes:3, baseSpeed:315, spawnEvery:.88, targetDistance:1650, scenery:'snow', type:'sprint', story:'Maya: Snow covers the peaks, but the pass is open. Stay focused through the traffic.' },
     { name:'Alpine Countdown', bg:'bgSnow', fallbackBg:'bgMountain', lanes:3, baseSpeed:320, spawnEvery:.90, targetDistance:1700, scenery:'snow', type:'time', timeLimit:43, story:'Maya: Kai set a time on the mountain. Reach the finish before the clock expires.' },
-    { name:'Harbour Showdown', bg:'bgHarbour', fallbackBg:'bgCoast', lanes:4, baseSpeed:335, spawnEvery:.82, targetDistance:1900, scenery:'harbour', type:'rival', rivalSpeed:66, rivalLead:90, story:'Maya: Back at the harbour, Kai is waiting. Race to the finish and show the crew how far you have come.' }
+    { name:'Harbour Showdown', bg:'bgHarbour', fallbackBg:'bgCoast', lanes:4, baseSpeed:335, spawnEvery:.82, targetDistance:1900, scenery:'harbour', type:'rival', rivalSpeed:66, rivalLead:90, story:'Maya: Back at the harbour, Kai is waiting. Race to the finish and show the crew how far you have come.' },
+    { name:'Metro Return', bg:'bgCity', lanes:4, baseSpeed:325, spawnEvery:.82, targetDistance:1750, scenery:'city', type:'sprint', story:'Maya: The championship qualifiers begin where your journey started. Show the city how far you have come.' },
+    { name:'Alpine Relief', bg:'bgSnow', fallbackBg:'bgMountain', lanes:3, baseSpeed:320, spawnEvery:.90, targetDistance:1800, scenery:'snow', type:'delivery', maxHits:1, story:'Maya: The mountain crew needs fresh parts. Deliver them safely through the pass.' },
+    { name:'Canyon Clock', bg:'bgDesert', fallbackBg:'bgCoast', lanes:3, baseSpeed:330, spawnEvery:.85, targetDistance:1950, scenery:'desert', type:'time', timeLimit:43, story:'Maya: The canyon qualifier is against the clock. Keep your line clean and carry your speed.' },
+    { name:'Coastal Rivalry', bg:'bgCoast', lanes:4, baseSpeed:330, spawnEvery:.83, targetDistance:2000, scenery:'coast', type:'rival', rivalSpeed:67, rivalLead:90, story:'Maya: Kai is waiting on the coast. Beat them to the finish to earn your place in the next round.' },
+    { name:'Harbour Deadline', bg:'bgHarbour', fallbackBg:'bgCoast', lanes:4, baseSpeed:330, spawnEvery:.80, targetDistance:2050, scenery:'harbour', type:'time', timeLimit:45, story:'Maya: Cross the harbour before the qualifier closes. Watch for heavy traffic near the docks.' },
+    { name:'Summit Ascent', bg:'bgMountain', lanes:3, baseSpeed:325, spawnEvery:.82, targetDistance:2050, scenery:'mountain', type:'sprint', story:'Maya: The summit route is crowded today. Find a safe path through the traffic.' },
+    { name:'Frostline Freight', bg:'bgSnow', fallbackBg:'bgMountain', lanes:3, baseSpeed:325, spawnEvery:.86, targetDistance:2100, scenery:'snow', type:'delivery', maxHits:1, story:'Maya: One careful delivery will get the team ready for the championship. Protect the cargo.' },
+    { name:'Neon Qualifier', bg:'bgNeon', lanes:4, baseSpeed:340, spawnEvery:.78, targetDistance:2150, scenery:'neon', type:'time', timeLimit:46, story:'Maya: The final qualifying place is open. Reach the line before the clock runs out.' },
+    { name:'Desert Duel', bg:'bgDesert', fallbackBg:'bgCoast', lanes:4, baseSpeed:340, spawnEvery:.80, targetDistance:2200, scenery:'desert', type:'rival', rivalSpeed:69, rivalLead:100, story:'Maya: Kai wants a rematch in the desert. Win this duel and meet them at the championship.' },
+    { name:'Horizon Championship', bg:'bgCity', lanes:4, baseSpeed:345, spawnEvery:.76, targetDistance:2400, scenery:'city', type:'rival', rivalSpeed:70, rivalLead:110, story:'Maya: The crew is cheering you on. Kai is on the grid ahead. One last race through the city—bring it home.' }
   ];
   function readProgress() {
     try {
       const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
       if (saved && saved.version === 1 && Number.isInteger(saved.unlocked) && Array.isArray(saved.stars)) {
         const stars = LEVELS.map((_, i) => Math.max(0, Math.min(3, Number.isInteger(saved.stars[i]) ? saved.stars[i] : 0)));
-        // Previously event 8 was the final event, so its completion could not unlock event 9.
-        const unlocked = Math.max(saved.unlocked, stars[7] > 0 ? 8 : 0);
+        // Completed former campaign finales unlock the next event on upgrade.
+        const unlocked = Math.max(saved.unlocked, stars[7] > 0 ? 8 : 0, stars[14] > 0 ? 15 : 0);
         return { version:1, unlocked:Math.max(0, Math.min(LEVELS.length - 1, unlocked)), stars };
       }
     } catch {}
@@ -348,7 +358,7 @@
     saveProgress();
     if (state.levelIndex >= LEVELS.length - 1) {
       state.victory = true; postScore('victory');
-      showPanel('Horizon Circuit Complete!', `Maya: You earned your place on the circuit!\n\nEvent stars: ${stars} / 3\nScore: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nChoose an unlocked event to race again.`, 'Race again');
+      showPanel('Horizon Champion!', `Maya: You did it! The crew is proud of you, champion.\n\nEvent stars: ${stars} / 3\nScore: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nChoose an unlocked event to race again.`, 'Race again');
     } else {
       showPanel('Event Complete!', `${missionSummaryTitle()} cleared.\nStars: ${stars} / 3\n\nScore: ${Math.floor(state.totalScore)}\nNext: Event ${state.levelIndex + 2} • ${LEVELS[state.levelIndex + 1].name}`, 'Next event');
     }
