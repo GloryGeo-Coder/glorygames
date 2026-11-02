@@ -30,11 +30,20 @@
   const btnSubmit = $('btnSubmit');
   const btnRestart = $('btnRestart');
   const btnMute = $('btnMute');
+  const eventList = $('eventList');
+  const btnEvents = $('btnEvents');
+  const btnClassic = $('btnClassic');
+  const Campaign = window.SwipeCampaign;
+  let campaign = Campaign.load(), mode = 'campaign', menuOpen = false, saveFailed = false;
 
   const GAME_SLUG = 'swipe-racer';
   const BEST_KEY = 'wga_swipe_racer_best_v2';
   let META = { title: 'Swipe Racer', description: '' };
-  let best = Number(localStorage.getItem(BEST_KEY) || '0') || 0;
+  let best = 0;
+  try { const stored = Number(localStorage.getItem(BEST_KEY)); if (Number.isFinite(stored) && stored > 0) best = stored; } catch {}
+  function saveBest() {
+    if (state.totalScore > best) { best = Math.floor(state.totalScore); try { localStorage.setItem(BEST_KEY, String(best)); } catch {} }
+  }
 
   async function loadMeta() {
     try {
@@ -42,8 +51,6 @@
       META = await res.json();
       document.title = META.title || 'Swipe Racer';
       if (elTitle) elTitle.textContent = META.title || 'Swipe Racer';
-      if (panelTitle) panelTitle.textContent = META.title || 'Swipe Racer';
-      if (META.description && panelText) panelText.textContent = META.description;
       if (elSub) elSub.textContent = 'Swipe to steer • Tap or press Boost to use nitro';
       try { window.GG?.init?.({ title: META.title || 'Swipe Racer' }); } catch {}
       try { window.GG?.setSlug?.(GAME_SLUG); } catch {}
@@ -213,12 +220,13 @@
     shake: 0,
     collisionSlow: 0,
     levelStartScore: 0,
+    elapsed: 0, hits: 0, boostsUsed: 0, deliveryMarker: 0,
   };
 
   const pointer = { down: false, id: null, x: 0, y: 0, startX: 0, startY: 0, tDown: 0 };
   const player = { x: 0, y: 0, w: 76, h: 142, targetX: 0, tilt: 0 };
 
-  function currentLevel() { return LEVELS[state.levelIndex]; }
+  function currentLevel() { return (mode === 'campaign' ? Campaign.EVENTS : LEVELS)[state.levelIndex]; }
   function horizonY() { return CH * 0.20; }
   function playerY() { return CH * 0.82; }
   function roadCenter() { return CW * 0.5; }
@@ -241,6 +249,11 @@
   }
   function missionText() {
     const lvl = currentLevel();
+    if (mode === 'campaign') {
+      const timer = lvl.limit ? ' | ' + Math.max(0, lvl.limit - state.elapsed).toFixed(1) + 's left' : '';
+      const delivery = lvl.type === 'Delivery dash' ? ' | Stops ' + state.deliveryMarker + '/3' : '';
+      return Math.floor(state.distance) + '/' + lvl.targetDistance + 'm' + timer + delivery;
+    }
     return `Finish ${Math.floor(state.distance)} / ${lvl.targetDistance}m • Bonus: near misses ${state.near} / ${lvl.targetNear}, nitro pickups ${state.boostsCollected} / ${lvl.targetBoosts}`;
   }
   function missionSummaryTitle() {
@@ -248,15 +261,57 @@
   }
   function levelIntroText() {
     const lvl = currentLevel();
+    if (mode === 'campaign') return lvl.story + '\n\n' + lvl.type + ': finish ' + lvl.targetDistance + 'm' + (lvl.limit ? ' within ' + lvl.limit + ' seconds.' : '.') + '\nOptional stars: ' + bonusText(lvl) + '\nStart skips this briefing.';
     return `${missionSummaryTitle()}\n\nMission:\n${missionText()}\n\nSwipe to steer around traffic. Tap for a nitro burst when you have charge.`;
   }
   function showPanel(title, text, startLabel = 'Start') {
+    menuOpen = false; eventList.hidden = true; btnClassic.hidden = true;
     if (panelTitle) panelTitle.textContent = title;
     if (panelText) panelText.textContent = text;
     if (btnStart) btnStart.textContent = startLabel;
     if (panel) panel.style.display = 'flex';
   }
   function hidePanel() { if (panel) panel.style.display = 'none'; }
+
+  function bonusText(event) {
+    const skill = event.skill === 'nitro' ? 'use nitro once' : event.skill === 'time' ? 'finish in ' + event.par + 's' : 'one near miss OR finish in ' + event.par + 's';
+    return 'at most ' + event.clean + ' collisions; ' + skill + '.';
+  }
+  function selectEvent(index) {
+    if (!Number.isInteger(index) || index < 0 || index > Campaign.unlocked(campaign)) return;
+    mode = 'campaign'; state.totalScore = 0; loadLevel(index);
+  }
+  function showCampaignMenu() {
+    stopMusic(); mode = 'campaign';
+    state.running = false; state.paused = false; state.gameOver = false; state.levelClear = false; state.victory = false;
+    state.levelIndex = Math.min(state.levelIndex, Campaign.unlocked(campaign));
+    state.totalScore = 0; state.levelStartScore = 0; resetLevelState(); updateHUD();
+    const totalStars = Object.values(campaign.results).reduce((sum, item) => sum + item.stars, 0);
+    showPanel('Road to the Horizon', 'Metro District | ' + totalStars + '/15 stars\nChoose an event. Selecting starts a fresh run. More regions are planned.' + (saveFailed ? '\nDevice storage unavailable: session progress only.' : ''), 'Continue Metro');
+    menuOpen = true; eventList.hidden = false; btnClassic.hidden = false;
+    eventList.replaceChildren();
+    const unlocked = Campaign.unlocked(campaign);
+    Campaign.EVENTS.forEach((event, index) => {
+      const result = campaign.results[event.id], button = document.createElement('button');
+      button.className = 'eventCard'; button.disabled = index > unlocked;
+      button.dataset.event = String(index);
+      button.textContent = (index + 1) + '. ' + event.name + ' — ' + event.type + '\n' +
+        (index > unlocked ? 'Locked: finish the previous event' : result ? result.stars + '/3 stars | Best ' + result.score + (result.time ? ' | ' + result.time.toFixed(1) + 's' : '') : event.targetDistance + 'm' + (event.limit ? ' | ' + event.limit + 's limit' : ' | No time limit'));
+      button.onclick = () => selectEvent(index); eventList.append(button);
+    });
+  }
+  function restartCurrent() {
+    stopMusic();
+    if (mode === 'campaign') { selectEvent(state.levelIndex); startLevel(); }
+    else { resetRun(); startLevel(); }
+  }
+  function advanceCampaign() {
+    if (menuOpen) { selectEvent(Campaign.unlocked(campaign)); return; }
+    if (state.gameOver) { state.totalScore = state.levelStartScore; loadLevel(state.levelIndex); startLevel(); return; }
+    if (state.levelClear) { if (state.levelIndex < 4) selectEvent(state.levelIndex + 1); else showCampaignMenu(); return; }
+    if (!state.running) startLevel();
+    else if (state.paused) { state.paused = false; hidePanel(); startMusic(); }
+  }
 
   function setPlayerBase() {
     player.x = roadCenter();
@@ -266,8 +321,10 @@
   }
 
   function resetLevelState() {
+    pointer.down = false; pointer.id = null;
+    state.elapsed = 0; state.hits = 0; state.boostsUsed = 0; state.deliveryMarker = 0;
     state.distance = 0; state.near = 0; state.boostsCollected = 0; state.lives = 3;
-    state.boostEnergy = 1; state.boosting = 0; state.invuln = 0; state.traffic = []; state.pickups = [];
+    state.boostEnergy = mode === 'campaign' ? 2 : 1; state.boosting = 0; state.invuln = 0; state.traffic = []; state.pickups = [];
     state.particles = []; state.floaters = []; state.spawnT = 0.8; state.pickupT = 2.0; state.time = 0; state.roadScroll = 0; state.shake = 0; state.collisionSlow = 0;
     setPlayerBase();
   }
@@ -282,12 +339,25 @@
     state.victory = false; resetLevelState(); updateHUD(); showPanel(missionSummaryTitle(), levelIntroText(), index === 0 ? 'Start level' : 'Start next level');
   }
   function startLevel() {
+    if (menuOpen) { selectEvent(state.levelIndex); return; }
     state.running = true; state.paused = false; state.gameOver = false; state.levelClear = false; state.victory = false;
     hidePanel(); ensureAudio(); sfx('start'); startMusic();
   }
   function completeLevel() {
     state.running = false; state.levelClear = true; stopMusic(); sfx('level');
-    if (state.totalScore > best) { best = Math.floor(state.totalScore); localStorage.setItem(BEST_KEY, String(best)); }
+    saveBest();
+    if (mode === 'campaign') {
+      const earned = Campaign.stars(currentLevel(), state);
+      campaign = Campaign.record(campaign, state.levelIndex, state);
+      saveFailed = !Campaign.save(campaign);
+      postScore('level_complete');
+      showPanel(state.levelIndex === 4 ? 'Metro Circuit ticket earned!' : 'Event complete!',
+        currentLevel().name + ' | ' + earned + '/3 stars\n' + state.elapsed.toFixed(1) + 's | Score ' + Math.floor(state.totalScore) +
+        '\n' + (state.levelIndex < 4 ? 'Next event unlocked. Replay from Events to improve your stars.' : 'All five Metro events complete. More regions are planned, not playable yet.') +
+        (saveFailed ? '\nProgress is kept for this session; device storage is unavailable.' : '\nProgress saved on this device.'),
+        state.levelIndex < 4 ? 'Next event' : 'Event selection');
+      updateHUD(); return;
+    }
     if (state.levelIndex >= LEVELS.length - 1) {
       state.victory = true; postScore('victory');
       showPanel('Champion Run!', `You completed all ${LEVELS.length} levels.\n\nFinal score: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nTap Start to play again.`, 'Play again');
@@ -298,7 +368,7 @@
   }
   function endGame(reason) {
     state.running = false; state.gameOver = true; state.paused = false; stopMusic(); sfx('gameover');
-    if (state.totalScore > best) { best = Math.floor(state.totalScore); localStorage.setItem(BEST_KEY, String(best)); }
+    saveBest();
     updateHUD(); postScore('game_over');
     showPanel('Race Over', `${reason}\n\nReached: Level ${state.levelIndex + 1} • ${currentLevel().name}\nScore: ${Math.floor(state.totalScore)}\nBest: ${best}\n\nRetry this level with your score from its start.`, 'Retry level');
   }
@@ -335,6 +405,7 @@
   function useBoost() {
     if (!state.running || state.paused || state.gameOver || state.levelClear || state.victory) return;
     if (state.boostEnergy <= 0 || state.boosting > 0) return;
+    state.boostsUsed++;
     state.boostEnergy -= 1; state.boosting = 1.0; state.totalScore += 40; state.shake = 4;
     popParticles(player.x, player.y + 24, 16, 'rgba(250,204,21,.95)'); addFloater(player.x, player.y - 40, 'Nitro!', '#ffe08a'); sfx('boost'); updateHUD();
   }
@@ -377,15 +448,17 @@
 
   function canvasPoint(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
   canvas.addEventListener('pointerdown', (e) => {
+    if (menuOpen) return;
     ensureAudio(); canvas.setPointerCapture?.(e.pointerId); const p = canvasPoint(e);
     pointer.down = true; pointer.id = e.pointerId; pointer.x = p.x; pointer.y = p.y; pointer.startX = p.x; pointer.startY = p.y; pointer.tDown = performance.now();
     if (!state.running && !state.gameOver && !state.levelClear && !state.victory) startLevel();
     else if (state.gameOver) { state.totalScore = state.levelStartScore; loadLevel(state.levelIndex); startLevel(); }
     else if (state.victory) { resetRun(); startLevel(); }
-    else if (state.levelClear) { loadLevel(state.levelIndex + 1); startLevel(); }
+    else if (state.levelClear) { if (mode === 'campaign') advanceCampaign(); else { loadLevel(state.levelIndex + 1); startLevel(); } }
     else if (state.paused) { state.paused = false; hidePanel(); startMusic(); }
   }, { passive: true });
   canvas.addEventListener('pointermove', (e) => {
+    if (!state.running || state.paused) return;
     if (!pointer.down || pointer.id !== e.pointerId) return;
     const p = canvasPoint(e); const dx = p.x - pointer.x; pointer.x = p.x; pointer.y = p.y;
     const rw = roadWidthAt(player.y); const minX = roadCenter() - rw * 0.5 + player.w * 0.33; const maxX = roadCenter() + rw * 0.5 - player.w * 0.33;
@@ -402,9 +475,11 @@
   canvas.addEventListener('pointercancel', onPointerUp, { passive: true });
 
   window.addEventListener('keydown', (e) => {
+    if (e.target?.tagName === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+    if (e.repeat && !e.key.startsWith('Arrow')) return;
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); useBoost(); }
     if (e.key.toLowerCase() === 'p') togglePause();
-    if (e.key.toLowerCase() === 'r') { resetRun(); startLevel(); }
+    if (e.key.toLowerCase() === 'r') restartCurrent();
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') e.preventDefault();
     if (e.key === 'ArrowLeft') player.targetX -= roadWidthAt(player.y) / currentLevel().lanes;
     if (e.key === 'ArrowRight') player.targetX += roadWidthAt(player.y) / currentLevel().lanes;
@@ -413,12 +488,14 @@
   function togglePause() {
     if (!state.running || state.gameOver || state.levelClear || state.victory) return;
     state.paused = !state.paused;
+    pointer.down = false; pointer.id = null;
     if (state.paused) { stopMusic(); showPanel('Paused', 'Tap Start or Pause to continue.', 'Resume'); }
     else { hidePanel(); startMusic(); }
   }
 
   btnStart.onclick = () => {
     ensureAudio();
+    if (mode === 'campaign') { advanceCampaign(); return; }
     if (state.gameOver) { state.totalScore = state.levelStartScore; loadLevel(state.levelIndex); startLevel(); return; }
     if (state.victory) { resetRun(); startLevel(); return; }
     if (state.levelClear) { loadLevel(state.levelIndex + 1); startLevel(); return; }
@@ -432,14 +509,16 @@
   btnPause.onclick = togglePause;
   btnBoost.onclick = useBoost;
   btnSubmit.onclick = () => postScore('manual_submit');
-  btnRestart.onclick = () => { resetRun(); startLevel(); };
+  btnRestart.onclick = restartCurrent;
+  btnEvents.onclick = showCampaignMenu;
+  btnClassic.onclick = () => { stopMusic(); mode = 'classic'; resetRun(); };
   btnMute.onclick = () => { muted = !muted; btnMute.textContent = muted ? 'Muted' : 'Sound'; if (muted) stopMusic(); else if (state.running && !state.paused) startMusic(); };
 
   window.addEventListener('message', (ev) => {
     const data = ev.data || {}; const type = data.type || data.event;
     if (type === 'GG_PAUSE') { state.paused = !!(data.payload?.paused ?? data.paused); if (state.paused) stopMusic(); else if (state.running) startMusic(); }
     if (type === 'GG_MUTE') { muted = !!(data.payload?.muted ?? data.muted); btnMute.textContent = muted ? 'Muted' : 'Sound'; if (muted) stopMusic(); }
-    if (type === 'GG_RESTART') { resetRun(); startLevel(); }
+    if (type === 'GG_RESTART') restartCurrent();
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden && state.running && !state.paused) togglePause(); });
 
@@ -464,6 +543,7 @@
     }
 
     if (!state.running || state.paused || state.gameOver || state.levelClear || state.victory) { updateHUD(); return; }
+    state.elapsed += dt;
 
     if (state.boosting > 0) state.boosting = Math.max(0, state.boosting - dt);
     if (state.invuln > 0) state.invuln = Math.max(0, state.invuln - dt);
@@ -471,6 +551,10 @@
     const lvl = currentLevel();
     const effectiveSpeed = (lvl.baseSpeed + Math.min(240, state.distance * 0.07) + (state.boosting > 0 ? 220 : 0)) * (state.collisionSlow > 0 ? 0.65 + 0.35 * (1 - state.collisionSlow / 2) : 1);
     state.distance += dt * effectiveSpeed * 0.20;
+    if (mode === 'campaign' && lvl.type === 'Delivery dash') {
+      const marker = Math.min(3, Math.floor(state.distance / (lvl.targetDistance / 3)));
+      if (marker > state.deliveryMarker) { state.deliveryMarker = marker; addFloater(player.x, player.y - 40, 'Delivery ' + marker + '/3', '#9cffba'); }
+    }
     state.totalScore += dt * effectiveSpeed * 0.08 + (state.boosting > 0 ? dt * 18 : dt * 6);
     state.roadScroll += dt * effectiveSpeed;
 
@@ -507,6 +591,7 @@
         }
       }
       if (state.invuln <= 0 && rectsOverlap(player.x, player.y, player.w * 0.58, player.h * 0.66, p.x, p.y, p.w * 0.60, p.h * 0.66)) {
+        state.hits++;
         state.traffic.splice(i, 1); state.lives -= 1; state.invuln = 1.05; state.collisionSlow = 2; state.boosting = 0; state.shake = 9; state.totalScore = Math.max(0, state.totalScore - 120);
         popParticles(player.x, player.y, 26, 'rgba(244,63,94,.95)'); addFloater(player.x, player.y - 34, '-1 Life', '#ff8aa0'); sfx('hit');
         if (state.lives <= 0) { endGame('You ran out of lives.'); return; }
@@ -532,6 +617,7 @@
       if (pu.t > 1.1) state.pickups.splice(i, 1);
     }
 
+    if (mode === 'campaign' && lvl.limit && state.elapsed > lvl.limit) { endGame('Time is up. Try again; your unlocked events are safe.'); return; }
     if (levelDone()) { completeLevel(); return; }
     updateHUD();
   }
@@ -701,5 +787,6 @@
   }
 
   resetRun();
+  showCampaignMenu();
   requestAnimationFrame(loop);
 })();
