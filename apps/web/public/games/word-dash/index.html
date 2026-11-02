@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#070b16" />
   <title>Word Dash • WebGameArena</title>
   <meta name="description" content="Word Dash — type fast, clear missions, build streaks, and unlock themed word levels." />
@@ -53,6 +53,8 @@
         </div>
 
         <div class="target" id="target">READY</div>
+        <p class="wordMeaning" id="wordMeaning" aria-live="polite">Start a challenge to discover a word.</p>
+        <div class="typingStats" aria-live="off"><span>Words <b id="wordCount">0</b></span><span>Speed <b id="wpm">0 WPM</b></span><span>Word accuracy <b id="accuracy">100%</b></span></div>
 
         <div class="letterSlots" id="letterSlots"></div>
 
@@ -62,7 +64,7 @@
             <span class="hint" id="hint">Press Enter to submit</span>
           </div>
 
-          <div class="entry" id="entry" aria-label="Typed word"></div>
+          <div class="entry" id="entry" tabindex="0" role="textbox" aria-readonly="true" aria-label="Typed word"></div>
 
           <div class="row">
             <button class="miniBtn" id="btnBack" aria-label="Backspace">⌫</button>
@@ -83,6 +85,7 @@
         <div class="panelText" id="panelText">
           Match the target word before the timer runs out. Build streaks, use power-ups, and complete missions across multiple levels.
         </div>
+        <div class="modePicker" id="modePicker"><label for="challengeMode">Choose your challenge</label><select id="challengeMode"><option value="copy">Typing sprint · see the word</option><option value="spelling">Spelling quest · use the clue</option></select><p>Build your speed and learn what each word means.</p></div>
 
         <div class="panelButtons">
           <button class="btn primary" id="btnStart">Start</button>
@@ -103,9 +106,11 @@
       <button class="chip" id="btnSubmit">Submit</button>
       <button class="chip" id="btnRestart">Restart</button>
       <button class="chip" id="btnMute">Sound</button>
+      <button class="chip" id="btnMusic">Music</button>
     </nav>
   </main>
 
+  <script src="./vocabulary.js"></script>
   <script src="./game.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
