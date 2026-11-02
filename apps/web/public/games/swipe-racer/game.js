@@ -81,6 +81,9 @@
     bgMountain: './assets/backgrounds/bg-mountain-pass.png',
     bgCoast: './assets/backgrounds/bg-coast-sunset.png',
     bgNeon: './assets/backgrounds/bg-neon-night.png',
+    bgHarbour: './assets/backgrounds/horizon-harbour.webp',
+    bgDesert: './assets/backgrounds/horizon-desert.webp',
+    bgSnow: './assets/backgrounds/horizon-snow.webp',
     player: './assets/sprites/player-car-blue.png',
     racerV2: './assets/sprites/racer-blue-v2.webp',
     truckV2: './assets/sprites/truck-city-v2.webp',
@@ -190,13 +193,23 @@
     { name:'Coast Cruise', bg:'bgCoast', lanes:4, baseSpeed:295, spawnEvery:.82, targetDistance:1300, scenery:'coast', type:'sprint', story:'Maya: The coast is yours. Read the traffic and make the most of the open road.' },
     { name:'Coastal Countdown', bg:'bgCoast', lanes:4, baseSpeed:295, spawnEvery:.85, targetDistance:1350, scenery:'coast', type:'time', timeLimit:38, story:'Maya: A fast run here will earn the crew a place on the night circuit.' },
     { name:'Neon Highway', bg:'bgNeon', lanes:4, baseSpeed:320, spawnEvery:.76, targetDistance:1500, scenery:'neon', type:'sprint', story:'Maya: The lights are on and the city is watching. Keep your focus through the traffic.' },
-    { name:'Night Delivery', bg:'bgNeon', lanes:4, baseSpeed:315, spawnEvery:.80, targetDistance:1600, scenery:'neon', type:'delivery', maxHits:1, story:'Maya: One final delivery. Bring the cargo home and the Horizon crew will know your name.' }
+    { name:'Night Delivery', bg:'bgNeon', lanes:4, baseSpeed:315, spawnEvery:.80, targetDistance:1600, scenery:'neon', type:'delivery', maxHits:1, story:'Maya: Bring the cargo home safely and the Horizon crew will know your name.' },
+    { name:'Harbour Run', bg:'bgHarbour', fallbackBg:'bgCoast', lanes:4, baseSpeed:300, spawnEvery:.84, targetDistance:1450, scenery:'harbour', type:'sprint', story:'Maya: The Horizon Circuit continues at the harbour. Watch for trucks between the cranes.' },
+    { name:'Dockside Duel', bg:'bgHarbour', fallbackBg:'bgCoast', lanes:4, baseSpeed:320, spawnEvery:.90, targetDistance:1650, scenery:'harbour', type:'rival', rivalSpeed:62, rivalLead:70, story:'Maya: Kai has challenged you to the bridge. Beat their car to the finish.' },
+    { name:'Desert Dash', bg:'bgDesert', fallbackBg:'bgCoast', lanes:3, baseSpeed:310, spawnEvery:.88, targetDistance:1550, scenery:'desert', type:'time', timeLimit:40, story:'Maya: Beyond the city, the desert road opens up. Reach the checkpoint before time runs out.' },
+    { name:'Canyon Cargo', bg:'bgDesert', fallbackBg:'bgMountain', lanes:3, baseSpeed:305, spawnEvery:.95, targetDistance:1550, scenery:'desert', type:'delivery', maxHits:1, story:'Maya: The crew needs these parts across the canyon. Keep the cargo safe.' },
+    { name:'Frostline Run', bg:'bgSnow', fallbackBg:'bgMountain', lanes:3, baseSpeed:315, spawnEvery:.88, targetDistance:1650, scenery:'snow', type:'sprint', story:'Maya: Snow covers the peaks, but the pass is open. Stay focused through the traffic.' },
+    { name:'Alpine Countdown', bg:'bgSnow', fallbackBg:'bgMountain', lanes:3, baseSpeed:320, spawnEvery:.90, targetDistance:1700, scenery:'snow', type:'time', timeLimit:43, story:'Maya: Kai set a time on the mountain. Reach the finish before the clock expires.' },
+    { name:'Harbour Showdown', bg:'bgHarbour', fallbackBg:'bgCoast', lanes:4, baseSpeed:335, spawnEvery:.82, targetDistance:1900, scenery:'harbour', type:'rival', rivalSpeed:66, rivalLead:90, story:'Maya: Back at the harbour, Kai is waiting. Race to the finish and show the crew how far you have come.' }
   ];
   function readProgress() {
     try {
       const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
       if (saved && saved.version === 1 && Number.isInteger(saved.unlocked) && Array.isArray(saved.stars)) {
-        return { version:1, unlocked:Math.max(0, Math.min(LEVELS.length - 1, saved.unlocked)), stars:LEVELS.map((_, i) => Math.max(0, Math.min(3, Number.isInteger(saved.stars[i]) ? saved.stars[i] : 0))) };
+        const stars = LEVELS.map((_, i) => Math.max(0, Math.min(3, Number.isInteger(saved.stars[i]) ? saved.stars[i] : 0)));
+        // Previously event 8 was the final event, so its completion could not unlock event 9.
+        const unlocked = Math.max(saved.unlocked, stars[7] > 0 ? 8 : 0);
+        return { version:1, unlocked:Math.max(0, Math.min(LEVELS.length - 1, unlocked)), stars };
       }
     } catch {}
     return { version:1, unlocked:0, stars:LEVELS.map(() => 0) };
@@ -233,6 +246,7 @@
     levelStartScore: 0,
     raceElapsed: 0,
     hits: 0,
+    rivalDistance: 0,
   };
 
   const pointer = { down: false, id: null, x: 0, y: 0, startX: 0, startY: 0, tDown: 0 };
@@ -263,13 +277,18 @@
     const finish = `Finish ${Math.floor(state.distance)} / ${lvl.targetDistance}m`;
     if (lvl.type === 'time') return `${finish} • Time left ${Math.max(0, Math.ceil(lvl.timeLimit - state.raceElapsed))}s`;
     if (lvl.type === 'delivery') return `${finish} • Collisions ${state.hits} / ${lvl.maxHits} allowed`;
+    if (lvl.type === 'rival') {
+      const gap = Math.round(state.rivalDistance - state.distance);
+      return `${finish} • Rival ${gap > 0 ? `${gap}m ahead` : `${Math.abs(gap)}m behind`}`;
+    }
     return `${finish} • Near misses ${state.near} / 2 for a star`;
   }
   function missionSummaryTitle() { return `Event ${state.levelIndex + 1} • ${currentLevel().name}`; }
   function levelIntroText() {
     const lvl = currentLevel();
     const goal = lvl.type === 'time' ? `Finish ${lvl.targetDistance}m in ${lvl.timeLimit} seconds.` :
-      lvl.type === 'delivery' ? `Finish ${lvl.targetDistance}m with at most ${lvl.maxHits} collision.` : `Finish ${lvl.targetDistance}m.`;
+      lvl.type === 'delivery' ? `Finish ${lvl.targetDistance}m with at most ${lvl.maxHits} collision.` :
+      lvl.type === 'rival' ? `Beat Kai to the finish over ${lvl.targetDistance}m.` : `Finish ${lvl.targetDistance}m.`;
     return `${lvl.story}\n\n${goal}\nStars: finish, finish without a collision, and make two near misses.`;
   }
   function refreshEventPicker() {
@@ -301,7 +320,7 @@
   }
 
   function resetLevelState() {
-    state.distance = 0; state.near = 0; state.boostsCollected = 0; state.lives = 3; state.hits = 0; state.raceElapsed = 0;
+    state.distance = 0; state.near = 0; state.boostsCollected = 0; state.lives = 3; state.hits = 0; state.raceElapsed = 0; state.rivalDistance = currentLevel().rivalLead || 0;
     state.boostEnergy = 1; state.boosting = 0; state.invuln = 0; state.traffic = []; state.pickups = [];
     state.particles = []; state.floaters = []; state.spawnT = 0.8; state.pickupT = 2.0; state.time = 0; state.roadScroll = 0; state.shake = 0; state.collisionSlow = 0;
     setPlayerBase();
@@ -386,7 +405,7 @@
     const options = [...Array(lanes).keys()].filter(i => !recent.has(i));
     if (options.length <= 1) return;
     const lane = options[Math.floor(Math.random() * options.length)];
-    const type = Math.random() < 0.18 + state.levelIndex * 0.05 ? 'truck' : 'car';
+    const type = Math.random() < Math.min(.48, 0.18 + state.levelIndex * 0.05) ? 'truck' : 'car';
     const key = type === 'truck' ? 'truck' : ['red', 'yellow', 'green'][Math.floor(Math.random() * 3)];
     state.traffic.push({ type, key, lane, t: 0.02, speedF: 0.92 + Math.random() * 0.28, nearGiven: false });
   }
@@ -473,7 +492,7 @@
   };
   btnInfo.onclick = () => {
     if (state.running && !state.paused) { state.paused = true; stopMusic(); }
-    showPanel('How to play', 'Swipe or drag to steer your car across the road.\n\n• Quick tap or Boost button = nitro burst\n• Pick up yellow nitro charges\n• Pick up green repair kits when damaged\n• Finish each event to unlock the next\n• Time trials have a countdown; deliveries allow only one collision\n• Earn stars for finishing, clean driving and two near misses');
+    showPanel('How to play', 'Swipe or drag to steer your car across the road.\n\n• Quick tap or Boost button = nitro burst\n• Pick up yellow nitro charges\n• Pick up green repair kits when damaged\n• Finish each event to unlock the next\n• Time trials have a countdown; deliveries allow only one collision\n• In rival races, beat Kai to the finish\n• Earn stars for finishing, clean driving and two near misses');
   };
   btnPause.onclick = togglePause;
   btnBoost.onclick = useBoost;
@@ -518,7 +537,17 @@
     const lvl = currentLevel();
     if (lvl.type === 'time' && state.raceElapsed > lvl.timeLimit) { endGame('Time ran out.'); return; }
     const effectiveSpeed = (lvl.baseSpeed + Math.min(240, state.distance * 0.07) + (state.boosting > 0 ? 220 : 0)) * (state.collisionSlow > 0 ? 0.65 + 0.35 * (1 - state.collisionSlow / 2) : 1);
+    const previousDistance = state.distance;
     state.distance += dt * effectiveSpeed * 0.20;
+    if (lvl.type === 'rival') {
+      const previousRival = state.rivalDistance;
+      state.rivalDistance += dt * lvl.rivalSpeed;
+      if (state.rivalDistance >= lvl.targetDistance) {
+        const rivalFraction = (lvl.targetDistance - previousRival) / (state.rivalDistance - previousRival);
+        const playerFraction = state.distance >= lvl.targetDistance ? (lvl.targetDistance - previousDistance) / (state.distance - previousDistance) : Infinity;
+        if (rivalFraction < playerFraction) { endGame('Kai reached the finish first.'); return; }
+      }
+    }
     state.totalScore += dt * effectiveSpeed * 0.08 + (state.boosting > 0 ? dt * 18 : dt * 6);
     state.roadScroll += dt * effectiveSpeed;
 
@@ -598,9 +627,18 @@
     const list = [];
     for (const p of state.pickups) if (p._p) list.push({ y: p._p.y, type: 'pickup', obj: p });
     for (const t of state.traffic) if (t._p) list.push({ y: t._p.y, type: 'traffic', obj: t });
+    if (currentLevel().type === 'rival') {
+      const gap = state.rivalDistance - state.distance;
+      if (gap > -35) {
+        const rival = { type:'car', key:'rival', lane:Math.min(1, currentLevel().lanes - 1), t:clamp(.86 - gap / 300, .05, 1.08) };
+        rival._p = projectEntity(rival);
+        list.push({ y:rival._p.y, type:'rival', obj:rival });
+      }
+    }
     list.sort((a, b) => a.y - b.y);
     for (const item of list) {
       if (item.type === 'pickup') drawPickup(item.obj);
+      else if (item.type === 'rival') drawRival(item.obj);
       else drawTraffic(item.obj);
     }
 
@@ -615,18 +653,18 @@
 
   function drawBackground() {
     ctx.fillStyle = '#070b16'; ctx.fillRect(0, 0, CW, CH);
-    const img = (currentLevel().scenery === 'city' && images.cityHorizon) || images[currentLevel().bg];
-    if (img && img === images.cityHorizon) drawCityBackdrop(img);
+    const img = (currentLevel().scenery === 'city' && images.cityHorizon) || images[currentLevel().bg] || images[currentLevel().fallbackBg];
+    if (img && (img === images.cityHorizon || img === images.bgHarbour || img === images.bgDesert || img === images.bgSnow)) drawCityBackdrop(img, img === images.cityHorizon ? .67 : .45);
     else if (img) drawCover(img, 1);
     const grad = ctx.createLinearGradient(0, 0, 0, CH);
     grad.addColorStop(0, 'rgba(0,0,0,.05)'); grad.addColorStop(1, 'rgba(0,0,0,.22)');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, CW, CH);
   }
-  function drawCityBackdrop(img) {
+  function drawCityBackdrop(img, horizon = .67) {
     // Align the illustration's horizon with the projected road on every screen shape.
     const sourceW = Math.min(img.width, img.height * CW / CH * 1.2);
     const sourceX = (img.width - sourceW) / 2;
-    const sourceHorizon = img.height * 0.67;
+    const sourceHorizon = img.height * horizon;
     const hy = horizonY();
     ctx.drawImage(img, sourceX, 0, sourceW, sourceHorizon, 0, 0, CW, hy);
     ctx.drawImage(img, sourceX, sourceHorizon, sourceW, img.height - sourceHorizon, 0, hy, CW, CH - hy);
@@ -708,6 +746,18 @@
     const lampY = p.h * 0.38, lampW = Math.max(1, p.w * 0.08);
     ctx.fillRect(-p.w * 0.25, lampY, lampW, Math.max(1, p.h * 0.018));
     ctx.fillRect(p.w * 0.17, lampY, lampW, Math.max(1, p.h * 0.018));
+    ctx.restore();
+  }
+
+  function drawRival(rival) {
+    const p = rival._p;
+    ctx.save(); ctx.translate(p.x, p.y);
+    ctx.fillStyle = 'rgba(4,9,18,.4)'; ctx.beginPath(); ctx.ellipse(0, p.h * .04, p.w * .46, p.h * .44, 0, 0, Math.PI * 2); ctx.fill();
+    const img = images.racerV2 || images.player;
+    if (img) { ctx.filter = 'hue-rotate(75deg)'; ctx.drawImage(img, -p.w * .5, -p.h * .5, p.w, p.h); ctx.filter = 'none'; }
+    else { ctx.fillStyle = '#be4bff'; ctx.fillRect(-p.w * .5, -p.h * .5, p.w, p.h); }
+    ctx.font = `bold ${Math.max(9, Math.min(16, p.w * .2))}px system-ui`; ctx.textAlign = 'center';
+    ctx.lineWidth = 3; ctx.strokeStyle = '#111'; ctx.strokeText('KAI', 0, -p.h * .57); ctx.fillStyle = '#fff'; ctx.fillText('KAI', 0, -p.h * .57);
     ctx.restore();
   }
 
