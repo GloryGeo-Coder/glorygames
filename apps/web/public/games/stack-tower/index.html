@@ -55,8 +55,9 @@
 
         <div class="setup" id="setup">
           <label for="modeSelect">Build mode</label>
-          <select id="modeSelect"><option value="endless">Skyline Adventure</option><option value="daily">Daily construction challenge</option><option value="timed">Timed objective · 90 seconds</option></select>
+          <select id="modeSelect"><option value="endless">Skyline Adventure</option><option value="daily">Daily construction challenge</option><option value="timed">Timed objectives</option></select>
           <p id="modeDetails" class="setupDetails"></p>
+          <div class="timedPicker" id="timedPicker" hidden><label for="timedSelect">Timed objective</label><select id="timedSelect"></select></div>
           <label for="styleSelect">Block and tower style</label>
           <select id="styleSelect"></select>
           <p id="styleDetails" class="setupDetails"></p>
@@ -87,8 +88,8 @@
   </main>
 
   <script src="./skyline-logic.js?v=1"></script>
-  <script src="./challenges.js?v=1"></script>
-  <script src="./game.js?v=4"></script>
+  <script src="./challenges.js?v=2"></script>
+  <script src="./game.js?v=5"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
 </html>

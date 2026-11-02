@@ -31,12 +31,17 @@
   const skyline = window.StackSkyline;
   const challenges = window.StackChallenges;
   const modeSelect = $('modeSelect'), styleSelect = $('styleSelect'), setup = $('setup');
+  const timedSelect = $('timedSelect'), timedPicker = $('timedPicker');
   let localStore = null; try { localStore = window.localStorage; } catch {}
   let challengeProfile = challenges.load(localStore);
   let selectedMode = 'endless';
+  let selectedTimed = 'standard';
   function refreshSetup() {
-    const day=challenges.utcDay(), goal=challenges.objective(selectedMode,day);
-    $('modeDetails').textContent = selectedMode==='daily' ? `Today (${day} UTC): build ${goal.height} floors and land ${goal.perfects} perfect drops. Resets at 00:00 UTC.` : selectedMode==='timed' ? `Build ${goal.height} floors and land ${goal.perfects} perfect drops within ${goal.seconds} seconds.` : 'Build as high as you can across three skyline worlds.';
+    const day=challenges.utcDay(), goal=challenges.objective(selectedMode,day,selectedTimed);
+    timedPicker.hidden=selectedMode!=='timed';
+    timedSelect.replaceChildren(...challenges.timedObjectives.map(item=>{const o=document.createElement('option');o.value=item.id;o.textContent=item.name;return o;}));
+    timedSelect.value=selectedTimed;
+    $('modeDetails').textContent = selectedMode==='daily' ? `Today: ${goal.name} (${day} UTC). Build ${goal.height} floors and land ${goal.perfects} perfect drops. ${challengeProfile.dates.includes(day)?'Completed today. ':''}Resets at 00:00 UTC.` : selectedMode==='timed' ? `${goal.name}: build ${goal.height} floors and land ${goal.perfects} perfect drops within ${goal.seconds} seconds.` : 'Build as high as you can across three skyline worlds.';
     styleSelect.replaceChildren(...challenges.styles.map(style=>{const o=document.createElement('option');o.value=style.id;const unlocked=challenges.unlocked(style.id,state.best,challengeProfile);o.disabled=!unlocked;o.textContent=style.name+(unlocked?'':' · '+style.need);return o;}));
     if(!challenges.unlocked(challengeProfile.style,state.best,challengeProfile))challengeProfile.style='classic';
     styleSelect.value=challengeProfile.style;
@@ -44,6 +49,7 @@
     $('styleDetails').textContent=next.length?'Unlock styles: '+next.map(x=>x.name+' — '+x.need).join(' · '):'All tower styles unlocked.';
   }
   modeSelect.onchange=()=>{selectedMode=modeSelect.value;refreshSetup();};
+  timedSelect.onchange=()=>{if(challenges.timedObjectives.some(item=>item.id===timedSelect.value)){selectedTimed=timedSelect.value;refreshSetup();}};
   styleSelect.onchange=()=>{if(challenges.unlocked(styleSelect.value,state.best,challengeProfile)){challengeProfile.style=styleSelect.value;challenges.save(localStore,challengeProfile);refreshSetup();}};
   const readBest = () => { try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; } };
   const saveBest = value => { try { localStorage.setItem(BEST_KEY, String(value)); } catch {} };
@@ -322,7 +328,7 @@
   }
 
   function startGame() {
-    if(!state.running && !state.goal){state.mode=selectedMode;state.goal=challenges.objective(state.mode,challenges.utcDay());state.remaining=state.goal?.seconds||0;state.totalPerfects=0;}
+    if(!state.running && !state.goal){state.mode=selectedMode;state.goal=challenges.objective(state.mode,challenges.utcDay(),selectedTimed);state.remaining=state.goal?.seconds||0;state.totalPerfects=0;}
     setup.hidden=true;
     last=performance.now();
     state.running = true;
