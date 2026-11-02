@@ -48,12 +48,14 @@
       <div class="panelInner">
         <div class="panelTitle" id="panelTitle">Swipe Racer</div>
         <div class="panelText" id="panelText">Drag left or right to steer through traffic. Reach the finish and earn bonus points for skilful driving.</div>
+        <div id="eventList" class="eventList" aria-label="Metro District events" hidden></div>
         <div class="panelButtons">
           <button class="btn primary" id="btnStart">Start</button>
           <button class="btn" id="btnInfo">How to play</button>
+          <button class="btn" id="btnClassic" hidden>Original four routes</button>
         </div>
         <div class="panelHint">
-          <span class="pill">4 levels</span>
+          <span class="pill">5 Metro events + original routes</span>
           <span class="pill">Multiple missions</span>
           <span class="pill">3D-style cars</span>
           <span class="pill">Mobile-first</span>
@@ -67,9 +69,11 @@
       <button class="chip" id="btnSubmit">Submit</button>
       <button class="chip" id="btnRestart">Restart</button>
       <button class="chip" id="btnMute">Sound</button>
+      <button class="chip" id="btnEvents">Events</button>
     </nav>
   </main>
 
+  <script src="./campaign.js"></script>
   <script src="./game.js"></script>
   <script type="module" src="/games/_shared/game-tab.mjs?v=1"></script>
 </body>
