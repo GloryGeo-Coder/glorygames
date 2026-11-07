@@ -207,6 +207,8 @@ export function world(kind) {
       name: 'Market District',
       complete: false,
       stage: 0,
+      freightStop: 0,
+      freightComplete: false,
       pieces: [{ id: 'depot-steps', type: 'step', color: 'Lagoon', x: -17, z: -3, r: 1, y: 0 }]
     };
   if (kind === 'canal')
@@ -263,7 +265,14 @@ export function loadWorld(kind, storage) {
     name: v.name.slice(0, 40),
     pieces: v.pieces,
     ...(kind === 'district'
-      ? { stage: Number.isInteger(v.stage) && v.stage >= 0 && v.stage <= 4 ? v.stage : 0 }
+      ? {
+          stage: Number.isInteger(v.stage) && v.stage >= 0 && v.stage <= 4 ? v.stage : 0,
+          freightStop:
+            Number.isInteger(v.freightStop) && v.freightStop >= 0 && v.freightStop <= 4
+              ? v.freightStop
+              : 0,
+          freightComplete: v.freightComplete === true || v.freightStop === 4
+        }
       : {}),
     complete: v.complete === true,
     ...(kind === 'canal'
