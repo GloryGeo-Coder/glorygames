@@ -1,4 +1,13 @@
 import {
+  fitsChassis,
+  buildProblem,
+  bodyLoad,
+  TYRES,
+  GATES,
+  newRun,
+  advanceVehicle
+} from './vehicle.mjs';
+import {
   TYPES,
   PALETTE,
   size,
@@ -36,12 +45,15 @@ function start() {
     draft,
     person,
     car,
-    jump = false;
+    jump = false,
+    run = newRun(),
+    braking = false;
   let elapsed = 0,
     stepSound = 0,
     noticeTimer,
     top = false,
     activeStick = null;
+  const unreadable = new Set();
   const vec = { x: 0, z: 0 },
     pressed = (id, b) => $(id).setAttribute('aria-pressed', String(b));
   const announce = (text) => {
@@ -70,13 +82,16 @@ function start() {
   }
   function openWorld(next) {
     kind = next;
-    canSave = true;
+    canSave = !unreadable.has(kind);
     try {
       data = volatile.get(kind) || loadWorld(kind, localStorage);
-      $('stored').textContent = 'Autosaves on this device.';
+      $('stored').textContent = canSave
+        ? 'Autosaves on this device.'
+        : 'Saved data unavailable. Changes stay in this session.';
     } catch {
       data = volatile.get(kind) || world(kind);
       canSave = false;
+      unreadable.add(kind);
       $('stored').textContent = 'Saved data unavailable. Changes stay in this session.';
       announce('World storage is unavailable');
     }
@@ -89,30 +104,46 @@ function start() {
     mode = 'build';
     person = avatar(kind);
     car = buggy();
+    run = newRun();
+    if (kind === 'garage' && !Object.hasOwn(TYRES, data.tyres)) data.tyres = 'road';
     draft = {
-      type: next === 'bridge' ? 'deck' : 'pair',
-      color: next === 'bridge' ? 'Sun' : 'Coral',
-      x: next === 'bridge' ? -3 : 0,
+      type: next === 'garage' ? 'cab' : next === 'bridge' ? 'deck' : 'pair',
+      color: next === 'garage' ? 'Lagoon' : next === 'bridge' ? 'Sun' : 'Coral',
+      x: next === 'garage' ? -1 : next === 'bridge' ? -3 : 0,
       z: next === 'bridge' ? -1 : 0,
       y: 0,
       r: 0
     };
     Object.assign(s.orbit, { pitch: 0.91, yaw: -0.63, zoom: 1, focusX: 0, focusZ: 0 });
+    if (kind === 'garage') s.orbit.zoom = 0.45;
     top = false;
     pressed('view', false);
     s.neighbourhood(kind);
+    s.workshop(false, run, data.tyres);
     s.drawPieces(data.pieces, null);
     s.chase.yaw = 0;
     $('worldName').textContent = data.name;
     $('name').value = data.name;
     $('delivery').hidden = kind !== 'bridge';
+    for (const btn of $('tray').children) {
+      const t = TYPES[btn.dataset.type];
+      btn.hidden = kind === 'garage' ? t.w > 4 || t.d > 4 : t.garageOnly;
+      btn.style.order = t.garageOnly ? -1 : 0;
+    }
+    $('garagePanel').hidden = kind !== 'garage';
+    if (kind === 'garage') $('tyres').value = data.tyres;
+    $('play').textContent = kind === 'garage' ? 'Drive' : 'Play';
+    adjustHeight();
     syncMode();
     updateTest();
-    s.view(mode, person);
+    s.view(mode, person, run);
     menu.open && menu.close();
   }
   function chosen() {
     return data.pieces.find((p) => p.id === selected);
+  }
+  function canPlace(p, ignore) {
+    return validPiece(p, data.pieces, ignore) && (kind !== 'garage' || fitsChassis(p));
   }
   function adjustHeight() {
     const moving = tool === 'move' ? chosen() : null;
@@ -125,7 +156,7 @@ function start() {
   function refresh() {
     const editable = mode === 'build' && car.state !== 'running';
     const showing = editable && tool !== 'select';
-    const ok = showing && validPiece(draft, data.pieces, tool === 'move' ? selected : null);
+    const ok = showing && canPlace(draft, tool === 'move' ? selected : null);
     s.ghost(showing ? draft : null, ok);
     $('place').disabled = !ok;
     $('place').textContent = tool === 'move' ? 'Set down' : 'Place brick';
@@ -139,6 +170,17 @@ function start() {
       btn.setAttribute('aria-pressed', String(btn.dataset.type === draft.type));
     for (const btn of $('colors').children)
       btn.setAttribute('aria-pressed', String(btn.title === draft.color));
+    if (kind === 'garage') {
+      const problem = buildProblem(data.pieces);
+      $('play').disabled = Boolean(problem);
+      $('tyreLabel').hidden = mode === 'drive';
+      if (mode !== 'drive')
+        $('garageStatus').textContent =
+          problem ||
+          (data.complete
+            ? 'Course cleared. Edit or drive again.'
+            : 'Body ready. Drive through the numbered gates.');
+    }
     $('readout').textContent = showing
       ? (ok ? '' : 'Blocked · ') + `(${draft.x}, ${draft.z}) ↑${Number(draft.y.toFixed(2))}`
       : chosen()
@@ -155,8 +197,11 @@ function start() {
   function place() {
     if (mode !== 'build' || car.state === 'running' || tool === 'select') return;
     const moving = tool === 'move',
-      p = { ...draft, id: moving ? selected : crypto.getRandomValues(new Uint32Array(4)).join('-') };
-    if (!validPiece(p, data.pieces, moving ? selected : null)) return;
+      p = {
+        ...draft,
+        id: moving ? selected : crypto.getRandomValues(new Uint32Array(4)).join('-')
+      };
+    if (!canPlace(p, moving ? selected : null)) return;
     change(moving ? data.pieces.map((b) => (b.id === selected ? p : b)) : [...data.pieces, p]);
     music.snap();
     if (moving) select(selected);
@@ -171,8 +216,8 @@ function start() {
       const current = chosen();
       if (!current) return;
       const p = { ...current, r: (current.r + 1) % 4 };
-      if (!validPiece(p, data.pieces, p.id)) {
-        announce('Rotation would overlap another brick');
+      if (!canPlace(p, p.id)) {
+        announce('No room to rotate here');
         return;
       }
       change(data.pieces.map((b) => (b.id === p.id ? p : b)));
@@ -185,8 +230,9 @@ function start() {
   }
   function aim(x, z) {
     const a = size(draft);
-    draft.x = Math.max(-10, Math.min(10 - a.w, x));
-    draft.z = Math.max(-10, Math.min(10 - a.d, z));
+    const edge = kind === 'garage' ? 2 : 10;
+    draft.x = Math.max(-edge, Math.min(edge - a.w, x));
+    draft.z = Math.max(-edge, Math.min(edge - a.d, z));
     adjustHeight();
     refresh();
   }
@@ -194,6 +240,7 @@ function start() {
     vec.x = vec.z = 0;
     jump = false;
     activeStick = null;
+    braking = false;
     keys.clear();
     $('stick').firstElementChild.style.transform = '';
   }
@@ -205,6 +252,14 @@ function start() {
     $('walk').hidden = edit;
     for (const id of ['view', 'closer', 'farther', 'center']) $(id).hidden = !edit;
     $('home').hidden = edit;
+    $('home').textContent = kind === 'garage' ? 'Restart' : 'Return';
+    $('routeMap').hidden = mode !== 'drive';
+    $('jump').hidden = mode === 'drive';
+    $('brake').hidden = mode !== 'drive';
+    $('stick').setAttribute(
+      'aria-label',
+      kind === 'garage' ? 'Driving joystick' : 'Movement joystick'
+    );
     $('play').disabled = car.state === 'running';
     refresh();
   }
@@ -222,13 +277,33 @@ function start() {
         Number.isFinite(floorAt(kind, a.x, a.z)) &&
         !data.pieces.some((p) => intervals(p, a.x, a.z).some(([lo, hi]) => lo < 1.66 && hi > 0))
     );
-    person = safe || { ...avatar(kind), y: Math.max(0, ...data.pieces.map((p) => p.y + size(p).h)) };
+    person = safe || {
+      ...avatar(kind),
+      y: Math.max(0, ...data.pieces.map((p) => p.y + size(p).h))
+    };
     s.chase.yaw = 0;
     clearInputs();
   }
   function switchMode(to) {
+    if (kind === 'garage' && to === 'play') to = 'drive';
     if (car.state === 'running' || mode === to) return;
+    if (to === 'drive') {
+      const problem = buildProblem(data.pieces);
+      if (problem) {
+        announce(problem);
+        return;
+      }
+      run = newRun(bodyLoad(data.pieces));
+      s.chase.yaw = 0;
+    }
     mode = to;
+    clearTimeout(noticeTimer);
+    $('notice').textContent = '';
+    if (kind === 'garage') {
+      s.workshop(mode === 'drive', run, data.tyres);
+      if (mode === 'drive') routeStatus();
+    }
+
     clearInputs();
     if (
       to === 'play' &&
@@ -240,7 +315,55 @@ function start() {
     )
       rescue();
     syncMode();
-    s.view(mode, person);
+    s.view(mode, person, run);
+  }
+  const map = $('routeMap').getContext('2d');
+  function drawMap() {
+    const scale = 6,
+      c = 67;
+    map.clearRect(0, 0, 134, 134);
+    map.fillStyle = '#234a44';
+    map.fillRect(5, 5, 124, 124);
+    map.lineWidth = 2;
+    map.strokeStyle = '#83a496';
+    map.setLineDash([3, 4]);
+    map.beginPath();
+    map.moveTo(c - 5 * scale, c + 5 * scale);
+    for (const g of GATES) map.lineTo(c + g.x * scale, c - g.z * scale);
+    map.stroke();
+    map.setLineDash([]);
+    GATES.forEach((g, i) => {
+      const x = c + g.x * scale,
+        y = c - g.z * scale;
+      map.fillStyle = i === run.gate ? '#ffd45c' : i < run.gate ? '#87ddbf' : '#b0bcb3';
+      map.beginPath();
+      map.arc(x, y, 8, 0, Math.PI * 2);
+      map.fill();
+      map.fillStyle = '#183936';
+      map.font = 'bold 11px sans-serif';
+      map.textAlign = 'center';
+      map.fillText(String(i + 1), x, y + 4);
+    });
+    map.save();
+    map.translate(c + run.x * scale, c - run.z * scale);
+    map.rotate(run.yaw);
+    map.fillStyle = '#fff9e3';
+    map.strokeStyle = '#152d28';
+    map.beginPath();
+    map.moveTo(0, -8);
+    map.lineTo(5, 5);
+    map.lineTo(0, 3);
+    map.lineTo(-5, 5);
+    map.closePath();
+    map.fill();
+    map.stroke();
+    map.restore();
+  }
+  function routeStatus() {
+    $('garageStatus').textContent =
+      run.gate < GATES.length
+        ? `Gate ${run.gate + 1} of ${GATES.length} · ${GATES[run.gate].name}. Follow the amber markers.`
+        : 'Test lap complete! Build to edit, or Restart to drive again.';
   }
   function updateTest() {
     const copy = {
@@ -274,6 +397,13 @@ function start() {
     updateTest();
   };
   $('home').onclick = () => {
+    if (mode === 'drive') {
+      run = newRun(bodyLoad(data.pieces));
+      clearInputs();
+      s.chase.yaw = 0;
+      routeStatus();
+      return;
+    }
     rescue();
     announce('Back on the plot');
   };
@@ -345,6 +475,30 @@ function start() {
   };
   $('freeWorld').onclick = () => openWorld('free');
   $('bridgeWorld').onclick = () => openWorld('bridge');
+  $('garageWorld').onclick = () => openWorld('garage');
+  for (const [id, t] of Object.entries(TYRES)) {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = t.label + ' · ' + t.note;
+    $('tyres').append(opt);
+  }
+  $('tyres').onchange = () => {
+    if (kind === 'garage' && mode === 'build' && Object.hasOwn(TYRES, $('tyres').value)) {
+      data.tyres = $('tyres').value;
+      save();
+      s.workshop(false, run, data.tyres);
+    }
+  };
+  $('brake').onpointerdown = (e) => {
+    braking = true;
+    $('brake').setPointerCapture(e.pointerId);
+  };
+  $('brake').onpointerup =
+    $('brake').onpointercancel =
+    $('brake').onlostpointercapture =
+      () => {
+        braking = false;
+      };
   $('audio').onclick = () => {
     music.toggle();
     audioLabel();
@@ -435,7 +589,7 @@ function start() {
       previousPinch = n;
       return;
     }
-    if (mode === 'play') s.chase.yaw += dx * 0.009;
+    if (mode !== 'build') s.chase.yaw += dx * 0.009;
     else {
       s.orbit.yaw -= dx * 0.009;
       s.orbit.pitch = Math.max(0.32, Math.min(1.57, s.orbit.pitch + dy * 0.006));
@@ -492,14 +646,14 @@ function start() {
     if (!e.detail) jump = true;
   };
   window.addEventListener('keydown', (e) => {
-    if (menu.open || e.target.tagName === 'INPUT') return;
+    if (menu.open || ['INPUT', 'SELECT'].includes(e.target.tagName)) return;
     const k = e.key.toLowerCase();
     if (k === 'tab') return;
     if (k === 'b' && !e.ctrlKey && !e.metaKey) {
       switchMode(mode === 'build' ? 'play' : 'build');
       return;
     }
-    if (mode === 'play') {
+    if (mode !== 'build') {
       if (
         ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)
       ) {
@@ -537,10 +691,13 @@ function start() {
   document.addEventListener('keydown', () => music.unlock());
   let first = 'free';
   try {
-    if (localStorage.getItem('wga.brick.active') === 'bridge') first = 'bridge';
+    const last = localStorage.getItem('wga.brick.active');
+    if (last === 'bridge' || last === 'garage') first = last;
   } catch {}
   openWorld(first);
-  announce('Tap a stud, then Place brick');
+  announce(
+    first === 'garage' ? 'Build on the chassis, then choose Drive' : 'Tap a stud, then Place brick'
+  );
   window.addEventListener('resize', () => s.engine.resize());
   s.engine.runRenderLoop(() => {
     if (document.hidden) return;
@@ -574,6 +731,34 @@ function start() {
           jump = false;
           if (person.y < -5) rescue();
         }
+        if (mode === 'drive') {
+          const gas =
+            vec.z +
+            Number(keys.has('w') || keys.has('arrowup')) -
+            Number(keys.has('s') || keys.has('arrowdown'));
+          const steer =
+            vec.x +
+            Number(keys.has('d') || keys.has('arrowright')) -
+            Number(keys.has('a') || keys.has('arrowleft'));
+          const old = run.gate;
+          advanceVehicle(
+            run,
+            data.tyres,
+            Math.max(-1, Math.min(1, gas)),
+            Math.max(-1, Math.min(1, steer)),
+            braking || keys.has(' '),
+            delta
+          );
+          if (old !== run.gate) {
+            music.snap();
+            routeStatus();
+            if (run.gate === GATES.length) {
+              data.complete = true;
+              save();
+              clearInputs();
+            }
+          }
+        }
         if (car.state === 'running') {
           advanceBuggy(car, data.pieces, delta);
           if (car.state !== 'running') {
@@ -590,10 +775,15 @@ function start() {
         music.foot();
         stepSound = elapsed + 0.31;
       }
-      music.tick(elapsed, car.state === 'running');
+      music.tick(
+        elapsed,
+        car.state === 'running' || (mode === 'drive' && Math.abs(run.speed) > 0.1)
+      );
     } else music.tick(elapsed, false);
+    if (kind === 'garage') s.workshop(mode === 'drive', run, data.tyres);
+    if (mode === 'drive') drawMap();
     s.actors(mode, person, car, walking, elapsed);
-    s.view(mode, person);
+    s.view(mode, person, run);
     s.scene.render();
   });
 }

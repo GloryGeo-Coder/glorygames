@@ -147,7 +147,7 @@ header > * {
   min-width: 39px;
   padding: 4px;
 }
-.side button[aria-pressed="true"] {
+.side button[aria-pressed='true'] {
   background: var(--teal);
   color: white;
 }
@@ -228,7 +228,7 @@ header > * {
   margin: 7px 0;
   padding: 4px 0;
 }
-.shelf:has([hidden]) {
+.shelf:has(> #tray[hidden]) {
   display: none;
 }
 #tray {
@@ -467,5 +467,77 @@ dialog p {
   }
   #notice {
     top: 18%;
+  }
+}
+#garagePanel {
+  position: absolute;
+  left: max(12px, env(safe-area-inset-left));
+  top: max(80px, calc(env(safe-area-inset-top) + 65px));
+  display: grid;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  width: min(290px, 75vw);
+  background: var(--paper);
+  box-shadow: 0 3px 0 #253c303d;
+  font-size: 13px;
+}
+#garagePanel select {
+  font: inherit;
+  min-height: 32px;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  background: #fff9e9;
+  color: var(--ink);
+}
+#brake {
+  position: absolute;
+  right: 22px;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  min-height: 58px;
+  border: 2px solid var(--ink);
+  border-radius: 28px;
+  background: var(--sun);
+  padding: 0 20px;
+  touch-action: none;
+}
+@media (max-height: 520px) {
+  #garagePanel {
+    top: 55px;
+    left: 6px;
+    width: min(210px, 32vw);
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+  #garagePanel select {
+    max-width: 100%;
+    min-height: 26px;
+  }
+}
+
+#routeMap {
+  position: absolute;
+  top: max(80px, calc(env(safe-area-inset-top) + 65px));
+  right: max(10px, env(safe-area-inset-right));
+  width: 88px;
+  height: 88px;
+  background: #183936;
+  border-radius: 8px;
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  #garagePanel {
+    width: calc(100% - 115px);
+  }
+}
+@media (max-height: 520px) {
+  #routeMap {
+    top: 56px;
+    width: 68px;
+    height: 68px;
+  }
+  #garagePanel {
+    width: min(210px, 32vw);
   }
 }

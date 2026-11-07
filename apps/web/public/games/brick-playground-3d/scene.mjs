@@ -1,3 +1,4 @@
+import { CHASSIS_TOP, TYRES, GATES, GATE_HALF_WIDTH } from './vehicle.mjs';
 import { TYPES, PALETTE, parts, size } from './model.mjs';
 const B = window.BABYLON,
   V = (x, y, z) => new B.Vector3(x, y, z);
@@ -135,7 +136,8 @@ export function studio(canvas) {
   }
   function transform(mesh, p) {
     const s = size(p);
-    mesh.position.set(p.x + s.w / 2, p.y, p.z + s.d / 2);
+    mesh.parent = kind === 'garage' ? chassis : null;
+    mesh.position.set(p.x + s.w / 2, p.y + (kind === 'garage' ? CHASSIS_TOP : 0), p.z + s.d / 2);
     mesh.rotation.y = (-p.r * Math.PI) / 2;
   }
   let preview = null,
@@ -227,7 +229,7 @@ export function studio(canvas) {
     block(0, -0.25, 13.4, 77, 0.45, 5.8, '#56666a');
     block(0, -0.13, 10.75, 76, 0.24, 1.5, '#dec9a8');
     for (let i = -32; i < 32; i += 4) block(i, 0, 13.4, 1.9, 0.035, 0.11, '#fff1bb');
-    if (kind === 'free') land(0, 20);
+    if (kind !== 'bridge') land(0, 20);
     else {
       land(-6.5, 7);
       land(6.5, 7);
@@ -245,8 +247,8 @@ export function studio(canvas) {
     // Grid lines sit on the plot, leaving the water visible below the bridge.
     const lines = [];
     for (let i = -10; i <= 10; i++) {
-      if (kind === 'free' || i <= -3 || i >= 3) lines.push([V(i, 0.012, -10), V(i, 0.012, 10)]);
-      for (const [start, end] of kind === 'free'
+      if (kind !== 'bridge' || i <= -3 || i >= 3) lines.push([V(i, 0.012, -10), V(i, 0.012, 10)]);
+      for (const [start, end] of kind !== 'bridge'
         ? [[-10, 10]]
         : [
             [-10, -3],
@@ -368,11 +370,91 @@ export function studio(canvas) {
       wheels.push(axle);
     }
   for (const m of [...person.getChildMeshes(), ...car.getChildMeshes()]) shadows.addShadowCaster(m);
+  const chassis = new B.TransformNode('Workshop chassis', scene);
+  const base = box('Mounting plate', 0, CHASSIS_TOP - 0.16, 0, 4, 0.32, 4, '#288478', chassis);
+  base.isPickable = true;
+  base.metadata = { ground: true };
+  for (let x = -1.5; x < 2; x++)
+    for (let z = -1.5; z < 2; z++)
+      cyl('Axle plate stud', x, CHASSIS_TOP + 0.035, z, 0.22, 0.07, '#288478', chassis);
+  box('Front bumper', 0, 0.52, 1.92, 3.62, 0.22, 0.24, '#345558', chassis);
+  for (const x of [-1.43, 1.43]) {
+    box('Headlamp', x, 0.79, 2.016, 0.48, 0.2, 0.09, '#fff1a3', chassis);
+    box('Tail lamp', x, 0.79, -2.016, 0.42, 0.16, 0.09, '#eb5545', chassis);
+  }
+  const roadWheels = [];
+  for (const x of [-2.08, 2.08])
+    for (const z of [-1.29, 1.29]) {
+      const steering = new B.TransformNode('Steering knuckle', scene);
+      steering.parent = chassis;
+      steering.position.set(x, 0.46, z);
+      const roll = new B.TransformNode('Wheel rotation', scene);
+      roll.parent = steering;
+      const tyre = cyl('Workshop tyre', 0, 0, 0, 0.46, 0.4, '#303e41', roll, 16);
+      tyre.rotation.z = Math.PI / 2;
+      const hub = cyl('Wheel hub', Math.sign(x) * 0.19, 0, 0, 0.23, 0.08, '#ecc15a', roll, 12);
+      hub.rotation.z = Math.PI / 2;
+      box('Hub notch', Math.sign(x) * 0.24, 0, 0.09, 0.035, 0.075, 0.15, '#345558', roll);
+      roadWheels.push({ steering, roll, hub });
+    }
+  for (const mesh of chassis.getChildMeshes()) shadows.addShadowCaster(mesh);
+  chassis.setEnabled(false);
+  const gateNodes = GATES.map((g, i) => {
+    const root = new B.TransformNode(g.name + ' gate', scene);
+    root.position.set(g.x, 0, g.z);
+    root.rotation.y = Math.atan2(g.nx, g.nz);
+    const lights = [];
+    for (const side of [-1, 1]) {
+      const x = side * GATE_HALF_WIDTH;
+      box('Gate foot', x, 0.1, 0, 0.65, 0.2, 0.65, '#354e50', root);
+      lights.push(box('Gate marker', x, 0.83, 0, 0.26, 1.35, 0.26, '#f4c64b', root));
+    }
+    lights.push(box('Gate line', 0, 0.025, 0, GATE_HALF_WIDTH * 2, 0.04, 0.18, '#f4c64b', root));
+    for (const side of [-1, 1]) {
+      const arm = box('Gate arrow', side * 0.24, 0.036, -0.62, 0.12, 0.04, 0.72, '#fff2bc', root);
+      arm.rotation.y = -side * 0.72;
+    }
+    const flag = label(i + 1 + ' ' + g.name.toUpperCase(), -GATE_HALF_WIDTH, 2.2, 0, 2.6);
+    flag.parent = root;
+    flag.billboardMode = B.Mesh.BILLBOARDMODE_Y;
+    root.setEnabled(false);
+    return { root, lights };
+  });
+  let lastGate = -1;
+  function workshop(driving, run, tyres) {
+    const garage = kind === 'garage';
+    chassis.setEnabled(garage);
+    for (const gate of gateNodes) gate.root.setEnabled(garage && driving);
+    if (!garage) return;
+    chassis.position.set(driving ? run.x : 0, 0, driving ? run.z : 0);
+    chassis.rotation.y = driving ? run.yaw : 0;
+    for (const { steering, roll, hub } of roadWheels) {
+      steering.rotation.y = driving && steering.position.z > 0 ? run.steer * 0.38 : 0;
+      roll.rotation.x = driving ? run.distance / 0.46 : 0;
+      hub.material = mat(TYRES[tyres].color);
+    }
+    if (lastGate !== run.gate) {
+      lastGate = run.gate;
+      gateNodes.forEach((gate, i) => {
+        for (const mesh of gate.lights)
+          mesh.material = mat(i === run.gate ? '#ffbf34' : i < run.gate ? '#2e967e' : '#82979a');
+      });
+    }
+  }
   const orbit = { yaw: -0.63, pitch: 0.91, zoom: 1, focusX: 0, focusZ: 0 },
     chase = { yaw: 0 };
-  function view(mode, a) {
+  function view(mode, a, run) {
     const aspect = canvas.clientWidth / canvas.clientHeight;
-    if (mode === 'build') {
+    if (mode === 'drive') {
+      const angle = run.yaw + chase.yaw;
+      const distance = 8.8 / Math.max(0.53, Math.min(1, aspect));
+      camera.position.set(
+        run.x - Math.sin(angle) * distance,
+        3.5 + distance * 0.38,
+        run.z - Math.cos(angle) * distance
+      );
+      camera.setTarget(V(run.x, 1.2, run.z));
+    } else if (mode === 'build') {
       const dist = Math.max(27, 25 / Math.min(aspect, 1)) * orbit.zoom,
         flat = Math.cos(orbit.pitch) * dist;
       const target = V(orbit.focusX, 0, orbit.focusZ);
@@ -399,7 +481,7 @@ export function studio(canvas) {
     return { x: hit.pickedPoint.x, z: hit.pickedPoint.z, id: hit.pickedMesh.metadata.id };
   }
   function actors(mode, a, c, walk, t) {
-    person.setEnabled(true);
+    person.setEnabled(kind !== 'garage');
     person.position.set(a.x, a.y, a.z);
     person.rotation.y = a.heading;
     legs.forEach((l, i) => (l.rotation.x = walk ? Math.sin(t * 11 + i * Math.PI) * 0.43 : 0));
@@ -426,6 +508,7 @@ export function studio(canvas) {
     neighbourhood,
     drawPieces,
     ghost,
-    actors
+    actors,
+    workshop
   };
 }

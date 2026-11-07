@@ -20,7 +20,7 @@ export type GameEditorial = {
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "brick-playground-3d": {
     "category": "Simulation",
-    "summary": "Build a colourful township plot with 20 interlocking pieces, walk through it as your own builder, or design and test a bridge for the neighbourhood delivery buggy.",
+    "summary": "Build and explore a township plot, bridge a drainage channel, or assemble your own buggy and drive it through a three-gate test course.",
     "overview": [
         "Turn an open plot beside a neighbourhood park into a spaza shop, a house or a playground. All 20 pieces and eight colours are available when you arrive."
     ],
@@ -29,20 +29,24 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "howToPlay": [
         "Choose a piece and colour, tap a stud, inspect the translucent preview and press Place brick. Tap Play to walk inside your build.",
-        "In Select mode, tap a placed piece to move, rotate, paint, duplicate or remove it. Undo reverses the last edit."
+        "In Select mode, tap a placed piece to move, rotate, paint, duplicate or remove it. Undo reverses the last edit. In the World menu, choose Vehicle Workshop to build on a four-by-four wheeled chassis."
     ],
     "desktop": [
         "Drag to orbit, scroll to zoom, or use the overhead view. Arrow keys aim the preview, R rotates, and Enter places from the canvas.",
-        "Press B to switch modes. Walk with WASD or arrow keys, drag to look around and press Space to jump."
+        "Press B to switch modes. Walk or drive with WASD or arrow keys. Space jumps on foot and brakes while driving."
     ],
     "mobile": [
         "Tap to aim and use Place brick to confirm. Drag to orbit, pinch to zoom and slide two fingers to pan.",
-        "Walk with the joystick and tap Jump. Return brings a stuck explorer back onto the plot."
+        "Walk with the joystick and tap Jump. In the workshop, push the joystick up to accelerate, down to reverse and sideways to steer. Tap Brake to slow down."
     ],
     "systems": [
         {
             "title": "Fit and clearance",
             "body": "Studs line up across plates and bricks. A doorframe has open space you can walk through. Test the clearance by stepping inside."
+        },
+        {
+            "title": "Vehicle Workshop",
+            "body": "Build a cab, seat or cargo bed on a rolling chassis and choose Road, Grip or Sprint tyres. A heavier body accelerates more slowly. Follow the course map through Park, Market and Depot in order."
         },
         {
             "title": "Four-wheel bridge test",
