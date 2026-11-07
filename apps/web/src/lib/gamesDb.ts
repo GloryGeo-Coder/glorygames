@@ -103,6 +103,9 @@ export async function getGamesFromDatabase(): Promise<DbGameListItem[]> {
   if (!games.some((game) => game.slug === "bioquest-guardians-of-life")) {
     games.push(catalogGame({ id: "fallback-bioquest-guardians-of-life", slug: "bioquest-guardians-of-life", title: "BioQuest: Guardians of Life", description: null, category: "EDUCATIONAL", tags: ["biology", "science", "grade-4"] }));
   }
+  if (!games.some((game) => game.slug === "brick-playground-3d")) {
+    games.push(catalogGame({ id: "fallback-brick-playground-3d", slug: "brick-playground-3d", title: "Brick Playground 3D", description: null, category: "SIMULATION", tags: ["3d", "sandbox", "building"] }));
+  }
   return games.sort((a, b) => (a.category ?? "").localeCompare(b.category ?? "") || a.title.localeCompare(b.title));
 }
 

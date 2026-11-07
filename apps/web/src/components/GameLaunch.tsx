@@ -8,7 +8,7 @@ export default function GameLaunch({ slug, title }: { slug: string; title: strin
       <div className={styles.content}>
         <p className={styles.label}>READY TO PLAY</p>
         <h2>{title}</h2>
-        <a className={styles.play} href={`/games/${encodeURIComponent(slug)}/index.html`} target="_blank" rel="noopener noreferrer">
+        <a className={styles.play} href={slug === "brick-playground-3d" ? `/play/${slug}` : `/games/${encodeURIComponent(slug)}/index.html`} target="_blank" rel="noopener noreferrer">
           <span aria-hidden="true">▶</span> Play Game
           <span className={styles.srOnly}> — opens in a new tab</span>
         </a>

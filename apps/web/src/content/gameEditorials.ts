@@ -18,6 +18,55 @@ export type GameEditorial = {
 };
 
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
+  "brick-playground-3d": {
+    "category": "Simulation",
+    "summary": "Build a colourful township plot with 20 interlocking pieces, walk through it as your own builder, or design and test a bridge for the neighbourhood delivery buggy.",
+    "overview": [
+        "Turn an open plot beside a neighbourhood park into a spaza shop, a house or a playground. All 20 pieces and eight colours are available when you arrive."
+    ],
+    "story": [
+        "A delivery driver needs a way across the drainage channel. Build a crossing to the shop or stay in Free Build and make something of your own."
+    ],
+    "howToPlay": [
+        "Choose a piece and colour, tap a stud, inspect the translucent preview and press Place brick. Tap Play to walk inside your build.",
+        "In Select mode, tap a placed piece to move, rotate, paint, duplicate or remove it. Undo reverses the last edit."
+    ],
+    "desktop": [
+        "Drag to orbit, scroll to zoom, or use the overhead view. Arrow keys aim the preview, R rotates, and Enter places from the canvas.",
+        "Press B to switch modes. Walk with WASD or arrow keys, drag to look around and press Space to jump."
+    ],
+    "mobile": [
+        "Tap to aim and use Place brick to confirm. Drag to orbit, pinch to zoom and slide two fingers to pan.",
+        "Walk with the joystick and tap Jump. Return brings a stuck explorer back onto the plot."
+    ],
+    "systems": [
+        {
+            "title": "Fit and clearance",
+            "body": "Studs line up across plates and bricks. A doorframe has open space you can walk through. Test the clearance by stepping inside."
+        },
+        {
+            "title": "Four-wheel bridge test",
+            "body": "The buggy follows the marked lane. Each wheel needs a continuous surface with manageable steps. Retry leaves the crossing intact."
+        }
+    ],
+    "progression": [
+        "Free Build has unlimited pieces. The optional challenge records completion when the delivery buggy reaches the shop."
+    ],
+    "tips": [
+        "Try a floor plate first, then a doorframe and three walls. Switch to Play before adding a roof.",
+        "In Bridge the Gap, line up the edges of flat plates over the water. Follow the dashed lane on both banks."
+    ],
+    "faqs": [
+        {
+            "q": "Where are my worlds saved?",
+            "a": "Each world autosaves separately in this browser on this device. Open the world menu to rename it or switch plots."
+        },
+        {
+            "q": "Can I build without taking the challenge?",
+            "a": "Yes. Free Build opens first, with every piece and colour available. No challenge is required."
+        }
+    ]
+},
   "bioquest-guardians-of-life": {
     category: "Educational",
     summary: "Join Nala and Pip in 35 untimed Grades 4–10 biology missions exploring plants, ecosystems, nutrition, energy, biodiversity, cells, body systems, reproduction and the Living Archive, with hints and saved progress.",

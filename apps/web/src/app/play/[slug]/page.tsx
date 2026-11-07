@@ -1,5 +1,6 @@
 // apps/web/src/app/play/[slug]/page.tsx
 
+import { gamePagePath } from "@/lib/gamePaths";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -205,7 +206,7 @@ export default async function PlayPage({
     "@type": "VideoGame",
     name: title,
     description: editorial?.summary ?? game.description ?? title,
-    url: `${SITE_URL}/play/${game.slug}`,
+    url: `${SITE_URL}${gamePagePath(game.slug)}`,
     applicationCategory: "Game",
     genre: category,
     keywords: game.tags.join(", "),
@@ -227,7 +228,7 @@ export default async function PlayPage({
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Games", item: `${SITE_URL}/games` },
       ...(hasCategoryHub ? [{ "@type": "ListItem", position: 3, name: category, item: `${SITE_URL}${categoryHref}` }] : []),
-      { "@type": "ListItem", position: hasCategoryHub ? 4 : 3, name: title, item: `${SITE_URL}/play/${game.slug}` },
+      { "@type": "ListItem", position: hasCategoryHub ? 4 : 3, name: title, item: `${SITE_URL}${gamePagePath(game.slug)}` },
     ],
   };
 
@@ -271,7 +272,7 @@ export default async function PlayPage({
               {relatedGames.map((related) => (
                 <Link
                   key={related.id}
-                  href={`/play/${related.slug}`}
+                  href={gamePagePath(related.slug)}
                   className="tile"
                 >
                   <div

@@ -1,3 +1,4 @@
+import { gamePagePath } from "@/lib/gamePaths";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -223,7 +224,7 @@ export default async function CategoryHubPage({
         "@type": "ListItem",
         position: index + 1,
         name: game.title,
-        url: `${SITE_URL}/play/${game.slug}`,
+        url: `${SITE_URL}${gamePagePath(game.slug)}`,
       })),
     },
   };
@@ -261,7 +262,7 @@ export default async function CategoryHubPage({
             {hub.games.map((game) => {
               const details = getGameEditorial(game.slug);
               return (
-                <Link href={`/play/${game.slug}`} key={game.slug} className="tile">
+                <Link href={gamePagePath(game.slug)} key={game.slug} className="tile">
                   <div className="thumb thumbWrap" style={{ position: "relative", overflow: "hidden" }}>
                     <GameThumb slug={game.slug} title={game.title} />
                   </div>
