@@ -155,7 +155,7 @@ export function loadWorld(kind, storage) {
   }
   return { version: 1, name: v.name.slice(0, 40), pieces: v.pieces, complete: v.complete === true };
 }
-export const avatar = () => ({ x: 0.5, z: -7, y: 0, vy: 0, grounded: true, heading: 0 });
+export const avatar = (kind = 'free') => ({ x: kind === 'bridge' ? -7 : 0.5, z: -7, y: 0, vy: 0, grounded: true, heading: 0 });
 const HEIGHT = 1.65,
   RADIUS = 0.27,
   STEP = 0.365;
@@ -263,5 +263,5 @@ export function advanceBuggy(car, items, dt) {
   car.y = heights.reduce((a, b) => a + b, 0) / 4;
   car.pitch = Math.atan2(heights[0] + heights[1] - heights[2] - heights[3], 2.24);
   car.roll = Math.atan2(heights[1] + heights[3] - heights[0] - heights[2], 1.96);
-  if (car.x >= 7.4) car.state = 'won';
+  if (car.x >= 9.3) car.state = 'won';
 }

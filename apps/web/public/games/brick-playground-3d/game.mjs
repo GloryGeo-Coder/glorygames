@@ -87,7 +87,7 @@ function start() {
     selected = null;
     tool = 'add';
     mode = 'build';
-    person = avatar();
+    person = avatar(kind);
     car = buggy();
     draft = {
       type: next === 'bridge' ? 'deck' : 'pair',
@@ -210,9 +210,9 @@ function start() {
   }
   function rescue() {
     const candidates = [
-      avatar(),
+      avatar(kind),
       ...Array.from({ length: 400 }, (_, i) => ({
-        ...avatar(),
+        ...avatar(kind),
         x: (i % 20) - 9.5,
         z: Math.floor(i / 20) - 9.5
       }))
@@ -222,7 +222,7 @@ function start() {
         Number.isFinite(floorAt(kind, a.x, a.z)) &&
         !data.pieces.some((p) => intervals(p, a.x, a.z).some(([lo, hi]) => lo < 1.66 && hi > 0))
     );
-    person = safe || { ...avatar(), y: Math.max(0, ...data.pieces.map((p) => p.y + size(p).h)) };
+    person = safe || { ...avatar(kind), y: Math.max(0, ...data.pieces.map((p) => p.y + size(p).h)) };
     s.chase.yaw = 0;
     clearInputs();
   }
@@ -266,6 +266,8 @@ function start() {
       return;
     }
     switchMode('build');
+    // Keep both banks in sight even if the last edit was made while zoomed in.
+    Object.assign(s.orbit, { focusX: 0, focusZ: 0, zoom: 1 });
     car.state = 'running';
     clearInputs();
     syncMode();

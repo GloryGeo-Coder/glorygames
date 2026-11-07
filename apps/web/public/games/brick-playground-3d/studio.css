@@ -147,6 +147,10 @@ header > * {
   min-width: 39px;
   padding: 4px;
 }
+.side button[aria-pressed="true"] {
+  background: var(--teal);
+  color: white;
+}
 .side #home {
   font-size: 14px;
 }

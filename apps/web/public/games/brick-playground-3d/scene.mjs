@@ -273,6 +273,11 @@ export function studio(canvas) {
       block(x - 0.9, 1, z - 2.015, 1.05, 2, 0.07, '#356465');
       block(x + 0.95, 1.65, z - 2.04, 1.36, 1, 0.09, '#d5f2ef');
     }
+    // A painted delivery bay marks the shop's unloading point on the east bank.
+    if (kind === 'bridge') {
+      for (const z of [-0.92, 0.92]) block(9.1, 0.018, z, 1.7, 0.025, 0.08, '#197568');
+      block(9.93, 0.018, 0, 0.08, 0.025, 1.84, '#197568');
+    }
     // The destination sits directly beyond the east bank.
     block(13, 1.55, 0.1, 4, 3.1, 4.5, '#1f837d');
     block(13, 3.18, 0.1, 4.6, 0.28, 5, '#e1a34b');
