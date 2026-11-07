@@ -44,13 +44,14 @@ async function campaign(page, grade) {
   for (let mi = 0; mi < missions.length; mi++) {
     for (const t of missions[mi].tasks) {
       await fit(page);
+      if (grade === 9) await screenshot(page, `grade9-mission${mi+1}-task${missions[mi].tasks.indexOf(t)+1}-${page.viewportSize().width}x${page.viewportSize().height}`);
       await page.locator('#hint').click();
       assert.equal(await page.locator('#hint-text').isVisible(), true);
       const labels = t.kind === 'sort' ? t.items.map(i => i.group) : t.kind === 'sequence' ? t.order : [t.options[t.answer]];
       for (const label of labels) await answer(page, label);
     }
     assert.equal(await page.locator('.complete').count(), 1);
-    if (grade === 7 && mi === missions.length - 1) await screenshot(page, `finale-${page.viewportSize().width}x${page.viewportSize().height}`);
+    if (grade === 9 && mi === missions.length - 1) await screenshot(page, `finale-${page.viewportSize().width}x${page.viewportSize().height}`);
     if (mi < missions.length - 1) { await page.locator('#next-mission').click(); await page.locator('#start').click(); }
   }
   const s = await saved(page);
@@ -71,8 +72,8 @@ async function campaign(page, grade) {
   for (const [width, height] of [[320, 568], [390, 844], [844, 390], [1440, 900]]) {
     const context = await browser.newContext({ viewport: { width, height }, hasTouch: width < 1000, isMobile: width < 1000 });
     const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
-    await page.goto(url); await fit(page); await page.locator('#grade7').click();
-    assert.equal(await page.locator('#grade7').getAttribute('aria-pressed'), 'true');
+    await page.goto(url); await fit(page); await page.locator('#grade9').click();
+    assert.equal(await page.locator('#grade9').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('.mission-card:disabled').count(), 4);
     if (width <= 560) {
       const art = await page.locator('.hero-art').boundingBox();
@@ -82,9 +83,9 @@ async function campaign(page, grade) {
     await screenshot(page, `home-${width}x${height}`);
     await page.locator('#continue').click(); await fit(page); await screenshot(page, `intro-${width}x${height}`); await page.locator('#back').click();
     // Cancelling an introduction must not create a checkpoint.
-    assert.equal((await saved(page)).checkpoints[7], undefined);
+    assert.equal((await saved(page)).checkpoints[9], undefined);
     await page.locator('#continue').click(); await page.locator('#start').click(); await fit(page);
-    const firstTask = await page.evaluate(() => window.BIOQUEST_GRADE7[0].tasks[0]);
+    const firstTask = await page.evaluate(() => window.BIOQUEST_GRADE9[0].tasks[0]);
     const firstLabels = firstTask.kind === 'sort' ? firstTask.items.map(i => i.group) : firstTask.kind === 'sequence' ? firstTask.order : [firstTask.options[firstTask.answer]];
     const choices = firstTask.kind === 'sort' ? firstTask.groups : firstTask.options;
     await page.getByRole('button', { name: choices.find(x => x !== firstLabels[0]), exact: true }).click();
@@ -92,21 +93,22 @@ async function campaign(page, grade) {
     await page.locator('#hint').click(); await screenshot(page, `task-${width}x${height}`);
     // Repeated correct events must advance only one specimen.
     await page.getByRole('button', { name: firstLabels[0], exact: true }).evaluate(b => { b.click(); b.click(); });
-    assert.equal((await saved(page)).checkpoints[7].item, 1);
-    assert.equal((await saved(page)).checkpoints[7].mistakes, 1);
+    assert.equal((await saved(page)).checkpoints[9].item, 1);
+    assert.equal((await saved(page)).checkpoints[9].mistakes, 1);
     await page.setViewportSize({width:height,height:width}); await fit(page);
     await page.setViewportSize({width,height}); await fit(page);
     await page.reload(); await page.locator('#continue').click();
-    assert.equal((await saved(page)).checkpoints[7].item, 1);
+    assert.equal((await saved(page)).checkpoints[9].item, 1);
     await page.locator('#back').click(); await page.locator('#grade4').click();
     await page.locator('#continue').click(); await page.locator('#start').click();
     await page.locator('#back').click(); await page.locator('#grade5').click();
     await page.locator('#continue').click(); await page.locator('#start').click();
     await page.locator('#back').click(); await page.locator('#grade6').click();
     await page.locator('#continue').click(); await page.locator('#start').click();
-    await page.locator('#back').click(); await page.locator('#grade7').click();
-    await page.locator('#continue').click(); assert.equal((await saved(page)).checkpoints[7].item, 1);
-    assert.deepEqual(Object.keys((await saved(page)).checkpoints).sort(), ['4', '5', '6', '7']);
+    for (const grade of [7, 8]) { await page.locator('#back').click(); await page.locator('#grade'+grade).click(); await page.locator('#continue').click(); await page.locator('#start').click(); }
+    await page.locator('#back').click(); await page.locator('#grade9').click();
+    await page.locator('#continue').click(); assert.equal((await saved(page)).checkpoints[9].item, 1);
+    assert.deepEqual(Object.keys((await saved(page)).checkpoints).sort(), ['4', '5', '6', '7', '8', '9']);
     await page.locator('#back').click();
     await page.locator('#sound').click();
     assert.equal(await page.locator('#sound').getAttribute('aria-label'), 'Turn sound off');
@@ -120,9 +122,10 @@ async function campaign(page, grade) {
     await page.evaluate(k => localStorage.removeItem(k), key); await page.reload();
     await campaign(page, 7);
     await campaign(page, 8);
+    await campaign(page, 9);
     if (width === 1440) { await campaign(page, 4); await campaign(page, 5); await campaign(page, 6); }
     await screenshot(page, `completed-${width}x${height}`);
-    console.log(`${width}x${height}: Grades 7 and 8 campaigns, hints, retry, repeated answer, reload, grade saves, replay, fullscreen and audio controls passed`);
+    console.log(`${width}x${height}: Grades 7, 8 and 9 campaigns, hints, retry, repeated answer, reload, grade saves, replay, fullscreen and audio controls passed`);
     await context.close();
   }
   for (const mode of ['read-denied', 'write-denied', 'malformed']) {
@@ -135,10 +138,10 @@ async function campaign(page, grade) {
       } });
     }, { mode, key });
     const page = await context.newPage(); page.on('pageerror', e => errors.push(e.message));
-    await page.goto(url); await page.locator('#grade7').click(); await page.locator('#continue').click(); await page.locator('#start').click();
-    const label = await page.evaluate(() => { const t=window.BIOQUEST_GRADE7[0].tasks[0]; return t.kind==='sort'?t.items[0].group:t.kind==='sequence'?t.order[0]:t.options[t.answer]; });
+    await page.goto(url); await page.locator('#grade9').click(); await page.locator('#continue').click(); await page.locator('#start').click();
+    const label = await page.evaluate(() => { const t=window.BIOQUEST_GRADE9[0].tasks[0]; return t.kind==='sort'?t.items[0].group:t.kind==='sequence'?t.order[0]:t.options[t.answer]; });
     await answer(page, label); assert.match(await page.locator('.question-top').textContent(), /(?:DISCOVERY|STEP) 2/);
-    await page.locator('#back').click(); await page.locator('#grade5').click(); await page.locator('#grade7').click(); await page.locator('#continue').click();
+    await page.locator('#back').click(); await page.locator('#grade5').click(); await page.locator('#grade9').click(); await page.locator('#continue').click();
     assert.match(await page.locator('.question-top').textContent(), /(?:DISCOVERY|STEP) 2/);
     console.log(`${mode}: playable, in-memory checkpoint retained across grade switches`); await context.close();
   }

@@ -9,7 +9,7 @@ export type GameCategoryValue = (typeof GAME_CATEGORIES)[number];
 type CatalogEntry = { title?: string; category: GameCategoryValue; description: string };
 
 export const GAME_CATALOG: Record<string, CatalogEntry> = {
-  "bioquest-guardians-of-life": { title: "BioQuest: Guardians of Life", category: "EDUCATIONAL", description: "Join Nala and Pip in 25 untimed Grades 4–8 biology missions exploring plants, ecosystems, nutrition, energy, biodiversity and reproduction in flowering plants, with hints and saved progress." },
+  "bioquest-guardians-of-life": { title: "BioQuest: Guardians of Life", category: "EDUCATIONAL", description: "Join Nala and Pip in 30 untimed Grades 4–9 biology missions exploring plants, ecosystems, nutrition, energy, biodiversity, cells, body systems and reproduction, with hints and saved progress." },
   "brick-blaster": { category: "ARCADE", description: "Restore Neon Grid through five missions with interactive bricks, rescue drones, enemies and the Grid Warden, or chase high scores in Classic Arcade." },
   "bubble-pop-arena": { category: "CASUAL", description: "Pop and drag through a continuous score attack across six changing arenas. Chain combos, collect time, freeze and bonus bubbles, and avoid bombs." },
   "city-quest-rise-of-the-guardian": { category: "ADVENTURE", description: "Explore 25 township platforming levels with animated characters, NPC missions, shooting enemies and drones, moving platforms, bosses and Amapiano-inspired music." },

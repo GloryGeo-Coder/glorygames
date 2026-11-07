@@ -9,3 +9,5 @@
 @media(max-width:560px){.hero{display:block;min-height:0}.hero-art{position:relative;height:180px;opacity:1;background:linear-gradient(#5d9c65,#235a42)}.hero-content{position:relative;padding:25px}.hero-tree{bottom:0;right:3%;opacity:1}.hero-explorer{bottom:0;right:43%;opacity:1}.hero-drone{top:18%;right:43%}.hero-flowers{bottom:0}.sun{width:75px;height:75px;top:8%;right:15%}}
 
 .g8-garden{background:linear-gradient(150deg,#88a958,#305e43)}.g8-lab{background:linear-gradient(150deg,#569890,#285051)}.g8-wetland{background:linear-gradient(150deg,#568c8b,#284f4b)}.g8-grassland{background:linear-gradient(150deg,#a39752,#49673b)}.g8-river{background:linear-gradient(150deg,#619a94,#30554b)}
+
+.g9-cells{background:linear-gradient(150deg,#577e9b,#244d50)}.g9-systems{background:linear-gradient(150deg,#7d739c,#394f60)}.g9-oxygen{background:linear-gradient(150deg,#497e91,#295454)}.g9-digestion{background:linear-gradient(150deg,#98784f,#4f6140)}.g9-reproduction{background:linear-gradient(150deg,#8b728c,#405e57)}
