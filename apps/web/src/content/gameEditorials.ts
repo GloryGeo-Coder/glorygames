@@ -18,6 +18,20 @@ export type GameEditorial = {
 };
 
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
+  "bioquest-guardians-of-life": {
+    category: "Educational",
+    summary: "Join Nala and Pip in five untimed Grade 4 biology investigations about living things, plants, habitats and animal shelters, with hints and saved progress.",
+    overview: ["Explore the living world through five untimed investigations. Match discoveries, make decisions and use evidence to help restore a nature research centre.", "The first chapter covers selected Grade 4 Life and Living topics from South Africa’s Natural Sciences and Technology curriculum."],
+    story: ["The nature research centre needs new discoveries to bring its garden, greenhouse, nursery, wetland and wildlife lookout back to life. Join Nala, a young female explorer, and her drone Pip as she observes plants and animals, cares for seedlings and helps protect their habitats."],
+    howToPlay: ["Choose an unlocked mission in the field journal and read Nala’s introduction.", "Tap or click an answer or match each discovery to a group. Ask Pip for a hint whenever you need one.", "Read the explanation after each investigation. Complete all three investigations to restore the location and unlock the next mission."],
+    desktop: ["Use a mouse or keyboard to choose the on-screen controls and answers."],
+    mobile: ["Tap answers and controls. The layout adapts to portrait and landscape screens; use fullscreen where supported."],
+    systems: [{title:"Observe and investigate",body:"Sort living and non-living things, match plant structures and habitats, and think through simple investigations."},{title:"Hints and feedback",body:"Pip offers hints, and every completed investigation explains the scientific idea. There is no timer or penalty that stops play."},{title:"Sound and progress",body:"Switch music and effects on or off. Completed missions and the current investigation are saved on the same browser when storage is available."}],
+    progression: ["Explore five missions in order: The Garden Awakens, The Plant Workshop, The Seedling Rescue, Habitat Detectives and Homes for Wildlife. Completed missions can be replayed."],
+    tips: ["Read the clue and consider what you already know before choosing.", "Use Pip’s hint if you are unsure; you can keep trying.", "In a fair comparison, change one condition while keeping the others similar."],
+    faqs: [{q:"What will I learn?",a:"Selected Grade 4 biology concepts: living and non-living things, plant parts, plant needs, habitats and shelters."},{q:"Is there a time limit?",a:"No. All five missions are untimed, and you can retry answers."},{q:"Is my progress saved?",a:"Completed missions and the current investigation are saved in your browser when local storage is available. Clearing browser data removes this progress."},{q:"Can I play on a phone?",a:"Yes. Tap the controls and use fullscreen where your browser supports it."}],
+    learning: ["Selected Grade 4 CAPS Life and Living topics: living and non-living things, plant structures and needs, habitats and animal shelters."]
+  },
   "brick-blaster": {
     "category": "Arcade",
     "summary": "Restore Neon Grid through five missions with interactive bricks, rescue drones, enemies and the Grid Warden, or chase high scores in Classic Arcade.",

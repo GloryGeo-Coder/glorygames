@@ -7,8 +7,8 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import GameEditorial from "../src/components/GameEditorial";
 
-test("all 22 public catalog summaries and information-page summaries agree", () => {
-  assert.equal(Object.keys(GAME_CATALOG).length, 22);
+test("all 23 public catalog summaries and information-page summaries agree", () => {
+  assert.equal(Object.keys(GAME_CATALOG).length, 23);
   assert.deepEqual(Object.keys(GAME_EDITORIALS).sort(), Object.keys(GAME_CATALOG).sort());
   for (const [slug, entry] of Object.entries(GAME_CATALOG)) {
     const guide = GAME_EDITORIALS[slug];

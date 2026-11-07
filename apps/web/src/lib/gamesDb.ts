@@ -98,9 +98,12 @@ export async function getGamesFromDatabase(): Promise<DbGameListItem[]> {
     ORDER BY category ASC, title ASC
   `;
 
-  return rows.map(normalizeGameRow)
-    .filter((game) => isPublicGameSlug(game.slug))
-    .sort((a, b) => (a.category ?? "").localeCompare(b.category ?? "") || a.title.localeCompare(b.title));
+  const games = rows.map(normalizeGameRow).filter((game) => isPublicGameSlug(game.slug));
+  // BioQuest is included immediately; a later admin sync can persist its catalogue row.
+  if (!games.some((game) => game.slug === "bioquest-guardians-of-life")) {
+    games.push(catalogGame({ id: "fallback-bioquest-guardians-of-life", slug: "bioquest-guardians-of-life", title: "BioQuest: Guardians of Life", description: null, category: "EDUCATIONAL", tags: ["biology", "science", "grade-4"] }));
+  }
+  return games.sort((a, b) => (a.category ?? "").localeCompare(b.category ?? "") || a.title.localeCompare(b.title));
 }
 
 export async function getGameFromDatabase(
