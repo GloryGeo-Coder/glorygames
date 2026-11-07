@@ -1,3 +1,4 @@
+import { LOTS, STATIONS } from './district.mjs';
 import { PIVOTS, FERRY, hingeAngle, mountOf } from './canal.mjs';
 import { CHASSIS_TOP, TYRES, GATES, GATE_HALF_WIDTH } from './vehicle.mjs';
 import { TYPES, PALETTE, parts, size, hasChannel } from './model.mjs';
@@ -212,6 +213,7 @@ export function studio(canvas) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
     kind = next;
+    camera.maxZ = kind === 'district' ? 320 : 150;
     canalMechanism(0, -8);
     const scenery = [];
     const block = (...args) => {
@@ -230,6 +232,11 @@ export function studio(canvas) {
       m.isPickable = true;
       worldNodes.push(m);
     };
+    if (kind === 'district') {
+      buildDistrict(block, round);
+      mergeScenery(scenery);
+      return;
+    }
     block(0, -3.6, 0, 94, 1, 94, '#8eaf79');
     for (const x of [-28, 28]) block(x, -0.23, 0, 36, 0.36, 92, '#91b47c');
     for (const z of [-28, 28]) block(0, -0.23, z, 20, 0.36, 36, '#91b47c');
@@ -331,6 +338,9 @@ export function studio(canvas) {
       block(x, 1.1, -12.86, 2.4, 0.68, 0.14, '#cf8c59');
       for (const d of [-0.85, 0.85]) block(x + d, 0.27, -12.5, 0.2, 0.55, 0.65, '#42665f');
     }
+    mergeScenery(scenery);
+  }
+  function mergeScenery(scenery) {
     const groups = new Map();
     for (const m of scenery) {
       const g = groups.get(m.material) || [];
@@ -345,6 +355,79 @@ export function studio(canvas) {
       shadows.addShadowCaster(m);
       worldNodes.push(m);
     }
+  }
+  function buildDistrict(block, round) {
+    block(0, -0.32, 0, 100, 0.44, 80, '#94b585');
+    block(0, -0.11, 0, 48, 0.2, 24, '#d7c4a4');
+    block(0, -0.045, -9.7, 68, 0.08, 4.2, '#52696d');
+    for (let x = -31; x < 32; x += 3) block(x, 0.006, -9.7, 1.3, 0.02, 0.09, '#fff0ba');
+    for (const x of [-8, 8])
+      for (let z = -11.2; z < -8; z += 0.6) block(x, 0.023, z, 1.8, 0.025, 0.29, '#f9ead2');
+    const lines = [];
+    for (const lot of LOTS) {
+      const x = lot.x;
+      const plot = box('District plot', x, -0.08, 0, 12, 0.16, 14, lot.ground);
+      plot.isPickable = true;
+      plot.metadata = { ground: true };
+      worldNodes.push(plot);
+      for (let i = -6; i <= 6; i++) lines.push([V(x + i, 0.014, -7), V(x + i, 0.014, 7)]);
+      for (let i = -7; i <= 7; i++) lines.push([V(x - 6, 0.014, i), V(x + 6, 0.014, i)]);
+      // Painted loading edge, shop window and a striped market awning.
+      block(x, 0.86, -0.017, 4, 0.11, 0.03, lot.color);
+      block(x, 2.23, 2.98, 3.3, 1.22, 0.05, '#304e50');
+      block(x, 1.64, 2.91, 3.6, 0.11, 0.22, '#fee6af');
+      for (let k = 0; k < 8; k++) {
+        const col = k % 2 === 0 ? lot.color : '#fff0c9';
+        block(x - 1.925 + k * 0.55, 3.48, 4.05, 0.55, 0.16, 3.3, col);
+        block(x - 1.925 + k * 0.55, 3.34, 2.46, 0.55, 0.23, 0.12, col);
+      }
+      const sign = label(lot.sign, x, 2.95, 2.84, 2.45);
+      sign.metadata = { sign: true };
+      worldNodes.push(sign);
+      if (lot === LOTS[1]) {
+        block(x, 1.78, 2.82, 0.72, 0.16, 0.39, '#7cc9bf');
+        block(x, 2.04, 2.9, 0.29, 0.4, 0.11, '#f3bf53');
+      } else
+        for (let k = 0; k < 6; k++) {
+          round(x - 1.14 + k * 0.41, 1.8, 2.88, 0.16, 0.24, k % 2 ? '#ed9d34' : '#8cba64');
+        }
+    }
+    for (const slab of STATIONS) {
+      const m = box(
+        'Market station',
+        slab.x,
+        slab.h / 2,
+        slab.z,
+        slab.w,
+        slab.h,
+        slab.d,
+        slab.color
+      );
+      m.metadata = { cameraWall: true };
+      m.isPickable = true;
+      shadows.addShadowCaster(m);
+      worldNodes.push(m);
+    }
+    const grid = B.MeshBuilder.CreateLineSystem('District stud grids', { lines }, scene);
+    grid.color = hex('#a18b67');
+    grid.alpha = 0.62;
+    grid.isPickable = false;
+    worldNodes.push(grid);
+    // Homes face the district from beyond the buildable neighbourhood.
+    for (let i = 0; i < 8; i++) {
+      const x = -26 + i * 7,
+        z = 15 + (i % 2);
+      block(x, 1.35, z, 4.6, 2.7, 4, ['#d59c63', '#83a8a2', '#c7836b'][i % 3]);
+      block(x, 2.83, z, 5, 0.27, 4.45, '#586b70');
+      block(x - 0.95, 1, z - 2.025, 0.95, 2, 0.06, '#365c59');
+      block(x + 0.9, 1.55, z - 2.04, 1.25, 0.92, 0.08, '#c0e5dd');
+    }
+    for (const x of [-24, -12, 4, 14, 26])
+      for (const z of [-14, 13]) {
+        round(x, 1, z, 0.24, 2, '#82664a');
+        round(x, 2.9, z, 1.35, 2.8, '#538c66', null, 8, 0.65);
+        round(x, 3.9, z, 0.94, 1.5, '#7fac68', null, 8, 0.35);
+      }
   }
   const person = new B.TransformNode('Builder', scene),
     legs = [];
@@ -373,6 +456,16 @@ export function studio(canvas) {
   body('Cap', 0, 1.63, 0, 0.53, 0.15, 0.47, gold);
   body('Visor', 0, 1.59, 0.23, 0.52, 0.065, 0.25, gold);
   for (const x of [-0.11, 0.11]) body('Eye', x, 1.4, 0.214, 0.046, 0.054, 0.026, '#342828');
+  const parcel = new B.TransformNode('Market crate', scene);
+  parcel.parent = person;
+  parcel.position.set(0.47, -0.15, -0.18);
+  body('Produce crate', 0, 0.85, 0.31, 0.55, 0.34, 0.41, '#a76a37', parcel);
+  for (const x of [-0.13, 0.09]) cyl('Oranges', x, 1.05, 0.32, 0.11, 0.16, '#ef9e34', parcel);
+  body('Crate rim', 0, 1, 0.49, 0.6, 0.1, 0.06, '#eac078', parcel);
+  body('Crate brace', 0, 0.84, 0.09, 0.58, 0.07, 0.05, '#dfad6b', parcel);
+  parcel.setEnabled(false);
+  const stopMarker = cyl('Delivery stop', 0, 0, 0, 0, 0.65, '#ffc437', null, 4, 0.32);
+  stopMarker.setEnabled(false);
   const car = new B.TransformNode('Delivery buggy', scene),
     wheels = [];
   body('Body', 0, 0.52, 0, 1.65, 0.46, 1.02, gold, car);
@@ -540,9 +633,14 @@ export function studio(canvas) {
       camera.setTarget(target);
     } else {
       const head = V(a.x, a.y + 1.4, a.z);
-      const delta = V(-Math.sin(chase.yaw) * 3.4, 1.18, -Math.cos(chase.yaw) * 3.4);
+      const distance = kind === 'district' ? 5.6 : 3.4;
+      const delta = V(
+        -Math.sin(chase.yaw) * distance,
+        kind === 'district' ? 2.25 : 1.18,
+        -Math.cos(chase.yaw) * distance
+      );
       const ray = new B.Ray(head, delta.clone().normalize(), delta.length());
-      const hit = scene.pickWithRay(ray, (m) => !!m.metadata?.id);
+      const hit = scene.pickWithRay(ray, (m) => !!(m.metadata?.id || m.metadata?.cameraWall));
       const dist = hit?.hit ? Math.max(0.19, hit.distance - 0.2) : delta.length();
       camera.position.copyFrom(head.add(delta.normalize().scale(dist)));
       camera.setTarget(head.add(V(Math.sin(chase.yaw) * 1.5, 0.02, Math.cos(chase.yaw) * 1.5)));
@@ -559,7 +657,11 @@ export function studio(canvas) {
     if (!hit?.hit) return null;
     return { x: hit.pickedPoint.x, z: hit.pickedPoint.z, id: hit.pickedMesh.metadata.id };
   }
-  function actors(mode, a, c, walk, t, seat) {
+  function actors(mode, a, c, walk, t, seat, deliveryStage = 0) {
+    parcel.setEnabled(deliveryStage === 2 || deliveryStage === 3);
+    const stop = LOTS[deliveryStage - 1];
+    stopMarker.setEnabled(!!stop);
+    if (stop) stopMarker.position.set(stop.x, 3.65 + 0.12 * Math.sin(t * 3), 1.5);
     const seated = mode === 'drive' && seat;
     person.parent = seated ? chassis : null;
     person.setEnabled(kind !== 'garage' || Boolean(seated));
