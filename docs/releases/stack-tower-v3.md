@@ -23,3 +23,16 @@ minimum for the new run.
 Runtime and browser regressions cover a 60px tower rotated from 844px to 390px,
 continued placement and stage progression, repeated paused rotations, scaled
 losses, height-only resizing, and restart isolation.
+
+## Wide-display resize follow-up
+
+Both the minimum playable width and maximum block-width cap now scale with the
+active tower. Perfect placements and repairs share the scaled cap, so expanding
+a portrait run onto a 4K display no longer makes its minimum exceed every
+possible perfect placement. The near-miss tolerance scales too, preserving narrow towers when shrinking a
+fresh wide-screen run back to mobile. Both limits reset on a new run, and repeated paused
+resizes preserve their original ratio without relaxing genuine narrow losses.
+
+Runtime and browser regressions cover fresh 390px-to-3840px runs, progression,
+paused round trips through normal widths, scaled repairs and cap behavior,
+actual too-narrow placements, and reset isolation.
