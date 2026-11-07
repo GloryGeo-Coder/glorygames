@@ -772,9 +772,12 @@
     if (Math.abs(dx) > 26 && Math.abs(dx) > Math.abs(dy)) {
       changeLane(dx > 0 ? 1 : -1);
       anchorX = p.x;
-    }
-    if (dy < -34 && Math.abs(dy) > Math.abs(dx) * 1.1) {
-      activateBoost();
+      anchorY = p.y;
+    } else if (Math.abs(dy) > 34 && Math.abs(dy) > Math.abs(dx) * 1.1) {
+      // Consume both axes even for a downward swipe (which has no action),
+      // so stale displacement cannot mask the next direction change.
+      if (dy < 0) activateBoost();
+      anchorX = p.x;
       anchorY = p.y;
     }
   }, { passive: true });
