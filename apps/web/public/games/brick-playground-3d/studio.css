@@ -661,3 +661,24 @@ dialog p {
     min-height: 29px;
   }
 }
+
+.market-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.market-actions button,
+#starterBuggy,
+#toMarket {
+  min-height: 34px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+@media (max-height: 550px) {
+  .market-actions button,
+  #starterBuggy,
+  #toMarket {
+    min-height: 28px;
+    font-size: 11px;
+  }
+}

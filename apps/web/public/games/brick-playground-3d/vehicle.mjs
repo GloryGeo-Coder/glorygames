@@ -124,9 +124,10 @@ function crosses(from, to, g, yaw) {
     GATE_HALF_WIDTH
   );
 }
-export function advanceVehicle(v, tyres, gas, steer, brake, dt) {
+// Both the workshop course and the district use the same tyre, steering and load response.
+export function driveVehicle(v, tyres, gas, steer, brake, dt, canEnter) {
   const kit = TYRES[tyres];
-  if (!kit || v.gate === GATES.length) return;
+  if (!kit) return;
   const target = brake ? 0 : gas * (gas < 0 ? kit.speed * 0.56 : kit.speed);
   const loadFactor = 1 / (1 + v.load / 45);
   const rate = brake ? 14 * loadFactor : Math.abs(gas) < 0.02 ? 3 : kit.acceleration * loadFactor;
@@ -135,17 +136,25 @@ export function advanceVehicle(v, tyres, gas, steer, brake, dt) {
   v.steer = steer;
   const yaw = v.yaw + steer * kit.turn * v.speed * dt;
   const next = { x: v.x + Math.sin(yaw) * v.speed * dt, z: v.z + Math.cos(yaw) * v.speed * dt };
-  const sin = Math.abs(Math.sin(yaw)),
-    cos = Math.abs(Math.cos(yaw));
-  if (
-    Math.abs(next.x) + 2.34 * cos + 2 * sin > PLOT ||
-    Math.abs(next.z) + 2 * cos + 2.34 * sin > PLOT
-  ) {
+  if (!canEnter(next, yaw)) {
     v.speed = 0;
     return;
   }
-  if (crosses(v, next, GATES[v.gate], yaw)) v.gate++;
   v.distance += v.speed * dt;
   Object.assign(v, next, { yaw });
+}
+function insideCourse(next, yaw) {
+  const sin = Math.abs(Math.sin(yaw)),
+    cos = Math.abs(Math.cos(yaw));
+  return (
+    Math.abs(next.x) + 2.34 * cos + 2 * sin <= PLOT &&
+    Math.abs(next.z) + 2 * cos + 2.34 * sin <= PLOT
+  );
+}
+export function advanceVehicle(v, tyres, gas, steer, brake, dt) {
+  if (v.gate === GATES.length) return;
+  const from = { x: v.x, z: v.z };
+  driveVehicle(v, tyres, gas, steer, brake, dt, insideCourse);
+  if (crosses(from, v, GATES[v.gate], v.yaw)) v.gate++;
   if (v.gate === GATES.length) v.speed = 0;
 }

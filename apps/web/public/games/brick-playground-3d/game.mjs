@@ -1,3 +1,13 @@
+import {
+  FREIGHT_ACTIONS,
+  cargoCount,
+  starterBuggy,
+  freightProblem,
+  freightRun,
+  canService,
+  roadObstacles,
+  advanceFreight
+} from './freight.mjs';
 import { LOTS, DISTRICT, checkpoint, atStop } from './district.mjs';
 import {
   canalState,
@@ -61,6 +71,7 @@ function start() {
     jump = false,
     run = newRun(),
     driverSeat = null,
+    freight = null,
     canal = canalState(),
     braking = false;
   let elapsed = 0,
@@ -99,6 +110,9 @@ function start() {
   function openWorld(next) {
     clearTimeout(noticeTimer);
     $('notice').textContent = '';
+    s.freightBodywork(null);
+    freight = null;
+    driverSeat = null;
     kind = next;
     canSave = !unreadable.has(kind);
     try {
@@ -233,6 +247,10 @@ function start() {
     if (kind === 'garage') {
       const problem = buildProblem(data.pieces);
       $('play').disabled = Boolean(problem);
+      $('starterBuggy').hidden = mode !== 'build' || data.pieces.length > 0;
+      $('toMarket').hidden = mode !== 'build' || !data.pieces.length;
+      const freightIssue = freightProblem(data.pieces);
+      $('toMarket').title = freightIssue || 'Drive this buggy on the market street';
       $('tyreLabel').hidden = mode === 'drive';
       if (mode !== 'drive')
         $('garageStatus').textContent =
@@ -313,19 +331,19 @@ function start() {
   function syncMode() {
     const edit = mode === 'build';
     pressed('build', edit);
-    pressed('play', !edit);
+    pressed('play', !edit && !freight);
     $('bench').hidden = !editorAvailable();
     $('walk').hidden = edit;
     for (const id of ['view', 'closer', 'farther', 'center']) $(id).hidden = !edit;
     $('home').hidden = edit;
-    $('home').textContent = kind === 'garage' ? 'Restart' : 'Return';
-    $('routeMap').hidden = mode !== 'drive';
+    $('home').textContent = freight ? 'Last bay' : kind === 'garage' ? 'Restart' : 'Return';
+    $('routeMap').hidden = mode !== 'drive' || kind !== 'garage';
     $('jump').hidden = mode === 'drive' || onDelivery();
     if (kind === 'district') districtPanel();
     $('brake').hidden = mode !== 'drive';
     $('stick').setAttribute(
       'aria-label',
-      kind === 'garage' ? 'Driving joystick' : 'Movement joystick'
+      mode === 'drive' ? 'Driving joystick' : 'Movement joystick'
     );
     $('play').disabled = car.state === 'running';
     refresh();
@@ -362,7 +380,7 @@ function start() {
     if (kind === 'garage' && to === 'play') to = 'drive';
     if (car.state === 'running' || mode === to || (kind === 'canal' && !canEditCanal(canal)))
       return;
-    if (to === 'drive') {
+    if (to === 'drive' && kind === 'garage') {
       const problem = buildProblem(data.pieces);
       if (problem) {
         announce(problem);
@@ -372,7 +390,15 @@ function start() {
       run = newRun(bodyLoad(data.pieces));
       s.chase.yaw = 0;
     }
+    if (freight && to !== 'drive') {
+      s.freightBodywork(null);
+      freight = null;
+      driverSeat = null;
+      s.workshop(false, run);
+      s.chase.yaw = 0;
+    }
     mode = to;
+    if (kind === 'district') $('play').textContent = freight ? 'Walk' : 'Play';
     if (to === 'build' && onDelivery()) {
       focusLot(data.stage - 1);
       adjustHeight();
@@ -613,6 +639,11 @@ function start() {
     updateTest();
   };
   $('home').onclick = () => {
+    if (freight) {
+      resetFreightRun();
+      announce('Returned to the last serviced bay');
+      return;
+    }
     if (mode === 'drive') {
       run = newRun(bodyLoad(data.pieces));
       clearInputs();
@@ -709,9 +740,107 @@ function start() {
     Object.assign(s.orbit, { focusX: lot.x, focusZ: 0, zoom: 0.7 });
     if (tool === 'add') Object.assign(draft, { x: lot.x - 1, z: -3 });
   }
+  function resetFreightRun() {
+    run = freightRun(freight.pieces, data.freightStop);
+    run.load += cargoCount(data.freightStop) * 5;
+    clearInputs();
+    s.chase.yaw = 0;
+  }
+  function dispatchFreight(garage) {
+    const issue = freightProblem(garage.pieces);
+    if (issue) {
+      if (kind !== 'garage') openWorld('garage');
+      announce(issue);
+      return;
+    }
+    if (kind !== 'district') openWorld('district');
+    if (!data.freightStop || data.freightStop === 4) data.freightStop = 1;
+    freight = {
+      pieces: garage.pieces,
+      tyres: Object.hasOwn(TYRES, garage.tyres) ? garage.tyres : 'road',
+      obstacles: roadObstacles(data.pieces, garage.pieces)
+    };
+    driverSeat = drivingSeat(garage.pieces);
+    resetFreightRun();
+    s.freightBodywork(freight.pieces);
+    s.showFreightStop(data.freightStop);
+    switchMode('drive');
+    save();
+  }
+  function updateBay() {
+    const stop = data.freightStop,
+      lot = LOTS[stop - 1];
+    let hint = 'Both shops received their crates.';
+    if (lot) {
+      const dx = lot.x - run.x;
+      if (canService(run, stop)) hint = 'Parked in the bay';
+      else if (run.blocked) hint = 'Path blocked. Reverse and steer clear.';
+      else if (Math.abs(dx) > 1.4)
+        hint =
+          (dx > 0 ? 'East' : 'West') +
+          ' · ' +
+          Math.round(Math.abs(dx)) +
+          ' studs to the marked bay';
+      else hint = 'Line up along the street and brake inside the gold bay.';
+    }
+    if ($('direction').textContent !== hint) $('direction').textContent = hint;
+    const disabled = !!lot && !canService(run, stop);
+    if ($('handover').disabled !== disabled) $('handover').disabled = disabled;
+  }
+  function serviceFreight() {
+    if (data.freightStop === 4) {
+      switchMode('build');
+      return;
+    }
+    if (!canService(run, data.freightStop)) return;
+    data.freightStop++;
+    if (data.freightStop === 4) data.freightComplete = true;
+    run.speed = 0;
+    run.load = bodyLoad(freight.pieces) + cargoCount(data.freightStop) * 5;
+    clearInputs();
+    s.showFreightStop(data.freightStop);
+    music.snap();
+    save();
+    districtPanel();
+  }
+  $('starterBuggy').onclick = () => {
+    if (kind !== 'garage' || mode !== 'build' || data.pieces.length) return;
+    change(starterBuggy());
+    adjustHeight();
+    refresh();
+  };
+  $('toMarket').onclick = () => dispatchFreight(data);
+  $('freightStart').onclick = () => {
+    let garage;
+    try {
+      garage = volatile.get('garage') || loadWorld('garage', localStorage);
+    } catch {
+      openWorld('garage');
+      announce('Open a usable workshop buggy to dispatch.');
+      return;
+    }
+    dispatchFreight(garage);
+  };
   function districtPanel() {
     const stage = data.stage;
     $('lotLabel').hidden = mode !== 'build';
+    $('freightStart').hidden = mode !== 'build';
+    $('freightStart').textContent =
+      data.freightStop > 0 && data.freightStop < 4
+        ? 'Resume freight'
+        : data.freightComplete
+          ? 'Replay freight'
+          : 'Market Freight';
+    if (freight) {
+      const stop = data.freightStop;
+      $('districtTitle').textContent = 'Market Freight · ' + (LOTS[stop - 1]?.name || 'Complete');
+      $('districtStatus').textContent = cargoCount(stop) + ' / 2 crates on board';
+      $('direction').hidden = false;
+      $('handover').hidden = false;
+      $('handover').textContent = FREIGHT_ACTIONS[stop] || 'Return to district';
+      updateBay();
+      return;
+    }
     $('districtTitle').textContent = onDelivery()
       ? 'Stop ' + stage + ' / 3 · ' + LOTS[stage - 1].name
       : 'Market District';
@@ -764,6 +893,10 @@ function start() {
   };
   $('handover').onclick = () => {
     if (kind !== 'district') return;
+    if (freight) {
+      serviceFreight();
+      return;
+    }
     if (!onDelivery()) {
       data.stage = 1;
       rescue();
@@ -1068,22 +1201,26 @@ function start() {
             vec.x +
             Number(keys.has('d') || keys.has('arrowright')) -
             Number(keys.has('a') || keys.has('arrowleft'));
-          const old = run.gate;
-          advanceVehicle(
-            run,
-            data.tyres,
+          const controls = [
             Math.max(-1, Math.min(1, gas)),
             Math.max(-1, Math.min(1, steer)),
             braking || keys.has(' '),
             delta
-          );
-          if (old !== run.gate) {
-            music.snap();
-            routeStatus();
-            if (run.gate === GATES.length) {
-              data.complete = true;
-              save();
-              clearInputs();
+          ];
+          if (freight) {
+            if (data.freightStop < 4)
+              advanceFreight(run, freight.tyres, ...controls, freight.obstacles);
+          } else {
+            const old = run.gate;
+            advanceVehicle(run, data.tyres, ...controls);
+            if (old !== run.gate) {
+              music.snap();
+              routeStatus();
+              if (run.gate === GATES.length) {
+                data.complete = true;
+                save();
+                clearInputs();
+              }
             }
           }
         }
@@ -1112,14 +1249,25 @@ function start() {
       );
     } else music.tick(elapsed, false);
     if (kind === 'garage') s.workshop(mode === 'drive', run, data.tyres);
-    if (mode === 'drive') drawMap();
+    if (freight) {
+      s.workshop(true, run, freight.tyres);
+      updateBay();
+    } else if (mode === 'drive') drawMap();
     if (kind === 'canal') {
       s.canalMechanism(canal.angle, canal.boatZ, canal.angle !== canal.target);
       const angle = Math.round((canal.angle * 180) / Math.PI) + '°';
       if ($('angleReadout').textContent !== angle) $('angleReadout').textContent = angle;
     }
     if (kind === 'district' && mode === 'play') districtDirection();
-    s.actors(mode, person, car, walking, elapsed, driverSeat, kind === 'district' ? data.stage : 0);
+    s.actors(
+      mode,
+      person,
+      car,
+      walking,
+      elapsed,
+      driverSeat,
+      kind === 'district' && !freight ? data.stage : 0
+    );
     s.view(mode, person, run);
     s.scene.render();
   });

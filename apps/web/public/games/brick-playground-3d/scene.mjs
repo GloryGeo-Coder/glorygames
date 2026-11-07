@@ -1,3 +1,4 @@
+import { BAY_Z, BAY_WIDTH, BAY_DEPTH, cargoCount, openBed } from './freight.mjs';
 import { LOTS, STATIONS } from './district.mjs';
 import { PIVOTS, FERRY, hingeAngle, mountOf } from './canal.mjs';
 import { CHASSIS_TOP, TYRES, GATES, GATE_HALF_WIDTH } from './vehicle.mjs';
@@ -587,12 +588,69 @@ export function studio(canvas) {
     root.setEnabled(false);
     return { root, lights };
   });
+  let freightBody;
+  const bays = LOTS.map((lot, index) => {
+    const root = new B.TransformNode(lot.name + ' freight bay', scene);
+    root.position.set(lot.x, 0, BAY_Z);
+    const paint = [];
+    for (const x of [-BAY_WIDTH / 2, BAY_WIDTH / 2])
+      paint.push(box('Bay end', x, 0.04, 0, 0.13, 0.035, BAY_DEPTH, '#eed298', root));
+    for (const z of [-BAY_DEPTH / 2, BAY_DEPTH / 2])
+      paint.push(box('Bay edge', 0, 0.04, z, BAY_WIDTH, 0.035, 0.13, '#eed298', root));
+    const sign = label(String(index + 1) + ' ' + lot.sign, 0, 1.26, 2.48, 2.9);
+    sign.parent = root;
+    sign.billboardMode = B.Mesh.BILLBOARDMODE_Y;
+    box('Bay signpost', 0, 0.58, 2.48, 0.14, 1.16, 0.14, '#495e55', root);
+    root.setEnabled(false);
+    return { root, paint };
+  });
+  let crates = [];
+  function freightBodywork(items) {
+    freightBody?.dispose();
+    freightBody = null;
+    crates = [];
+    for (const bay of bays) bay.root.setEnabled(!!items);
+    if (!items) return;
+    freightBody = new B.TransformNode('Dispatched buggy', scene);
+    freightBody.parent = chassis;
+    for (const p of items) {
+      const mesh = template(p.type, PALETTE[p.color]).createInstance('Freight ' + p.id);
+      transform(mesh, p);
+      mesh.parent = freightBody;
+      mesh.position.y += CHASSIS_TOP;
+      mesh.isPickable = false;
+      shadows.addShadowCaster(mesh);
+    }
+    const bed = openBed(items),
+      dims = size(bed);
+    const rack = new B.TransformNode('Freight load', scene);
+    rack.parent = freightBody;
+    rack.position.set(bed.x + dims.w / 2, CHASSIS_TOP + bed.y + 0.22, bed.z + dims.d / 2);
+    rack.rotation.y = (-bed.r * Math.PI) / 2;
+    for (let i = 0; i < 2; i++) {
+      const crate = new B.TransformNode('Freight crate ' + (i + 1), scene);
+      crate.parent = rack;
+      crate.position.x = i === 0 ? -0.4 : 0.4;
+      box('Produce box', 0, 0.45, 0, 0.72, 0.9, 1.36, i ? '#cb813f' : '#42876e', crate);
+      for (const z of [-0.47, 0.47])
+        box('Packing strap', 0, 0.91, z, 0.72, 0.04, 0.12, '#ffdc85', crate);
+      crates.push(crate);
+    }
+  }
+  function showFreightStop(stop) {
+    crates.forEach((crate, i) => crate.setEnabled(i < cargoCount(stop)));
+    bays.forEach((bay, i) => {
+      const paint = mat(i === stop - 1 ? '#ffbc37' : i < stop - 1 ? '#5fb699' : '#f2e2bb');
+      for (const mesh of bay.paint) mesh.material = paint;
+    });
+  }
   let lastGate = -1;
   function workshop(driving, run, tyres) {
     const garage = kind === 'garage';
-    chassis.setEnabled(garage);
+    const freight = kind === 'district' && driving;
+    chassis.setEnabled(garage || freight);
     for (const gate of gateNodes) gate.root.setEnabled(garage && driving);
-    if (!garage) return;
+    if (!garage && !freight) return;
     chassis.position.set(driving ? run.x : 0, 0, driving ? run.z : 0);
     chassis.rotation.y = driving ? run.yaw : 0;
     for (const { steering, roll, hub } of roadWheels) {
@@ -600,7 +658,7 @@ export function studio(canvas) {
       roll.rotation.x = driving ? run.distance / 0.46 : 0;
       hub.material = mat(TYRES[tyres].color);
     }
-    if (lastGate !== run.gate) {
+    if (garage && lastGate !== run.gate) {
       lastGate = run.gate;
       gateNodes.forEach((gate, i) => {
         for (const mesh of gate.lights)
@@ -701,6 +759,8 @@ export function studio(canvas) {
     ghost,
     actors,
     workshop,
-    canalMechanism
+    canalMechanism,
+    freightBodywork,
+    showFreightStop
   };
 }
