@@ -57,6 +57,7 @@ jobs:
         run: |
           node apps/web/scripts/bioquest-browser.cjs
           node apps/web/scripts/bioquest-art-browser.cjs
+          node apps/web/scripts/bioquest-survey-browser.cjs
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

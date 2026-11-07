@@ -3,16 +3,18 @@
   const paths = { 4: window.BIOQUEST_MISSIONS, 5: window.BIOQUEST_GRADE5, 6: window.BIOQUEST_GRADE6, 7: window.BIOQUEST_GRADE7, 8: window.BIOQUEST_GRADE8, 9: window.BIOQUEST_GRADE9, 10: window.BIOQUEST_GRADE10 };
   const allMissions = Object.values(paths).flat();
   let grade = 4, missions = paths[grade];
+  const fieldwork = window.BioFieldwork;
   const KEY = 'bioquest.guardians.grade4.v1';
   const app = document.getElementById('app');
   const soundButton = document.getElementById('sound');
   const fullscreen = document.getElementById('fullscreen');
-  const initial = () => ({ completed: [], checkpoints: {}, selectedGrade: 4, sound: false });
+  const initial = () => ({ completed: [], observations: [], checkpoints: {}, selectedGrade: 4, sound: false });
   let state = initial();
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved && typeof saved === 'object') {
       state.completed = Array.isArray(saved.completed) ? saved.completed.filter(id => allMissions.some(m => m.id === id)) : [];
+      if (Array.isArray(saved.observations)) state.observations = [...new Set(saved.observations.filter(id => typeof id === 'string' && Object.hasOwn(fieldwork.entries,id)))];
       state.checkpoints = saved.checkpoints && typeof saved.checkpoints === 'object' && !Array.isArray(saved.checkpoints) ? saved.checkpoints : {};
       // Preserve checkpoints written by the original Grade 4 release.
       if (!state.checkpoints[4] && saved.checkpoint && typeof saved.checkpoint === 'object') state.checkpoints[4] = saved.checkpoint;
@@ -56,13 +58,37 @@
   if (document.fullscreenEnabled && document.documentElement.requestFullscreen) {
     fullscreen.hidden = false;
     fullscreen.addEventListener('click', () => { const request = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); Promise.resolve(request).catch(() => {}); });
-    document.addEventListener('fullscreenchange', () => { fullscreen.innerHTML = document.fullscreenElement ? '⛶ <span>Exit fullscreen</span>' : '⛶ <span>Fullscreen</span>'; });
+    document.addEventListener('fullscreenchange', () => { fullscreen.innerHTML = document.fullscreenElement ? ' <span>Exit fullscreen</span>' : ' <span>Fullscreen</span>'; fullscreen.setAttribute('aria-label',document.fullscreenElement?'Exit fullscreen':'Enter fullscreen'); });
   }
   // Artwork is decorative. The learning flow and save schema never depend on image loading.
   const artPath = m => `assets/backgrounds/${m.id}.webp`;
   const companions = () => '<span class="sprite nala" aria-hidden="true"></span><span class="sprite pip" aria-hidden="true"></span>';
   function scene(m, kind = 'mission-scene') {
     return `<div class="scene ${kind}" data-scene="${m.id}" aria-hidden="true"><img class="scene-image" src="${artPath(m)}" alt="" decoding="async" width="960" height="640">${companions()}<span class="scene-glow"></span></div>`;
+  }
+  function survey(id, place, returnTo, doneLabel='Return with field note →') {
+    ++viewToken;
+    fieldwork.open({id, place, doneLabel, recorded:state.observations.includes(id), onExit:returnTo, onRecord(key) {
+      if (!state.observations.includes(key)) { state.observations.push(key); save(); }
+      tone(784,.2,.05);
+    }});
+  }
+  function journalTools(token) {
+    const list = document.getElementById('kit-studies');
+    for(const id of fieldwork.studies) {
+      const e=fieldwork.entries[id], b=document.createElement('button');
+      b.className='study-card'; b.type='button';
+      b.innerHTML=`<img src="${e.image}" alt="" loading="lazy"><span>${e.label}</span><small>${state.observations.includes(id)?'Review note':'Open lens'} →</small>`;
+      b.onclick=()=>{if(token===viewToken)survey(id,e.label,home);};
+      list.append(b);
+    }
+    document.getElementById('notes-count').textContent='Collected field notes · '+state.observations.length+' / '+Object.keys(fieldwork.entries).length;
+    const notes=document.getElementById('field-notes');
+    if (!state.observations.length) notes.innerHTML='<li>Survey a mission location or a lens specimen to collect your first note.</li>';
+    for(const id of state.observations) {
+      const e=fieldwork.entries[id], li=document.createElement('li');
+      li.innerHTML='<strong>'+e.label+'</strong><span>'+e.note+'</span>'; notes.append(li);
+    }
   }
   function unlocked(index) { return index === 0 || missions.slice(0,index).every(m => state.completed.includes(m.id)); }
   let viewToken = 0;
@@ -71,22 +97,26 @@
     missions = paths[grade]; state.selectedGrade = grade; save();
     currentTheme = (grade - 4) * 5; tuneStep = 0;
     app.innerHTML = ''; app.append(document.getElementById('home-template').content.cloneNode(true));
-    document.getElementById('hero-scene').innerHTML = scene(missions[0], 'home-scene');
+    document.getElementById('hero-scene').innerHTML = '<img class="cover-image" src="thumb.webp" alt="" fetchpriority="high" width="1200" height="675">';
     document.getElementById('grade-title').textContent = ({4:'Grade 4: Life begins here',5:'Grade 5: The living reserve',6:'Grade 6: The web of life',7:'Grade 7: The biodiversity expedition',8:'Grade 8: Energy and ecosystems',9:'Grade 9: Cells and body systems',10:'Grade 10: The Living Archive'})[grade];
-    for (const g of [4,5,6,7,8,9,10]) { const b = document.getElementById(`grade${g}`); b.setAttribute('aria-pressed', String(grade === g)); b.addEventListener('click', () => { if (token !== viewToken) return; grade = g; home(); }); }
+    for (const g of [4,5,6,7,8,9,10]) { const b = document.getElementById(`grade${g}`); b.setAttribute('aria-pressed', String(grade === g)); b.addEventListener('click', () => { if (token !== viewToken) return; grade = g; home(); document.getElementById(`grade${g}`).focus({preventScroll:true}); }); }
     const completed = missions.filter(m => state.completed.includes(m.id)).length;
     document.getElementById('progress').textContent = `${completed} / ${missions.length} restored`;
     const list = document.getElementById('missions');
     missions.forEach((m,i) => {
       const done = state.completed.includes(m.id), open = unlocked(i);
       const button = document.createElement('button'); button.type = 'button'; button.className = `mission-card ${m.theme}`; button.disabled = !open;
-      button.innerHTML = `<span class="card-landscape" aria-hidden="true"><img src="${artPath(m)}" alt="" loading="lazy" decoding="async" width="960" height="640"></span><span class="card-number">${String(i+1).padStart(2,'0')}</span><span class="card-place">${m.place}</span><strong>${m.title}</strong><span class="card-status">${done ? '✓ Completed · Replay' : open ? 'Explore mission →' : '🔒 Complete previous mission'}</span>`;
-      button.addEventListener('click', () => { if (token === viewToken) begin(i, false); }); list.append(button);
+      button.innerHTML = `<span class="card-landscape" aria-hidden="true"><img src="${artPath(m)}" alt="" loading="lazy" decoding="async" width="960" height="640"></span><span class="card-number">${String(i+1).padStart(2,'0')}</span><span class="card-place">${m.place}</span><strong>${m.title}</strong><span class="card-status">${done ? '✓ Completed · Replay' : open ? 'Explore mission →' : 'Complete previous mission'}</span>`;
+      button.addEventListener('click', () => { if (token === viewToken) begin(i, state.checkpoints[grade]?.mission===m.id); }); list.append(button);
     });
     const next = missions.findIndex((m,i) => unlocked(i) && !state.completed.includes(m.id));
     const checkpoint = state.checkpoints[grade];
     const resume = checkpoint && missions.findIndex((m,i) => m.id === checkpoint.mission && unlocked(i));
     const index = Number.isInteger(resume) && resume >= 0 ? resume : next >= 0 ? next : 0;
+    document.getElementById('grade-dispatch').textContent=`Grade ${grade} · Expedition ${index+1} of ${missions.length}`;
+    document.getElementById('dispatch-title').textContent=missions[index].title;
+    document.getElementById('dispatch-brief').textContent=missions[index].intro;
+    journalTools(token);
     const btn = document.getElementById('continue');
     btn.firstChild.textContent = checkpoint && index === resume ? 'Continue mission ' : completed ? 'Continue exploring ' : 'Start exploring ';
     btn.addEventListener('click', () => { if (token === viewToken) begin(index, true); });
@@ -106,30 +136,72 @@
   function intro() {
     const token = ++viewToken;
     const m = missions[index];
-    app.innerHTML = `<section class="mission-shell"><button class="back" id="back">← Field journal</button><div class="brief ${m.theme}">${scene(m, 'brief-art')}<div><p class="eyebrow">GRADE ${grade} · MISSION ${index+1} · ${m.place.toUpperCase()}</p><h1>${m.title}</h1><p>${m.intro}</p><div class="dialogue"><span class="dialogue-marker" aria-hidden="true">N</span><p><strong>Nala says</strong><br>${m.learn}</p></div><button class="primary" id="start">Begin investigation →</button></div></div></section>`;
+    app.innerHTML = `<section class="mission-shell"><button class="back" id="back">← Field journal</button><div class="brief ${m.theme}">${scene(m, 'brief-art')}<div><p class="eyebrow">GRADE ${grade} · MISSION ${index+1} · ${m.place.toUpperCase()}</p><h1>${m.title}</h1><p>${m.intro}</p><div class="dialogue"><img src="assets/portraits/nala.webp" alt=""><p><strong>Nala says</strong><br>${m.learn}</p></div><div class="brief-actions"><button class="primary" id="survey-site">${state.observations.includes(m.id)?'Revisit survey':'Survey with Pip'} →</button><button class="secondary" id="start">Begin investigation →</button></div></div></div></section>`;
     document.getElementById('back').onclick = () => { if (token === viewToken) home(); };
+    document.getElementById('survey-site').onclick=()=>{if(token===viewToken)survey(m.id,m.place,found=>found?renderTask():intro(),'Begin investigation →');};
     document.getElementById('start').onclick = () => { if (token !== viewToken) return; checkpoint(); renderTask(); };
     app.focus({preventScroll:true});
+  }
+  const specimenArt = {
+    'Growing sunflower':'sunflower', Rock:'rock', Butterfly:'butterfly', 'Glass bottle':'bottle',
+    Roots:'roots', Leaves:'leaf', Flowers:'flower', Stem:'stem', Frog:'frog', Fish:'fish',
+    Earthworm:'earthworm', Ostrich:'ostrich', 'Rock beneath the path':'rock', 'Frog with moist skin':'frog'
+  };
+  function specimenCard(name) {
+    const file = specimenArt[name];
+    return `<div class="specimen${file?' illustrated':''}" id="specimen">
+      ${file?`<img src="assets/specimens/${file}.webp" alt="" draggable="false">`:''}
+      <small>Field sample ${item+1}</small><strong>${name}</strong></div>`;
   }
   function renderTask() {
     const token = ++viewToken;
     let answered = false;
     checkpoint();
     const m = missions[index], t = m.tasks[task], sorted = t.kind === 'sort', sequence = t.kind === 'sequence', current = sorted ? t.items[item] : null;
-    app.innerHTML = `<section class="mission-shell"><div class="mission-nav"><button class="back" id="back">← Field journal</button><span>GRADE ${grade} · MISSION ${index+1} / ${missions.length}</span></div><div class="task-layout"><aside class="field-card ${m.theme}">${scene(m, 'field-scene')}<p class="eyebrow">${m.place}</p><h2>${m.title}</h2><p>${m.learn}</p><div class="steps">${m.tasks.map((_,i)=>`<span class="${i<task?'done':i===task?'active':''}">${i<task?'✓':i+1}</span>`).join('')}</div></aside><div class="question-card"><div class="question-top"><span>INVESTIGATION ${task+1} / ${m.tasks.length}</span><span>${sorted ? `DISCOVERY ${item+1} / ${t.items.length}` : sequence ? `STEP ${item+1} / ${t.order.length}` : 'THINK IT THROUGH'}</span></div><h1>${t.prompt}</h1>${sorted ? `<div class="specimen"><span aria-hidden="true">${current.icon}</span><strong>${current.name}</strong></div><p class="choose-label">Choose a match</p>` : sequence ? `<div class="sequence-trail" aria-live="polite">${item ? t.order.slice(0,item).join(' → ') : 'Begin your sequence'}</div><p class="choose-label">Choose the next step</p>` : ''}<div class="choices" id="choices"></div><button class="hint" id="hint"><span class="pip-hint" aria-hidden="true"></span>Ask Pip for a hint</button><p class="hint-text" id="hint-text" hidden></p><div id="feedback" class="feedback" aria-live="polite"></div></div></div></section>`;
+    app.innerHTML = `<section class="mission-shell"><div class="mission-nav"><button class="back" id="back">← Field journal</button><span>GRADE ${grade} · MISSION ${index+1} / ${missions.length}</span></div><div class="task-layout"><aside class="field-card ${m.theme}">${scene(m, 'field-scene')}<p class="eyebrow">${m.place}</p><h2>${m.title}</h2><p>${m.learn}</p><button class="secondary field-scan" id="task-survey">Open field scanner</button><div class="steps">${m.tasks.map((_,i)=>`<span class="${i<task?'done':i===task?'active':''}">${i<task?'✓':i+1}</span>`).join('')}</div></aside><div class="question-card"><div class="question-top"><span>INVESTIGATION ${task+1} / ${m.tasks.length}</span><span>${sorted ? `DISCOVERY ${item+1} / ${t.items.length}` : sequence ? `STEP ${item+1} / ${t.order.length}` : 'THINK IT THROUGH'}</span></div><h1>${t.prompt}</h1>${sorted ? `${specimenCard(current.name)}<p class="choose-label">Drag the sample to a group, or tap a group.</p>` : sequence ? `<div class="sequence-trail" aria-live="polite">${item ? t.order.slice(0,item).join(' → ') : 'Begin your sequence'}<div class="sequence-slots" aria-hidden="true">${t.order.map((_,i)=>'<i class="'+(i<item?'filled':i===item?'current':'')+'"></i>').join('')}</div></div><p class="choose-label">Choose the next step</p>` : ''}<div class="choices" id="choices"></div><button class="hint" id="hint"><img class="pip-badge" src="assets/portraits/pip.webp" alt="">Ask Pip for a hint</button><p class="hint-text" id="hint-text" hidden></p><div id="feedback" class="feedback" aria-live="polite"></div></div></div></section>`;
     document.getElementById('back').onclick = () => { if (token === viewToken) home(); };
+    document.getElementById('task-survey').onclick=()=>{if(token===viewToken && !answered)survey(m.id,m.place,renderTask,'Return to investigation →');};
     const choices = sorted ? t.groups : t.options;
-    choices.forEach((label, n) => { const b = document.createElement('button'); b.className = 'choice'; b.type='button'; b.textContent=label; b.onclick=()=>{ if (token !== viewToken || answered) return; const correct = sorted ? label === current.group : sequence ? label === t.order[item] : n === t.answer; if (correct) answered = true; answer(correct); }; document.getElementById('choices').append(b); });
+    choices.forEach((label, n) => { const b = document.createElement('button'); b.className = 'choice'; b.type='button'; b.textContent=label; if(sequence && t.order.slice(0,item).includes(label) && !t.order.slice(item).includes(label)) b.disabled=true; b.onclick=()=>{ if (token !== viewToken || answered) return; const correct = sorted ? label === current.group : sequence ? label === t.order[item] : n === t.answer; if (correct) answered = true; answer(correct); }; document.getElementById('choices').append(b); });
+    if (sorted) bindSample(document.getElementById('specimen'),token);
     document.getElementById('hint').onclick = () => { if (token !== viewToken) return; document.getElementById('hint-text').textContent = `Pip: ${t.hint}`; document.getElementById('hint-text').hidden = false; };
     app.focus({preventScroll:true});
+  }
+  function bindSample(sample, token) {
+    let held=null, startX=0, startY=0, over=null;
+    function release() {
+      held=null; sample.style.transform=''; sample.classList.remove('moving');
+      if(over) over.classList.remove('drop-target');
+      over=null;
+    }
+    sample.onpointerdown=e=>{
+      if(held!==null || e.button!==0 || token!==viewToken)return;
+      held=e.pointerId; startX=e.clientX; startY=e.clientY;
+      sample.setPointerCapture(held);sample.classList.add('moving');
+    };
+    sample.onpointermove=e=>{
+      if(e.pointerId!==held)return;
+      sample.style.transform=`translate(${e.clientX-startX}px,${e.clientY-startY}px)`;
+      const box=document.getElementById('choices');
+      const hit=[...box.children].find(b=>{const r=b.getBoundingClientRect();return !b.disabled && e.clientX>=r.left && e.clientX<=r.right && e.clientY>=r.top && e.clientY<=r.bottom;});
+      if(over!==hit){if(over)over.classList.remove('drop-target');over=hit;if(over)over.classList.add('drop-target');}
+    };
+    sample.onpointerup=e=>{
+      if(e.pointerId!==held)return;
+      // Resolve on release as a final move event is not guaranteed on touch devices.
+      sample.onpointermove(e);const target=over;release();
+      if(target && token===viewToken)target.click();
+    };
+    sample.onpointercancel=sample.onlostpointercapture=()=>release();
   }
   function answer(correct) {
     const token = viewToken;
     let advanced = false;
     const once = fn => () => { if (token !== viewToken || advanced) return; advanced = true; fn(); };
     const t = missions[index].tasks[task], feedback = document.getElementById('feedback');
-    if (!correct) { mistakes++; checkpoint(); tone(180,.16,.04,'triangle'); feedback.className='feedback retry'; feedback.textContent='Not quite. Look at the clue and try again — you can ask Pip for help.'; return; }
+    if (!correct) { mistakes++; checkpoint(); tone(180,.16,.04,'triangle'); feedback.className='feedback retry'; feedback.textContent='Not quite. Pip’s clue: '+t.hint; return; }
     tone(660,.16,.05); setTimeout(()=>tone(880,.22,.04),120);
+    document.getElementById('task-survey').disabled=true;
     for (const b of document.querySelectorAll('#choices button')) b.disabled = true;
     if ((t.kind === 'sort' && item < t.items.length-1) || (t.kind === 'sequence' && item < t.order.length-1)) { item++; checkpoint(); feedback.className='feedback success'; feedback.innerHTML=`<strong>${t.kind === 'sort' ? 'Great match!' : 'Step recorded!'}</strong> <button class="next" id="next">${t.kind === 'sort' ? 'Next discovery' : 'Next step'} →</button>`; document.getElementById('next').onclick=once(renderTask); }
     else { feedback.className='feedback success'; feedback.innerHTML=`<strong>Discovery recorded!</strong><p>${t.explain}</p><button class="next" id="next">${task < missions[index].tasks.length-1 ? 'Next investigation' : 'Complete mission'} →</button>`; document.getElementById('next').onclick=once(()=>{ task++; item=0; if(task < missions[index].tasks.length) renderTask(); else complete(); }); }
@@ -140,7 +212,7 @@
     if (!state.completed.includes(m.id)) state.completed.push(m.id);
     delete state.checkpoints[grade]; save(); tone(523,.3,.05); setTimeout(()=>tone(784,.4,.05),180);
     const last = index === missions.length - 1;
-    app.innerHTML = `<section class="complete">${scene(m, 'complete-scene')}<p class="eyebrow">MISSION COMPLETE</p><h1>${last?(grade === 4 ? 'The centre is coming to life!' : grade === 5 ? 'The reserve is thriving!' : grade === 6 ? 'The web of life is connected!' : grade === 7 ? 'The biodiversity atlas is ready!' : grade === 8 ? 'The reserve has a brighter future!' : grade === 9 ? 'The living systems exhibit is ready!' : 'The Living Archive is complete!'):'A new discovery!'}</h1><p>${last?(grade === 4 ? 'Nala and Pip have reopened the nature research centre. Your observations will help the team protect the living world.' : grade === 5 ? 'Nala and Pip have shared their discoveries with the community. Together, you have helped protect the living reserve.' : grade === 6 ? 'Nala and Pip have shared their findings about food, plants and ecosystems. Your discoveries help the community care for the living world.' : grade === 7 ? 'Nala and Pip have completed the community biodiversity atlas. Your evidence helps explain how living things are grouped and how flowering plants reproduce.' : grade === 8 ? 'Nala and Pip share their energy and ecosystem discoveries with the community, helping the team care for the reserve.' : grade === 9 ? 'Nala and Pip share their discoveries about cells, interacting body systems and human reproduction. Your evidence brings the community learning exhibit to life.' : 'From molecules to ancient life, your evidence has completed the Living Archive. Nala and Pip welcome the community back to the research centre. This is the final planned chapter: revisit any Grade 4–10 path, keep asking questions and help care for the living world.'):`You helped restore the ${m.place.toLowerCase()} and recorded three investigations in your field journal.`}</p><div class="reward">✦ ${mistakes === 0 ? 'Careful observer' : 'Persistent explorer'} · ${mistakes === 1 ? '1 retry' : `${mistakes} retries`}</div><div class="complete-actions">${last?'': '<button class="primary" id="next-mission">Next mission →</button>'}<button class="secondary" id="journal">Return to journal</button></div></section>`;
+    app.innerHTML = `<section class="complete">${scene(m, 'complete-scene')}<p class="eyebrow">MISSION COMPLETE</p><h1>${last?(grade === 4 ? 'The centre is coming to life!' : grade === 5 ? 'The reserve is thriving!' : grade === 6 ? 'The web of life is connected!' : grade === 7 ? 'The biodiversity atlas is ready!' : grade === 8 ? 'The reserve has a brighter future!' : grade === 9 ? 'The living systems exhibit is ready!' : 'The Living Archive is complete!'):'A new discovery!'}</h1><p>${last?(grade === 4 ? 'Nala and Pip have reopened the nature research centre. Your observations will help the team protect the living world.' : grade === 5 ? 'Nala and Pip have shared their discoveries with the community. Together, you have helped protect the living reserve.' : grade === 6 ? 'Nala and Pip have shared their findings about food, plants and ecosystems. Your discoveries help the community care for the living world.' : grade === 7 ? 'Nala and Pip have completed the community biodiversity atlas. Your evidence helps explain how living things are grouped and how flowering plants reproduce.' : grade === 8 ? 'Nala and Pip share their energy and ecosystem discoveries with the community, helping the team care for the reserve.' : grade === 9 ? 'Nala and Pip share their discoveries about cells, interacting body systems and human reproduction. Your evidence brings the community learning exhibit to life.' : 'From molecules to ancient life, your evidence has completed the Living Archive. Nala and Pip welcome the community back to the research centre. This is the final planned chapter: revisit any Grade 4–10 path, keep asking questions and help care for the living world.'):`You helped restore the ${m.place.toLowerCase()} and recorded three investigations in your field journal.`}</p><div class="reward"> ${mistakes === 0 ? 'Careful observer' : 'Persistent explorer'} · ${mistakes === 1 ? '1 retry' : `${mistakes} retries`}</div>${state.observations.includes(m.id)?'<p class="saved-observation"><strong>Field note · '+fieldwork.entries[m.id].label+'</strong><br>'+fieldwork.entries[m.id].note+'</p>':''}<div class="complete-actions">${last?'': '<button class="primary" id="next-mission">Next mission →</button>'}<button class="secondary" id="journal">Return to journal</button></div></section>`;
     document.getElementById('journal').onclick=()=>{ if (token === viewToken) home(); };
     if (!last) document.getElementById('next-mission').onclick=()=>{ if (token === viewToken) begin(index+1,false); };
     app.focus({preventScroll:true});

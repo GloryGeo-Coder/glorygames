@@ -25,11 +25,11 @@ function boot(store = {}, blocked = '') {
     click() { if (!this.disabled && this.onclick) this.onclick(); }
   }
   for(const id of ['app','sound','fullscreen','home-template']) elements.set(id,new Element(id));
-  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions','grade-title','grade4','grade5','grade6','grade7','grade8','grade9','grade10','hero-scene']})};
+  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions','grade-title','grade4','grade5','grade6','grade7','grade8','grade9','grade10','hero-scene','kit-studies','notes-count','field-notes','grade-dispatch','dispatch-title','dispatch-brief']})};
   const document={getElementById:id=>elements.get(id),createElement:()=>new Element(),querySelectorAll:sel=>sel==='#choices button'?allChoices:[],addEventListener(){},fullscreenEnabled:false,documentElement:{},hidden:false};
   const localStorage={getItem:k=>{if(blocked==='read') throw Error('blocked'); return store[k]||null;},setItem:(k,v)=>{if(blocked) throw Error('quota'); store[k]=v;}};
   const context=vm.createContext({window:{},document,localStorage,setTimeout:()=>0,setInterval:()=>0,clearInterval(){},console});
-  vm.runInContext(missionsSource,context); vm.runInContext(grade5Source,context); vm.runInContext(grade6Source,context); vm.runInContext(grade7Source,context); vm.runInContext(grade8Source,context); vm.runInContext(grade9Source,context); vm.runInContext(grade10Source,context); vm.runInContext(gameSource,context);
+  vm.runInContext(missionsSource,context); vm.runInContext(grade5Source,context); vm.runInContext(grade6Source,context); vm.runInContext(grade7Source,context); vm.runInContext(grade8Source,context); vm.runInContext(grade9Source,context); vm.runInContext(grade10Source,context); vm.runInContext(fs.readFileSync(path.join(dir,'fieldwork.js'),'utf8'),context); vm.runInContext(gameSource,context);
   return {elements,store,missions:context.window.BIOQUEST_MISSIONS, grade5:context.window.BIOQUEST_GRADE5, grade6:context.window.BIOQUEST_GRADE6, grade7:context.window.BIOQUEST_GRADE7, grade8:context.window.BIOQUEST_GRADE8, grade9:context.window.BIOQUEST_GRADE9, grade10:context.window.BIOQUEST_GRADE10, click:id=>{assert.ok(elements.get(id),`missing ${id}`);elements.get(id).click();}, choices:()=>allChoices};
 }
 test('all missions are consistent and the full campaign unlocks, saves, resumes and completes',()=>{
@@ -367,4 +367,13 @@ test('every mission ships distinct optimized local artwork and both animated com
  assert.match(css,/@keyframes nala-frames/);assert.match(css,/@keyframes pip-frames/);
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(gameSource,/loading="lazy"/);
+});
+
+test('field notes migrate independently of legacy checkpoints and ignore invalid or repeated entries',()=>{
+ const app=boot({[KEY]:JSON.stringify({completed:['living'],checkpoint:{mission:'plants',task:1,item:0,mistakes:2},
+   observations:['living','kit-cells',null,'unknown','living',{}]})});
+ const saved=JSON.parse(app.store[KEY]);
+ assert.deepEqual(saved.observations,['living','kit-cells']);
+ assert.deepEqual(saved.completed,['living']);
+ assert.equal(saved.checkpoints[4].mission,'plants');
 });

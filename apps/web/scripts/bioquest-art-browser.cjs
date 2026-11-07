@@ -59,6 +59,18 @@ async function shot(page,name) {
      assert.ok(Math.abs(bounds.width/bounds.height-(name==='nala'?.75:1))<.01,`${name} frame is distorted`);
     }
     await shot(page,`art-${id}-${width}`);
+    if(width===390) {
+      await page.locator('#survey-site').click();
+      const stage=page.locator('#survey-stage');
+      await stage.locator('.scan-base').evaluate(img=>img.decode());
+      await stage.scrollIntoViewIfNeeded();
+      const box=await stage.boundingBox();
+      const target=await page.evaluate(id=>({x:BioFieldwork.entries[id].x,y:BioFieldwork.entries[id].y}),id);
+      await page.touchscreen.tap(box.x+box.width*target.x/100,box.y+box.height*target.y/100);
+      await page.locator('#scan').click();
+      assert.ok(await page.locator('#survey-done').isVisible(),id+' must be scannable');
+      await page.locator('#exit-survey').click();
+    }
     await page.locator('#start').click();await loaded(page);
     await page.locator('#hint').click();assert.equal(await page.locator('#hint-text').isVisible(),true);
     if(i===0)await shot(page,`art-task-grade${grade}-${width}`);
@@ -70,12 +82,14 @@ async function shot(page,name) {
   await context.close();
  }
  const reduced=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
- const rp=await reduced.newPage();await rp.goto(url);await loaded(rp);
+ const rp=await reduced.newPage();await rp.goto(url);await rp.locator('#continue').click();await loaded(rp);
  for(const selector of ['.sprite.nala','.sprite.pip','.scene-glow'])assert.equal(await rp.locator(selector).evaluate(e=>getComputedStyle(e).animationName),'none');
  await reduced.close();
  const offline=await browser.newContext({viewport:{width:320,height:568}});
  await offline.route('**/*.webp',route=>route.abort());
- const op=await offline.newPage();await op.goto(url);await op.locator('#continue').click();await op.locator('#start').click();await op.locator('#hint').click();
+ const op=await offline.newPage();await op.goto(url);await op.locator('#continue').click();
+ await op.locator('#survey-site').click();await op.locator('#guide').click();await op.locator('#scan').click();
+ await op.locator('#survey-done').click();await op.locator('#hint').click();
  assert.equal(await op.locator('#hint-text').isVisible(),true);assert.equal(await op.locator('#choices button:enabled').count()>0,true);
  assert.equal(await op.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await offline.close();assert.deepEqual(errors,[]);console.log('Reduced motion and missing-art fallback passed');
