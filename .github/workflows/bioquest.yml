@@ -1,0 +1,69 @@
+name: BioQuest learning paths
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/bioquest-guardians-of-life/**'
+      - 'apps/web/scripts/bioquest*'
+      - 'apps/web/src/lib/gameCatalog.ts'
+      - 'apps/web/src/lib/gamesDb.ts'
+      - 'apps/web/src/content/gameEditorials.ts'
+      - 'apps/web/package*.json'
+      - 'docs/releases/bioquest-grade7.md'
+      - '.github/workflows/bioquest.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/bioquest-guardians-of-life/**'
+      - 'apps/web/scripts/bioquest*'
+      - 'apps/web/src/lib/gameCatalog.ts'
+      - 'apps/web/src/lib/gamesDb.ts'
+      - 'apps/web/src/content/gameEditorials.ts'
+      - 'apps/web/package*.json'
+      - '.github/workflows/bioquest.yml'
+permissions:
+  contents: read
+concurrency:
+  group: bioquest-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  campaign-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgresql://bioquest:bioquest@127.0.0.1:5432/bioquest_ci
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: npm ci --prefix apps/web --ignore-scripts --no-audit --no-fund
+      - name: JavaScript syntax and campaign regressions
+        run: |
+          for file in apps/web/public/games/bioquest-guardians-of-life/*.js; do node --check "$file"; done
+          node --test apps/web/scripts/bioquest.test.cjs apps/web/scripts/game-tab-score.test.mjs apps/web/scripts/game-tab-ui.test.mjs
+      - name: Catalog and game page integration
+        working-directory: apps/web
+        run: node --import tsx --test scripts/game-content.test.tsx scripts/game-tabs.test.tsx scripts/sky-temple-launch.test.tsx
+      - name: Install isolated browser tools
+        run: |
+          npm install --prefix "$RUNNER_TEMP/bioquest-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/bioquest-browser/node_modules/playwright" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/bioquest-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Browser campaign and mobile layout regressions
+        env:
+          BIOQUEST_SCREENSHOTS: ${{ runner.temp }}/bioquest-screenshots
+        run: node apps/web/scripts/bioquest-browser.cjs
+      - name: Upload browser screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: bioquest-browser-screenshots
+          path: ${{ runner.temp }}/bioquest-screenshots
+          if-no-files-found: warn
+      - name: Production build
+        run: npm run build --prefix apps/web
+      - name: TypeScript check
+        working-directory: apps/web
+        run: npx tsc --noEmit
