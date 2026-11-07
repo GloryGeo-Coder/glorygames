@@ -41,6 +41,13 @@
       </select></label><label>Lift to <select id="liftLimit" aria-label="Lift angle"><option value="10">10°</option><option value="40">40°</option><option value="80" selected>80°</option></select></label></div>
       <div class="canal-actions"><button id="lever">Raise bridge</button><button id="dispatch">Send boat</button></div>
     </section>
+    <section id="districtPanel" aria-label="Market District" hidden>
+      <b id="districtTitle">Market District</b>
+      <label id="lotLabel">Plot <select id="lot" aria-label="Focus on plot"></select></label>
+      <span id="districtStatus" role="status"></span>
+      <span id="direction"></span>
+      <button id="handover"></button>
+    </section>
     <section id="garagePanel" hidden aria-label="Vehicle workshop">
       <b>Vehicle Workshop</b><span id="garageStatus" role="status"></span>
       <label id="tyreLabel">Tyres <select id="tyres" aria-label="Tyre set"></select></label>
@@ -83,12 +90,13 @@
           Bridge the Gap <span>Construct a crossing for the delivery buggy</span>
         </button>
         <button id="canalWorld">Canal Crossing <span>Build a drawbridge for water and road traffic</span></button>
+        <button id="districtWorld">Market District <span>Build on three plots and deliver produce on foot</span></button>
         <button id="garageWorld">Vehicle Workshop <span>Build a buggy and drive the three-gate course</span></button>
       </div>
       <p class="guide">
         Tap the plot to aim, then Place. Drag to orbit. Pinch to zoom or pan. Use Select to change a
         brick. On a keyboard, use arrows to aim, R to rotate, Enter to place, Tab between controls,
-        and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab. In Canal Crossing, choose a hinge before placing a deck. Raise the bridge for the ferry, then lower it for the buggy.
+        and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab. In Canal Crossing, choose a hinge before placing a deck. Raise the bridge for the ferry, then lower it for the buggy. In Market District, focus on a plot to build. Start a delivery at the depot, weigh the crate at the hall, then take it to the spaza. Use ramps or steps to reach the loading decks.
       </p>
       <div class="menufoot">
         <button id="audio">Mute audio</button><button id="fullscreen">Fullscreen</button

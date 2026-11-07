@@ -1,3 +1,4 @@
+import { DISTRICT, buildable, stationHeight, checkpoint } from './district.mjs';
 // A stud is one world unit. Plates are one third of a brick high.
 export const PLOT = 10;
 export const PALETTE = {
@@ -154,9 +155,11 @@ export function intervals(p, x, z) {
 export const hasChannel = (kind) => kind === 'bridge' || kind === 'canal';
 export const isChannel = (kind, x, z) => hasChannel(kind) && x >= -3 && x < 3 && Math.abs(z) <= 10;
 export function floorAt(kind, x, z) {
+  if (kind === 'district')
+    return Math.abs(x) <= DISTRICT.x && Math.abs(z) <= DISTRICT.z ? 0 : -Infinity;
   return Math.abs(x) <= PLOT && Math.abs(z) <= PLOT && !isChannel(kind, x, z) ? 0 : -Infinity;
 }
-export function validPiece(p, items, ignore = null) {
+export function validPiece(p, items, ignore = null, kind = 'free') {
   if (
     !Object.hasOwn(TYPES, p.type) ||
     !Object.hasOwn(PALETTE, p.color) ||
@@ -171,7 +174,9 @@ export function validPiece(p, items, ignore = null) {
   )
     return false;
   const a = size(p);
-  if (p.x < -PLOT || p.z < -PLOT || p.x + a.w > PLOT || p.z + a.d > PLOT) return false;
+  if (kind === 'district') {
+    if (!buildable(p.x, p.z, a.w, a.d)) return false;
+  } else if (p.x < -PLOT || p.z < -PLOT || p.x + a.w > PLOT || p.z + a.d > PLOT) return false;
   return !items.some((b) => {
     if (b.id === ignore) return false;
     const s = size(b);
@@ -196,6 +201,14 @@ export function snapHeight(p, items, ignore = null) {
   }, 0);
 }
 export function world(kind) {
+  if (kind === 'district')
+    return {
+      version: 1,
+      name: 'Market District',
+      complete: false,
+      stage: 0,
+      pieces: [{ id: 'depot-steps', type: 'step', color: 'Lagoon', x: -17, z: -3, r: 1, y: 0 }]
+    };
   if (kind === 'canal')
     return {
       version: 1,
@@ -239,7 +252,7 @@ export function loadWorld(kind, storage) {
     throw Error('Unrecognised world');
   const ids = new Set();
   for (const p of v.pieces) {
-    if (!p || typeof p.id !== 'string' || ids.has(p.id) || !validPiece(p, []))
+    if (!p || typeof p.id !== 'string' || ids.has(p.id) || !validPiece(p, [], null, kind))
       throw Error('Invalid saved brick');
     if (kind === 'canal' && p.mount !== undefined && !['west', 'east', 'fixed'].includes(p.mount))
       throw Error('Invalid hinge');
@@ -249,6 +262,9 @@ export function loadWorld(kind, storage) {
     ...fresh,
     name: v.name.slice(0, 40),
     pieces: v.pieces,
+    ...(kind === 'district'
+      ? { stage: Number.isInteger(v.stage) && v.stage >= 0 && v.stage <= 4 ? v.stage : 0 }
+      : {}),
     complete: v.complete === true,
     ...(kind === 'canal'
       ? {
@@ -265,7 +281,8 @@ export const avatar = (kind = 'free') => ({
   y: 0,
   vy: 0,
   grounded: true,
-  heading: 0
+  heading: 0,
+  ...(kind === 'district' ? checkpoint(0) : {})
 });
 const HEIGHT = 1.65,
   RADIUS = 0.27,
@@ -285,6 +302,10 @@ function bodySurfaces(kind, items, x, z) {
   ]) {
     const floor = floorAt(kind, x + ox, z + oz);
     if (Number.isFinite(floor)) solids.push([-100, floor]);
+    if (kind === 'district') {
+      const h = stationHeight(x + ox, z + oz);
+      if (h) solids.push([0, h]);
+    }
     for (const p of items) solids.push(...intervals(p, x + ox, z + oz));
   }
   return solids;
@@ -300,7 +321,9 @@ export function advanceAvatar(a, kind, items, dx, dz, jump, dt) {
     [0, (dz / len) * dt * 3.8]
   ]) {
     if (!mx && !mz) continue;
-    if (Math.abs(a.x + mx) > PLOT - RADIUS || Math.abs(a.z + mz) > PLOT - RADIUS) continue;
+    const edgeX = kind === 'district' ? DISTRICT.x : PLOT;
+    const edgeZ = kind === 'district' ? DISTRICT.z : PLOT;
+    if (Math.abs(a.x + mx) > edgeX - RADIUS || Math.abs(a.z + mz) > edgeZ - RADIUS) continue;
     const solids = bodySurfaces(kind, items, a.x + mx, a.z + mz);
     let y = a.y;
     if (a.grounded) for (const [, top] of solids) if (top >= y && top <= a.y + STEP) y = top;

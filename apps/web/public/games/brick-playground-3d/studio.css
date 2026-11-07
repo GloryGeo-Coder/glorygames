@@ -615,3 +615,49 @@ dialog p {
   min-width: 0;
   font-size: 11px;
 }
+
+#districtPanel {
+  position: absolute;
+  top: max(78px, calc(env(safe-area-inset-top) + 62px));
+  left: max(10px, env(safe-area-inset-left));
+  display: grid;
+  gap: 5px;
+  width: min(270px, calc(100vw - 90px));
+  padding: 9px 12px;
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  box-shadow: 0 3px 0 #253c303d;
+  font-size: 13px;
+}
+#lotLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#lot {
+  min-height: 32px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff9ea;
+  border-radius: 6px;
+}
+#direction {
+  color: var(--teal);
+}
+#handover {
+  background: var(--sun);
+}
+@media (max-height: 550px) {
+  #districtPanel {
+    top: 54px;
+    width: min(235px, 32vw);
+    padding: 5px 8px;
+    font-size: 11px;
+    gap: 3px;
+  }
+  #lot,
+  #handover {
+    min-height: 29px;
+  }
+}

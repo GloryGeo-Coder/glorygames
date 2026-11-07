@@ -1,3 +1,4 @@
+import { LOTS, DISTRICT, checkpoint, atStop } from './district.mjs';
 import {
   canalState,
   canEditCanal,
@@ -120,6 +121,7 @@ function start() {
     tool = 'add';
     mode = 'build';
     person = avatar(kind);
+    if (kind === 'district') Object.assign(person, checkpoint(data.stage));
     car = buggy();
     canal = canalState();
     if (kind === 'canal' && data.boatPassed) canal.boatZ = 8;
@@ -137,6 +139,10 @@ function start() {
     if (kind === 'canal')
       Object.assign(draft, { type: 'deck', mount: 'east', color: 'Sun', x: 0, z: -1 });
     Object.assign(s.orbit, { pitch: 0.91, yaw: -0.63, zoom: 1, focusX: 0, focusZ: 0 });
+    if (kind === 'district') {
+      Object.assign(draft, { type: 'step', color: 'Sun', r: 1 });
+      focusLot(data.stage > 0 && data.stage < 4 ? data.stage - 1 : 1);
+    }
     if (kind === 'garage') s.orbit.zoom = 0.45;
     top = false;
     pressed('view', false);
@@ -152,6 +158,7 @@ function start() {
       btn.hidden = kind === 'garage' ? t.w > 4 || t.d > 4 : t.garageOnly;
       btn.style.order = t.garageOnly ? -1 : 0;
     }
+    $('districtPanel').hidden = kind !== 'district';
     $('canalPanel').hidden = kind !== 'canal';
     $('garagePanel').hidden = kind !== 'garage';
     if (kind === 'garage') $('tyres').value = data.tyres;
@@ -193,7 +200,7 @@ function start() {
   function canPlace(p, ignore) {
     return kind === 'garage'
       ? canMount(p, data.pieces, ignore)
-      : validPiece(p, data.pieces, ignore) && (kind !== 'canal' || fitsLeaf(p));
+      : validPiece(p, data.pieces, ignore, kind) && (kind !== 'canal' || fitsLeaf(p));
   }
   function adjustHeight() {
     const moving = tool === 'move' ? chosen() : null;
@@ -288,9 +295,10 @@ function start() {
   }
   function aim(x, z) {
     const a = size(draft);
-    const edge = kind === 'garage' ? 2 : 10;
+    const edge = kind === 'district' ? DISTRICT.x : kind === 'garage' ? 2 : 10;
+    const depth = kind === 'district' ? DISTRICT.z : edge;
     draft.x = Math.max(-edge, Math.min(edge - a.w, x));
-    draft.z = Math.max(-edge, Math.min(edge - a.d, z));
+    draft.z = Math.max(-depth, Math.min(depth - a.d, z));
     adjustHeight();
     refresh();
   }
@@ -312,7 +320,8 @@ function start() {
     $('home').hidden = edit;
     $('home').textContent = kind === 'garage' ? 'Restart' : 'Return';
     $('routeMap').hidden = mode !== 'drive';
-    $('jump').hidden = mode === 'drive';
+    $('jump').hidden = mode === 'drive' || onDelivery();
+    if (kind === 'district') districtPanel();
     $('brake').hidden = mode !== 'drive';
     $('stick').setAttribute(
       'aria-label',
@@ -322,6 +331,13 @@ function start() {
     refresh();
   }
   function rescue() {
+    if (kind === 'district') {
+      // Checkpoints sit on reserved land where edits cannot trap the explorer.
+      person = { ...avatar(kind), ...checkpoint(data.stage) };
+      s.chase.yaw = 0;
+      clearInputs();
+      return;
+    }
     const candidates = [
       avatar(kind),
       ...Array.from({ length: 400 }, (_, i) => ({
@@ -357,6 +373,10 @@ function start() {
       s.chase.yaw = 0;
     }
     mode = to;
+    if (to === 'build' && onDelivery()) {
+      focusLot(data.stage - 1);
+      adjustHeight();
+    }
     clearTimeout(noticeTimer);
     $('notice').textContent = '';
     if (kind === 'garage') {
@@ -372,8 +392,15 @@ function start() {
           ([lo, hi]) => lo < person.y + 1.65 && hi > person.y + 0.01
         )
       )
-    )
-      rescue();
+    ) {
+      if (kind === 'district') {
+        // A new approach may occupy the builder's feet. Step out onto the clear pavement of this lot.
+        const nearest = LOTS.reduce((a, b) =>
+          Math.abs(a.x - person.x) < Math.abs(b.x - person.x) ? a : b
+        );
+        person = { ...avatar(kind), x: nearest.x + 0.5, z: -7.5 };
+      } else rescue();
+    }
     syncMode();
     s.view(mode, person, run);
   }
@@ -641,7 +668,10 @@ function start() {
     change(data.pieces.filter((p) => p.id !== id));
   };
   function zoom(scale) {
-    s.orbit.zoom = Math.max(0.32, Math.min(1.65, s.orbit.zoom * scale));
+    s.orbit.zoom = Math.max(
+      0.32,
+      Math.min(kind === 'district' ? 2.25 : 1.65, s.orbit.zoom * scale)
+    );
   }
   $('closer').onclick = () => zoom(0.82);
   $('farther').onclick = () => zoom(1.22);
@@ -664,6 +694,90 @@ function start() {
     $('worldName').textContent = data.name;
     save();
   };
+  function onDelivery() {
+    return kind === 'district' && data.stage > 0 && data.stage < 4;
+  }
+  function focusLot(index) {
+    const lot = LOTS[index];
+    $('lot').value = String(index);
+    if (!lot) {
+      Object.assign(s.orbit, { focusX: 0, focusZ: 0, yaw: 0, pitch: 1.02, zoom: 2.25 });
+      top = false;
+      pressed('view', false);
+      return;
+    }
+    Object.assign(s.orbit, { focusX: lot.x, focusZ: 0, zoom: 0.7 });
+    if (tool === 'add') Object.assign(draft, { x: lot.x - 1, z: -3 });
+  }
+  function districtPanel() {
+    const stage = data.stage;
+    $('lotLabel').hidden = mode !== 'build';
+    $('districtTitle').textContent = onDelivery()
+      ? 'Stop ' + stage + ' / 3 · ' + LOTS[stage - 1].name
+      : 'Market District';
+    const prompts = [
+      'Build on any plot or start the produce round.',
+      'Collect the crate on the depot deck.',
+      'Weigh the crate on the market deck.',
+      'Deliver to the spaza deck.',
+      'Delivery complete. All three stops served.'
+    ];
+    $('districtStatus').textContent = prompts[stage];
+    $('handover').textContent = [
+      'Start delivery',
+      'Collect crate',
+      'Weigh crate',
+      'Deliver crate',
+      'Deliver again'
+    ][stage];
+    $('handover').hidden = onDelivery() && mode === 'build';
+    districtDirection();
+  }
+  function districtDirection() {
+    const active = onDelivery();
+    const lot = active && LOTS[data.stage - 1];
+    const atDeck = active && atStop(data.stage, person);
+    let hint = '';
+    if (active && mode === 'build')
+      hint = 'Fit steps or a ramp to the deck edge, then return to Play.';
+    else if (active) {
+      const dx = lot.x - person.x;
+      hint = atDeck
+        ? 'At the counter'
+        : Math.abs(dx) > 3
+          ? (dx > 0 ? 'East' : 'West') +
+            ' · ' +
+            Math.round(Math.abs(dx)) +
+            ' studs along the market street'
+          : 'Walk up to the deck. Add steps in Build if the edge is too high.';
+    }
+    if ($('direction').textContent !== hint) $('direction').textContent = hint;
+    $('direction').hidden = !hint;
+    if ($('handover').disabled !== (active && !atDeck)) $('handover').disabled = active && !atDeck;
+  }
+  $('lot').add(new Option('Whole district', '-1'));
+  for (const [i, lot] of LOTS.entries()) $('lot').add(new Option(lot.name, String(i)));
+  $('lot').onchange = () => {
+    focusLot(Number($('lot').value));
+    adjustHeight();
+    refresh();
+  };
+  $('handover').onclick = () => {
+    if (kind !== 'district') return;
+    if (!onDelivery()) {
+      data.stage = 1;
+      rescue();
+      switchMode('play');
+      announce('Fragile produce · walk and use ramps or steps');
+    } else if (mode === 'play' && atStop(data.stage, person)) {
+      data.stage++;
+      if (data.stage === 4) data.complete = true;
+      music.snap();
+    } else return;
+    save();
+    syncMode();
+  };
+  $('districtWorld').onclick = () => openWorld('district');
   $('freeWorld').onclick = () => openWorld('free');
   $('bridgeWorld').onclick = () => openWorld('bridge');
   $('canalWorld').onclick = () => openWorld('canal');
@@ -776,8 +890,10 @@ function start() {
           pz = (n.y - previousPinch.y) * scale;
         const c = Math.cos(s.orbit.yaw),
           t = Math.sin(s.orbit.yaw);
-        s.orbit.focusX = Math.max(-10, Math.min(10, s.orbit.focusX - px * c + pz * t));
-        s.orbit.focusZ = Math.max(-10, Math.min(10, s.orbit.focusZ - px * t + pz * c));
+        const edgeX = kind === 'district' ? DISTRICT.x : 10;
+        const edgeZ = kind === 'district' ? DISTRICT.z : 10;
+        s.orbit.focusX = Math.max(-edgeX, Math.min(edgeX, s.orbit.focusX - px * c + pz * t));
+        s.orbit.focusZ = Math.max(-edgeZ, Math.min(edgeZ, s.orbit.focusZ - px * t + pz * c));
       }
       previousPinch = n;
       return;
@@ -901,7 +1017,7 @@ function start() {
   let first = 'free';
   try {
     const last = localStorage.getItem('wga.brick.active');
-    if (['bridge', 'garage', 'canal'].includes(last)) first = last;
+    if (['bridge', 'garage', 'canal', 'district'].includes(last)) first = last;
   } catch {}
   openWorld(first);
   if (first !== 'canal')
@@ -937,7 +1053,7 @@ function start() {
             data.pieces,
             x * Math.cos(frontYaw) + z * Math.sin(frontYaw),
             z * Math.cos(frontYaw) - x * Math.sin(frontYaw),
-            jump,
+            jump && !onDelivery(),
             delta
           );
           jump = false;
@@ -1002,7 +1118,8 @@ function start() {
       const angle = Math.round((canal.angle * 180) / Math.PI) + '°';
       if ($('angleReadout').textContent !== angle) $('angleReadout').textContent = angle;
     }
-    s.actors(mode, person, car, walking, elapsed, driverSeat);
+    if (kind === 'district' && mode === 'play') districtDirection();
+    s.actors(mode, person, car, walking, elapsed, driverSeat, kind === 'district' ? data.stage : 0);
     s.view(mode, person, run);
     s.scene.render();
   });

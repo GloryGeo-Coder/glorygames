@@ -20,7 +20,7 @@ export type GameEditorial = {
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "brick-playground-3d": {
     "category": "Simulation",
-    "summary": "Build and explore a township plot, drive a custom buggy, and construct a drawbridge that opens for a ferry and closes for a delivery to the spaza shop.",
+    "summary": "Build and explore a township neighbourhood, drive a custom buggy, operate a drawbridge, or carry fresh produce across three Market District plots.",
     "overview": [
         "Turn an open plot beside a neighbourhood park into a spaza shop, a house or a playground. All 20 pieces and eight colours are available when you arrive."
     ],
@@ -54,10 +54,12 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         }
     ],
     "progression": [
+        "In Market District, collect produce at the depot, weigh it at Market Hall and deliver it to Corner Spaza. Walk onto each raised deck and use its action button. Your world saves each stop, so you can return later with the crate.",
         "In Canal Crossing, attach bricks to either hinge or leave them fixed. Choose a 10°, 40° or 80° lift, send the ferry through the opening, then lower the bridge and send the buggy. Changes to the structure require a new ferry test.",
         "Free Build has unlimited pieces. The optional challenge records completion when the delivery buggy reaches the shop."
     ],
     "tips": [
+        "Use the Plot selector to edit another Market District lot. The depot has a starter staircase. Give the market and spaza an approach of their own, since the produce round must be walked without jumping.",
         "Try a floor plate first, then a doorframe and three walls. Switch to Play before adding a roof.",
         "The teal west deck is already mounted in Canal Crossing. Place a gold three-by-two deck on the east bearing to close the gap. Retry returns stopped traffic to the dock or start without removing bricks.",
         "In Bridge the Gap, line up the edges of flat plates over the water. Follow the dashed lane on both banks."
