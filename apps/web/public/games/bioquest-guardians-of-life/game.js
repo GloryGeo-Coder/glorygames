@@ -1,7 +1,7 @@
 'use strict';
 (() => {
-  const paths = { 4: window.BIOQUEST_MISSIONS, 5: window.BIOQUEST_GRADE5 };
-  const allMissions = [...paths[4], ...paths[5]];
+  const paths = { 4: window.BIOQUEST_MISSIONS, 5: window.BIOQUEST_GRADE5, 6: window.BIOQUEST_GRADE6 };
+  const allMissions = Object.values(paths).flat();
   let grade = 4, missions = paths[grade];
   const KEY = 'bioquest.guardians.grade4.v1';
   const app = document.getElementById('app');
@@ -16,13 +16,13 @@
       state.checkpoints = saved.checkpoints && typeof saved.checkpoints === 'object' && !Array.isArray(saved.checkpoints) ? saved.checkpoints : {};
       // Preserve checkpoints written by the original Grade 4 release.
       if (!state.checkpoints[4] && saved.checkpoint && typeof saved.checkpoint === 'object') state.checkpoints[4] = saved.checkpoint;
-      grade = saved.selectedGrade === 5 ? 5 : 4; missions = paths[grade]; state.selectedGrade = grade;
+      grade = [4,5,6].includes(saved.selectedGrade) ? saved.selectedGrade : 4; missions = paths[grade]; state.selectedGrade = grade;
       state.sound = saved.sound === true;
     }
   } catch (_) { /* The game remains playable when storage is blocked. */ }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {} }
   let audio, musicTimer, tuneStep = 0, currentTheme = 0;
-  const melodies = [[0,4,7,4,9,7,4,2],[0,3,7,10,7,3,5,7],[0,5,9,7,5,2,4,7],[0,3,7,5,10,7,3,2],[0,4,7,11,9,7,5,4],[0,5,7,10,7,5,3,2],[0,3,5,8,10,8,5,3],[0,4,9,7,4,2,5,7],[0,7,4,9,7,4,2,5],[0,5,9,12,9,7,5,2]];
+  const melodies = [[0,4,7,4,9,7,4,2],[0,3,7,10,7,3,5,7],[0,5,9,7,5,2,4,7],[0,3,7,5,10,7,3,2],[0,4,7,11,9,7,5,4],[0,5,7,10,7,5,3,2],[0,3,5,8,10,8,5,3],[0,4,9,7,4,2,5,7],[0,7,4,9,7,4,2,5],[0,5,9,12,9,7,5,2],[0,4,7,9,7,4,2,7],[0,5,7,9,12,9,5,4],[0,3,5,7,10,7,5,3],[0,5,8,7,3,5,7,10],[0,4,7,11,7,4,9,7]];
   function tone(freq, duration, volume, type = 'sine') {
     if (!state.sound || !audio) return;
     const osc = audio.createOscillator(), gain = audio.createGain();
@@ -61,10 +61,10 @@
   function unlocked(index) { return index === 0 || missions.slice(0,index).every(m => state.completed.includes(m.id)); }
   function home() {
     missions = paths[grade]; state.selectedGrade = grade; save();
-    currentTheme = grade === 5 ? 5 : 0; tuneStep = 0;
+    currentTheme = (grade - 4) * 5; tuneStep = 0;
     app.innerHTML = ''; app.append(document.getElementById('home-template').content.cloneNode(true));
-    document.getElementById('grade-title').textContent = grade === 4 ? 'Grade 4: Life begins here' : 'Grade 5: The living reserve';
-    for (const g of [4,5]) { const b = document.getElementById(`grade${g}`); b.setAttribute('aria-pressed', String(grade === g)); b.addEventListener('click', () => { grade = g; home(); }); }
+    document.getElementById('grade-title').textContent = ({4:'Grade 4: Life begins here',5:'Grade 5: The living reserve',6:'Grade 6: The web of life'})[grade];
+    for (const g of [4,5,6]) { const b = document.getElementById(`grade${g}`); b.setAttribute('aria-pressed', String(grade === g)); b.addEventListener('click', () => { grade = g; home(); }); }
     const completed = missions.filter(m => state.completed.includes(m.id)).length;
     document.getElementById('progress').textContent = `${completed} / ${missions.length} restored`;
     const list = document.getElementById('missions');
@@ -85,7 +85,7 @@
   let index = 0, task = 0, item = 0, mistakes = 0;
   function begin(i, resume) {
     if (!unlocked(i)) return;
-    index = i; task = 0; item = 0; mistakes = 0; currentTheme = i + (grade === 5 ? 5 : 0); tuneStep = 0;
+    index = i; task = 0; item = 0; mistakes = 0; currentTheme = i + (grade - 4) * 5; tuneStep = 0;
     const cp = state.checkpoints[grade];
     if (resume && cp && cp.mission === missions[i].id && Number.isInteger(cp.task) && cp.task >= 0 && cp.task < missions[i].tasks.length) {
       task = cp.task; item = Number.isInteger(cp.item) && cp.item >= 0 && cp.item < (missions[i].tasks[task].items?.length || missions[i].tasks[task].order?.length || 1) ? cp.item : 0;
@@ -124,7 +124,7 @@
     if (!state.completed.includes(m.id)) state.completed.push(m.id);
     delete state.checkpoints[grade]; save(); tone(523,.3,.05); setTimeout(()=>tone(784,.4,.05),180);
     const last = index === missions.length - 1;
-    app.innerHTML = `<section class="complete"><span class="celebrate" aria-hidden="true">${last?'🏡':'🌟'}</span><p class="eyebrow">MISSION COMPLETE</p><h1>${last?(grade === 4 ? 'The centre is coming to life!' : 'The reserve is thriving!'):'A new discovery!'}</h1><p>${last?(grade === 4 ? 'Nala and Pip have reopened the nature research centre. Your observations will help the team protect the living world.' : 'Nala and Pip have shared their discoveries with the community. Together, you have helped protect the living reserve.'):`You helped restore the ${m.place.toLowerCase()} and recorded three investigations in your field journal.`}</p><div class="reward">✦ ${mistakes === 0 ? 'Careful observer' : 'Persistent explorer'} · ${mistakes === 1 ? '1 retry' : `${mistakes} retries`}</div><div class="complete-actions">${last?'': '<button class="primary" id="next-mission">Next mission →</button>'}<button class="secondary" id="journal">Return to journal</button></div></section>`;
+    app.innerHTML = `<section class="complete"><span class="celebrate" aria-hidden="true">${last?'🏡':'🌟'}</span><p class="eyebrow">MISSION COMPLETE</p><h1>${last?(grade === 4 ? 'The centre is coming to life!' : grade === 5 ? 'The reserve is thriving!' : 'The web of life is connected!'):'A new discovery!'}</h1><p>${last?(grade === 4 ? 'Nala and Pip have reopened the nature research centre. Your observations will help the team protect the living world.' : grade === 5 ? 'Nala and Pip have shared their discoveries with the community. Together, you have helped protect the living reserve.' : 'Nala and Pip have shared their findings about food, plants and ecosystems. Your discoveries help the community care for the living world.'):`You helped restore the ${m.place.toLowerCase()} and recorded three investigations in your field journal.`}</p><div class="reward">✦ ${mistakes === 0 ? 'Careful observer' : 'Persistent explorer'} · ${mistakes === 1 ? '1 retry' : `${mistakes} retries`}</div><div class="complete-actions">${last?'': '<button class="primary" id="next-mission">Next mission →</button>'}<button class="secondary" id="journal">Return to journal</button></div></section>`;
     document.getElementById('journal').onclick=home;
     if (!last) document.getElementById('next-mission').onclick=()=>begin(index+1,false);
     app.focus({preventScroll:true});
