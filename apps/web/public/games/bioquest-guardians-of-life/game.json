@@ -1,6 +1,17 @@
 {
   "title": "BioQuest: Guardians of Life",
-  "description": "Explore 30 Grade 4–9 biology missions with Nala and Pip.",
+  "description": "Explore 35 Grade 4–10 biology missions with Nala and Pip.",
   "category": "EDUCATIONAL",
-  "tags": ["biology", "science", "grade-4", "grade-5", "grade-6", "grade-7", "grade-8", "grade-9", "education"]
+  "tags": [
+    "biology",
+    "science",
+    "grade-4",
+    "grade-5",
+    "grade-6",
+    "grade-7",
+    "grade-8",
+    "grade-9",
+    "grade-10",
+    "education"
+  ]
 }
