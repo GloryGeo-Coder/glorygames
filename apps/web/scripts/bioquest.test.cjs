@@ -7,6 +7,7 @@ const path = require('node:path');
 const dir = path.join(__dirname, '../public/games/bioquest-guardians-of-life');
 const missionsSource = fs.readFileSync(path.join(dir, 'missions.js'), 'utf8');
 const gameSource = fs.readFileSync(path.join(dir, 'game.js'), 'utf8');
+const grade5Source = fs.readFileSync(path.join(dir, 'grade5.js'), 'utf8');
 function boot(store = {}) {
   const elements = new Map(), allChoices = [];
   class Element {
@@ -19,12 +20,12 @@ function boot(store = {}) {
     click() { if (!this.disabled && this.onclick) this.onclick(); }
   }
   for(const id of ['app','sound','fullscreen','home-template']) elements.set(id,new Element(id));
-  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions']})};
+  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions','grade-title','grade4','grade5']})};
   const document={getElementById:id=>elements.get(id),createElement:()=>new Element(),querySelectorAll:sel=>sel==='#choices button'?allChoices:[],addEventListener(){},fullscreenEnabled:false,documentElement:{},hidden:false};
   const localStorage={getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v;}};
   const context=vm.createContext({window:{},document,localStorage,setTimeout:()=>0,setInterval:()=>0,clearInterval(){},console});
-  vm.runInContext(missionsSource,context); vm.runInContext(gameSource,context);
-  return {elements,store,missions:context.window.BIOQUEST_MISSIONS, click:id=>{assert.ok(elements.get(id),`missing ${id}`);elements.get(id).click();}, choices:()=>allChoices};
+  vm.runInContext(missionsSource,context); vm.runInContext(grade5Source,context); vm.runInContext(gameSource,context);
+  return {elements,store,missions:context.window.BIOQUEST_MISSIONS, grade5:context.window.BIOQUEST_GRADE5, click:id=>{assert.ok(elements.get(id),`missing ${id}`);elements.get(id).click();}, choices:()=>allChoices};
 }
 test('all missions are consistent and the full campaign unlocks, saves, resumes and completes',()=>{
   let app=boot(); const missions=app.missions; assert.equal(missions.length,5);
@@ -53,14 +54,53 @@ test('all missions are consistent and the full campaign unlocks, saves, resumes 
     if(mi<missions.length-1){assert.ok(app.elements.get('next-mission'), app.elements.get('app').html);app.click('next-mission');app.click('start');}
   }
   assert.match(app.elements.get('app').html,/centre is coming to life/);
-  const saved=JSON.parse(Object.values(app.store)[0]); assert.equal(saved.completed.length,5); assert.equal(saved.checkpoint,null);
+  const saved=JSON.parse(Object.values(app.store)[0]); assert.equal(saved.completed.length,5); assert.equal(saved.checkpoints[4],undefined);
   app=boot(app.store); assert.equal(app.elements.get('progress').textContent,'5 / 5 restored');
   assert.equal(app.elements.get('missions').children.every(b=>!b.disabled),true);
 });
 test('grade 4 game ships local, valid references and accessible viewport controls',()=>{
  const html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
- for(const ref of ['missions.js','game.js','style.css']) {assert.ok(html.includes(ref));assert.ok(fs.existsSync(path.join(dir,ref)));}
+ for(const ref of ['missions.js','grade5.js','game.js','style.css']) {assert.ok(html.includes(ref));assert.ok(fs.existsSync(path.join(dir,ref)));}
  assert.match(html,/name="viewport"/); assert.match(html,/lang="en"/);
  assert.ok(fs.existsSync(path.join(dir,'thumb.webp')));
  const css=fs.readFileSync(path.join(dir,'style.css'),'utf8'); assert.match(css,/max-width:560px/); assert.match(css,/prefers-reduced-motion/);
+});
+
+test('Grade 5 can be chosen independently, preserves Grade 4 checkpoints and completes every activity',()=>{
+ const key='bioquest.guardians.grade4.v1';
+ let app=boot({[key]:JSON.stringify({completed:['living'],checkpoint:{mission:'plants',task:1,item:0,mistakes:2},sound:false})});
+ assert.equal(app.elements.get('progress').textContent,'1 / 5 restored');
+ app.click('grade5'); assert.equal(app.elements.get('grade-title').textContent,'Grade 5: The living reserve');
+ assert.equal(app.elements.get('missions').children[0].disabled,false);
+ assert.equal(app.elements.get('missions').children[1].disabled,true);
+ app.click('continue'); app.click('start');
+ let saved=JSON.parse(app.store[key]); assert.equal(saved.checkpoints[4].mission,'plants'); assert.equal(saved.checkpoints[5].mission,'g5-biodiversity');
+ app.click('back'); app.click('grade4'); app.click('continue');
+ assert.match(app.elements.get('app').html,/INVESTIGATION 2/);
+ app.click('back'); app.click('grade5'); app=boot(app.store); app.click('continue');
+ const missions=app.grade5;
+ for (let i=0;i<missions.length;i++) {
+   for (const task of missions[i].tasks) {
+     assert.ok(task.hint && task.explain);
+     if (task.kind==='sort') { for(const thing of task.items) { assert.ok(task.groups.includes(thing.group)); app.choices().find(b=>b.textContent===thing.group).click(); app.click('next'); } }
+     else if (task.kind==='sequence') { for(const step of task.order) { assert.ok(task.options.includes(step)); app.choices().find(b=>b.textContent===step).click(); app.click('next'); } }
+     else {app.choices()[task.answer].click(); app.click('next');}
+   }
+   if(i<missions.length-1){app.click('next-mission');app.click('start');}
+ }
+ assert.match(app.elements.get('app').html,/reserve is thriving/);
+ saved=JSON.parse(app.store[key]); assert.equal(saved.completed.filter(id=>id.startsWith('g5-')).length,5); assert.equal(saved.checkpoints[4].mission,'plants'); assert.equal(saved.checkpoints[5],undefined);
+ app=boot(app.store); assert.equal(app.elements.get('progress').textContent,'5 / 5 restored');
+ app.click('grade4'); assert.equal(app.elements.get('progress').textContent,'1 / 5 restored');
+});
+test('an in-progress Grade 5 sequence resumes at the correct step',()=>{
+ const key='bioquest.guardians.grade4.v1';
+ const store={[key]:JSON.stringify({selectedGrade:5,completed:['g5-biodiversity','g5-skeletons'],checkpoints:{5:{mission:'g5-foodchains',task:0,item:2,mistakes:1}},sound:false})};
+ const app=boot(store); app.click('continue');
+ assert.match(app.elements.get('app').html,/Grass → Grasshopper/);
+ assert.match(app.elements.get('app').html,/STEP 3 \/ 4/);
+ app.choices().find(b=>b.textContent==='Frog').click(); app.click('next');
+ assert.match(app.elements.get('app').html,/STEP 4 \/ 4/);
+ app.choices().find(b=>b.textContent==='Snake').click();
+ assert.match(app.elements.get('feedback').html,/Energy is transferred/);
 });
