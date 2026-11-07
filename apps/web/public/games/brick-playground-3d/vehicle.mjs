@@ -1,5 +1,5 @@
 // The same four-stud chassis is the coordinate system for editing and driving.
-import { size, parts, TYPES, PLOT, intervals, validPiece, snapHeight } from './model.mjs';
+import { size, parts, PLOT, supports, intervals, validPiece, snapHeight } from './model.mjs';
 
 export const CHASSIS_TOP = 0.96;
 export const TYRES = {
@@ -96,48 +96,13 @@ export function drivingSeat(items) {
     );
   });
 }
-function footprint(piece, face) {
-  const { w, d } = TYPES[piece.type];
-  let { x, z } = face;
-  if (piece.r === 1) {
-    x = d - face.z - face.d;
-    z = face.x;
-  }
-  if (piece.r === 2) {
-    x = w - face.x - face.w;
-    z = d - face.z - face.d;
-  }
-  if (piece.r === 3) {
-    x = face.z;
-    z = w - face.x - face.w;
-  }
-  return {
-    x: x + piece.x,
-    z: z + piece.z,
-    w: piece.r % 2 ? face.d : face.w,
-    d: piece.r % 2 ? face.w : face.d
-  };
-}
-function above(lower, upper) {
-  // Chassis parts can be hollow. Test actual contact faces, including rotated seat backs.
-  for (const face of parts(lower.type)) {
-    if (face.detail === 'ramp' || Math.abs(lower.y + face.y + face.h - upper.y) > 0.002) continue;
-    const a = footprint(lower, face);
-    for (const bottom of parts(upper.type)) {
-      if (bottom.y !== 0) continue;
-      const b = footprint(upper, bottom);
-      if (a.x < b.x + b.w && b.x < a.x + a.w && a.z < b.z + b.d && b.z < a.z + a.d) return true;
-    }
-  }
-  return false;
-}
 export function buildProblem(pieces) {
   if (!pieces.length) return 'Add a brick to the chassis to drive.';
   if (pieces.some((p) => !fitsChassis(p)))
     return 'Keep the body within the four-by-four chassis and five bricks high.';
   const mounted = [];
   for (const p of [...pieces].sort((a, b) => a.y - b.y)) {
-    if (p.y < 0.002 || mounted.some((lower) => above(lower, p))) mounted.push(p);
+    if (p.y < 0.002 || mounted.some((lower) => supports(lower, p))) mounted.push(p);
     else return 'A brick is unsupported. Move it down or add a support before driving.';
   }
   if (pieces.some((p) => p.type === 'seat') && !drivingSeat(pieces))

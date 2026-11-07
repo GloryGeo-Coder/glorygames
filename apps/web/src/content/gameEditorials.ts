@@ -20,7 +20,7 @@ export type GameEditorial = {
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "brick-playground-3d": {
     "category": "Simulation",
-    "summary": "Build and explore a township plot, bridge a drainage channel, or assemble your own buggy and drive it through a three-gate test course.",
+    "summary": "Build and explore a township plot, drive a custom buggy, and construct a drawbridge that opens for a ferry and closes for a delivery to the spaza shop.",
     "overview": [
         "Turn an open plot beside a neighbourhood park into a spaza shop, a house or a playground. All 20 pieces and eight colours are available when you arrive."
     ],
@@ -54,10 +54,12 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         }
     ],
     "progression": [
+        "In Canal Crossing, attach bricks to either hinge or leave them fixed. Choose a 10°, 40° or 80° lift, send the ferry through the opening, then lower the bridge and send the buggy. Changes to the structure require a new ferry test.",
         "Free Build has unlimited pieces. The optional challenge records completion when the delivery buggy reaches the shop."
     ],
     "tips": [
         "Try a floor plate first, then a doorframe and three walls. Switch to Play before adding a roof.",
+        "The teal west deck is already mounted in Canal Crossing. Place a gold three-by-two deck on the east bearing to close the gap. Retry returns stopped traffic to the dock or start without removing bricks.",
         "In Bridge the Gap, line up the edges of flat plates over the water. Follow the dashed lane on both banks."
     ],
     "faqs": [

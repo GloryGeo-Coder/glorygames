@@ -88,6 +88,42 @@ function makeParts(type) {
 }
 const shapes = Object.fromEntries(Object.keys(TYPES).map((type) => [type, makeParts(type)]));
 export const parts = (type) => shapes[type];
+export function partFootprint(piece, face) {
+  const { w, d } = TYPES[piece.type];
+  let { x, z } = face;
+  if (piece.r === 1) {
+    x = d - face.z - face.d;
+    z = face.x;
+  }
+  if (piece.r === 2) {
+    x = w - face.x - face.w;
+    z = d - face.z - face.d;
+  }
+  if (piece.r === 3) {
+    x = face.z;
+    z = w - face.x - face.w;
+  }
+  return {
+    x: x + piece.x,
+    z: z + piece.z,
+    w: piece.r % 2 ? face.d : face.w,
+    d: piece.r % 2 ? face.w : face.d
+  };
+}
+export function supports(lower, upper) {
+  // Chassis parts can be hollow. Test actual contact faces, including rotated seat backs.
+  for (const face of parts(lower.type)) {
+    if (face.detail === 'ramp' || Math.abs(lower.y + face.y + face.h - upper.y) > 0.002) continue;
+    const a = partFootprint(lower, face);
+    for (const bottom of parts(upper.type)) {
+      if (bottom.y !== 0) continue;
+      const b = partFootprint(upper, bottom);
+      if (a.x < b.x + b.w && b.x < a.x + a.w && a.z < b.z + b.d && b.z < a.z + a.d) return true;
+    }
+  }
+  return false;
+}
+
 export function local(p, x, z) {
   const a = x - p.x,
     b = z - p.z,
@@ -115,14 +151,15 @@ export function intervals(p, x, z) {
   }
   return result;
 }
-export const isChannel = (kind, x, z) => kind === 'bridge' && x >= -3 && x < 3 && Math.abs(z) <= 10;
+export const hasChannel = (kind) => kind === 'bridge' || kind === 'canal';
+export const isChannel = (kind, x, z) => hasChannel(kind) && x >= -3 && x < 3 && Math.abs(z) <= 10;
 export function floorAt(kind, x, z) {
   return Math.abs(x) <= PLOT && Math.abs(z) <= PLOT && !isChannel(kind, x, z) ? 0 : -Infinity;
 }
 export function validPiece(p, items, ignore = null) {
   if (
-    !TYPES[p.type] ||
-    !PALETTE[p.color] ||
+    !Object.hasOwn(TYPES, p.type) ||
+    !Object.hasOwn(PALETTE, p.color) ||
     !Number.isInteger(p.r) ||
     p.r < 0 ||
     p.r > 3 ||
@@ -159,6 +196,26 @@ export function snapHeight(p, items, ignore = null) {
   }, 0);
 }
 export function world(kind) {
+  if (kind === 'canal')
+    return {
+      version: 1,
+      name: 'Canal Crossing',
+      boatPassed: false,
+      liftDegrees: 80,
+      complete: false,
+      pieces: [
+        {
+          id: 'starter-west',
+          type: 'deck',
+          color: 'Lagoon',
+          x: -3,
+          z: -1,
+          y: 0,
+          r: 0,
+          mount: 'west'
+        }
+      ]
+    };
   return {
     version: 1,
     name:
@@ -184,6 +241,8 @@ export function loadWorld(kind, storage) {
   for (const p of v.pieces) {
     if (!p || typeof p.id !== 'string' || ids.has(p.id) || !validPiece(p, []))
       throw Error('Invalid saved brick');
+    if (kind === 'canal' && p.mount !== undefined && !['west', 'east', 'fixed'].includes(p.mount))
+      throw Error('Invalid hinge');
     ids.add(p.id);
   }
   return {
@@ -191,11 +250,17 @@ export function loadWorld(kind, storage) {
     name: v.name.slice(0, 40),
     pieces: v.pieces,
     complete: v.complete === true,
+    ...(kind === 'canal'
+      ? {
+          boatPassed: v.boatPassed === true || v.complete === true,
+          liftDegrees: [10, 40, 80].includes(v.liftDegrees) ? v.liftDegrees : 80
+        }
+      : {}),
     ...(kind === 'garage' && typeof v.tyres === 'string' ? { tyres: v.tyres } : {})
   };
 }
 export const avatar = (kind = 'free') => ({
-  x: kind === 'bridge' ? -7 : 0.5,
+  x: hasChannel(kind) ? -7 : 0.5,
   z: -7,
   y: 0,
   vy: 0,

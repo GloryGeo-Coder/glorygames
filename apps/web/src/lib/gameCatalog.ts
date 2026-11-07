@@ -9,7 +9,7 @@ export type GameCategoryValue = (typeof GAME_CATEGORIES)[number];
 type CatalogEntry = { title?: string; category: GameCategoryValue; description: string };
 
 export const GAME_CATALOG: Record<string, CatalogEntry> = {
-  "brick-playground-3d": { title: "Brick Playground 3D", category: "SIMULATION", description: "Build and explore a township plot, bridge a drainage channel, or assemble your own buggy and drive it through a three-gate test course." },
+  "brick-playground-3d": { title: "Brick Playground 3D", category: "SIMULATION", description: "Build and explore a township plot, drive a custom buggy, and construct a drawbridge that opens for a ferry and closes for a delivery to the spaza shop." },
   "bioquest-guardians-of-life": { title: "BioQuest: Guardians of Life", category: "EDUCATIONAL", description: "Join Nala and Pip in 35 untimed Grades 4–10 biology missions across the nature reserve and Living Archive. Survey illustrated locations, sort specimens and collect field notes as you investigate plants, ecosystems, cells and body systems." },
   "brick-blaster": { category: "ARCADE", description: "Restore Neon Grid through five missions with interactive bricks, rescue drones, enemies and the Grid Warden, or chase high scores in Classic Arcade." },
   "bubble-pop-arena": { category: "CASUAL", description: "Pop and drag through a continuous score attack across six changing arenas. Chain combos, collect time, freeze and bonus bubbles, and avoid bombs." },

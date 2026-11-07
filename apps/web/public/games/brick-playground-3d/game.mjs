@@ -1,4 +1,14 @@
 import {
+  canalState,
+  canEditCanal,
+  attachmentIssue,
+  fitsLeaf,
+  mountOf,
+  advanceMotor,
+  sendBoat,
+  advanceBoat
+} from './canal.mjs';
+import {
   canMount,
   mountHeight,
   drivingSeat,
@@ -50,6 +60,7 @@ function start() {
     jump = false,
     run = newRun(),
     driverSeat = null,
+    canal = canalState(),
     braking = false;
   let elapsed = 0,
     stepSound = 0,
@@ -78,12 +89,15 @@ function start() {
   function change(items) {
     history.push(data.pieces);
     if (history.length > 80) history.shift();
+    resetTrafficOnEdit(items);
     data.pieces = items;
     save();
     s.drawPieces(items, selected);
     refresh();
   }
   function openWorld(next) {
+    clearTimeout(noticeTimer);
+    $('notice').textContent = '';
     kind = next;
     canSave = !unreadable.has(kind);
     try {
@@ -107,6 +121,9 @@ function start() {
     mode = 'build';
     person = avatar(kind);
     car = buggy();
+    canal = canalState();
+    if (kind === 'canal' && data.boatPassed) canal.boatZ = 8;
+    if (kind === 'canal' && data.complete) canal.traffic = 'done';
     run = newRun();
     if (kind === 'garage' && !Object.hasOwn(TYRES, data.tyres)) data.tyres = 'road';
     draft = {
@@ -117,6 +134,8 @@ function start() {
       y: 0,
       r: 0
     };
+    if (kind === 'canal')
+      Object.assign(draft, { type: 'deck', mount: 'east', color: 'Sun', x: 0, z: -1 });
     Object.assign(s.orbit, { pitch: 0.91, yaw: -0.63, zoom: 1, focusX: 0, focusZ: 0 });
     if (kind === 'garage') s.orbit.zoom = 0.45;
     top = false;
@@ -133,6 +152,7 @@ function start() {
       btn.hidden = kind === 'garage' ? t.w > 4 || t.d > 4 : t.garageOnly;
       btn.style.order = t.garageOnly ? -1 : 0;
     }
+    $('canalPanel').hidden = kind !== 'canal';
     $('garagePanel').hidden = kind !== 'garage';
     if (kind === 'garage') $('tyres').value = data.tyres;
     $('play').textContent = kind === 'garage' ? 'Drive' : 'Play';
@@ -142,13 +162,38 @@ function start() {
     s.view(mode, person, run);
     menu.open && menu.close();
   }
+  function editorAvailable() {
+    return mode === 'build' && car.state !== 'running' && (kind !== 'canal' || canEditCanal(canal));
+  }
+  function resetTrafficOnEdit(next) {
+    if (kind !== 'canal') return;
+    // Paint alone does not invalidate a successful clearance test.
+    const prev = new Map(data.pieces.map((p) => [p.id, p]));
+    const unchanged =
+      next.length === prev.size &&
+      next.every((p) => {
+        const b = prev.get(p.id);
+        return (
+          b && ['x', 'y', 'z', 'r', 'type'].every((k) => p[k] === b[k]) && mountOf(p) === mountOf(b)
+        );
+      });
+    if (unchanged) return;
+    resetCanalTests();
+  }
+  function resetCanalTests() {
+    const retest = data.boatPassed;
+    data.boatPassed = data.complete = false;
+    car = buggy();
+    canal = canalState();
+    if (retest) canal.reason = 'Crossing changed. Raise the bridge and test the ferry again.';
+  }
   function chosen() {
     return data.pieces.find((p) => p.id === selected);
   }
   function canPlace(p, ignore) {
     return kind === 'garage'
       ? canMount(p, data.pieces, ignore)
-      : validPiece(p, data.pieces, ignore);
+      : validPiece(p, data.pieces, ignore) && (kind !== 'canal' || fitsLeaf(p));
   }
   function adjustHeight() {
     const moving = tool === 'move' ? chosen() : null;
@@ -162,7 +207,7 @@ function start() {
         : snapHeight(draft, data.pieces, moving?.id);
   }
   function refresh() {
-    const editable = mode === 'build' && car.state !== 'running';
+    const editable = editorAvailable();
     const showing = editable && tool !== 'select';
     const ok = showing && canPlace(draft, tool === 'move' ? selected : null);
     s.ghost(showing ? draft : null, ok);
@@ -189,6 +234,11 @@ function start() {
             ? 'Course cleared. Edit or drive again.'
             : 'Body ready. Drive through the numbered gates.');
     }
+    if (kind === 'canal') {
+      $('mount').value = mountOf(draft);
+      $('mount').disabled = tool === 'select';
+      canalPanel();
+    }
     $('readout').textContent = showing
       ? (ok ? '' : 'Blocked · ') + `(${draft.x}, ${draft.z}) ↑${Number(draft.y.toFixed(2))}`
       : chosen()
@@ -203,7 +253,7 @@ function start() {
     refresh();
   }
   function place() {
-    if (mode !== 'build' || car.state === 'running' || tool === 'select') return;
+    if (!editorAvailable() || tool === 'select') return;
     const moving = tool === 'move',
       p = {
         ...draft,
@@ -219,7 +269,7 @@ function start() {
     }
   }
   function rotation() {
-    if (mode !== 'build' || car.state === 'running') return;
+    if (!editorAvailable()) return;
     if (tool === 'select') {
       const current = chosen();
       if (!current) return;
@@ -256,7 +306,7 @@ function start() {
     const edit = mode === 'build';
     pressed('build', edit);
     pressed('play', !edit);
-    $('bench').hidden = !edit || car.state === 'running';
+    $('bench').hidden = !editorAvailable();
     $('walk').hidden = edit;
     for (const id of ['view', 'closer', 'farther', 'center']) $(id).hidden = !edit;
     $('home').hidden = edit;
@@ -294,7 +344,8 @@ function start() {
   }
   function switchMode(to) {
     if (kind === 'garage' && to === 'play') to = 'drive';
-    if (car.state === 'running' || mode === to) return;
+    if (car.state === 'running' || mode === to || (kind === 'canal' && !canEditCanal(canal)))
+      return;
     if (to === 'drive') {
       const problem = buildProblem(data.pieces);
       if (problem) {
@@ -374,6 +425,135 @@ function start() {
         ? `Gate ${run.gate + 1} of ${GATES.length} · ${GATES[run.gate].name}. Follow the amber markers.`
         : 'Test lap complete! Build to edit, or Restart to drive again.';
   }
+  function canalPanel() {
+    $('canalPanel').hidden = mode !== 'build';
+    const moving = canal.angle !== canal.target;
+    const stopped = ['boatStopped', 'buggyStopped'].includes(canal.traffic);
+    const busy = ['boat', 'buggy'].includes(canal.traffic);
+    const closed = canal.angle === 0;
+    $('play').disabled = !canEditCanal(canal);
+    $('canalSettings').hidden = !editorAvailable();
+    $('liftLimit').value = String(data.liftDegrees);
+    $('lever').disabled = moving || busy || stopped || canal.traffic === 'done';
+    $('lever').textContent = closed ? 'Raise bridge' : 'Lower bridge';
+    $('dispatch').disabled = moving || busy || (!stopped && data.boatPassed && !closed);
+    $('dispatch').textContent = stopped
+      ? 'Retry'
+      : canal.traffic === 'done'
+        ? 'Retest crossing'
+        : data.boatPassed
+          ? 'Send buggy'
+          : 'Send boat';
+    let message = canal.reason;
+    if (!message) {
+      if (moving)
+        message = canal.target > canal.angle ? 'Raising the bridge…' : 'Lowering the bridge…';
+      else if (canal.traffic === 'boat') message = 'Ferry approaching the crossing.';
+      else if (canal.traffic === 'buggy') message = 'Buggy travelling to the shop.';
+      else if (canal.traffic === 'done')
+        message = 'Both deliveries complete. The canal is open for business!';
+      else if (data.boatPassed)
+        message = closed
+          ? 'Ferry clear. Send the buggy across your deck.'
+          : 'Ferry clear. Lower the bridge for the buggy.';
+      else if (!closed) message = 'Check the raised leaves. Send the ferry down the channel.';
+      else
+        message = 'Build from the bearings across the marked lane. Raise the leaves for the ferry.';
+    }
+    $('canalStatus').textContent = message;
+  }
+  $('mount').onchange = () => {
+    if (!editorAvailable() || kind !== 'canal' || tool === 'select') return;
+    draft.mount = $('mount').value;
+    if (tool === 'add' && draft.mount !== 'fixed') {
+      draft.x = draft.mount === 'west' ? -3 : 0;
+      draft.z = -1;
+    }
+    adjustHeight();
+    refresh();
+  };
+  $('liftLimit').onchange = () => {
+    const degrees = Number($('liftLimit').value);
+    if (
+      kind !== 'canal' ||
+      !editorAvailable() ||
+      ![10, 40, 80].includes(degrees) ||
+      degrees === data.liftDegrees
+    )
+      return;
+    data.liftDegrees = degrees;
+    resetCanalTests();
+    save();
+    refresh();
+  };
+  $('lever').onclick = () => {
+    if (kind !== 'canal' || mode !== 'build' || $('lever').disabled) return;
+    const issue = canal.angle === 0 ? attachmentIssue(data.pieces) : '';
+    canal.reason = issue;
+    if (!issue) canal.target = canal.angle === 0 ? (data.liftDegrees * Math.PI) / 180 : 0;
+    clearInputs();
+    syncMode();
+  };
+  $('dispatch').onclick = () => {
+    if (kind !== 'canal' || mode !== 'build' || $('dispatch').disabled) return;
+    if (canal.traffic === 'done') {
+      data.boatPassed = data.complete = false;
+      save();
+      canal = canalState();
+      car = buggy();
+    } else if (canal.traffic === 'boatStopped' || canal.traffic === 'buggyStopped') {
+      canal.traffic = 'ready';
+      canal.reason = '';
+      canal.boatZ = data.boatPassed ? 8 : -8;
+      car = buggy();
+    } else if (data.boatPassed) {
+      car = buggy();
+      car.state = 'running';
+      canal.traffic = 'buggy';
+      canal.reason = '';
+    } else {
+      sendBoat(canal);
+    }
+    clearInputs();
+    syncMode();
+  };
+  function tickCanal(dt) {
+    if (canal.angle !== canal.target) {
+      advanceMotor(canal, data.pieces, dt);
+      if (canal.angle === canal.target) {
+        music.snap();
+        syncMode();
+      }
+    }
+    if (canal.traffic === 'boat') {
+      advanceBoat(canal, data.pieces, dt);
+      if (canal.traffic === 'boatPassed') {
+        // Only an operated drawbridge qualifies the road delivery.
+        if (canal.angle === 0) {
+          canal.traffic = 'boatStopped';
+          canal.reason = 'The ferry passed an open gap. Raise a connected bridge to qualify.';
+        } else {
+          canal.traffic = 'ready';
+          data.boatPassed = true;
+          save();
+        }
+      }
+      if (canal.traffic !== 'boat') syncMode();
+    }
+    if (canal.traffic === 'buggy') {
+      advanceBuggy(car, data.pieces, dt);
+      if (car.state === 'won') {
+        data.complete = true;
+        save();
+        canal.traffic = 'done';
+        syncMode();
+      } else if (car.state !== 'running') {
+        canal.traffic = 'buggyStopped';
+        canal.reason = car.reason + '. Retry, repair the deck and test again.';
+        syncMode();
+      }
+    }
+  }
   function updateTest() {
     const copy = {
       ready: data.complete
@@ -427,8 +607,10 @@ function start() {
   $('rotate').onclick = rotation;
   $('place').onclick = place;
   $('undo').onclick = () => {
-    if (!history.length || car.state === 'running') return;
-    data.pieces = history.pop();
+    if (!history.length || !editorAvailable()) return;
+    const previous = history.pop();
+    resetTrafficOnEdit(previous);
+    data.pieces = previous;
     selected = null;
     tool = 'add';
     save();
@@ -484,6 +666,7 @@ function start() {
   };
   $('freeWorld').onclick = () => openWorld('free');
   $('bridgeWorld').onclick = () => openWorld('bridge');
+  $('canalWorld').onclick = () => openWorld('canal');
   $('garageWorld').onclick = () => openWorld('garage');
   for (const [id, t] of Object.entries(TYRES)) {
     const opt = document.createElement('option');
@@ -610,7 +793,7 @@ function start() {
   canvas.onpointerup = (e) => {
     const pt = touches.get(e.pointerId);
     touches.delete(e.pointerId);
-    if (!pt || gesture || e.button !== 0 || mode !== 'build' || car.state === 'running') return;
+    if (!pt || gesture || e.button !== 0 || !editorAvailable()) return;
     const hit = s.pick(e.clientX, e.clientY);
     if (!hit) return;
     if (tool === 'select') {
@@ -689,7 +872,7 @@ function start() {
       }
       return;
     }
-    if (car.state === 'running') return;
+    if (!editorAvailable()) return;
     if (k === 'r') rotation();
     if (k === 'enter' && !['BUTTON', 'A'].includes(document.activeElement.tagName)) {
       e.preventDefault();
@@ -718,12 +901,15 @@ function start() {
   let first = 'free';
   try {
     const last = localStorage.getItem('wga.brick.active');
-    if (last === 'bridge' || last === 'garage') first = last;
+    if (['bridge', 'garage', 'canal'].includes(last)) first = last;
   } catch {}
   openWorld(first);
-  announce(
-    first === 'garage' ? 'Build on the chassis, then choose Drive' : 'Tap a stud, then Place brick'
-  );
+  if (first !== 'canal')
+    announce(
+      first === 'garage'
+        ? 'Build on the chassis, then choose Drive'
+        : 'Tap a stud, then Place brick'
+    );
   window.addEventListener('resize', () => s.engine.resize());
   s.engine.runRenderLoop(() => {
     if (document.hidden) return;
@@ -785,7 +971,8 @@ function start() {
             }
           }
         }
-        if (car.state === 'running') {
+        if (kind === 'canal') tickCanal(delta);
+        else if (car.state === 'running') {
           advanceBuggy(car, data.pieces, delta);
           if (car.state !== 'running') {
             if (car.state === 'won') {
@@ -803,11 +990,18 @@ function start() {
       }
       music.tick(
         elapsed,
-        car.state === 'running' || (mode === 'drive' && Math.abs(run.speed) > 0.1)
+        car.state === 'running' ||
+          (mode === 'drive' && Math.abs(run.speed) > 0.1) ||
+          (kind === 'canal' && (canal.angle !== canal.target || canal.traffic === 'boat'))
       );
     } else music.tick(elapsed, false);
     if (kind === 'garage') s.workshop(mode === 'drive', run, data.tyres);
     if (mode === 'drive') drawMap();
+    if (kind === 'canal') {
+      s.canalMechanism(canal.angle, canal.boatZ, canal.angle !== canal.target);
+      const angle = Math.round((canal.angle * 180) / Math.PI) + '°';
+      if ($('angleReadout').textContent !== angle) $('angleReadout').textContent = angle;
+    }
     s.actors(mode, person, car, walking, elapsed, driverSeat);
     s.view(mode, person, run);
     s.scene.render();

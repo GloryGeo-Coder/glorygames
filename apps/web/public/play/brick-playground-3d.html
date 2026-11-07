@@ -34,6 +34,13 @@
       <b>Bridge the Gap</b><span id="result">Connect both banks along the marked lane.</span
       ><button id="test">Test buggy</button>
     </section>
+    <section id="canalPanel" aria-label="Canal Crossing controls" hidden>
+      <div class="canal-heading"><b>Canal Crossing</b><span id="angleReadout" title="Hinge angle">0°</span></div><span id="canalStatus" role="status"></span>
+      <div id="canalSettings"><label>Attach to <select id="mount" aria-label="Bridge attachment">
+        <option value="west">West hinge · teal</option><option value="east">East hinge · gold</option><option value="fixed">Fixed ground</option>
+      </select></label><label>Lift to <select id="liftLimit" aria-label="Lift angle"><option value="10">10°</option><option value="40">40°</option><option value="80" selected>80°</option></select></label></div>
+      <div class="canal-actions"><button id="lever">Raise bridge</button><button id="dispatch">Send boat</button></div>
+    </section>
     <section id="garagePanel" hidden aria-label="Vehicle workshop">
       <b>Vehicle Workshop</b><span id="garageStatus" role="status"></span>
       <label id="tyreLabel">Tyres <select id="tyres" aria-label="Tyre set"></select></label>
@@ -75,12 +82,13 @@
         ><button id="bridgeWorld">
           Bridge the Gap <span>Construct a crossing for the delivery buggy</span>
         </button>
+        <button id="canalWorld">Canal Crossing <span>Build a drawbridge for water and road traffic</span></button>
         <button id="garageWorld">Vehicle Workshop <span>Build a buggy and drive the three-gate course</span></button>
       </div>
       <p class="guide">
         Tap the plot to aim, then Place. Drag to orbit. Pinch to zoom or pan. Use Select to change a
         brick. On a keyboard, use arrows to aim, R to rotate, Enter to place, Tab between controls,
-        and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab.
+        and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab. In Canal Crossing, choose a hinge before placing a deck. Raise the bridge for the ferry, then lower it for the buggy.
       </p>
       <div class="menufoot">
         <button id="audio">Mute audio</button><button id="fullscreen">Fullscreen</button
