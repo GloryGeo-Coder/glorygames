@@ -34,6 +34,11 @@
       <b>Bridge the Gap</b><span id="result">Connect both banks along the marked lane.</span
       ><button id="test">Test buggy</button>
     </section>
+    <section id="garagePanel" hidden aria-label="Vehicle workshop">
+      <b>Vehicle Workshop</b><span id="garageStatus" role="status"></span>
+      <label id="tyreLabel">Tyres <select id="tyres" aria-label="Tyre set"></select></label>
+    </section>
+    <canvas hidden id="routeMap" width="134" height="134" aria-label="Course map with buggy and three gates"></canvas>
     <div id="notice" role="status"></div>
     <section id="bench" aria-label="Brick editor">
       <div class="tools">
@@ -56,7 +61,7 @@
     </section>
     <div id="walk" hidden>
       <div id="stick" role="group" aria-label="Movement joystick"><i></i></div>
-      <button id="jump">Jump ↑</button>
+      <button id="jump">Jump ↑</button><button id="brake" hidden>Brake</button>
     </div>
     <dialog id="menu">
       <form method="dialog">
@@ -70,11 +75,12 @@
         ><button id="bridgeWorld">
           Bridge the Gap <span>Construct a crossing for the delivery buggy</span>
         </button>
+        <button id="garageWorld">Vehicle Workshop <span>Build a buggy and drive the three-gate course</span></button>
       </div>
       <p class="guide">
         Tap the plot to aim, then Place. Drag to orbit. Pinch to zoom or pan. Use Select to change a
         brick. On a keyboard, use arrows to aim, R to rotate, Enter to place, Tab between controls,
-        and WASD and Space to explore.
+        and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab.
       </p>
       <div class="menufoot">
         <button id="audio">Mute audio</button><button id="fullscreen">Fullscreen</button

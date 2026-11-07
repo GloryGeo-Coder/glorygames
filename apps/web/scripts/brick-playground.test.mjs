@@ -23,7 +23,7 @@ const piece = (type, x, z, r = 0, y = 0) => ({
   y
 });
 test('20 reusable shapes, rotated footprints, stacking, collisions and plot boundaries', () => {
-  assert.equal(Object.keys(TYPES).length, 20);
+  assert.equal(Object.values(TYPES).filter(t=>!t.garageOnly).length,20);
   assert.ok(avatar('bridge').x < -3, 'the builder starts on the bank');
   const wall = piece('wall', 0, 0, 1),
     plate = piece('floor', 0, 0);

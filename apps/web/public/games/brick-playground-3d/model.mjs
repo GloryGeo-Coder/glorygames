@@ -30,10 +30,16 @@ const specs = [
   ['arch', 'Wide arch', 4, 1, 3, 'door'],
   ['step', 'Steps', 3, 2, 1, 'step'],
   ['bench', 'Bench', 3, 1, 1, 'bench'],
-  ['pot', 'Planter', 2, 2, 1, 'pot']
+  ['pot', 'Planter', 2, 2, 1, 'pot'],
+  ['cab', 'Open cab', 2, 2, 2, 'cab', true],
+  ['seat', 'Seat', 1, 2, 1, 'seat', true],
+  ['cargo', 'Cargo bed', 2, 2, 1, 'cargo', true]
 ];
 export const TYPES = Object.fromEntries(
-  specs.map(([id, label, w, d, h, shape = 'solid']) => [id, { id, label, w, d, h, shape }])
+  specs.map(([id, label, w, d, h, shape = 'solid', garageOnly = false]) => [
+    id,
+    { id, label, w, d, h, shape, garageOnly }
+  ])
 );
 export function size(p) {
   const { w, d, h } = TYPES[p.type];
@@ -53,6 +59,27 @@ function makeParts(type) {
     if (shape === 'window')
       frame.push(box(t, 0, 0, w - 2 * t, d, t), box(w / 2 - 0.08, 0, t, 0.16, d, h - 2 * t));
     return frame;
+  }
+  if (shape === 'cab') {
+    const t = 0.24,
+      frame = [box(0, 0, h - t, w, d, t)];
+    for (const x of [0, w - t]) for (const z of [0, d - t]) frame.push(box(x, z, 0, t, t, h - t));
+    return frame;
+  }
+  if (shape === 'seat')
+    return [
+      box(0.25, 0.25, 0, w - 0.5, d - 0.5, 0.36),
+      box(0.25, 0.25, 0.36, w - 0.5, 0.32, h - 0.36)
+    ];
+  if (shape === 'cargo') {
+    const t = 0.22;
+    return [
+      box(0, 0, 0, w, d, t),
+      box(0, 0, t, w, t, h - t),
+      box(0, d - t, t, w, t, h - t),
+      box(0, t, t, t, d - 2 * t, h - t),
+      box(w - t, t, t, t, d - 2 * t, h - t)
+    ];
   }
   if (shape === 'step') return [0, 1, 2].map((i) => box(i, 0, 0, 1, d, (i + 1) / 3));
   if (shape === 'pot')
@@ -134,7 +161,13 @@ export function snapHeight(p, items, ignore = null) {
 export function world(kind) {
   return {
     version: 1,
-    name: kind === 'bridge' ? 'Bridge the Gap' : 'My corner plot',
+    name:
+      kind === 'garage'
+        ? 'My first buggy'
+        : kind === 'bridge'
+          ? 'Bridge the Gap'
+          : 'My corner plot',
+    ...(kind === 'garage' ? { tyres: 'road' } : {}),
     pieces: [],
     complete: false
   };
@@ -153,9 +186,22 @@ export function loadWorld(kind, storage) {
       throw Error('Invalid saved brick');
     ids.add(p.id);
   }
-  return { version: 1, name: v.name.slice(0, 40), pieces: v.pieces, complete: v.complete === true };
+  return {
+    ...fresh,
+    name: v.name.slice(0, 40),
+    pieces: v.pieces,
+    complete: v.complete === true,
+    ...(kind === 'garage' && typeof v.tyres === 'string' ? { tyres: v.tyres } : {})
+  };
 }
-export const avatar = (kind = 'free') => ({ x: kind === 'bridge' ? -7 : 0.5, z: -7, y: 0, vy: 0, grounded: true, heading: 0 });
+export const avatar = (kind = 'free') => ({
+  x: kind === 'bridge' ? -7 : 0.5,
+  z: -7,
+  y: 0,
+  vy: 0,
+  grounded: true,
+  heading: 0
+});
 const HEIGHT = 1.65,
   RADIUS = 0.27,
   STEP = 0.365;
