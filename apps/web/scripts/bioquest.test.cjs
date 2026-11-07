@@ -10,6 +10,7 @@ const gameSource = fs.readFileSync(path.join(dir, 'game.js'), 'utf8');
 const grade5Source = fs.readFileSync(path.join(dir, 'grade5.js'), 'utf8');
 const grade6Source = fs.readFileSync(path.join(dir, 'grade6.js'), 'utf8');
 const grade7Source = fs.readFileSync(path.join(dir, 'grade7.js'), 'utf8');
+const grade8Source = fs.readFileSync(path.join(dir, 'grade8.js'), 'utf8');
 function boot(store = {}, blocked = '') {
   const elements = new Map(), allChoices = [];
   class Element {
@@ -22,12 +23,12 @@ function boot(store = {}, blocked = '') {
     click() { if (!this.disabled && this.onclick) this.onclick(); }
   }
   for(const id of ['app','sound','fullscreen','home-template']) elements.set(id,new Element(id));
-  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions','grade-title','grade4','grade5','grade6','grade7']})};
+  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions','grade-title','grade4','grade5','grade6','grade7','grade8']})};
   const document={getElementById:id=>elements.get(id),createElement:()=>new Element(),querySelectorAll:sel=>sel==='#choices button'?allChoices:[],addEventListener(){},fullscreenEnabled:false,documentElement:{},hidden:false};
   const localStorage={getItem:k=>{if(blocked==='read') throw Error('blocked'); return store[k]||null;},setItem:(k,v)=>{if(blocked) throw Error('quota'); store[k]=v;}};
   const context=vm.createContext({window:{},document,localStorage,setTimeout:()=>0,setInterval:()=>0,clearInterval(){},console});
-  vm.runInContext(missionsSource,context); vm.runInContext(grade5Source,context); vm.runInContext(grade6Source,context); vm.runInContext(grade7Source,context); vm.runInContext(gameSource,context);
-  return {elements,store,missions:context.window.BIOQUEST_MISSIONS, grade5:context.window.BIOQUEST_GRADE5, grade6:context.window.BIOQUEST_GRADE6, grade7:context.window.BIOQUEST_GRADE7, click:id=>{assert.ok(elements.get(id),`missing ${id}`);elements.get(id).click();}, choices:()=>allChoices};
+  vm.runInContext(missionsSource,context); vm.runInContext(grade5Source,context); vm.runInContext(grade6Source,context); vm.runInContext(grade7Source,context); vm.runInContext(grade8Source,context); vm.runInContext(gameSource,context);
+  return {elements,store,missions:context.window.BIOQUEST_MISSIONS, grade5:context.window.BIOQUEST_GRADE5, grade6:context.window.BIOQUEST_GRADE6, grade7:context.window.BIOQUEST_GRADE7, grade8:context.window.BIOQUEST_GRADE8, click:id=>{assert.ok(elements.get(id),`missing ${id}`);elements.get(id).click();}, choices:()=>allChoices};
 }
 test('all missions are consistent and the full campaign unlocks, saves, resumes and completes',()=>{
   let app=boot(); const missions=app.missions; assert.equal(missions.length,5);
@@ -62,7 +63,7 @@ test('all missions are consistent and the full campaign unlocks, saves, resumes 
 });
 test('grade 4 game ships local, valid references and accessible viewport controls',()=>{
  const html=fs.readFileSync(path.join(dir,'index.html'),'utf8');
- for(const ref of ['missions.js','grade5.js','grade6.js','grade7.js','game.js','style.css']) {assert.ok(html.includes(ref));assert.ok(fs.existsSync(path.join(dir,ref)));}
+ for(const ref of ['missions.js','grade5.js','grade6.js','grade7.js','grade8.js','game.js','style.css']) {assert.ok(html.includes(ref));assert.ok(fs.existsSync(path.join(dir,ref)));}
  assert.match(html,/name="viewport"/); assert.match(html,/lang="en"/);
  assert.ok(fs.existsSync(path.join(dir,'thumb.webp')));
  const css=fs.readFileSync(path.join(dir,'style.css'),'utf8'); assert.match(css,/max-width:560px/); assert.match(css,/prefers-reduced-motion/);
@@ -142,9 +143,9 @@ function solve(app, t, start = 0) {
   assert.ok(app.choices().every(b => b.disabled)); app.click('next');
  }
 }
-test('all twenty missions have valid distinct tasks and explanations', () => {
- const app = boot(), all = [4,5,6,7].flatMap(g => pathFor(app,g));
- assert.equal(new Set(all.map(m=>m.id)).size,20);
+test('all twenty-five missions have valid distinct tasks and explanations', () => {
+ const app = boot(), all = [4,5,6,7,8].flatMap(g => pathFor(app,g));
+ assert.equal(new Set(all.map(m=>m.id)).size,25);
  for(const m of all) {
   assert.equal(m.tasks.length,3); assert.ok(m.intro && m.learn && m.theme);
   for(const t of m.tasks) {
@@ -220,4 +221,13 @@ test('stale hints cannot replace the active grade hint',()=>{
  const app=boot(); app.click('grade6'); app.click('continue'); app.click('start');
  const stale=app.elements.get('hint').onclick; app.click('back'); app.click('grade7'); app.click('continue'); app.click('start');
  app.click('hint'); const text=app.elements.get('hint-text').textContent; stale(); assert.equal(app.elements.get('hint-text').textContent,text);
+});
+test('Grade 8 campaign completes and preserves prior grade checkpoints',()=>{
+ let app=boot({[KEY]:JSON.stringify({selectedGrade:7,completed:['living','g5-biodiversity','g6-photosynthesis','g7-biosphere'],checkpoints:{4:{mission:'plants',task:1,item:0,mistakes:2},5:{mission:'g5-skeletons',task:1,item:0,mistakes:1},6:{mission:'g6-nutrients',task:1,item:0,mistakes:0},7:{mission:'g7-classification',task:1,item:0,mistakes:0}}})});
+ app.click('grade8');assert.equal(app.elements.get('grade-title').textContent,'Grade 8: Energy and ecosystems');assert.equal(app.elements.get('missions').children[1].disabled,true);
+ app.click('continue');app.click('start');app.click('hint');assert.equal(app.elements.get('hint-text').hidden,false);
+ const correct=labelsFor(app.grade8[0].tasks[0])[0];app.choices().find(b=>b.textContent!==correct).click();assert.match(app.elements.get('feedback').textContent,/Not quite/);app=boot(app.store);app.click('continue');
+ for(let i=0;i<5;i++){for(const task of app.grade8[i].tasks)solve(app,task);if(i<4){app.click('next-mission');app.click('start');}}
+ assert.match(app.elements.get('app').html,/The reserve has a brighter future/);const saved=JSON.parse(app.store[KEY]);assert.equal(saved.completed.filter(id=>id.startsWith('g8-')).length,5);for(const g of [4,5,6,7])assert.equal(saved.checkpoints[g].task,1);assert.equal(saved.checkpoints[8],undefined);
+ app.click('journal');app=boot(app.store);assert.equal(app.elements.get('progress').textContent,'5 / 5 restored');
 });

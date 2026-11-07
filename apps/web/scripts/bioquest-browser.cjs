@@ -119,9 +119,10 @@ async function campaign(page, grade) {
     // A fresh save permits a complete campaign without using unlock shortcuts.
     await page.evaluate(k => localStorage.removeItem(k), key); await page.reload();
     await campaign(page, 7);
+    await campaign(page, 8);
     if (width === 1440) { await campaign(page, 4); await campaign(page, 5); await campaign(page, 6); }
     await screenshot(page, `completed-${width}x${height}`);
-    console.log(`${width}x${height}: Grade 7 campaign, hints, retry, repeated answer, reload, grade saves, replay, fullscreen and audio controls passed`);
+    console.log(`${width}x${height}: Grades 7 and 8 campaigns, hints, retry, repeated answer, reload, grade saves, replay, fullscreen and audio controls passed`);
     await context.close();
   }
   for (const mode of ['read-denied', 'write-denied', 'malformed']) {
