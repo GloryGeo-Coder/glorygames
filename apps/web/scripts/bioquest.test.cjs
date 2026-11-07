@@ -25,7 +25,7 @@ function boot(store = {}, blocked = '') {
     click() { if (!this.disabled && this.onclick) this.onclick(); }
   }
   for(const id of ['app','sound','fullscreen','home-template']) elements.set(id,new Element(id));
-  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions','grade-title','grade4','grade5','grade6','grade7','grade8','grade9','grade10']})};
+  elements.get('home-template').content={cloneNode:()=>({ids:['continue','progress','missions','grade-title','grade4','grade5','grade6','grade7','grade8','grade9','grade10','hero-scene']})};
   const document={getElementById:id=>elements.get(id),createElement:()=>new Element(),querySelectorAll:sel=>sel==='#choices button'?allChoices:[],addEventListener(){},fullscreenEnabled:false,documentElement:{},hidden:false};
   const localStorage={getItem:k=>{if(blocked==='read') throw Error('blocked'); return store[k]||null;},setItem:(k,v)=>{if(blocked) throw Error('quota'); store[k]=v;}};
   const context=vm.createContext({window:{},document,localStorage,setTimeout:()=>0,setInterval:()=>0,clearInterval(){},console});
@@ -334,4 +334,37 @@ test('Grade 10 finale is bounded and original save compatibility remains explici
  const html=fs.readFileSync(path.join(dir,'index.html'),'utf8');assert.ok(!html.includes('id="grade11"'));
  const app=boot({[KEY]:JSON.stringify({completed:['living'],checkpoint:{mission:'plants',task:1,item:0,mistakes:1}})});
  app.click('grade10');app.click('continue');app.click('start');app.click('back');app.click('grade4');app.click('continue');assert.match(app.elements.get('app').html,/INVESTIGATION 2/);
+});
+
+test('every mission ships distinct optimized local artwork and both animated companions', () => {
+ const crypto = require('node:crypto');
+ const app = boot(), hashes = new Set();
+ for (const grade of [4,5,6,7,8,9,10]) {
+  app.click('grade'+grade);
+  for (const m of pathFor(app,grade)) {
+   const file = path.join(dir,'assets/backgrounds',m.id+'.webp');
+   assert.ok(fs.existsSync(file), `missing background for ${m.id}`);
+   const bytes = fs.readFileSync(file);
+   assert.equal(bytes.toString('ascii',0,4),'RIFF');
+   assert.equal(bytes.toString('ascii',8,12),'WEBP');
+   assert.ok(bytes.length < 350000, `${m.id} is too large for the mobile asset budget`);
+   hashes.add(crypto.createHash('sha256').update(bytes).digest('hex'));
+  }
+  app.click('continue');
+  assert.match(app.elements.get('app').html,new RegExp(`data-scene="${pathFor(app,grade)[0].id}"`));
+  app.click('start');
+  assert.match(app.elements.get('app').html,/class="sprite nala"/);
+  assert.match(app.elements.get('app').html,/class="sprite pip"/);
+  app.click('back');
+ }
+ assert.equal(hashes.size,35,'every mission must have its own image, not a duplicate file');
+ for (const name of ['nala','pip']) {
+  const data=fs.readFileSync(path.join(dir,'assets/sprites',name+'.webp'));
+  assert.equal(data.toString('ascii',8,12),'WEBP');
+  assert.ok(data.length < 350000);
+ }
+ const css = fs.readFileSync(path.join(dir,'style.css'),'utf8');
+ assert.match(css,/@keyframes nala-frames/);assert.match(css,/@keyframes pip-frames/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(gameSource,/loading="lazy"/);
 });

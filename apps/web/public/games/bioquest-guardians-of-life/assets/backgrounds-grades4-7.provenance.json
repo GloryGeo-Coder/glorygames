@@ -1,0 +1,128 @@
+{
+  "generator": "OpenAI built-in image_gen",
+  "created": "2026-11-07",
+  "reference": "apps/web/public/games/bioquest-guardians-of-life/thumb.webp (visually inspected; style described in generation prompts)",
+  "processing": "Each background independently generated at 1536x1024. Resized to 960x640 and encoded as WebP quality 78 with Lanczos resampling. No composition edits or atlas crops.",
+  "assets": [
+    {
+      "missionId": "living",
+      "file": "backgrounds/living.webp",
+      "sourceImage": "exec-297ff3ea-7b78-41db-9da6-a20a2a97f861.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, turquoise sky, detailed natural materials and cinematic depth, matching a friendly science adventure thumbnail with a Cape mountain botanical research centre. Scene: a welcoming research garden with curved stone path, flowering proteas, aloes, a small pond and distant Table Mountain, a low garden research cottage partly hidden at far right. Eye-level wide composition, open clear lower central ground for overlay character sprites. Beautiful rich greens, golden rim light, soft shadows. Entirely environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "plants",
+      "file": "backgrounds/plants.webp",
+      "sourceImage": "exec-c4f66212-0175-459a-853f-fa9a40c3c861.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Interior of a curved-glass Victorian botanical greenhouse with leafy plant beds, hanging vines, terracotta pots, a timber potting bench and broad stone central aisle. Sunbeams through the glass, verdant indoor garden. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "growth",
+      "file": "backgrounds/growth.webp",
+      "sourceImage": "exec-17c5a706-d7a4-481e-9c64-18855ea5c3cc.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Outdoor seedling nursery beneath a pale shade-cloth canopy, orderly raised propagation trays and tiny saplings, watering cans, soil bins, low wood benches around open paved ground. Morning dew and dappled light. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "habitats",
+      "file": "backgrounds/habitats.webp",
+      "sourceImage": "exec-4d2ba78a-1ef6-4fee-b757-88d034ff9537.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: A wetland nature trail with a raised wooden boardwalk leading beside a clear reed-lined pond, water lilies, rounded boulders, a small observation platform and lush rushes. Low rolling green hills, wide open boardwalk foreground. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "shelters",
+      "file": "backgrounds/shelters.webp",
+      "sourceImage": "exec-46a3fc0a-280a-405b-a14c-0ea1d71105bc.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Woodland wildlife lookout beneath a huge spreading indigenous tree, visible natural tree hollows, tiny empty bird nests in branches, a small insect hotel and burrow opening beside a rocky bank. Rustic wooden viewing deck. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g5-biodiversity",
+      "file": "backgrounds/g5-biodiversity.webp",
+      "sourceImage": "exec-8947931c-546b-4d24-9dcf-ebb079d04432.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Broad South African savanna biodiversity reserve with umbrella thorn trees, golden grass, distant rocky koppies, a tranquil waterhole, a faraway small zebra herd, open red-earth foreground and expansive blue sky. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g5-skeletons",
+      "file": "backgrounds/g5-skeletons.webp",
+      "sourceImage": "exec-7a829589-2686-4ccf-a455-7b3f897e528b.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Bright friendly wildlife anatomy museum studio, timber and stone architecture, carefully proportioned small antelope skeleton exhibit on a stand in the background, glass specimen cabinets, clean white worktables, large windows overlooking nature. Open floor in front. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g5-foodchains",
+      "file": "backgrounds/g5-foodchains.webp",
+      "sourceImage": "exec-a6ece54a-3501-4fc6-bfe5-7154ee5a76ca.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: A sweeping grassland trail across tall golden-green grasses, low viewpoint with a tiny locust on a foreground grass stem at edge, rocky hillock with trail camera at side and distant antelope. Open dirt path curves across frame. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g5-lifecycles",
+      "file": "backgrounds/g5-lifecycles.webp",
+      "sourceImage": "exec-254c024c-2d51-42ed-856b-05e2412acdc4.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Intimate butterfly life-cycle garden with flowering shrubs, broad milkweed-like leaves with a small chrysalis hanging naturally at one edge, a few butterflies, a woven arch over a stepping-stone path and circular flower beds. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g5-interdependence",
+      "file": "backgrounds/g5-interdependence.webp",
+      "sourceImage": "exec-63ced1ad-16c6-428a-9076-0afbe819ff37.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Elevated riverside wooden observation deck overlooking a winding river with riparian trees and reeds, foreground railing at edges, a shaded seating bench at side, distant green reserve and rocky horizon. Broad clear deck for characters. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g6-photosynthesis",
+      "file": "backgrounds/g6-photosynthesis.webp",
+      "sourceImage": "exec-a4f9344a-0f75-46b5-8fec-8c51715f7a66.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Modern solar research greenhouse, angled photovoltaic panels visible outside glass roof, hydroponic channels of healthy leafy greens, broad sunbeams, water reservoir and glass roof structure, wide uncluttered central aisle. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g6-nutrients",
+      "file": "backgrounds/g6-nutrients.webp",
+      "sourceImage": "exec-d7391a84-e689-40f1-9763-46702251c296.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Colorful food discovery science laboratory with bowls of beans, grains, fruit and leafy vegetables arranged on side workbenches, simple glass vessels and microscopes at back, warm wooden cupboards, large garden window and clear floor area. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g6-balanced",
+      "file": "backgrounds/g6-balanced.webp",
+      "sourceImage": "exec-f69edd63-1918-4b8c-8d1c-cb83f80991b2.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Welcoming South African community teaching kitchen with warm brick walls, tiled backsplash, sink and clean utensil rack, baskets of fresh produce, a large preparation island to the side, open center, sunlight through windows and herb pots. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g6-ecosystems",
+      "file": "backgrounds/g6-ecosystems.webp",
+      "sourceImage": "exec-6b974435-0023-46d9-a82c-09694d3889e4.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Wild Cape fynbos river survey site, rocky clear shallow stream across a valley of pink proteas, restios and ericas, irregular sandstone boulders, rugged distant mountains and a simple timber footbridge at right. Open sandy bank foreground. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g6-foodwebs",
+      "file": "backgrounds/g6-foodwebs.webp",
+      "sourceImage": "exec-e4d93100-57ca-4a6a-9ab2-eb001ab10edd.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Reserve lookout at forest-grassland boundary, raised stone overlook, a fallen log with small mushrooms at one edge, delicate dew-covered spider web between twigs at far edge, layered grassland and wooded valley beyond. Warm golden afternoon. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g7-biosphere",
+      "file": "backgrounds/g7-biosphere.webp",
+      "sourceImage": "exec-f6f3dd18-4781-47af-8cc6-7a8d0d109ddd.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Outdoor Earth observation deck of a nature science centre, elegant globe sculpture without labels at side, curved wood viewing platform, telescope, panorama of coastline, lagoon, mountain and blue sky illustrating land water and air. No space imagery. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g7-classification",
+      "file": "backgrounds/g7-classification.webp",
+      "sourceImage": "exec-032f1ded-f5cd-4ab7-8ec0-8d417ec92ddb.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Beautiful natural history classification archive room, rounded wooden specimen cabinets, diverse unlabeled jars and botanical models on shelves, a microscope on side desk, fern and mushroom specimens under glass, broad center floor, sunlight through tall windows. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g7-animals",
+      "file": "backgrounds/g7-animals.webp",
+      "sourceImage": "exec-2e76c900-bb37-4956-a161-c3e1b46ae5f3.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: South African wildlife evidence trail in rocky bushveld, red sand path with subtle animal footprints, low stone outcrops, aloe and thorn trees, an unobtrusive trail camera on a post, distant pond and mountains. Distinct rugged terrain. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g7-plants",
+      "file": "backgrounds/g7-plants.webp",
+      "sourceImage": "exec-f6c2190c-7a6f-49f0-88c1-bab4c78d462e.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Plant diversity botanical garden with large arching tree ferns in a shaded section left, a prominent cone-bearing cycad right, flowering bean vines climbing a wooden trellis and maize patch in background, broad circular stone courtyard. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    },
+    {
+      "missionId": "g7-reproduction",
+      "file": "backgrounds/g7-reproduction.webp",
+      "sourceImage": "exec-c4d16f4e-35e7-4837-9d80-bf8f30000ae3.png",
+      "prompt": "Use case: stylized-concept. Production landscape game background, 1536x1024. Lush polished high-end 3D animated family adventure aesthetic, tactile stylized foliage, warm South African sunlight, detailed natural materials and cinematic depth, friendly science adventure at a Cape nature research centre. Scene: Sunlit pollination orchard with abundant flowering citrus trees and flowering indigenous garden borders, a few small bees visiting blossoms at edges, developing fruits on branches, wooden pergola and open ochre garden path. Macro-detailed flowers framing a wide environment. Eye-level wide composition, open clear lower central area for overlay character sprites. Rich greens, golden rim light, soft shadows. Environment only, no people, robots, humanoids, text, UI, lettering, logos, borders or watermarks."
+    }
+  ]
+}
