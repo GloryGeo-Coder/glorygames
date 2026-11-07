@@ -550,7 +550,12 @@ export function studio(canvas) {
     }
   }
   function pick(x, y) {
-    const hit = scene.pick(x, y, (m) => m.isPickable && (m.metadata?.ground || m.metadata?.id));
+    // Babylon uses the supplied predicate instead of its normal enabled/visible checks.
+    const hit = scene.pick(
+      x,
+      y,
+      (m) => m.isEnabled() && m.isVisible && m.isPickable && (m.metadata?.ground || m.metadata?.id)
+    );
     if (!hit?.hit) return null;
     return { x: hit.pickedPoint.x, z: hit.pickedPoint.z, id: hit.pickedMesh.metadata.id };
   }

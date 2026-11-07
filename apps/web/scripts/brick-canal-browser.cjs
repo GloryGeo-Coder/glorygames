@@ -160,6 +160,11 @@ async function run() {
       let repaired = await saved();
       assert.equal(repaired.boatPassed, false);
       assert.deepEqual(
+        [repaired.pieces[1].x, repaired.pieces[1].z, repaired.pieces[1].y],
+        [0, -1, 0],
+        'hidden chassis must not intercept canal placement'
+      );
+      assert.deepEqual(
         repaired.pieces.map((p) => p.mount),
         ['west', 'east']
       );
