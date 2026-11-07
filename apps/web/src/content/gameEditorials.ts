@@ -46,7 +46,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         },
         {
             "title": "Vehicle Workshop",
-            "body": "Build a cab, seat or cargo bed on a rolling chassis and choose Road, Grip or Sprint tyres. A heavier body accelerates more slowly. Follow the course map through Park, Market and Depot in order."
+            "body": "Fit a seat inside an open cab to put the builder behind the wheel. Add a cargo bed and choose Road, Grip or Sprint tyres. A heavier body accelerates more slowly. Follow the course map through Park, Market and Depot in order."
         },
         {
             "title": "Four-wheel bridge test",

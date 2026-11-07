@@ -1,5 +1,5 @@
 // The same four-stud chassis is the coordinate system for editing and driving.
-import { size, parts, TYPES, PLOT } from './model.mjs';
+import { size, parts, TYPES, PLOT, intervals, validPiece, snapHeight } from './model.mjs';
 
 export const CHASSIS_TOP = 0.96;
 export const TYRES = {
@@ -60,6 +60,42 @@ export function fitsChassis(p) {
   const { w, d, h } = size(p);
   return p.x >= -2 && p.x + w <= 2 && p.z >= -2 && p.z + d <= 2 && p.y + h <= 5 + 0.001;
 }
+// The recessed seat fits between the cab pillars in either orientation.
+function seatInCab(a, b) {
+  const seat = a.type === 'seat' ? a : b,
+    cab = a.type === 'cab' ? a : b;
+  if (seat.type !== 'seat' || cab.type !== 'cab') return false;
+  const s = size(seat),
+    c = size(cab);
+  return (
+    seat.x >= cab.x && seat.z >= cab.z && seat.x + s.w <= cab.x + c.w && seat.z + s.d <= cab.z + c.d
+  );
+}
+export function canMount(p, items, ignore) {
+  if (!fitsChassis(p)) return false;
+  const others = items.filter((b) => !(Math.abs(p.y - b.y) < 0.002 && seatInCab(p, b)));
+  return validPiece(p, others, ignore);
+}
+export function mountHeight(p, items, ignore) {
+  for (const mate of items) {
+    if (mate.id !== ignore && seatInCab(p, mate) && canMount({ ...p, y: mate.y }, items, ignore))
+      return mate.y;
+  }
+  return snapHeight(p, items, ignore);
+}
+export function drivingSeat(items) {
+  return items.find((seat) => {
+    if (seat.type !== 'seat') return false;
+    const s = size(seat);
+    return !items.some(
+      (p) =>
+        p !== seat &&
+        intervals(p, seat.x + s.w / 2, seat.z + s.d / 2).some(
+          ([bottom, top]) => bottom < seat.y + 1.48 && top > seat.y + 0.36
+        )
+    );
+  });
+}
 function footprint(piece, face) {
   const { w, d } = TYPES[piece.type];
   let { x, z } = face;
@@ -104,6 +140,8 @@ export function buildProblem(pieces) {
     if (p.y < 0.002 || mounted.some((lower) => above(lower, p))) mounted.push(p);
     else return 'A brick is unsupported. Move it down or add a support before driving.';
   }
+  if (pieces.some((p) => p.type === 'seat') && !drivingSeat(pieces))
+    return 'Clear the space above a seat for the driver.';
   return '';
 }
 function crosses(from, to, g, yaw) {

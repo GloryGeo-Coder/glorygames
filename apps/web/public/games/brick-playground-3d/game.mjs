@@ -1,5 +1,7 @@
 import {
-  fitsChassis,
+  canMount,
+  mountHeight,
+  drivingSeat,
   buildProblem,
   bodyLoad,
   TYRES,
@@ -47,6 +49,7 @@ function start() {
     car,
     jump = false,
     run = newRun(),
+    driverSeat = null,
     braking = false;
   let elapsed = 0,
     stepSound = 0,
@@ -143,15 +146,20 @@ function start() {
     return data.pieces.find((p) => p.id === selected);
   }
   function canPlace(p, ignore) {
-    return validPiece(p, data.pieces, ignore) && (kind !== 'garage' || fitsChassis(p));
+    return kind === 'garage'
+      ? canMount(p, data.pieces, ignore)
+      : validPiece(p, data.pieces, ignore);
   }
   function adjustHeight() {
     const moving = tool === 'move' ? chosen() : null;
     if (moving) {
       draft.y = moving.y;
-      if (validPiece(draft, data.pieces, selected)) return;
+      if (canPlace(draft, selected)) return;
     }
-    draft.y = snapHeight(draft, data.pieces, moving?.id);
+    draft.y =
+      kind === 'garage'
+        ? mountHeight(draft, data.pieces, moving?.id)
+        : snapHeight(draft, data.pieces, moving?.id);
   }
   function refresh() {
     const editable = mode === 'build' && car.state !== 'running';
@@ -293,6 +301,7 @@ function start() {
         announce(problem);
         return;
       }
+      driverSeat = drivingSeat(data.pieces);
       run = newRun(bodyLoad(data.pieces));
       s.chase.yaw = 0;
     }
@@ -550,6 +559,7 @@ function start() {
   }
   // A tap only moves the preview. Camera gestures never commit edits.
   const touches = new Map();
+  let lastSelectionStud = '';
   let gesture = false,
     previousPinch;
   const pinch = () => {
@@ -603,8 +613,24 @@ function start() {
     if (!pt || gesture || e.button !== 0 || mode !== 'build' || car.state === 'running') return;
     const hit = s.pick(e.clientX, e.clientY);
     if (!hit) return;
-    if (tool === 'select') select(hit.id);
-    else aim(Math.floor(hit.x + 0.00001), Math.floor(hit.z + 0.00001));
+    if (tool === 'select') {
+      let id = hit.id;
+      if (kind === 'garage' && id) {
+        const stud = Math.floor(hit.x) + ',' + Math.floor(hit.z);
+        if (lastSelectionStud === stud && selected) {
+          const stack = data.pieces
+            .filter((p) => {
+              const { w, d } = size(p);
+              return hit.x >= p.x && hit.x < p.x + w && hit.z >= p.z && hit.z < p.z + d;
+            })
+            .sort((a, b) => b.y + size(b).h - (a.y + size(a).h));
+          const current = stack.findIndex((p) => p.id === selected);
+          if (current !== -1) id = stack[(current + 1) % stack.length].id;
+        }
+        lastSelectionStud = stud;
+      }
+      select(id);
+    } else aim(Math.floor(hit.x + 0.00001), Math.floor(hit.z + 0.00001));
   };
   canvas.onpointercancel = (e) => {
     touches.delete(e.pointerId);
@@ -782,7 +808,7 @@ function start() {
     } else music.tick(elapsed, false);
     if (kind === 'garage') s.workshop(mode === 'drive', run, data.tyres);
     if (mode === 'drive') drawMap();
-    s.actors(mode, person, car, walking, elapsed);
+    s.actors(mode, person, car, walking, elapsed, driverSeat);
     s.view(mode, person, run);
     s.scene.render();
   });

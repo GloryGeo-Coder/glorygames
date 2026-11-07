@@ -66,7 +66,11 @@ function makeParts(type) {
     for (const x of [0, w - t]) for (const z of [0, d - t]) frame.push(box(x, z, 0, t, t, h - t));
     return frame;
   }
-  if (shape === 'seat') return [box(0, 0, 0, w, d, 0.36), box(0, 0, 0.36, w, 0.33, h - 0.36)];
+  if (shape === 'seat')
+    return [
+      box(0.25, 0.25, 0, w - 0.5, d - 0.5, 0.36),
+      box(0.25, 0.25, 0.36, w - 0.5, 0.32, h - 0.36)
+    ];
   if (shape === 'cargo') {
     const t = 0.22;
     return [

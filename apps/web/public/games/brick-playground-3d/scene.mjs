@@ -480,11 +480,21 @@ export function studio(canvas) {
     if (!hit?.hit) return null;
     return { x: hit.pickedPoint.x, z: hit.pickedPoint.z, id: hit.pickedMesh.metadata.id };
   }
-  function actors(mode, a, c, walk, t) {
-    person.setEnabled(kind !== 'garage');
-    person.position.set(a.x, a.y, a.z);
-    person.rotation.y = a.heading;
-    legs.forEach((l, i) => (l.rotation.x = walk ? Math.sin(t * 11 + i * Math.PI) * 0.43 : 0));
+  function actors(mode, a, c, walk, t, seat) {
+    const seated = mode === 'drive' && seat;
+    person.parent = seated ? chassis : null;
+    person.setEnabled(kind !== 'garage' || Boolean(seated));
+    if (seated) {
+      const s = size(seat);
+      person.position.set(seat.x + s.w / 2, CHASSIS_TOP + seat.y + 0.36 - 0.63, seat.z + s.d / 2);
+      person.rotation.y = (-seat.r * Math.PI) / 2;
+    } else {
+      person.position.set(a.x, a.y, a.z);
+      person.rotation.y = a.heading;
+    }
+    legs.forEach(
+      (l, i) => (l.rotation.x = seated ? -1.22 : walk ? Math.sin(t * 11 + i * Math.PI) * 0.43 : 0)
+    );
     car.setEnabled(kind === 'bridge');
     car.position.set(c.x, c.y + (c.state === 'fell' ? -0.48 : 0), c.z);
     car.rotation.z = c.pitch + (c.state === 'fell' ? -0.32 : 0);

@@ -5,6 +5,9 @@ import {
   bodyLoad,
   buildProblem,
   fitsChassis,
+  canMount,
+  mountHeight,
+  drivingSeat,
   GATES,
   TYRES,
   newRun
@@ -98,4 +101,17 @@ test('vehicle geometry, tyres and completed lap are stored independently from ex
   assert.deepEqual(loadWorld('garage', storage), garage);
   assert.deepEqual(loadWorld('free', storage), world('free'));
   assert.deepEqual(loadWorld('bridge', storage), world('bridge'));
+});
+
+test('a recessed seat fits inside an open cab, with headroom and independent chassis support', () => {
+  const cab = brick('cab', -1, -1),
+    seat = brick('seat', -1, -1);
+  assert.equal(mountHeight(seat, [cab]), 0);
+  assert.ok(canMount(seat, [cab]));
+  assert.equal(mountHeight(cab, [seat]), 0);
+  assert.ok(canMount(cab, [seat]));
+  assert.equal(drivingSeat([cab, seat]), seat);
+  assert.equal(canMount({ ...seat, x: -2 }, [cab]), true); // adjacent seat is also legal
+  assert.equal(canMount({ ...seat, z: 0 }, [cab]), false); // partial overlap hits the cab footprint
+  assert.equal(drivingSeat([seat, brick('square', -1, -1, 1)]), undefined);
 });

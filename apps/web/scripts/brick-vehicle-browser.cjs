@@ -98,12 +98,22 @@ async function run() {
       await p.locator('[aria-label="Sun"]').click();
       await stud(-0.5, -1.5, 1.3);
       await activate('place');
-      assert.equal((await saved()).pieces.length, 3);
+      await p.locator('[data-type="seat"]').click();
+      await stud(-0.5, 0.5, 3.3);
+      await activate('place');
+      assert.equal((await saved()).pieces.length, 4);
+      assert.equal((await saved()).pieces.at(-1).y, (await saved()).pieces[1].y);
       assert.deepEqual(
         (await saved()).pieces.map((p) => p.type),
-        ['floor', 'cab', 'cargo']
+        ['floor', 'cab', 'cargo', 'seat']
       );
       await activate('select');
+      await stud(-0.5, 0.5, 3.3);
+      await stud(-0.5, 0.5, 3.3);
+      assert.equal(await p.locator('#readout').textContent(), 'Seat');
+      await p.locator('[aria-label="Chalk"]').click();
+      await activate('paint');
+      assert.equal((await saved()).pieces.at(-1).color, 'Chalk');
       await stud(-1.5, -1.5, 1.3);
       await activate('remove');
       assert.ok(await p.locator('#play').isDisabled());
@@ -115,11 +125,16 @@ async function run() {
       assert.equal(before.tyres, 'grip');
       assert.equal(before.name, 'Sunbird');
       assert.equal(await p.locator('#worldName').textContent(), 'Sunbird');
-      assert.equal((await pose()).attached, 3);
+      assert.equal((await pose()).attached, 4);
       await activate('select'); // Hide the placement ghost while viewing the saved design.
       await shot('workshop');
       await activate('play');
       assert.ok(await p.locator('#routeMap').isVisible());
+      await p.waitForFunction(
+        () =>
+          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder').parent?.name ===
+          'Workshop chassis'
+      );
       await shot('starting-grid');
       if (mobile) {
         await p.setViewportSize({ width: 820, height: 393 });
