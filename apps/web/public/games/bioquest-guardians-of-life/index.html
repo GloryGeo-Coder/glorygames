@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <script defer src="missions.js"></script>
   <script defer src="grade5.js"></script>
+  <script defer src="grade6.js"></script>
   <script defer src="game.js"></script>
 </head>
 <body>
@@ -17,14 +18,14 @@
       <div class="top-actions"><button id="sound" class="icon-btn" type="button" aria-label="Turn sound on">♪ <span>Sound off</span></button><button id="fullscreen" class="icon-btn" type="button" hidden>⛶ <span>Fullscreen</span></button></div>
     </header>
     <main id="app" tabindex="-1"></main>
-    <footer>Grades 4–5 · Natural Sciences and Technology · Life and Living</footer>
+    <footer>Grades 4–6 · Natural Sciences and Technology · Life and Living</footer>
   </div>
   <template id="home-template">
     <section class="hero">
       <div class="hero-art" aria-hidden="true"><span class="sun"></span><span class="cloud cloud-one"></span><span class="cloud cloud-two"></span><span class="hill hill-back"></span><span class="hill hill-front"></span><span class="hero-tree">🌳</span><span class="hero-flowers">🌼 🌿 🌻</span><span class="hero-drone">✦</span><span class="hero-explorer">👩🏽‍🔬</span></div>
       <div class="hero-content"><p class="eyebrow">THE NATURE RESEARCH CENTRE NEEDS YOU</p><h1>Every discovery<br><em>brings life back.</em></h1><p>Join explorer Nala and her helpful drone Pip. Investigate the living world and restore the centre, one discovery at a time.</p><div class="hero-buttons"><button class="primary" id="continue" type="button">Start exploring <span>→</span></button><span class="hero-note">✦ No timer · Learn at your own pace</span></div></div>
     </section>
-    <section class="map-section"><div class="grade-picker" role="group" aria-label="Choose a grade"><span>CHOOSE YOUR LEARNING PATH</span><button id="grade4" class="grade-button" type="button">Grade 4</button><button id="grade5" class="grade-button" type="button">Grade 5</button></div><div class="section-head"><div><p class="eyebrow">YOUR FIELD JOURNAL</p><h2 id="grade-title">Grade 4: Life begins here</h2><p>Complete each investigation to open the next location.</p></div><div class="progress-pill" id="progress"></div></div><div id="missions" class="mission-grid"></div></section>
+    <section class="map-section"><div class="grade-picker" role="group" aria-label="Choose a grade"><span>CHOOSE YOUR LEARNING PATH</span><button id="grade4" class="grade-button" type="button">Grade 4</button><button id="grade5" class="grade-button" type="button">Grade 5</button><button id="grade6" class="grade-button" type="button">Grade 6</button></div><div class="section-head"><div><p class="eyebrow">YOUR FIELD JOURNAL</p><h2 id="grade-title">Grade 4: Life begins here</h2><p>Complete each investigation to open the next location.</p></div><div class="progress-pill" id="progress"></div></div><div id="missions" class="mission-grid"></div></section>
     <section class="learn-note"><span>🔎</span><div><strong>Think like a scientist</strong><p>Observe carefully, test your ideas and learn from each discovery. There is always time to try again.</p></div></section>
   </template>
 </body>
