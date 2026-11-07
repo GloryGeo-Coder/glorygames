@@ -1,5 +1,6 @@
+import { PIVOTS, FERRY, hingeAngle, mountOf } from './canal.mjs';
 import { CHASSIS_TOP, TYRES, GATES, GATE_HALF_WIDTH } from './vehicle.mjs';
-import { TYPES, PALETTE, parts, size } from './model.mjs';
+import { TYPES, PALETTE, parts, size, hasChannel } from './model.mjs';
 const B = window.BABYLON,
   V = (x, y, z) => new B.Vector3(x, y, z);
 export function studio(canvas) {
@@ -136,8 +137,13 @@ export function studio(canvas) {
   }
   function transform(mesh, p) {
     const s = size(p);
-    mesh.parent = kind === 'garage' ? chassis : null;
-    mesh.position.set(p.x + s.w / 2, p.y + (kind === 'garage' ? CHASSIS_TOP : 0), p.z + s.d / 2);
+    const side = kind === 'canal' ? mountOf(p) : 'fixed';
+    mesh.parent = kind === 'garage' ? chassis : leaves[side] || null;
+    mesh.position.set(
+      p.x + s.w / 2 - (PIVOTS[side] ?? 0),
+      p.y + (kind === 'garage' ? CHASSIS_TOP : 0),
+      p.z + s.d / 2
+    );
     mesh.rotation.y = (-p.r * Math.PI) / 2;
   }
   let preview = null,
@@ -206,6 +212,7 @@ export function studio(canvas) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
     kind = next;
+    canalMechanism(0, -8);
     const scenery = [];
     const block = (...args) => {
       const m = box('Neighbourhood', ...args);
@@ -229,7 +236,7 @@ export function studio(canvas) {
     block(0, -0.25, 13.4, 77, 0.45, 5.8, '#56666a');
     block(0, -0.13, 10.75, 76, 0.24, 1.5, '#dec9a8');
     for (let i = -32; i < 32; i += 4) block(i, 0, 13.4, 1.9, 0.035, 0.11, '#fff1bb');
-    if (kind !== 'bridge') land(0, 20);
+    if (!hasChannel(kind)) land(0, 20);
     else {
       land(-6.5, 7);
       land(6.5, 7);
@@ -247,14 +254,30 @@ export function studio(canvas) {
     // Grid lines sit on the plot, leaving the water visible below the bridge.
     const lines = [];
     for (let i = -10; i <= 10; i++) {
-      if (kind !== 'bridge' || i <= -3 || i >= 3) lines.push([V(i, 0.012, -10), V(i, 0.012, 10)]);
-      for (const [start, end] of kind !== 'bridge'
+      if (!hasChannel(kind) || i <= -3 || i >= 3) lines.push([V(i, 0.012, -10), V(i, 0.012, 10)]);
+      for (const [start, end] of !hasChannel(kind)
         ? [[-10, 10]]
         : [
             [-10, -3],
             [3, 10]
           ])
         lines.push([V(start, 0.012, i), V(end, 0.012, i)]);
+    }
+    if (kind === 'canal') {
+      for (const sign of [-1, 1]) {
+        const berthZ = sign * 8;
+        block(sign * 2.2, -0.78, berthZ, 1.4, 0.24, 3.25, '#b18657');
+        for (const dz of [-1.45, 1.45]) {
+          round(sign * 1.58, -0.68, berthZ + dz, 0.12, 1.25, '#654e3c');
+          round(sign * 1.58, -0.08, berthZ + dz, 0.13, 0.12, '#f3d8a2');
+        }
+        for (let i = 0; i < 6; i++)
+          block(sign * 2.2, -0.643, berthZ - 1.25 + i * 0.5, 1.36, 0.022, 0.025, '#7e664a');
+      }
+      const wharf = label('CANAL WHARF', -3.8, 1.3, -7.8, 3);
+      wharf.billboardMode = B.Mesh.BILLBOARDMODE_Y;
+      wharf.metadata = { sign: true };
+      worldNodes.push(wharf);
     }
     const grid = B.MeshBuilder.CreateLineSystem('Stud grid', { lines }, scene);
     grid.color = hex('#ae986e');
@@ -276,7 +299,7 @@ export function studio(canvas) {
       block(x + 0.95, 1.65, z - 2.04, 1.36, 1, 0.09, '#d5f2ef');
     }
     // A painted delivery bay marks the shop's unloading point on the east bank.
-    if (kind === 'bridge') {
+    if (hasChannel(kind)) {
       for (const z of [-0.92, 0.92]) block(9.1, 0.018, z, 1.7, 0.025, 0.08, '#197568');
       block(9.93, 0.018, 0, 0.08, 0.025, 1.84, '#197568');
     }
@@ -370,6 +393,57 @@ export function studio(canvas) {
       wheels.push(axle);
     }
   for (const m of [...person.getChildMeshes(), ...car.getChildMeshes()]) shadows.addShadowCaster(m);
+  const canalRoot = new B.TransformNode('Canal machinery', scene),
+    leaves = {};
+  for (const [side, x] of Object.entries(PIVOTS)) {
+    const root = new B.TransformNode(side + ' lifting leaf', scene);
+    root.parent = canalRoot;
+    root.position.x = x;
+    leaves[side] = root;
+    const color = side === 'west' ? '#1b8b84' : '#e49e32';
+    box('Hinge shoe', side === 'west' ? 0.5 : -0.5, -0.075, 0, 1, 0.15, 2, color, root);
+    const pin = cyl('Hinge pin', x, 0, 0, 0.15, 2.7, '#46575b', canalRoot, 16);
+    pin.rotation.x = Math.PI / 2;
+    for (const z of [-1.29, 1.29]) {
+      const housing = cyl('Bearing housing', x, 0, z, 0.24, 0.24, color, canalRoot, 14);
+      housing.rotation.x = Math.PI / 2;
+    }
+  }
+  const signalHeads = [];
+  for (const side of [-1, 1]) {
+    box('Signal base', side * 3.6, 0.22, -2, 0.42, 0.44, 0.42, '#454f4d', canalRoot);
+    cyl('Signal post', side * 3.6, 0.85, -2, 0.1, 1.0, '#718780', canalRoot, 8);
+    signalHeads.push(cyl('Road signal', side * 3.6, 1.45, -2, 0.18, 0.35, '#77b36b', canalRoot));
+  }
+  const ripples = [];
+  for (let i = 0; i < 18; i++) {
+    const x = ((i * 17) % 43) / 10 - 2.25,
+      z = -9.5 + i * 1.04;
+    ripples.push([V(x, -1.5, z), V(x + 0.33, -1.5, z + 0.045), V(x + 0.67, -1.5, z)]);
+  }
+  const waves = B.MeshBuilder.CreateLineSystem('Canal ripples', { lines: ripples }, scene);
+  waves.color = hex('#c4ece7');
+  waves.alpha = 0.56;
+  waves.isPickable = false;
+  waves.parent = canalRoot;
+  const ferry = new B.TransformNode('Canal ferry', scene);
+  ferry.parent = canalRoot;
+  for (const f of FERRY)
+    box(f.name, f.x + f.w / 2, f.y + f.h / 2, f.z + f.d / 2, f.w, f.h, f.d, f.color, ferry);
+  box('Bridge windows', 0, -0.57, 0.407, 0.82, 0.33, 0.024, '#a6d8d8', ferry);
+  for (const sign of [-1, 1])
+    box('Cabin window', sign * 0.524, -0.57, -0.2, 0.025, 0.32, 0.72, '#a6d8d8', ferry);
+  for (const mesh of canalRoot.getChildMeshes()) shadows.addShadowCaster(mesh);
+  canalRoot.setEnabled(false);
+  function canalMechanism(angle, boatZ, moving = false) {
+    const active = kind === 'canal';
+    canalRoot.setEnabled(active);
+    if (!active) return;
+    for (const [side, node] of Object.entries(leaves)) node.rotation.z = hingeAngle(side, angle);
+    ferry.position.z = boatZ;
+    const color = moving ? '#efbb47' : angle > 0 ? '#db6050' : '#75c481';
+    for (const signal of signalHeads) signal.material = mat(color);
+  }
   const chassis = new B.TransformNode('Workshop chassis', scene);
   const base = box('Mounting plate', 0, CHASSIS_TOP - 0.16, 0, 4, 0.32, 4, '#288478', chassis);
   base.isPickable = true;
@@ -495,7 +569,7 @@ export function studio(canvas) {
     legs.forEach(
       (l, i) => (l.rotation.x = seated ? -1.22 : walk ? Math.sin(t * 11 + i * Math.PI) * 0.43 : 0)
     );
-    car.setEnabled(kind === 'bridge');
+    car.setEnabled(hasChannel(kind));
     car.position.set(c.x, c.y + (c.state === 'fell' ? -0.48 : 0), c.z);
     car.rotation.z = c.pitch + (c.state === 'fell' ? -0.32 : 0);
     car.rotation.x = -c.roll;
@@ -519,6 +593,7 @@ export function studio(canvas) {
     drawPieces,
     ghost,
     actors,
-    workshop
+    workshop,
+    canalMechanism
   };
 }

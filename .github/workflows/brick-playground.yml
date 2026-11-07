@@ -6,6 +6,7 @@ on:
       - 'apps/web/public/play/brick-playground-3d.html'
       - 'apps/web/scripts/brick-playground*'
       - 'apps/web/scripts/brick-vehicle*'
+      - 'apps/web/scripts/brick-canal*'
       - '.github/workflows/brick-playground.yml'
 permissions:
   contents: read
@@ -20,7 +21,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
-      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs
+      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs apps/web/scripts/brick-canal.test.mjs
       - run: npm ci --prefix apps/web --ignore-scripts --no-audit --no-fund
       - run: npm run build --prefix apps/web
       - name: Prepare Chromium
@@ -39,6 +40,7 @@ jobs:
           curl --retry 20 --retry-delay 1 --retry-all-errors -fsS http://127.0.0.1:3000/play/brick-playground-3d -o /dev/null
           node scripts/brick-playground-browser.cjs
           node scripts/brick-vehicle-browser.cjs
+          node scripts/brick-canal-browser.cjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
