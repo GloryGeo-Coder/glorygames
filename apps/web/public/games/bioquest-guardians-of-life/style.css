@@ -5,3 +5,5 @@
 .solar{background:linear-gradient(150deg,#79994d,#28624b)}.nutrition{background:linear-gradient(150deg,#ad8452,#526b43)}.kitchen{background:linear-gradient(150deg,#b08957,#536848)}.fynbos{background:linear-gradient(150deg,#867da0,#365f58)}.web{background:linear-gradient(150deg,#5e8c77,#264e40)}
 
 .planet{background:linear-gradient(150deg,#447b9a,#225c51)}.archive{background:linear-gradient(150deg,#7d719b,#365b57)}.wildlife{background:linear-gradient(150deg,#987c4b,#375d43)}.seedgarden{background:linear-gradient(150deg,#658947,#285c51)}.pollinator{background:linear-gradient(150deg,#a07483,#55683d)}
+/* Keep decorative artwork separate from readable copy on small phones. */
+@media(max-width:560px){.hero{display:block;min-height:0}.hero-art{position:relative;height:180px;opacity:1;background:linear-gradient(#5d9c65,#235a42)}.hero-content{position:relative;padding:25px}.hero-tree{bottom:0;right:3%;opacity:1}.hero-explorer{bottom:0;right:43%;opacity:1}.hero-drone{top:18%;right:43%}.hero-flowers{bottom:0}.sun{width:75px;height:75px;top:8%;right:15%}}

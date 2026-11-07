@@ -74,6 +74,11 @@ async function campaign(page, grade) {
     await page.goto(url); await fit(page); await page.locator('#grade7').click();
     assert.equal(await page.locator('#grade7').getAttribute('aria-pressed'), 'true');
     assert.equal(await page.locator('.mission-card:disabled').count(), 4);
+    if (width <= 560) {
+      const art = await page.locator('.hero-art').boundingBox();
+      const copy = await page.locator('.hero-content').boundingBox();
+      assert.ok(art.y + art.height <= copy.y + 1, 'phone hero art overlaps reading area');
+    }
     await screenshot(page, `home-${width}x${height}`);
     await page.locator('#continue').click(); await fit(page); await screenshot(page, `intro-${width}x${height}`); await page.locator('#back').click();
     // Cancelling an introduction must not create a checkpoint.
