@@ -47,8 +47,12 @@ async function checkSurvey(p, id, tap, keyboard = false) {
     await p.evaluate(([k, id]) => JSON.parse(localStorage.getItem(k)).observations.includes(id), [key, id]),
     true
   );
-  if (process.env.BIOQUEST_SCREENSHOTS && id==='kit-pollinator') {
-    await p.locator('.survey').screenshot({path:path.join(process.env.BIOQUEST_SCREENSHOTS,'lens-'+p.viewportSize().width+'.png')});
+  if (process.env.BIOQUEST_SCREENSHOTS && id === 'kit-pollinator') {
+    await p
+      .locator('.survey')
+      .screenshot({
+        path: path.join(process.env.BIOQUEST_SCREENSHOTS, 'lens-' + p.viewportSize().width + '.png')
+      });
   }
   await p.locator('#survey-done').click();
 }
@@ -83,9 +87,11 @@ async function checkSurvey(p, id, tap, keyboard = false) {
         });
       }
       await p.locator('#continue').click();
-      if(process.env.BIOQUEST_SCREENSHOTS){
-        await p.locator('.brief-art .scene-image').evaluate(img=>img.decode());
-        await p.locator('.brief').screenshot({path:path.join(process.env.BIOQUEST_SCREENSHOTS,'mission-'+width+'.png')});
+      if (process.env.BIOQUEST_SCREENSHOTS) {
+        await p.locator('.brief-art .scene-image').evaluate((img) => img.decode());
+        await p
+          .locator('.brief')
+          .screenshot({ path: path.join(process.env.BIOQUEST_SCREENSHOTS, 'mission-' + width + '.png') });
       }
       await p.locator('#survey-site').click();
       await checkSurvey(p, 'living', touch, !touch);
@@ -98,7 +104,12 @@ async function checkSurvey(p, id, tap, keyboard = false) {
       );
       // Drag the actual sample, including a failed drop and a successful one.
       const sample = p.locator('#specimen');
-      assert.ok(await sample.locator('img').evaluate(async img=>{await img.decode();return img.naturalWidth>=120;}));
+      assert.ok(
+        await sample.locator('img').evaluate(async (img) => {
+          await img.decode();
+          return img.naturalWidth >= 120;
+        })
+      );
       await sample.scrollIntoViewIfNeeded();
       const drag = async (label) => {
         const r = await sample.boundingBox(),
@@ -143,10 +154,7 @@ async function checkSurvey(p, id, tap, keyboard = false) {
       await p.locator('.study-card').first().click();
       await p.locator('#guide').click();
       await p.locator('#scan').click();
-      if (process.env.BIOQUEST_SCREENSHOTS && id==='kit-pollinator') {
-    await p.locator('.survey').screenshot({path:path.join(process.env.BIOQUEST_SCREENSHOTS,'lens-'+p.viewportSize().width+'.png')});
-  }
-  await p.locator('#survey-done').click();
+      await p.locator('#survey-done').click();
       assert.equal(await p.locator('#field-notes li').count(), 4, 'replay cannot duplicate a field note');
       assert.deepEqual(errors, []);
       await c.close();
