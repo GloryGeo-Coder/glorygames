@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { gamePagePath } from "@/lib/gamePaths";
 import { GAME_EDITORIALS } from "@/content/gameEditorials";
 
 const SITE_URL = "https://webgamearena.com";
@@ -32,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const gameRoutes: MetadataRoute.Sitemap = Object.keys(GAME_EDITORIALS)
     .sort()
     .map((slug) => ({
-      url: `${SITE_URL}/play/${slug}`,
+      url: `${SITE_URL}${gamePagePath(slug)}`,
       changeFrequency: "monthly" as const,
       priority: 0.8,
     }));

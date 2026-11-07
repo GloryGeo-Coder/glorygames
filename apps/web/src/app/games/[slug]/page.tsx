@@ -1,6 +1,8 @@
 // apps/web/src/app/games/[slug]/page.tsx
 
+import { gamePagePath } from "@/lib/gamePaths";
 import type { Metadata } from "next";
+import PlayPage from "@/app/play/[slug]/page";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GameThumb } from "@/components/GameThumb";
@@ -156,7 +158,7 @@ export async function generateMetadata({
       ...(game?.tags ?? []),
     ],
     alternates: {
-      canonical: `/play/${slug}`,
+      canonical: gamePagePath(slug),
     },
     openGraph: {
       title: `${title} Game | WebGameArena`,
@@ -172,7 +174,7 @@ export async function generateMetadata({
       description,
     },
     robots: {
-      index: false,
+      index: slug === "brick-playground-3d",
       follow: true,
     },
   };
@@ -184,6 +186,7 @@ export default async function GameDetailsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  if (slug === "brick-playground-3d") return PlayPage({ params });
   const game = await getGame(slug);
 
   if (!game) {
@@ -214,7 +217,7 @@ export default async function GameDetailsPage({
     "@type": "VideoGame",
     name: game.title,
     description: editorial?.summary ?? game.description ?? game.title,
-    url: `${SITE_URL}/play/${game.slug}`,
+    url: `${SITE_URL}${gamePagePath(game.slug)}`,
     applicationCategory: "Game",
     genre: category,
     keywords: game.tags.join(", "),
@@ -261,7 +264,7 @@ export default async function GameDetailsPage({
                 </div>
 
                 <div className="gameDetailActions">
-                  <Link className="cta" href={`/play/${game.slug}`}>
+                  <Link className="cta" href={gamePagePath(game.slug)}>
                     Play Now →
                   </Link>
 
@@ -282,7 +285,7 @@ export default async function GameDetailsPage({
                     <span>No downloads required</span>
                   </div>
 
-                  <Link className="playBtn" href={`/play/${game.slug}`}>
+                  <Link className="playBtn" href={gamePagePath(game.slug)}>
                     Launch
                   </Link>
                 </div>
@@ -373,7 +376,7 @@ export default async function GameDetailsPage({
 
               <div className="grid">
                 {relatedGames.map((g) => (
-                  <Link key={g.id} href={`/play/${g.slug}`} className="tile">
+                  <Link key={g.id} href={gamePagePath(g.slug)} className="tile">
                     <div
                       className="thumb thumbWrap"
                       style={{ position: "relative", overflow: "hidden" }}

@@ -1,5 +1,6 @@
 // apps/web/src/app/page.tsx
 
+import { gamePagePath } from "@/lib/gamePaths";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getGamesFromDatabase } from "@/lib/gamesDb";
@@ -558,7 +559,7 @@ export default async function HomePage() {
             {playNowGames.map((g, index) => (
               <Link
                 key={g.id}
-                href={`/play/${g.slug}`}
+                href={gamePagePath(g.slug)}
                 className={`popularGameCard ${
                   index === 0 ? "featuredGameCard" : ""
                 }`}

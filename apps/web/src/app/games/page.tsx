@@ -1,5 +1,6 @@
 // apps/web/src/app/games/page.tsx
 
+import { gamePagePath } from "@/lib/gamePaths";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GameThumb } from "@/components/GameThumb";
@@ -422,7 +423,7 @@ export default async function GamesPage({
               const tags = (g.tags || []).slice(0, 3);
 
               return (
-                <Link key={g.id} href={`/play/${g.slug}`} className="tile">
+                <Link key={g.id} href={gamePagePath(g.slug)} className="tile">
                   <div
                     className={`thumb ${thumbVariant}`}
                     style={{ position: "relative", overflow: "hidden" }}

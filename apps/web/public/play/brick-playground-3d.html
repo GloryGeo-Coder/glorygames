@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Brick Playground 3D · WebGameArena</title>
+    <base href="/games/brick-playground-3d/" />
+    <link rel="stylesheet" href="studio.css" />
+    <script defer src="/games/space-dodger/vendor/babylon-9.31.0.js"></script>
+    <script type="module" src="game.mjs"></script>
+  </head>
+  <body>
+    <canvas id="plot" aria-label="3D construction plot" tabindex="0"></canvas>
+    <header>
+      <div class="wordmark">
+        <i aria-hidden="true">▦</i><span>BRICK<br />PLAYGROUND <small>3D</small></span>
+      </div>
+      <button id="worlds" aria-haspopup="dialog">
+        <small>WORLD</small><span id="worldName">My corner plot</span> ▾
+      </button>
+      <div class="switch" aria-label="Studio mode">
+        <button id="build" aria-pressed="true">Build</button
+        ><button id="play" aria-pressed="false">Play</button>
+      </div>
+    </header>
+    <div class="side">
+      <button id="view" title="Toggle overhead view" aria-label="Top-down view">⊞</button
+      ><button id="closer" aria-label="Zoom in">+</button
+      ><button id="farther" aria-label="Zoom out">−</button
+      ><button id="center" aria-label="Centre view on preview" title="Centre on preview">◎</button
+      ><button id="home" hidden>Return</button>
+    </div>
+    <section id="delivery" hidden>
+      <b>Bridge the Gap</b><span id="result">Connect both banks along the marked lane.</span
+      ><button id="test">Test buggy</button>
+    </section>
+    <div id="notice" role="status"></div>
+    <section id="bench" aria-label="Brick editor">
+      <div class="tools">
+        <div class="seg">
+          <button id="add" aria-pressed="true">Add</button
+          ><button id="select" aria-pressed="false">Select</button>
+        </div>
+        <button id="rotate" title="Rotate 90 degrees">↻ Rotate</button
+        ><button id="undo">↶ Undo</button> <button class="primary" id="place">Place brick</button>
+      </div>
+      <div id="editTools" hidden>
+        <button id="move">Move</button><button id="duplicate">Duplicate</button
+        ><button id="paint">Paint</button><button id="remove">Remove</button>
+      </div>
+      <div class="shelf"><div id="tray" aria-label="Pieces"></div></div>
+      <div class="finish">
+        <div id="colors" aria-label="Brick colours"></div>
+        <output id="readout"></output>
+      </div>
+    </section>
+    <div id="walk" hidden>
+      <div id="stick" role="group" aria-label="Movement joystick"><i></i></div>
+      <button id="jump">Jump ↑</button>
+    </div>
+    <dialog id="menu">
+      <form method="dialog">
+        <h2>Your worlds</h2>
+        <button value="close" aria-label="Close menu">×</button>
+      </form>
+      <label for="name">World name</label><input id="name" maxlength="40" autocomplete="off" />
+      <p id="stored">Autosaves on this device.</p>
+      <div class="worldlist">
+        <button id="freeWorld">Free Build <span>Your neighbourhood plot</span></button
+        ><button id="bridgeWorld">
+          Bridge the Gap <span>Construct a crossing for the delivery buggy</span>
+        </button>
+      </div>
+      <p class="guide">
+        Tap the plot to aim, then Place. Drag to orbit. Pinch to zoom or pan. Use Select to change a
+        brick. On a keyboard, use arrows to aim, R to rotate, Enter to place, Tab between controls,
+        and WASD and Space to explore.
+      </p>
+      <div class="menufoot">
+        <button id="audio">Mute audio</button><button id="fullscreen">Fullscreen</button
+        ><a href="/games/brick-playground-3d/">Game page</a>
+      </div>
+    </dialog>
+    <noscript>Enable JavaScript to open the brick workshop.</noscript>
+  </body>
+</html>

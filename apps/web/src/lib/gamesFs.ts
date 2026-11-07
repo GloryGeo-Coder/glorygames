@@ -184,8 +184,7 @@ export async function scanGamesFolder(): Promise<FsGame[]> {
 
     const folder = path.join(gamesDir, slug);
 
-    const indexPath = path.join(folder, "index.html");
-    const hasIndex = fssync.existsSync(indexPath);
+    const hasIndex = hasGameEntry(gamesDir, slug);
 
     const meta =
       (await readJsonIfExists(path.join(folder, "game.json"))) ??
@@ -214,8 +213,11 @@ export async function scanGamesFolder(): Promise<FsGame[]> {
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 
+function hasGameEntry(gamesDir: string, slug: string) {
+  return fssync.existsSync(path.join(gamesDir, slug, "index.html")) ||
+    fssync.existsSync(path.join(gamesDir, "..", "play", slug + ".html"));
+}
+
 export async function gameIndexExists(slug: string): Promise<boolean> {
-  const gamesDir = resolveGamesDir();
-  const p = path.join(gamesDir, slug, "index.html");
-  return fssync.existsSync(p);
+  return hasGameEntry(resolveGamesDir(), slug);
 }

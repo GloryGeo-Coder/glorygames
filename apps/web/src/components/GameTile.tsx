@@ -1,3 +1,4 @@
+import { gamePagePath } from "@/lib/gamePaths";
 import Link from "next/link";
 import { GameThumb } from "@/components/GameThumb";
 
@@ -157,7 +158,7 @@ export default function GameTile({ game }: { game: GameTileModel }) {
             </span>
           ) : (
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <Link className="playBtn" href={`/play/${game.slug}`}>
+              <Link className="playBtn" href={gamePagePath(game.slug)}>
                 Play
               </Link>
 
