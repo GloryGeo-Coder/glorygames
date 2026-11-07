@@ -373,7 +373,10 @@ function start() {
       s.chase.yaw = 0;
     }
     mode = to;
-    if (to === 'build' && onDelivery()) focusLot(data.stage - 1);
+    if (to === 'build' && onDelivery()) {
+      focusLot(data.stage - 1);
+      adjustHeight();
+    }
     clearTimeout(noticeTimer);
     $('notice').textContent = '';
     if (kind === 'garage') {

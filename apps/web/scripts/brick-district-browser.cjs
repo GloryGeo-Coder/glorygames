@@ -132,6 +132,7 @@ async function play(browser, mobile) {
       assert.ok((await position()).y < 0.05 && (await p.locator('#handover').isDisabled()));
       const before = await position();
       await tap('build');
+      assert.match(await p.locator('#readout').innerText(), /↑0$/, 'approach rests on the new lot');
       // Focus a different lot, then return. This must only move the editor camera.
       await p.locator('#lot').selectOption('0');
       await p.locator('#lot').selectOption(String(i + 1));
