@@ -1000,6 +1000,37 @@ dialog p {
   gap: 5px;
   flex-wrap: wrap;
 }
+#marketBoard {
+  margin: 8px 0;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  padding: 5px 8px;
+}
+#marketBoard summary {
+  font-weight: 700;
+  cursor: pointer;
+  padding: 5px 0;
+}
+#marketBoard p,
+#marketReceipts {
+  margin: 7px 0;
+  font-size: 13px;
+}
+#marketReceipts {
+  padding-left: 20px;
+}
+#marketReceipts:empty {
+  display: none;
+}
+.resident-switch #resSettings {
+  flex: 0 0 auto;
+}
+.resident-switch #resOther {
+  min-width: 0;
+}
+#marketTill {
+  background: #ffe5a5;
+}
 #resOccupied {
   font-size: 12px;
   color: var(--teal);
