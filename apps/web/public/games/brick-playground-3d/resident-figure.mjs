@@ -1,13 +1,23 @@
+import { MOVE_IN_SLOTS } from './settlement.mjs';
 import { surface } from './builder-geometry.mjs';
 
 // A distinct shopper with a knitted cap, plum jacket and a reusable market bag.
 export function residentFigure(B, scene, material, profile) {
-  const hallVisitor = profile.key === 'neighbour';
+  const hallVisitor = profile.destination === 'Community hall';
+  const extraPalettes = [
+    ['#c25e34', '#f4d780'],
+    ['#367e9b', '#e38852'],
+    ['#956899', '#d9c7a1'],
+    ['#42825b', '#f1b45a'],
+    ['#a24a59', '#a4cece'],
+    ['#6265a6', '#d8cd72']
+  ];
+  const colours = extraPalettes[MOVE_IN_SLOTS.indexOf(profile.key)];
   const root = new B.TransformNode('Resident ' + profile.name, scene),
     body = surface(B, scene);
-  const jacket = hallVisitor ? '#227e82' : '#814f85',
+  const jacket = colours?.[0] ?? (hallVisitor ? '#227e82' : '#814f85'),
     skin = '#995b3a',
-    cap = hallVisitor ? '#efce5a' : '#d88037',
+    cap = colours?.[1] ?? (hallVisitor ? '#efce5a' : '#d88037'),
     navy = '#385263';
   body.profile(
     0,
@@ -100,7 +110,11 @@ export function residentFigure(B, scene, material, profile) {
     groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
   }
   const contents = groceries.mesh(
-    hallVisitor ? 'Naledi library book' : 'Shopping bag produce',
+    hallVisitor
+      ? profile.name + ' library book'
+      : profile.key === 'resident'
+        ? 'Shopping bag produce'
+        : profile.name + ' groceries',
     root,
     material
   );
@@ -132,7 +146,7 @@ export function residentFigure(B, scene, material, profile) {
     return { leg, arm, side };
   });
   root.setEnabled(false);
-  return (trip, moving, t) => {
+  function show(trip, moving, t) {
     root.setEnabled(!!trip);
     if (!trip) return;
     root.position.set(trip.x, trip.y, trip.z);
@@ -143,5 +157,6 @@ export function residentFigure(B, scene, material, profile) {
       leg.rotation.x = swing;
       arm.rotation.x = -swing - 0.09;
     }
-  };
+  }
+  return { show, dispose: () => root.dispose() };
 }

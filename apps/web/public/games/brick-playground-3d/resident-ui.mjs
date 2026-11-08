@@ -1,4 +1,14 @@
-import { blockAt, HOUSEHOLDS, DEPARTURES } from './settlement.mjs';
+import {
+  blockAt,
+  HOUSEHOLDS,
+  DEPARTURES,
+  MOVE_IN_SLOTS,
+  householdsFor,
+  homeClaimed,
+  moveInProblem,
+  moveIn,
+  endHousehold
+} from './settlement.mjs';
 import {
   advanceTrip,
   entrance,
@@ -33,18 +43,42 @@ function label(id, value) {
   if ($(id).textContent !== value) $(id).textContent = value;
 }
 
-export function residentControls({ city, editing, save, add, focus }) {
+export function residentControls({ city, editing, save, add, focus, removeModel }) {
   const runtimes = new Map();
   let selected = null,
     watching = false,
     clock = 0;
-  const active = () => selected || HOUSEHOLDS.find(({ key }) => city()?.[key]) || HOUSEHOLDS[0];
-  const other = () => HOUSEHOLDS.find((p) => p !== active());
+  let joining = false;
+  const roster = () => householdsFor(city());
+  const active = () => selected || roster().find(({ key }) => city()?.[key]) || HOUSEHOLDS[0];
+  function other() {
+    const all = roster(),
+      start = all.findIndex((p) => p.key === active().key);
+    for (let i = 1; i < all.length; i++) {
+      const candidate = all[(start + i) % all.length];
+      if (city()[candidate.key]) return candidate;
+    }
+    return null;
+  }
+  function runtimeFor(key) {
+    if (!runtimes.has(key)) runtimes.set(key, tripRuntime());
+    return runtimes.get(key);
+  }
+  function configProfile() {
+    if (!joining) return active();
+    return {
+      key: 'new',
+
+      destination: $('resVisit').value === 'hall' ? 'Community hall' : 'Spaza'
+    };
+  }
   function reset() {
     selected = null;
     watching = false;
     clock = 0;
-    for (const { key } of HOUSEHOLDS) runtimes.set(key, tripRuntime());
+    joining = false;
+    for (const key of MOVE_IN_SLOTS) removeModel(key);
+    runtimes.clear();
   }
   reset();
   function refresh() {
@@ -53,9 +87,9 @@ export function residentControls({ city, editing, save, add, focus }) {
     if (!data) return;
     const p = active(),
       trip = data[p.key],
-      rt = runtimes.get(p.key),
+      rt = runtimeFor(p.key),
       alternate = other(),
-      second = data[alternate.key];
+      second = alternate && data[alternate.key];
     const scheduled = hasRoutines(data),
       now = data.clockMinutes ?? START_TIME;
     label('resClock', scheduled ? 'Settlement time · ' + clockLabel(now) : '');
@@ -68,7 +102,7 @@ export function residentControls({ city, editing, save, add, focus }) {
     if (second)
       label(
         'resOther',
-        'View ' + alternate.name + ' · ' + status(second, runtimes.get(alternate.key), alternate)
+        'View ' + alternate.name + ' · ' + status(second, runtimeFor(alternate.key), alternate)
       );
     label('resState', trip ? p.name + ' · ' + status(trip, rt, p) : '');
     label(
@@ -99,10 +133,10 @@ export function residentControls({ city, editing, save, add, focus }) {
     const data = city();
     let changed = tickRoutines(data, dt),
       walking = false;
-    for (const { key } of HOUSEHOLDS) {
+    for (const { key } of householdsFor(data)) {
       const trip = data[key];
       if (!trip || trip.paused || trip.phase === 'done') continue;
-      const runtime = runtimes.get(key),
+      const runtime = runtimeFor(key),
         phase = trip.phase,
         issue = runtime.issue;
       advanceTrip(data, trip, runtime, dt);
@@ -128,12 +162,11 @@ export function residentControls({ city, editing, save, add, focus }) {
   const practice = (p, data) =>
     p.key === 'resident' ? practiceSpaza(data) : practiceHallTrip(data);
   function options(shopId, homeId) {
-    const p = active(),
+    const p = configProfile(),
       data = city(),
       trip = data[p.key],
       doors = data.pieces.filter(isEntrance);
-    const otherHome = data[other().key]?.home;
-    const homes = doors.filter((d) => d.id !== otherHome);
+    const homes = doors.filter((d) => !homeClaimed(data, d.id, p.key));
     for (const [id, list] of [
       ['resHome', homes],
       ['resShop', doors]
@@ -150,7 +183,7 @@ export function residentControls({ city, editing, save, add, focus }) {
     const home = homes.find((d) => d.id === (homeId || trip?.home)) || homes[0];
     const shop =
       doors.find((d) => d.id === (shopId || trip?.shop)) ||
-      doors.find((d) => d !== home && d.id !== otherHome) ||
+      doors.find((d) => d !== home && !homeClaimed(data, d.id, p.key)) ||
       doors.find((d) => d !== home);
     $('resHousehold').value = p.key;
     $('resHome').value = home?.id || '';
@@ -158,12 +191,16 @@ export function residentControls({ city, editing, save, add, focus }) {
     label('resDestination', p.destination);
     label(
       'resDescription',
-      p.name +
-        ' walks from home to the ' +
-        p.destination.toLowerCase() +
-        ' and back. Choose two street-facing entrances.'
+      joining
+        ? 'Choose a street-facing home and destination for the new household.'
+        : p.name +
+            ' walks from home to the ' +
+            p.destination.toLowerCase() +
+            ' and back. Choose two street-facing entrances.'
     );
-    $('resPractice').hidden = !editing() || !practice(p, data);
+    $('resMoveFields').hidden = !joining;
+    $('resPractice').hidden =
+      !HOUSEHOLDS.some((h) => h.key === p.key) || !editing() || !practice(p, data);
     label(
       'resPractice',
       p.key === 'resident'
@@ -177,6 +214,7 @@ export function residentControls({ city, editing, save, add, focus }) {
         : 'Build ground-floor entrances or use an available practice layout.'
     );
     $('resEnd').hidden = $('resPause').hidden = !trip;
+    label('resEnd', MOVE_IN_SLOTS.includes(p.key) ? 'Move out' : 'End trip');
     $('resPause').textContent = trip?.paused ? 'Resume' : 'Pause';
     $('resPause').disabled = trip?.phase === 'done' && !trip?.routine;
     $('resSchedule').value = String(trip?.routine?.hour ?? '');
@@ -184,12 +222,20 @@ export function residentControls({ city, editing, save, add, focus }) {
     canStart();
   }
   function scheduleControls() {
-    const trip = city()[active().key];
+    const trip = city()[configProfile().key];
     const hour = $('resSchedule').value;
     $('resApplySchedule').hidden = !trip || String(trip.routine?.hour ?? '') === hour;
     label(
       'resStart',
-      hour ? (trip ? 'Restart routine' : 'Start routine') : trip ? 'Start new trip' : 'Start trip'
+      joining
+        ? 'Move in'
+        : hour
+          ? trip
+            ? 'Restart routine'
+            : 'Start routine'
+          : trip
+            ? 'Start new trip'
+            : 'Start trip'
     );
   }
   for (const hour of DEPARTURES)
@@ -213,14 +259,47 @@ export function residentControls({ city, editing, save, add, focus }) {
     }
   };
   function canStart() {
-    $('resStart').disabled =
-      !$('resHome').value || !$('resShop').value || $('resHome').value === $('resShop').value;
+    const home = $('resHome').value,
+      destination = $('resShop').value;
+    const problem = joining ? moveInProblem(city(), $('resName').value) : '';
+    if (joining)
+      label(
+        'resSetupHint',
+        problem ||
+          (!home
+            ? 'Build an unclaimed ground-floor home entrance.'
+            : !destination || home === destination
+              ? 'Choose a different entrance for the destination.'
+              : 'This household will use its own home and can share a destination.')
+      );
+    $('resStart').disabled = !!problem || !home || !destination || home === destination;
   }
-  for (const p of HOUSEHOLDS)
-    $('resHousehold').add(new Option(p.name + ' · ' + p.destination, p.key));
+  function rosterOptions() {
+    const occupied = roster().filter((p) => city()[p.key]).length;
+    label(
+      'resOccupied',
+      occupied + ' of ' + (HOUSEHOLDS.length + MOVE_IN_SLOTS.length) + ' household slots in use'
+    );
+    $('resHousehold').replaceChildren(
+      ...roster().map((p) => new Option(p.name + ' · ' + p.destination, p.key))
+    );
+    if (MOVE_IN_SLOTS.some((key) => !city()[key]))
+      $('resHousehold').add(new Option('Move in a household…', 'new'));
+  }
   $('resHousehold').onchange = () => {
-    choose(HOUSEHOLDS.find((p) => p.key === $('resHousehold').value));
+    joining = $('resHousehold').value === 'new';
+    if (joining) {
+      $('resName').value = '';
+      $('resVisit').value = 'spaza';
+    } else choose(roster().find((p) => p.key === $('resHousehold').value));
     options();
+  };
+  $('resName').oninput = canStart;
+  $('resVisit').onchange = () => {
+    const schedule = $('resSchedule').value;
+    options($('resShop').value, $('resHome').value);
+    $('resSchedule').value = schedule;
+    scheduleControls();
   };
   $('resOther').onclick = () => {
     const follow = watching;
@@ -229,6 +308,8 @@ export function residentControls({ city, editing, save, add, focus }) {
   };
   $('resHome').onchange = $('resShop').onchange = canStart;
   $('resSettings').onclick = () => {
+    joining = false;
+    rosterOptions();
     options();
     $('residentSetup').showModal();
   };
@@ -252,32 +333,37 @@ export function residentControls({ city, editing, save, add, focus }) {
   };
   $('resStart').onclick = () => {
     const data = city(),
-      p = active(),
+      p = configProfile(),
       home = data.pieces.find((d) => d.id === $('resHome').value),
       shop = data.pieces.find((d) => d.id === $('resShop').value);
     if (
       !isEntrance(home) ||
       !isEntrance(shop) ||
       home === shop ||
-      home.id === data[other().key]?.home
+      homeClaimed(data, home.id, p.key)
     )
       return;
-    data[p.key] = newTrip(home, shop);
+    const trip = newTrip(home, shop);
+    const profile = joining ? moveIn(data, $('resName').value, $('resVisit').value, trip) : p;
+    if (!profile) return;
+    data[profile.key] = trip;
     if ($('resSchedule').value) {
-      setRoutine(data[p.key], Number($('resSchedule').value));
-      data[p.key].phase = 'done';
+      setRoutine(trip, Number($('resSchedule').value));
+      trip.phase = 'done';
       data.clockMinutes ??= START_TIME;
     }
-    selected = p;
-    runtimes.set(p.key, tripRuntime());
+    joining = false;
+    selected = profile;
+    runtimes.set(profile.key, tripRuntime());
     $('residentSetup').close();
     save();
     watch();
   };
   $('resEnd').onclick = () => {
     const key = active().key;
-    delete city()[key];
-    runtimes.set(key, tripRuntime());
+    endHousehold(city(), key);
+    runtimes.delete(key);
+    removeModel(key);
     selected = null;
     watching = false;
     save();
@@ -301,7 +387,7 @@ export function residentControls({ city, editing, save, add, focus }) {
   $('resEdit').onclick = () => {
     watching = false;
     const { key } = active();
-    focus(city()[key], runtimes.get(key).blocker, false);
+    focus(city()[key], runtimeFor(key).blocker, false);
     refresh();
   };
   return {
@@ -318,7 +404,7 @@ export function residentControls({ city, editing, save, add, focus }) {
       return watching;
     },
     moving(key) {
-      return runtimes.get(key).moving;
+      return runtimeFor(key).moving;
     }
   };
 }

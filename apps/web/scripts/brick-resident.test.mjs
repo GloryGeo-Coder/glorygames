@@ -1,7 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { world, loadWorld, saveKey } from '../public/games/brick-playground-3d/model.mjs';
-import { citySave, restoreTrip } from '../public/games/brick-playground-3d/settlement.mjs';
+import { stageBlockRow } from '../public/games/brick-playground-3d/block-expansion.mjs';
+import {
+  BLOCKS,
+  blockIndex,
+  streetKeys,
+  householdsFor,
+  moveIn,
+  endHousehold,
+  MOVE_IN_SLOTS,
+  citySave,
+  restoreTrip
+} from '../public/games/brick-playground-3d/settlement.mjs';
 import {
   practiceSpaza,
   practiceHallTrip,
@@ -251,4 +262,72 @@ test('shared departures, pause, midnight and old one-off saves', () => {
   const saved = loadWorld('city', { getItem: () => citySave(city) });
   assert.equal(saved.neighbour.routine, undefined);
   assert.equal(saved.resident.phase, 'leave');
+});
+
+test('six new households share destinations, keep their own homes and finish independently', () => {
+  const { city: base, barrier, door } = fixture();
+  const buildings = practiceHallTrip(base).map((p, i) => ({ ...p, id: 'hall-' + i }));
+  const [nalediHome, hall] = buildings.filter(isEntrance);
+  base.pieces = [...base.pieces.filter((p) => p.id !== barrier.id), ...buildings];
+  base.neighbour = newTrip(nalediHome, hall);
+  const city = stageBlockRow(base, {
+    source: BLOCKS[27],
+    first: BLOCKS[8],
+    count: 6,
+    direction: 'east',
+    turns: 2
+  });
+  city.streets = [...new Set(BLOCKS.flatMap((b) => Object.values(streetKeys(b))))];
+  const index = blockIndex(city.pieces);
+  for (let i = 0; i < 6; i++) {
+    const trip = newTrip(index[8 + i].find(isEntrance), i % 2 ? hall : door);
+    const p = moveIn(city, 'Resident ' + i, i % 2 ? 'hall' : 'spaza', trip);
+    assert.equal(p.key, MOVE_IN_SLOTS[i]);
+    assert.equal(moveIn(city, 'Other', 'hall', trip), null, 'occupied home');
+  }
+  assert.equal(moveIn(city, 'Ninth', 'spaza', newTrip(hall, door)), null);
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.equal(householdsFor(reopened).length, 8);
+  assert.deepEqual(reopened.members, city.members);
+  const profiles = householdsFor(reopened),
+    states = profiles.map(() => tripRuntime());
+  for (let i = 0; i < 18000 && profiles.some((p) => reopened[p.key].phase !== 'done'); i++) {
+    profiles.forEach((p, j) => advanceTrip(reopened, reopened[p.key], states[j], 1 / 60));
+  }
+  assert.ok(profiles.every((p) => reopened[p.key].phase === 'done'));
+  const prev = reopened.family1;
+  endHousehold(reopened, 'family1');
+  assert.equal(householdsFor(reopened).length, 7);
+  assert.equal(
+    moveIn(reopened, 'New name', 'hall', newTrip(index[8].find(isEntrance), hall)).key,
+    'family1'
+  );
+  assert.equal(reopened.family1.home, prev.home);
+  assert.deepEqual(reopened.neighbour.shop, city.neighbour.shop);
+});
+test('malformed move-ins do not discard older trips or steal an occupied home', () => {
+  const { city, home, door } = fixture();
+  const custom = { ...city.resident, home: 'custom-front' };
+  city.members = [
+    { key: '__proto__', name: 'Invalid', visit: 'spaza' },
+    { key: 'family1', name: ' Lebo ', visit: 'spaza' },
+    { key: 'family2', name: 'Mpho', visit: 'hall' },
+    { key: 'family3', name: 'Bad destination', visit: 'stadium' },
+    { key: 'family4', name: 'Lerato', visit: 'spaza' }
+  ];
+  Object.assign(city, {
+    family1: custom,
+    family2: custom,
+    family3: custom,
+    family4: newTrip(home, door)
+  });
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(reopened.members, [{ key: 'family2', name: 'Mpho', visit: 'hall' }]);
+  assert.deepEqual(reopened.resident, city.resident);
+  setRoutine(reopened.family2, 14);
+  reopened.family2.phase = 'done';
+  reopened.resident.phase = 'done';
+  assert.ok(skipToDeparture(reopened));
+  assert.equal(reopened.family2.phase, 'leave');
+  assert.equal(reopened.resident.phase, 'done');
 });
