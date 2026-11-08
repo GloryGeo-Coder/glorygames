@@ -622,7 +622,11 @@ function start() {
     const walk = action === 'walk';
     if (changed) {
       remember();
-      Object.assign(data, { blocks: layout.blocks, streets: layout.streets });
+      Object.assign(data, {
+        pieces: layout.pieces,
+        blocks: layout.blocks,
+        streets: layout.streets
+      });
     }
     if (!walk && mode !== 'build') switchMode('build');
     if (tool !== 'copy') {

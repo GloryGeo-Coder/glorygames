@@ -11,6 +11,10 @@ import {
 import { newTrip } from '../public/games/brick-playground-3d/resident-trip.mjs';
 import { planStreets } from '../public/games/brick-playground-3d/street-planner.mjs';
 import {
+  previewBlockRow,
+  stageBlockRow
+} from '../public/games/brick-playground-3d/block-expansion.mjs';
+import {
   setRoutine,
   tickRoutines
 } from '../public/games/brick-playground-3d/resident-routines.mjs';
@@ -331,4 +335,44 @@ test('street repair preserves loaded cargo, household schedules and clock throug
   assert.ok(serviceTransport(resumed, restored.transport, restored, []));
   assert.equal(restored.transport.stage, 3);
   assert.deepEqual(restored.resident, before.resident);
+});
+
+test('block expansion keeps the original delivery and household saves without duplicating them', () => {
+  const town = city();
+  const doors = [30, 36].map((x, i) => ({
+    id: 'expansion-door-' + i,
+    type: 'door',
+    color: 'Chalk',
+    x,
+    y: 0,
+    z: 30,
+    r: 0
+  }));
+  town.pieces.push(...doors);
+  town.resident = newTrip(...doors);
+  setRoutine(town.resident, 18);
+  town.resident.routine.visits = 4;
+  town.neighbour = newTrip(...doors.toReversed());
+  setRoutine(town.neighbour, 8);
+  town.clockMinutes = 1020;
+  town.transport = { ...route(), stage: 2 };
+  const before = structuredClone(town);
+  const spec = { source: BLOCKS[27], first: BLOCKS[0], count: 2, direction: 'east', turns: 1 };
+  assert.equal(previewBlockRow(town, spec).issue, '');
+  assert.deepEqual(town, before, 'preview leaves cargo and households untouched');
+  const expanded = stageBlockRow(town, spec);
+  assert.ok(expanded.pieces.length > town.pieces.length);
+  assert.deepEqual(town, before, 'staging keeps the undo snapshot intact');
+  const restored = loadWorld('city', { getItem: () => citySave(expanded) });
+  assert.deepEqual(restored, expanded);
+  for (const key of ['transport', 'resident', 'neighbour', 'clockMinutes'])
+    assert.deepEqual(restored[key], before[key], key + ' is preserved once');
+  assert.strictEqual(stageBlockRow(expanded, spec), expanded, 'occupied rows reject atomically');
+  assert.deepEqual(loadWorld('city', { getItem: () => citySave(before) }), before);
+  const resumed = transportRun(buggy, restored.transport, [], restored);
+  Object.assign(resumed, transportPoint(dropoff));
+  assert.ok(serviceTransport(resumed, restored.transport, restored, []));
+  assert.equal(restored.transport.stage, 3);
+  assert.deepEqual(restored.resident, before.resident);
+  assert.deepEqual(restored.neighbour, before.neighbour);
 });

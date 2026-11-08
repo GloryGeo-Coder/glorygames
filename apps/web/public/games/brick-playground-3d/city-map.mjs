@@ -12,6 +12,7 @@ import {
   streetSegment
 } from './settlement.mjs';
 import { planStreets, sectionLabel } from './street-planner.mjs';
+import { previewBlockRow, stageBlockRow } from './block-expansion.mjs';
 import { PALETTE, size } from './model.mjs';
 const $ = (id) => document.getElementById(id);
 export function cityMap(commit) {
@@ -77,6 +78,99 @@ export function cityMap(commit) {
     }
     ctx.restore();
   }
+  function rowSpec() {
+    return {
+      source: BLOCKS[Number($('repeatSource').value)],
+      first: block,
+      count: Number($('repeatCount').value),
+      direction: $('repeatDir').value,
+      turns: Number($('repeatTurns').value)
+    };
+  }
+  function rowPreview() {
+    if (!editable || !$('blockRepeat').open) return null;
+    const row = previewBlockRow(working, rowSpec());
+    $('repeatStage').disabled = !!row.issue;
+    $('repeatPreview').textContent =
+      row.issue ||
+      row.targets.map((b) => b.code).join(', ') +
+        ' · ' +
+        row.pieces.length +
+        ' bricks · ' +
+        row.streets.length +
+        ' new street sections';
+    return row;
+  }
+  function paintRow(row) {
+    if (!row) return;
+    ctx.save();
+    for (const b of row.targets) {
+      const left = px(b.x - 10),
+        top = py(b.z + 10),
+        width = 20 * scale;
+      const occupied = row.occupied.includes(b);
+      ctx.fillStyle = occupied ? '#a52c3440' : '#27876838';
+      ctx.fillRect(left, top, width, width);
+      ctx.strokeStyle = occupied ? '#a52c34' : '#127157';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([5, 4]);
+      ctx.strokeRect(left, top, width, width);
+    }
+    ctx.fillStyle = '#328869';
+    for (const key of row.streets) {
+      const s = streetSegment(key);
+      ctx.fillRect(px(s.x - s.w / 2), py(s.z + s.d / 2), s.w * scale, s.d * scale);
+    }
+    ctx.globalAlpha = 0.72;
+    for (const p of row.pieces) {
+      const a = size(p);
+      ctx.fillStyle = PALETTE[p.color];
+      ctx.fillRect(px(p.x), py(p.z + a.d), a.w * scale, a.d * scale);
+    }
+    ctx.restore();
+  }
+  function sourceOptions(preferred) {
+    const index = blockIndex(working.pieces);
+    const built = BLOCKS.filter((b) => index[b.id].length);
+    $('repeatSource').replaceChildren(
+      ...built.map((b) => new Option(b.code + ' · ' + index[b.id].length + ' bricks', String(b.id)))
+    );
+    if (built.some((b) => b.id === preferred)) $('repeatSource').value = String(preferred);
+    $('blockRepeat').hidden = !editable || !built.length;
+  }
+  for (let n = 1; n <= SIDE; n++) $('repeatCount').add(new Option(String(n), String(n)));
+  for (const id of ['repeatSource', 'repeatCount', 'repeatDir', 'repeatTurns'])
+    $(id).onchange = paint;
+  $('blockRepeat').ontoggle = () => {
+    if (!$('cityMap').open) return;
+    if ($('blockRepeat').open) {
+      $('mapRoute').value = '';
+      closeUp = false;
+    }
+    $('mapFields').hidden = !editable || $('blockRepeat').open;
+    paint();
+  };
+  $('repeatStage').onclick = () => {
+    if (!editable || !$('blockRepeat').open) return;
+    const spec = rowSpec(),
+      updated = stageBlockRow(working, spec);
+    if (updated === working) {
+      paint();
+      return;
+    }
+    working = updated;
+    $('repeatNotice').textContent =
+      'Staged ' +
+      spec.count +
+      ' ' +
+      (spec.count === 1 ? 'block' : 'blocks') +
+      ' from ' +
+      spec.source.code +
+      '. Build here saves the map. Close to discard.';
+    $('blockRepeat').open = false;
+    sourceOptions(spec.source.id);
+    select(block);
+  };
   function routePreview() {
     const profile = HOUSEHOLDS.find((p) => p.key === $('mapRoute').value);
     plan = profile && planStreets(working, working[profile.key]);
@@ -189,6 +283,7 @@ export function cityMap(commit) {
       ctx.fillStyle = PALETTE[p.color];
       ctx.fillRect((HALF + p.x) * scale, (HALF - p.z - a.d) * scale, a.w * scale, a.d * scale);
     }
+    paintRow(rowPreview());
     ctx.font = 'bold 15px sans-serif';
     ctx.textBaseline = 'top';
     ctx.fillStyle = '#28453e';
@@ -232,6 +327,7 @@ export function cityMap(commit) {
     paint();
   }
   $('mapRoute').onchange = () => {
+    if ($('mapRoute').value) $('blockRepeat').open = false;
     closeUp = !!$('mapRoute').value;
     paint();
   };
@@ -269,6 +365,12 @@ export function cityMap(commit) {
     closeUp = false;
     editable = editing;
     working = original = city;
+    $('blockRepeat').open = false;
+    $('repeatCount').value = '1';
+    $('repeatDir').value = 'east';
+    $('repeatTurns').value = '0';
+    $('repeatNotice').textContent = '';
+    sourceOptions(active.id);
     const routes = HOUSEHOLDS.filter(({ key }) => city[key]);
     $('mapRouteTools').hidden = !routes.length;
     $('mapRoute').replaceChildren(new Option('Map only', ''));

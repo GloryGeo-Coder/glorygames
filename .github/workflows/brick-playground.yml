@@ -30,7 +30,9 @@ jobs:
           - group: neighbourhoods
             suites: district freight upstairs
           - group: settlements
-            suites: settlement resident transport
+            suites: settlement transport
+          - group: residents
+            suites: resident
     timeout-minutes: 25
     env:
       DATABASE_URL: postgresql://test:test@127.0.0.1:5432/brick_ci

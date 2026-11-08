@@ -845,6 +845,48 @@ dialog p {
 #mapConnect {
   min-height: 40px;
 }
+#blockRepeat {
+  margin: 6px 0;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+#blockRepeat summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 5px 0;
+}
+#blockRepeat p,
+#repeatNotice {
+  font-size: 13px;
+  margin: 6px 0;
+}
+#repeatNotice:empty {
+  display: none;
+}
+.repeat-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.repeat-options select {
+  display: block;
+  width: 100%;
+}
+#repeatStage {
+  min-height: 40px;
+}
+@media (max-width: 580px) {
+  #cityMap:has(#blockRepeat[open]) #cityAtlas {
+    width: min(100%, 28dvh);
+  }
+  #cityMap:has(#blockRepeat[open]) .map-actions button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 7px 4px;
+    font-size: 14px;
+  }
+}
 #mapFields {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

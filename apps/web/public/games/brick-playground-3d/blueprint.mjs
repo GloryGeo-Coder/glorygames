@@ -90,11 +90,15 @@ export function readPlan(raw) {
   }
   return makePlan(v.name, v.pieces);
 }
+// Rotate a brick inside a frame with a known depth, keeping its snapped minimum corner.
+export function quarterTurn(piece, depth) {
+  return { ...piece, x: depth - piece.z - size(piece).d, z: piece.x, r: (piece.r + 1) % 4 };
+}
 export function placement(plan, anchor, turns, stack, items, kind) {
   let pieces = plan.pieces;
   for (let i = 0; i < turns; i++) {
     const depth = bounds(pieces).d;
-    pieces = pieces.map((p) => ({ ...p, x: depth - p.z - size(p).d, z: p.x, r: (p.r + 1) % 4 }));
+    pieces = pieces.map((p) => quarterTurn(p, depth));
   }
   pieces = pieces.map((p) => ({ ...p, x: p.x + anchor.x, z: p.z + anchor.z }));
   let base = 0;
