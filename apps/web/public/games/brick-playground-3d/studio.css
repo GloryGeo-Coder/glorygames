@@ -682,3 +682,79 @@ dialog p {
     font-size: 11px;
   }
 }
+
+.side #blueprints {
+  font-size: 12px;
+}
+#planBook select,
+#copyBase {
+  font: inherit;
+  min-height: 32px;
+  color: var(--ink);
+  border: 1px solid var(--edge);
+  border-radius: 7px;
+  background: #fff9ea;
+  padding: 3px 6px;
+}
+#planBook select {
+  width: 100%;
+  margin-top: 4px;
+}
+#planMap {
+  width: 100%;
+  height: 92px;
+  object-fit: contain;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  margin-top: 8px;
+  background-color: #dceae1;
+  background-image:
+    linear-gradient(#95aca444 1px, transparent 1px),
+    linear-gradient(90deg, #95aca444 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+#capturePlan {
+  display: block;
+  border-top: 1px solid var(--edge);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.plan-actions,
+#copyTools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+.plan-actions span,
+#copyName {
+  flex: 1;
+  font-size: 12px;
+}
+#planMessage {
+  margin-bottom: 0;
+}
+#planMessage:empty {
+  display: none;
+}
+#copyName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#copyTools {
+  font-size: 12px;
+}
+#copyTools button,
+#copyBase {
+  min-height: 30px;
+}
+@media (max-height: 520px) {
+  .side:has(#blueprints:not([hidden])) {
+    grid-template-columns: repeat(2, auto);
+    top: 26%;
+  }
+  #planMap {
+    height: 60px;
+  }
+}

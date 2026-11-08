@@ -1,3 +1,5 @@
+import { plansAllowed, placement, bounds } from './blueprint.mjs';
+import { planBook } from './plan-book.mjs';
 import {
   FREIGHT_ACTIONS,
   cargoCount,
@@ -64,6 +66,7 @@ function start() {
     history = [],
     selected = null,
     tool = 'add',
+    copy = null,
     mode = 'build',
     draft,
     person,
@@ -113,6 +116,7 @@ function start() {
     s.freightBodywork(null);
     freight = null;
     driverSeat = null;
+    copy = null;
     kind = next;
     canSave = !unreadable.has(kind);
     try {
@@ -227,16 +231,49 @@ function start() {
         ? mountHeight(draft, data.pieces, moving?.id)
         : snapHeight(draft, data.pieces, moving?.id);
   }
+  function projectCopy() {
+    return placement(
+      copy.plan,
+      draft,
+      copy.turns,
+      $('copyBase').value === 'stack',
+      data.pieces,
+      kind
+    );
+  }
+  const openPlans = planBook((plan) => {
+    copy = { plan, footprint: bounds(plan.pieces), turns: 0 };
+    tool = 'copy';
+    selected = null;
+    $('copyBase').value = 'ground';
+    s.drawPieces(data.pieces, null);
+    refresh();
+    announce('Tap the starting stud, then Place copy');
+  });
+  $('blueprints').onclick = () => {
+    if (!editorAvailable() || !plansAllowed(kind)) return;
+    clearInputs();
+    openPlans(data.pieces, chosen(), kind, Number($('lot').value));
+  };
+  $('copyBase').onchange = refresh;
+  $('cancelCopy').onclick = () => $('add').click();
   function refresh() {
     const editable = editorAvailable();
     const showing = editable && tool !== 'select';
-    const ok = showing && canPlace(draft, tool === 'move' ? selected : null);
-    s.ghost(showing ? draft : null, ok);
+    const projecting = showing && tool === 'copy';
+    const group = projecting ? projectCopy() : null;
+    const ok = showing && (group ? group.ok : canPlace(draft, tool === 'move' ? selected : null));
+    s.ghost(showing && !group ? draft : null, ok);
+    s.planGhost(group?.pieces || [], ok);
+    $('copyTools').hidden = !group;
+    $('colors').hidden = !!group;
+    $('blueprints').hidden = !editable || !plansAllowed(kind);
+    if (group) $('copyName').textContent = copy.plan.name;
     $('place').disabled = !ok;
-    $('place').textContent = tool === 'move' ? 'Set down' : 'Place brick';
+    $('place').textContent = group ? 'Place copy' : tool === 'move' ? 'Set down' : 'Place brick';
     $('undo').disabled = !history.length || !editable;
     $('editTools').hidden = tool !== 'select' || !chosen();
-    $('tray').hidden = tool === 'select';
+    $('tray').hidden = tool === 'select' || !!group;
     $('rotate').disabled = !editable || (tool === 'select' && !chosen());
     pressed('select', tool === 'select' || tool === 'move');
     pressed('add', tool === 'add');
@@ -265,7 +302,8 @@ function start() {
       canalPanel();
     }
     $('readout').textContent = showing
-      ? (ok ? '' : 'Blocked · ') + `(${draft.x}, ${draft.z}) ↑${Number(draft.y.toFixed(2))}`
+      ? (ok ? '' : 'Blocked · ') +
+        `(${draft.x}, ${draft.z}) ↑${Number((group?.base ?? draft.y).toFixed(2))}`
       : chosen()
         ? TYPES[chosen().type].label
         : data.pieces.length + ' pieces';
@@ -279,6 +317,20 @@ function start() {
   }
   function place() {
     if (!editorAvailable() || tool === 'select') return;
+    if (tool === 'copy') {
+      const group = projectCopy();
+      if (!group.ok) return;
+      change([
+        ...data.pieces,
+        ...group.pieces.map((p) => ({
+          ...p,
+          id: crypto.getRandomValues(new Uint32Array(4)).join('-')
+        }))
+      ]);
+      music.snap();
+      announce('Placed ' + copy.plan.name + ' · ' + group.pieces.length + ' bricks');
+      return;
+    }
     const moving = tool === 'move',
       p = {
         ...draft,
@@ -295,6 +347,11 @@ function start() {
   }
   function rotation() {
     if (!editorAvailable()) return;
+    if (tool === 'copy') {
+      copy.turns = (copy.turns + 1) % 4;
+      refresh();
+      return;
+    }
     if (tool === 'select') {
       const current = chosen();
       if (!current) return;
@@ -311,8 +368,13 @@ function start() {
       refresh();
     }
   }
+  function draftSize() {
+    if (tool !== 'copy') return size(draft);
+    const { w, d } = copy.footprint;
+    return copy.turns % 2 ? { w: d, d: w } : { w, d };
+  }
   function aim(x, z) {
-    const a = size(draft);
+    const a = draftSize();
     const edge = kind === 'district' ? DISTRICT.x : kind === 'garage' ? 2 : 10;
     const depth = kind === 'district' ? DISTRICT.z : edge;
     draft.x = Math.max(-edge, Math.min(edge - a.w, x));
@@ -396,6 +458,11 @@ function start() {
       driverSeat = null;
       s.workshop(false, run);
       s.chase.yaw = 0;
+    }
+    if (tool === 'copy') {
+      copy = null;
+      tool = 'add';
+      adjustHeight();
     }
     mode = to;
     if (kind === 'district') $('play').textContent = freight ? 'Walk' : 'Play';
@@ -707,8 +774,9 @@ function start() {
   $('closer').onclick = () => zoom(0.82);
   $('farther').onclick = () => zoom(1.22);
   $('center').onclick = () => {
-    s.orbit.focusX = draft.x + size(draft).w / 2;
-    s.orbit.focusZ = draft.z + size(draft).d / 2;
+    const a = draftSize();
+    s.orbit.focusX = draft.x + a.w / 2;
+    s.orbit.focusZ = draft.z + a.d / 2;
   };
   $('view').onclick = () => {
     top = !top;
@@ -738,7 +806,7 @@ function start() {
       return;
     }
     Object.assign(s.orbit, { focusX: lot.x, focusZ: 0, zoom: 0.7 });
-    if (tool === 'add') Object.assign(draft, { x: lot.x - 1, z: -3 });
+    if (tool === 'add' || tool === 'copy') Object.assign(draft, { x: lot.x - 1, z: -3 });
   }
   function resetFreightRun() {
     run = freightRun(freight.pieces, data.freightStop);
@@ -1104,7 +1172,7 @@ function start() {
     if (!e.detail) jump = true;
   };
   window.addEventListener('keydown', (e) => {
-    if (menu.open || ['INPUT', 'SELECT'].includes(e.target.tagName)) return;
+    if (menu.open || $('planBook').open || ['INPUT', 'SELECT'].includes(e.target.tagName)) return;
     const k = e.key.toLowerCase();
     if (k === 'tab') return;
     if (k === 'b' && !e.ctrlKey && !e.metaKey) {
