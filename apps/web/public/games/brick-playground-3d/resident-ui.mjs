@@ -9,12 +9,24 @@ import {
   tripRuntime
 } from './resident-trip.mjs';
 
+import {
+  START_TIME,
+  DEPARTURES,
+  clockLabel,
+  hasRoutines,
+  nextDeparture,
+  nextIdleDeparture,
+  setRoutine,
+  skipToDeparture,
+  tickRoutines
+} from './resident-routines.mjs';
+
 const $ = (id) => document.getElementById(id);
 function status(trip, runtime, profile) {
   if (!trip) return 'No trip';
   if (trip.paused) return 'Paused';
   if (runtime.issue) return 'Stopped';
-  if (trip.phase === 'done') return 'Home again';
+  if (trip.phase === 'done') return trip.routine ? 'At home' : 'Home again';
   if (trip.phase === 'shopping') return profile.activity;
   return trip.returning ? 'Walking home' : 'Walking to the ' + profile.destination.toLowerCase();
 }
@@ -45,6 +57,11 @@ export function residentControls({ city, editing, save, add, focus }) {
       rt = runtimes.get(p.key),
       alternate = other(),
       second = data[alternate.key];
+    const scheduled = hasRoutines(data),
+      now = data.clockMinutes ?? START_TIME;
+    label('resClock', scheduled ? 'Settlement time · ' + clockLabel(now) : '');
+    const canSkip = scheduled && nextIdleDeparture(data) !== null;
+    if ($('resSkip').hidden === canSkip) $('resSkip').hidden = !canSkip;
     if ($('resTools').hidden !== !trip) $('resTools').hidden = !trip;
     if ($('resOther').hidden !== !second) $('resOther').hidden = !second;
     if (second)
@@ -57,16 +74,29 @@ export function residentControls({ city, editing, save, add, focus }) {
       'resHint',
       trip
         ? rt.issue ||
-            (trip.phase === 'done'
+            (trip.phase === 'done' && !trip.routine
               ? 'The round trip is complete.'
               : 'Block ' + blockAt(trip.x, trip.z).code)
+        : ''
+    );
+    const routine = trip?.routine;
+    label(
+      'resRoutineNote',
+      routine
+        ? (trip.phase === 'done' && !trip.paused
+            ? 'Next departure · ' + clockLabel(nextDeparture(now, routine.hour))
+            : 'Daily at ' + String(routine.hour).padStart(2, '0') + ':00') +
+            ' · ' +
+            routine.visits +
+            ' round trip' +
+            (routine.visits === 1 ? '' : 's')
         : ''
     );
     label('resFollow', watching ? 'Stop following' : 'Follow ' + p.name);
   }
   function step(dt) {
     const data = city();
-    let changed = false,
+    let changed = tickRoutines(data, dt),
       walking = false;
     for (const { key } of HOUSEHOLDS) {
       const trip = data[key];
@@ -78,7 +108,7 @@ export function residentControls({ city, editing, save, add, focus }) {
       walking ||= runtime.moving;
       changed ||= trip.phase !== phase || runtime.issue !== issue;
     }
-    if (walking) clock += dt;
+    if (walking || hasRoutines(data)) clock += dt;
     if (changed || clock >= 10) {
       clock = 0;
       save();
@@ -145,12 +175,42 @@ export function residentControls({ city, editing, save, add, focus }) {
         ? 'Each household needs its own home. Face both entrances towards streets connected on the map.'
         : 'Build ground-floor entrances or use an available practice layout.'
     );
-    $('resStart').textContent = trip ? 'Start new trip' : 'Start trip';
     $('resEnd').hidden = $('resPause').hidden = !trip;
     $('resPause').textContent = trip?.paused ? 'Resume' : 'Pause';
-    $('resPause').disabled = trip?.phase === 'done';
+    $('resPause').disabled = trip?.phase === 'done' && !trip?.routine;
+    $('resSchedule').value = String(trip?.routine?.hour ?? '');
+    scheduleControls();
     canStart();
   }
+  function scheduleControls() {
+    const trip = city()[active().key];
+    const hour = $('resSchedule').value;
+    $('resApplySchedule').hidden = !trip || String(trip.routine?.hour ?? '') === hour;
+    label(
+      'resStart',
+      hour ? (trip ? 'Restart routine' : 'Start routine') : trip ? 'Start new trip' : 'Start trip'
+    );
+  }
+  for (const hour of DEPARTURES)
+    $('resSchedule').add(
+      new Option('Daily at ' + String(hour).padStart(2, '0') + ':00', String(hour))
+    );
+  $('resSchedule').onchange = scheduleControls;
+  $('resApplySchedule').onclick = () => {
+    const data = city(),
+      trip = data[active().key];
+    setRoutine(trip, Number($('resSchedule').value));
+    if (trip.routine) data.clockMinutes ??= START_TIME;
+    save();
+    $('residentSetup').close();
+    refresh();
+  };
+  $('resSkip').onclick = () => {
+    if (skipToDeparture(city())) {
+      save();
+      refresh();
+    }
+  };
   function canStart() {
     $('resStart').disabled =
       !$('resHome').value || !$('resShop').value || $('resHome').value === $('resShop').value;
@@ -202,6 +262,11 @@ export function residentControls({ city, editing, save, add, focus }) {
     )
       return;
     data[p.key] = newTrip(home, shop);
+    if ($('resSchedule').value) {
+      setRoutine(data[p.key], Number($('resSchedule').value));
+      data[p.key].phase = 'done';
+      data.clockMinutes ??= START_TIME;
+    }
     selected = p;
     runtimes.set(p.key, tripRuntime());
     $('residentSetup').close();

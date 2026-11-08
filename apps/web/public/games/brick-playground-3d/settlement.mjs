@@ -1,3 +1,5 @@
+import { HOUSEHOLDS, restoreRoutine } from './resident-routines.mjs';
+export { HOUSEHOLDS } from './resident-routines.mjs';
 import { CITY_PLANS } from './city-plans.mjs';
 // Each block has a 20-stud building area and a shared four-stud street corridor.
 export const SIDE = 8,
@@ -87,10 +89,6 @@ export function cityWorld() {
   };
 }
 // Keep the original resident slot readable by settlements saved before the second household.
-export const HOUSEHOLDS = [
-  { key: 'resident', name: 'Lebo', destination: 'Spaza', activity: 'Shopping' },
-  { key: 'neighbour', name: 'Naledi', destination: 'Community hall', activity: 'Visiting the hall' }
-];
 export function restoreTrip(v) {
   if (
     !v ||
@@ -104,6 +102,7 @@ export function restoreTrip(v) {
   )
     return null;
   const { home, shop, phase, x, y, z, heading, vy } = v;
+  const routine = restoreRoutine(v.routine);
   return {
     home,
     shop,
@@ -114,6 +113,7 @@ export function restoreTrip(v) {
     heading,
     vy,
     wait: Math.max(0, Math.min(1.5, v.wait)),
+    ...(routine ? { routine } : {}),
     grounded: v.grounded === true,
     paused: v.paused === true,
     returning: v.returning === true
@@ -138,6 +138,11 @@ export function cityLayout(v) {
   return {
     blocks,
     ...households,
+    ...(Number.isFinite(v.clockMinutes) &&
+    v.clockMinutes >= 0 &&
+    v.clockMinutes < Number.MAX_SAFE_INTEGER / 2
+      ? { clockMinutes: v.clockMinutes }
+      : {}),
     focus: Number.isInteger(v.focus) && BLOCKS[v.focus] ? v.focus : CENTRE,
     streets: [...new Set(v.streets)]
   };
