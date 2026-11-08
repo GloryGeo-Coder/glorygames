@@ -12,7 +12,14 @@ import {
   moveIn,
   endHousehold
 } from '../public/games/brick-playground-3d/settlement.mjs';
-import { newTrip } from '../public/games/brick-playground-3d/resident-trip.mjs';
+import { newTrip, tripRuntime } from '../public/games/brick-playground-3d/resident-trip.mjs';
+import {
+  openMarket,
+  marketCounter,
+  stepHousehold,
+  nextCustomer,
+  serveCustomer
+} from '../public/games/brick-playground-3d/market-day.mjs';
 import { planStreets } from '../public/games/brick-playground-3d/street-planner.mjs';
 import {
   previewBlockRow,
@@ -447,4 +454,58 @@ test('all eight household schedules and cargo survive delivery reload and move-i
     restored,
     'a malformed member cannot discard cargo or valid households'
   );
+});
+
+test('half-served market queues and receipts survive cargo driving, recovery and reload', () => {
+  const town = city();
+  const doors = [0, 1, 2].map((id) => ({
+    id: 'market-door-' + id,
+    type: 'door',
+    color: 'Lagoon',
+    x: BLOCKS[id].x,
+    z: BLOCKS[id].z,
+    y: 0,
+    r: 0
+  }));
+  town.pieces.push(...doors);
+  town.resident = newTrip(doors[0], doors[2]);
+  moveIn(town, 'Ayanda', 'spaza', newTrip(doors[1], doors[2]));
+  openMarket(town, doors[2].id);
+  const till = { ...marketCounter(town).inside, y: 0 };
+  for (const key of ['resident', 'family1'])
+    Object.assign(town[key], till, { phase: 'shopping', wait: 1 });
+  assert.equal(serveCustomer(town, till, true).name, 'Lebo');
+  const market = structuredClone(town.market),
+    waiting = structuredClone(town.family1),
+    profile = householdsFor(town).find((p) => p.key === 'family1'),
+    runtime = tripRuntime();
+  town.transport = route();
+  let run = transportRun(buggy, town.transport, [], town);
+  assert.ok(serviceTransport(run, town.transport, town, []));
+  for (let i = 0; i < 60; i++) {
+    advanceTransport(run, 'road', 1, 0, false, 1 / 60, []);
+    stepHousehold(town, profile, town.family1, runtime, 1 / 60);
+  }
+  assert.ok(run.x > transportPoint(pickup).x);
+  assert.deepEqual(town.market, market);
+  assert.deepEqual(town.family1, waiting, 'the waiting shopper stays at the till during driving');
+  run = transportRun(buggy, town.transport, [], town);
+  assert.equal(run.x, transportPoint(pickup).x, 'recovery returns the loaded buggy to pickup');
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(restored, town);
+  assert.equal(nextCustomer(restored).name, 'Ayanda');
+  assert.equal(serveCustomer(restored, till, false), null, 'driving cannot serve the market');
+  const resumed = transportRun(buggy, restored.transport, [], restored);
+  Object.assign(resumed, transportPoint(dropoff));
+  assert.ok(serviceTransport(resumed, restored.transport, restored, []));
+  assert.deepEqual(restored.market, market);
+  assert.deepEqual(restored.family1, waiting);
+  assert.equal(
+    serveCustomer(restored, till, true).name,
+    'Ayanda',
+    'walking service resumes after delivery'
+  );
+  assert.equal(restored.market.receipts.length, 2);
+  delete restored.market;
+  assert.equal(restored.transport.stage, 3, 'closing the market preserves completed transport');
 });

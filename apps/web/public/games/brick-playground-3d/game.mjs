@@ -20,6 +20,8 @@ import {
   householdsFor,
   neighbouring
 } from './settlement.mjs';
+import { marketControls } from './market-ui.mjs';
+import { marketCounter, waitingAtTill } from './market-day.mjs';
 import { cityMap } from './city-map.mjs';
 import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
 import { plansAllowed, placement, bounds } from './blueprint.mjs';
@@ -717,6 +719,28 @@ function start() {
     s.chase.yaw = 0;
     clearInputs();
   }
+  const market = marketControls({
+    city: () => (kind === 'city' ? data : null),
+    player: () => person,
+    playing: () => mode === 'play',
+    save,
+    ring: (name, count) => {
+      music.snap();
+      announce('Served ' + name + ' · ' + count + '/2 households');
+    },
+    walkFrom: (counter) => {
+      focusCity(counter.block);
+      switchMode('play');
+      Object.assign(person, avatar('city'), counter.curb, { y: 0 });
+      s.chase.yaw = Math.atan2(
+        counter.center.x - counter.curb.x,
+        counter.center.z - counter.curb.z
+      );
+      clearInputs();
+      drawPieces(data.pieces, null);
+      syncMode();
+    }
+  });
   function switchMode(to) {
     if (kind === 'garage' && to === 'play') to = 'drive';
     if (car.state === 'running' || mode === to || (kind === 'canal' && !canEditCanal(canal)))
@@ -1795,9 +1819,12 @@ function start() {
           profile,
           visible ? occupant : null,
           !!visible && !occupant.paused && residents.moving(profile.key),
-          elapsed
+          elapsed,
+          waitingAtTill(data, profile, occupant)
         );
       }
+      s.showMarket(data.market?.receipts.length < 2 ? marketCounter(data) : null);
+      market.update();
       residents.refresh();
       updateTransport();
     }

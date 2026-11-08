@@ -146,12 +146,12 @@ export function residentFigure(B, scene, material, profile) {
     return { leg, arm, side };
   });
   root.setEnabled(false);
-  function show(trip, moving, t) {
+  function show(trip, moving, t, waiting) {
     root.setEnabled(!!trip);
     if (!trip) return;
     root.position.set(trip.x, trip.y, trip.z);
     root.rotation.y = trip.heading;
-    contents.setEnabled(trip.returning || trip.phase === 'shopping');
+    contents.setEnabled(!waiting && (trip.returning || trip.phase === 'shopping'));
     for (const { leg, arm, side } of limbs) {
       const swing = moving ? side * Math.sin(t * 9) * 0.38 : 0;
       leg.rotation.x = swing;

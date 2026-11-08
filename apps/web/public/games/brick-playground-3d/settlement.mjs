@@ -190,6 +190,34 @@ export function restoreRoutine(value) {
     visits: Number.isSafeInteger(value.visits) && value.visits >= 0 ? value.visits : 0
   };
 }
+export function restoreMarket(value) {
+  if (typeof value?.shop !== 'string' || !value.shop || !Array.isArray(value.receipts)) return null;
+  const receipts = [];
+  for (const row of value.receipts) {
+    if (
+      !row ||
+      typeof row.name !== 'string' ||
+      !row.name.trim() ||
+      row.name.length > 28 ||
+      typeof row.home !== 'string' ||
+      !row.home
+    )
+      continue;
+    if (
+      receipts.some(
+        (r) => r.home === row.home || r.name.toLowerCase() === row.name.trim().toLowerCase()
+      )
+    )
+      continue;
+    receipts.push({
+      name: row.name.trim(),
+      home: row.home,
+      block: BLOCKS.some((b) => b.code === row.block) ? row.block : ''
+    });
+    if (receipts.length === 2) break;
+  }
+  return { shop: value.shop, receipts };
+}
 export function cityLayout(v) {
   const blocks = {};
   for (const b of BLOCKS) {
@@ -212,7 +240,9 @@ export function cityLayout(v) {
       moveIn(households, member.name, member.visit, restoreTrip(v[member.key]), member.key);
     }
   }
+  const market = restoreMarket(v.market);
   return {
+    ...(market ? { market } : {}),
     ...(Number.isFinite(v.clockMinutes) &&
     v.clockMinutes >= 0 &&
     v.clockMinutes < Number.MAX_SAFE_INTEGER / 2

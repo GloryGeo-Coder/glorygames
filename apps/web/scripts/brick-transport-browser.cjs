@@ -16,17 +16,14 @@ async function delivery(browser, mobile) {
     p = await ctx.newPage();
     p.on('pageerror', (e) => errors.push(e.message));
     const tap = (id) => (mobile ? p.locator('#' + id).tap() : p.locator('#' + id).click());
-    async function closingTransport(action) {
+    async function closingDialog(id, action) {
       // The native dialog close event clears held inputs asynchronously. Let it finish before
       // pressing a new key, rather than racing that intentional safety reset.
       const closed = p.evaluate(
-        () =>
+        (id) =>
           new Promise((resolve, reject) => {
-            const timer = setTimeout(
-              () => reject(new Error('Transport dialog did not close')),
-              10000
-            );
-            document.getElementById('transportSetup').addEventListener(
+            const timer = setTimeout(() => reject(new Error(id + ' dialog did not close')), 10000);
+            document.getElementById(id).addEventListener(
               'close',
               () => {
                 clearTimeout(timer);
@@ -34,10 +31,12 @@ async function delivery(browser, mobile) {
               },
               { once: true }
             );
-          })
+          }),
+        id
       );
       await Promise.all([closed, action()]);
     }
+    const closingTransport = (action) => closingDialog('transportSetup', action);
     const cancelTransport = () =>
       closingTransport(() => p.locator('[aria-label="Close transport settings"]').click());
     const save = () =>
@@ -147,6 +146,7 @@ async function delivery(browser, mobile) {
         await import('/games/brick-playground-3d/settlement.mjs');
       const { starterBuggy } = await import('/games/brick-playground-3d/freight.mjs');
       const { newTrip } = await import('/games/brick-playground-3d/resident-trip.mjs');
+      const { marketCounter } = await import('/games/brick-playground-3d/market-day.mjs');
       const town = world('city');
       town.streets = ['h-3-4', 'h-4-4'];
       const doors = [30, 36, 54, 60].map((x, i) => ({
@@ -179,6 +179,15 @@ async function delivery(browser, mobile) {
         moveIn(town, 'Household ' + i, i % 2 ? 'hall' : 'spaza', trip);
       }
       town.clockMinutes = 450;
+      town.market = {
+        shop: doors[1].id,
+        receipts: [{ name: 'Lebo', home: doors[0].id, block: 'F3' }]
+      };
+      Object.assign(town.family1, marketCounter(town).inside, {
+        phase: 'shopping',
+        paused: false,
+        wait: 1
+      });
       localStorage.setItem(saveKey('city'), citySave(town));
       const snapshot = {};
       for (const kind of ['garage', 'free', 'district']) {
@@ -237,6 +246,11 @@ async function delivery(browser, mobile) {
       await p.locator('#transportSetupHint').textContent()
     );
     assert.ok(await p.locator('#transportPanel').isVisible());
+    assert.ok(
+      await p.locator('#residentPanel').isHidden(),
+      'market and resident panel yields to driving'
+    );
+    assert.ok(await p.locator('#marketTill').isHidden());
     await p.waitForFunction(() => !document.getElementById('transportAction').disabled);
     assert.ok(await p.locator('#brake').isVisible());
     await atPickup();
@@ -253,10 +267,22 @@ async function delivery(browser, mobile) {
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'last stop recovers to pickup with cargo');
     assert.equal((await save()).transport.stage, 2, 'recovery preserves cargo');
+    assert.deepEqual((await save()).market, residents.market, 'recovery preserves receipts');
+    assert.deepEqual(
+      (await save()).family1,
+      residents.family1,
+      'recovery preserves the market queue'
+    );
     await goTo(-6);
     await p.reload();
     await ready();
     assert.equal((await save()).transport.stage, 2);
+    assert.deepEqual((await save()).market, residents.market, 'reload preserves receipts');
+    assert.deepEqual(
+      (await save()).family1,
+      residents.family1,
+      'reload preserves the market queue'
+    );
     await tap('transportButton');
     await closingTransport(() => tap('transportDispatch'));
     await atPickup();
@@ -276,10 +302,16 @@ async function delivery(browser, mobile) {
     await tap('build');
     assert.ok(await p.locator('#bench').isVisible());
     assert.ok(await p.locator('#transportPanel').isHidden());
+    assert.ok(await p.locator('#residentPanel').isVisible());
+    assert.ok(
+      await p.locator('#marketTill').isVisible(),
+      'market controls return after exiting the buggy'
+    );
     const after = await save();
     assert.deepEqual(after.resident, residents.resident);
     assert.deepEqual(after.neighbour, residents.neighbour);
     assert.deepEqual(after.members, residents.members);
+    assert.deepEqual(after.market, residents.market, 'delivery preserves the half-served market');
     for (const { key } of residents.members)
       assert.deepEqual(
         after[key],
@@ -296,10 +328,52 @@ async function delivery(browser, mobile) {
         isolated[kind],
         kind + ' save isolation'
       );
+    await tap('resSettings');
+    const marketBoard = p.locator('#marketBoard');
+    if (!(await marketBoard.evaluate((e) => e.open))) {
+      if (mobile) await p.locator('#marketBoard summary').tap();
+      else await p.locator('#marketBoard summary').click();
+    }
+    await closingDialog('residentSetup', () => tap('marketWork'));
+    assert.ok(await p.locator('#jump').isVisible());
+    assert.ok(await p.locator('#brake').isHidden());
+    assert.ok(!(await p.locator('#marketTill').innerText()).startsWith('Serve'));
+    if (mobile) await press('stick');
+    else {
+      await p.locator('#plot').focus();
+      await p.keyboard.down('w');
+    }
+    try {
+      await p.waitForFunction(
+        () => document.getElementById('marketTill').textContent === 'Serve Household 0',
+        null,
+        { timeout: 60000 }
+      );
+    } finally {
+      if (mobile) await release();
+      else await p.keyboard.up('w');
+    }
+    await tap('marketTill');
+    assert.deepEqual(
+      (await save()).market.receipts.map((r) => r.name),
+      ['Lebo', 'Household 0']
+    );
+    assert.equal(
+      (await save()).transport.stage,
+      3,
+      'serving after delivery keeps cargo completion'
+    );
+    if (process.env.BRICK_SCREENSHOTS)
+      await p.screenshot({
+        path: path.join(
+          process.env.BRICK_SCREENSHOTS,
+          'transport-market-restored-' + (mobile ? 'phone' : 'desktop') + '.png'
+        )
+      });
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, restored walking service and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

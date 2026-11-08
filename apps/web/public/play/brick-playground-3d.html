@@ -44,6 +44,7 @@
     </section>
     <section id="residentPanel" hidden aria-label="Living Settlements">
       <div class="resident-switch"><button id="resSettings" aria-haspopup="dialog">Residents</button><button id="resOther" hidden></button></div>
+      <button id="marketTill" hidden></button>
       <span id="resClock"></span>
       <b id="resState" role="status"></b><span id="resHint"></span>
       <span id="resRoutineNote"></span><button id="resSkip" hidden>Skip to next departure</button>
@@ -123,6 +124,12 @@
       <button id="resApplySchedule" hidden>Apply schedule to current trip</button>
       <p id="resSetupHint" role="status"></p>
       <button id="resPractice">Add practice spaza with blocked door · E4</button>
+      <details id="marketBoard"><summary>Community Market Day</summary>
+        <p>Open a spaza and serve two households from different homes. Walk inside to work the till.</p>
+        <label>Shop entrance <select id="marketDoor"></select></label>
+        <p id="marketReport" role="status"></p><ul id="marketReceipts"></ul>
+        <div class="res-actions"><button id="marketOpen">Open market</button><button id="marketCall" hidden>Call shoppers</button><button id="marketWork" hidden>Walk from shop pavement</button><button id="marketEnd" hidden>End market</button></div>
+      </details>
       <div class="res-actions"><button id="resEnd" hidden>End trip</button><button id="resPause" hidden>Pause</button><button class="primary" id="resStart">Start trip</button></div>
     </dialog>
     <dialog id="cityMap" aria-labelledby="cityMapTitle">
