@@ -758,3 +758,42 @@ dialog p {
     height: 60px;
   }
 }
+
+#shopPanel {
+  position: absolute;
+  left: max(10px, env(safe-area-inset-left));
+  top: max(78px, calc(env(safe-area-inset-top) + 62px));
+  width: min(267px, calc(100vw - 90px));
+  display: grid;
+  gap: 5px;
+  padding: 9px 12px;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: 0 3px 0 #253c303d;
+  font-size: 13px;
+}
+#shopRepair {
+  display: flex;
+  gap: 4px;
+}
+#shopPanel button {
+  min-height: 34px;
+  font-size: 12px;
+  padding: 4px 7px;
+}
+#shopAction {
+  background: var(--sun);
+}
+@media (max-height: 550px) {
+  #shopPanel {
+    top: 54px;
+    width: min(230px, 32vw);
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  #shopPanel button {
+    min-height: 28px;
+    font-size: 11px;
+  }
+}
