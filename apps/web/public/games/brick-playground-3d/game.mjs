@@ -133,7 +133,12 @@ function start() {
   function remember() {
     history.push(
       kind === 'city'
-        ? { pieces: data.pieces, blocks: data.blocks, streets: data.streets }
+        ? {
+            pieces: data.pieces,
+            blocks: data.blocks,
+            streets: data.streets,
+            lighting: data.lighting
+          }
         : data.pieces
     );
     if (history.length > 80) history.shift();
@@ -535,10 +540,11 @@ function start() {
     }
   });
   const openCityMap = cityMap((layout, b, action, changed) => {
-    const walk = action === 'walk';
+    const walk = action.kind === 'walk';
     if (changed) {
       remember();
       Object.assign(data, {
+        lighting: layout.lighting,
         pieces: layout.pieces,
         blocks: layout.blocks,
         streets: layout.streets
@@ -553,12 +559,21 @@ function start() {
     adjustHeight();
     if (walk || blockAt(person.x, person.z) !== b) Object.assign(person, avatar(kind), spawnAt(b));
     if (walk) switchMode('play');
-    if (action === 'overview') {
+    if (action.kind === 'overview') {
       cityOverview = true;
       Object.assign(s.orbit, { focusX: 0, focusZ: 0, yaw: 0, pitch: 1.25, zoom: 11 });
       top = false;
       pressed('view', false);
       announce('Tap a block to open its editor');
+    }
+    if (action.lamp) {
+      copy = null;
+      tool = 'add';
+      selected = null;
+      draft.type = action.lamp.type;
+      draft.r = action.lamp.r;
+      aim(action.lamp.x, action.lamp.z);
+      announce('Streetlamp aimed at the gap. Choose Place brick to install it.');
     }
     clearInputs();
     drawPieces(data.pieces, selected);
@@ -1662,6 +1677,11 @@ function start() {
         );
       }
       s.showMarket(data.market?.receipts.length < 2 ? marketCounter(data) : null);
+      s.townLighting(
+        data,
+        mode === 'build' ? s.orbit.focusX : s.camera.position.x,
+        mode === 'build' ? s.orbit.focusZ : s.camera.position.z
+      );
       market.update();
       residents.refresh();
     }

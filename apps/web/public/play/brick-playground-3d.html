@@ -122,8 +122,11 @@
       <form method="dialog"><h2 id="cityMapTitle">Settlement map</h2><button aria-label="Close settlement map">×</button></form>
       <canvas width="512" height="512" id="cityAtlas" aria-label="City blocks, streets and buildings. Choose a block on the map or from the block list."></canvas>
       <p id="mapStats"></p>
+      <label>Town lighting <select id="townLighting"><option value="clock">Settlement clock</option><option value="day">Daylight preview</option><option value="night">Night preview</option></select></label>
       <div id="mapRouteTools" hidden><label>Household route <select id="mapRoute"></select></label> <button id="mapRouteZoom" hidden>Route close-up</button>
-        <p id="mapRouteSummary" role="status"></p><button id="mapConnect" hidden>Preview street connection</button>
+        <p id="mapRouteSummary" role="status"></p>
+        <label id="routeLightLabel" hidden><input id="routeLight" type="checkbox"> Street lighting</label>
+        <p id="routeLightSummary" role="status"></p><button id="mapAimLamp" hidden>Build here with streetlamp</button><button id="mapConnect" hidden>Preview street connection</button>
       </div>
       <label>Block <select id="mapBlock"></select></label>
       <details id="blockRepeat" hidden><summary>Repeat a block</summary>

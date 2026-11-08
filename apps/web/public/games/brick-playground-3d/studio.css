@@ -835,6 +835,16 @@ dialog p {
   border: 1px solid var(--edge);
   border-radius: 6px;
 }
+#routeLight {
+  width: auto;
+}
+#routeLightSummary {
+  font-size: 13px;
+  margin: 6px 0;
+}
+#routeLightSummary:empty {
+  display: none;
+}
 #mapRouteSummary {
   font-size: 13px;
   margin: 6px 0;
