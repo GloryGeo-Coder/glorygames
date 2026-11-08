@@ -27,7 +27,9 @@ jobs:
           - group: construction
             suites: playground vehicle canal blueprint builder
           - group: neighbourhoods
-            suites: district freight upstairs settlement resident
+            suites: district freight upstairs
+          - group: settlements
+            suites: settlement resident
     timeout-minutes: 25
     env:
       DATABASE_URL: postgresql://test:test@127.0.0.1:5432/brick_ci

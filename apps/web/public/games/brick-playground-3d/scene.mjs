@@ -245,10 +245,11 @@ export function studio(canvas) {
     return plane;
   }
   const settlement = cityScene(B, scene, box, mat);
-  let residentModel;
-  function showResident(trip, moving, t) {
-    if (trip && !residentModel) residentModel = residentFigure(B, scene, mat('#ffffff'));
-    residentModel?.(trip, moving, t);
+  const residentModels = new Map();
+  function showResident(profile, trip, moving, t) {
+    if (trip && !residentModels.has(profile.key))
+      residentModels.set(profile.key, residentFigure(B, scene, mat('#ffffff'), profile));
+    residentModels.get(profile.key)?.(trip, moving, t);
   }
   function neighbourhood(next) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);

@@ -1,3 +1,4 @@
+import { HOUSEHOLDS } from './settlement.mjs';
 import { residentControls } from './resident-ui.mjs';
 import { BLOCKS, HALF, blockAt, blockIndex, blockInfo, citySave, spawnAt } from './settlement.mjs';
 import { cityMap } from './city-map.mjs';
@@ -134,9 +135,9 @@ function start() {
     refresh();
   }
   function openWorld(next) {
-    if (kind === 'city' && data?.resident) save();
+    if (kind === 'city' && HOUSEHOLDS.some(({ key }) => data?.[key])) save();
     residents.reset();
-    s.showResident(null, false, 0);
+    for (const profile of HOUSEHOLDS) s.showResident(profile, null, false, 0);
     clearTimeout(noticeTimer);
     $('notice').textContent = '';
     s.freightBodywork(null);
@@ -1471,13 +1472,13 @@ function start() {
     clearInputs();
     if (document.hidden) {
       music.quiet();
-      if (kind === 'city' && data?.resident) save();
+      if (kind === 'city' && HOUSEHOLDS.some(({ key }) => data?.[key])) save();
     }
   });
   document.addEventListener('pointerdown', () => music.unlock());
   document.addEventListener('keydown', () => music.unlock());
   window.addEventListener('pagehide', () => {
-    if (kind === 'city' && data?.resident) save();
+    if (kind === 'city' && HOUSEHOLDS.some(({ key }) => data?.[key])) save();
   });
   let first = 'free';
   try {
@@ -1596,7 +1597,7 @@ function start() {
     if (kind === 'city' && mode === 'play' && renderedBlock !== blockAt(person.x, person.z))
       drawPieces(data.pieces, null);
     if (kind === 'city') {
-      const trip = data.resident;
+      const trip = residents.selectedTrip;
       if (trip && residents.watching && mode === 'build') {
         const b = blockAt(trip.x, trip.z);
         if (data.focus !== b.id) {
@@ -1606,7 +1607,15 @@ function start() {
         s.orbit.focusX = trip.x;
         s.orbit.focusZ = trip.z;
       }
-      s.showResident(trip, !!trip && !trip.paused && residents.moving, elapsed);
+      for (const profile of HOUSEHOLDS) {
+        const occupant = data[profile.key];
+        s.showResident(
+          profile,
+          occupant,
+          !!occupant && !occupant.paused && residents.moving(profile.key),
+          elapsed
+        );
+      }
       residents.refresh();
     }
     s.actors(

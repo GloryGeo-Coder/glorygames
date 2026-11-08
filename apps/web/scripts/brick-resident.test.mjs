@@ -4,6 +4,8 @@ import { world, loadWorld, saveKey } from '../public/games/brick-playground-3d/m
 import { citySave, restoreTrip } from '../public/games/brick-playground-3d/settlement.mjs';
 import {
   practiceSpaza,
+  practiceHallTrip,
+  isEntrance,
   newTrip,
   advanceTrip,
   tripRuntime,
@@ -89,4 +91,78 @@ test('routes use connected street segments, including partial edges and a detour
     { x: -72, z: 90 }
   ]);
   assert.equal(restoreTrip({ phase: 'street', x: Infinity }), null);
+});
+
+test('a second household can share a street, finish its own visit and keep walking after the other pauses', () => {
+  const { city, home, barrier } = fixture();
+  const group = practiceHallTrip(city).map((p, i) => ({ ...p, id: 'hall-' + i }));
+  const [front, hall] = group.filter(isEntrance);
+  city.pieces = [...city.pieces, ...group];
+  assert.equal(practiceHallTrip(city), null, 'existing buildings cannot be overwritten');
+  city.neighbour = newTrip(front, hall);
+  const first = tripRuntime(),
+    second = tripRuntime();
+  const onSharedStreet = new Set();
+  for (let i = 0; i < 14000 && city.neighbour.phase !== 'done'; i++) {
+    for (const [key, rt] of [
+      ['resident', first],
+      ['neighbour', second]
+    ]) {
+      const t = city[key];
+      advanceTrip(city, t, rt, 1 / 60);
+      if (t.phase === 'street' && Math.abs(t.z) < 0.035 && t.x >= -7.5 && t.x <= -6.5)
+        onSharedStreet.add(key);
+    }
+  }
+  assert.equal(onSharedStreet.size, 2);
+  assert.equal(city.neighbour.phase, 'done');
+  assert.equal(first.blocker, barrier.id);
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(reopened.neighbour, city.neighbour);
+  assert.deepEqual(reopened.resident, city.resident);
+  reopened.pieces = reopened.pieces.filter((p) => p.id !== barrier.id);
+  reopened.neighbour.paused = true;
+  until(reopened, first, () => reopened.resident.phase === 'done');
+  assert.equal(reopened.resident.home, home.id);
+  assert.equal(reopened.neighbour.shop, hall.id);
+});
+test('old single-household saves and independent household removal preserve the city', () => {
+  const { city } = fixture();
+  const reload = () => loadWorld('city', { getItem: () => citySave(city) });
+  assert.equal(reload().neighbour, undefined);
+  const buildings = practiceHallTrip(city).map((p, i) => ({ ...p, id: 'practice-hall-' + i }));
+  city.pieces = [...city.pieces, ...buildings];
+  const [h, d] = buildings.filter(isEntrance);
+  city.neighbour = newTrip(h, d);
+  delete city.resident;
+  assert.deepEqual(reload().neighbour, city.neighbour);
+  city.neighbour.x = Infinity;
+  assert.equal(reload().neighbour, undefined);
+  assert.deepEqual(reload().pieces, city.pieces);
+});
+
+test('reopening the C4 street resumes only the household that needs it', () => {
+  const { city, barrier } = fixture();
+  const buildings = practiceHallTrip(city).map((p, i) => ({ ...p, id: 'civic-' + i }));
+  const [h, d] = buildings.filter(isEntrance);
+  city.pieces = [...city.pieces.filter((p) => p !== barrier), ...buildings];
+  city.neighbour = newTrip(h, d);
+  const road = entrance(h).street;
+  city.streets = city.streets.filter((k) => k !== road);
+  const first = tripRuntime(),
+    second = tripRuntime();
+  for (let i = 0; i < 15000 && city.resident.phase !== 'done'; i++) {
+    advanceTrip(city, city.resident, first, 1 / 60);
+    advanceTrip(city, city.neighbour, second, 1 / 60);
+  }
+  assert.equal(city.resident.phase, 'done');
+  assert.match(second.issue, /Missing east street at C4/);
+  const finished = { ...city.resident };
+  city.streets = [...city.streets, road];
+  for (let i = 0; i < 15000 && city.neighbour.phase !== 'done'; i++) {
+    advanceTrip(city, city.resident, first, 1 / 60);
+    advanceTrip(city, city.neighbour, second, 1 / 60);
+  }
+  assert.equal(city.neighbour.phase, 'done');
+  assert.deepEqual(city.resident, finished);
 });
