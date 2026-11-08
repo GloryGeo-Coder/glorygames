@@ -1,0 +1,92 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { world, loadWorld, saveKey } from '../public/games/brick-playground-3d/model.mjs';
+import { citySave, restoreTrip } from '../public/games/brick-playground-3d/settlement.mjs';
+import {
+  practiceSpaza,
+  newTrip,
+  advanceTrip,
+  tripRuntime,
+  entrance,
+  streetPath
+} from '../public/games/brick-playground-3d/resident-trip.mjs';
+function fixture() {
+  const city = world('city'),
+    shop = practiceSpaza(city).map((p, i) => ({ ...p, id: 'practice-' + i }));
+  city.pieces = [...city.pieces, ...shop];
+  const home = city.pieces.find((p) => p.type === 'door'),
+    door = shop.find((p) => p.type === 'door');
+  city.resident = newTrip(home, door);
+  return { city, home, door, barrier: shop.at(-1) };
+}
+function until(city, rt, done, n = 9000) {
+  for (let i = 0; i < n; i++) {
+    advanceTrip(city, city.resident, rt, 1 / 60);
+    if (done()) return;
+  }
+  assert.fail('Trip stopped at ' + JSON.stringify([city.resident, rt.issue]));
+}
+test('Lebo stops at a brick, reopens there and completes the same trip after a one-stud edit', () => {
+  const { city, home, barrier } = fixture(),
+    rt = tripRuntime();
+  until(city, rt, () => rt.blocker === barrier.id);
+  const stopped = { ...city.resident };
+  for (let i = 0; i < 60; i++) advanceTrip(city, city.resident, rt, 1 / 60);
+  assert.deepEqual(city.resident, stopped);
+  const reopened = loadWorld('city', {
+    getItem: (k) => (k === saveKey('city') ? citySave(city) : null)
+  });
+  assert.deepEqual(reopened.resident, stopped);
+  const fresh = tripRuntime();
+  reopened.pieces = reopened.pieces.map((p) => (p.id === barrier.id ? { ...p, z: p.z + 1 } : p));
+  until(reopened, fresh, () => reopened.resident.phase === 'shopping');
+  assert.ok(!reopened.resident.returning);
+  until(reopened, fresh, () => reopened.resident.phase === 'done');
+  assert.ok(
+    reopened.resident.returning &&
+      Math.hypot(
+        reopened.resident.x - entrance(home).inside.x,
+        reopened.resident.z - entrance(home).inside.z
+      ) < 0.02
+  );
+});
+test('streets can break and reconnect mid-walk; a removed doorway waits for undo', () => {
+  const { city, door, barrier } = fixture(),
+    rt = tripRuntime();
+  city.pieces = city.pieces.filter((p) => p !== barrier);
+  until(city, rt, () => city.resident.phase === 'street' && city.resident.x > -5);
+  const roads = city.streets;
+  city.streets = roads.filter((k) => k !== entrance(door).street);
+  until(city, rt, () => rt.issue.includes('street'));
+  const stopped = [city.resident.x, city.resident.z];
+  until(city, rt, () => true);
+  assert.deepEqual([city.resident.x, city.resident.z], stopped);
+  city.streets = roads;
+  const pieces = city.pieces;
+  city.pieces = pieces.filter((p) => p.id !== door.id);
+  until(city, rt, () => rt.issue.includes('entrance missing'));
+  city.pieces = pieces;
+  city.resident.paused = true;
+  const paused = { ...city.resident };
+  advanceTrip(city, city.resident, rt, 0.1);
+  assert.deepEqual(city.resident, paused);
+  city.resident.paused = false;
+  until(city, rt, () => city.resident.phase === 'done');
+});
+test('routes use connected street segments, including partial edges and a detour', () => {
+  const start = { x: -6, z: 0 },
+    end = { x: 6, z: 0 };
+  const detour = ['h-3-4', 'v-4-3', 'h-4-3', 'v-5-3', 'h-4-4'];
+  assert.deepEqual(streetPath(detour, start, end), [{ x: 0, z: 0 }, end]);
+  assert.equal(streetPath(['h-3-4', 'h-5-4'], start, end), null);
+  assert.deepEqual(streetPath(['v-3-3', 'h-3-3', 'v-4-3'], { x: -24, z: 5 }, { x: 0, z: 5 }), [
+    { x: -24, z: 24 },
+    { x: 0, z: 24 },
+    { x: 0, z: 5 }
+  ]);
+  assert.deepEqual(streetPath(['h-0-0', 'v-1-0'], { x: -87, z: 95.5 }, { x: -72, z: 90 }), [
+    { x: -72, z: 95.5 },
+    { x: -72, z: 90 }
+  ]);
+  assert.equal(restoreTrip({ phase: 'street', x: Infinity }), null);
+});

@@ -1,3 +1,4 @@
+import { residentFigure } from './resident-figure.mjs';
 import { builder } from './builder.mjs';
 import { cityScene } from './city-scene.mjs';
 import { COUNTER, FLAT } from './upstairs.mjs';
@@ -244,6 +245,11 @@ export function studio(canvas) {
     return plane;
   }
   const settlement = cityScene(B, scene, box, mat);
+  let residentModel;
+  function showResident(trip, moving, t) {
+    if (trip && !residentModel) residentModel = residentFigure(B, scene, mat('#ffffff'));
+    residentModel?.(trip, moving, t);
+  }
   function neighbourhood(next) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
@@ -803,6 +809,7 @@ export function studio(canvas) {
     view,
     pick,
     neighbourhood,
+    showResident,
     citySector: settlement.sector,
     drawPieces,
     ghost,

@@ -879,3 +879,64 @@ dialog p {
     clear: both;
   }
 }
+
+#residentPanel {
+  position: absolute;
+  top: max(76px, calc(env(safe-area-inset-top) + 60px));
+  left: max(10px, env(safe-area-inset-left));
+  display: grid;
+  gap: 5px;
+  max-width: min(265px, 67vw);
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  padding: 6px 9px;
+  font-size: 13px;
+}
+#residentPanel button,
+#nudgeTools button {
+  min-width: 44px;
+  min-height: 44px;
+}
+#nudgeTools span {
+  font-weight: 700;
+  margin-right: 0.5em;
+}
+.res-actions button,
+#resPractice {
+  font-size: 12px;
+  min-height: 32px;
+  padding: 3px 7px;
+}
+#residentPanel b:empty,
+#residentPanel span:empty {
+  display: none;
+}
+#resTools,
+.res-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+#residentSetup select {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  margin: 4px 0 8px;
+  font: inherit;
+}
+.res-actions {
+  margin-top: 10px;
+}
+@media (max-height: 550px) {
+  #residentPanel {
+    top: 54px;
+    max-width: min(225px, 30vw);
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+  #residentPanel button {
+    min-height: 27px;
+    font-size: 11px;
+  }
+}

@@ -1,3 +1,4 @@
+import { residentControls } from './resident-ui.mjs';
 import { BLOCKS, HALF, blockAt, blockIndex, blockInfo, citySave, spawnAt } from './settlement.mjs';
 import { cityMap } from './city-map.mjs';
 import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
@@ -133,6 +134,9 @@ function start() {
     refresh();
   }
   function openWorld(next) {
+    if (kind === 'city' && data?.resident) save();
+    residents.reset();
+    s.showResident(null, false, 0);
     clearTimeout(noticeTimer);
     $('notice').textContent = '';
     s.freightBodywork(null);
@@ -210,6 +214,7 @@ function start() {
       btn.style.order = t.garageOnly ? -1 : 0;
     }
     $('cityMapButton').hidden = kind !== 'city';
+    residents.refresh();
     $('shopPanel').hidden = kind !== 'upstairs';
     $('districtPanel').hidden = kind !== 'district';
     $('canalPanel').hidden = kind !== 'canal';
@@ -330,7 +335,8 @@ function start() {
     $('place').textContent = group ? 'Place copy' : tool === 'move' ? 'Set down' : 'Place brick';
     $('undo').disabled = !history.length || !editable;
     $('editTools').hidden = tool !== 'select' || !chosen();
-    $('tray').hidden = tool === 'select' || !!group;
+    $('nudgeTools').hidden = tool !== 'move' || !editable;
+    $('tray').hidden = tool === 'select' || tool === 'move' || !!group;
     $('rotate').disabled = !editable || (tool === 'select' && !chosen());
     pressed('select', tool === 'select' || tool === 'move');
     pressed('add', tool === 'add');
@@ -495,6 +501,25 @@ function start() {
     Object.assign(draft, { x: b.x - 2, z: b.z - 2 });
     fitCityCopy(b);
   }
+  const residents = residentControls({
+    city: () => (kind === 'city' ? data : null),
+    editing: () => mode === 'build' && !cityOverview,
+    save,
+    add: (pieces) => change([...data.pieces, ...pieces]),
+    focus: (t, blocker, follow) => {
+      if (!t) return;
+      if (mode !== 'build') switchMode('build');
+      const b = blockAt(t.x, t.z);
+      focusCity(b);
+      Object.assign(s.orbit, { focusX: t.x, focusZ: t.z, zoom: follow ? 0.56 : 0.63 });
+      if (!follow) {
+        copy = null;
+        select(blocker || null);
+      }
+      drawPieces(data.pieces, selected);
+      syncMode();
+    }
+  });
   const openCityMap = cityMap((layout, b, action, changed) => {
     const walk = action === 'walk';
     if (changed) {
@@ -523,6 +548,7 @@ function start() {
     save();
   });
   $('cityMapButton').onclick = () => {
+    residents.stopFollowing();
     clearInputs();
     openCityMap(
       data,
@@ -597,6 +623,7 @@ function start() {
       adjustHeight();
     }
     cityOverview = false;
+    if (to !== 'build') residents.stopFollowing();
     mode = to;
     if (kind === 'city' && to === 'build') {
       focusCity(blockAt(person.x, person.z));
@@ -887,6 +914,10 @@ function start() {
     adjustHeight();
     refresh();
   };
+  for (const button of $('nudgeTools').querySelectorAll('button')) {
+    button.onclick = () =>
+      aim(draft.x + Number(button.dataset.dx || 0), draft.z + Number(button.dataset.dz || 0));
+  }
   $('move').onclick = () => {
     draft = { ...chosen() };
     tool = 'move';
@@ -1272,6 +1303,7 @@ function start() {
     return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   };
   canvas.onpointerdown = (e) => {
+    if (kind === 'city') residents.stopFollowing();
     canvas.setPointerCapture(e.pointerId);
     touches.set(e.pointerId, { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY });
     if (touches.size === 1) gesture = false;
@@ -1395,6 +1427,7 @@ function start() {
       menu.open ||
       $('cityMap').open ||
       $('planBook').open ||
+      $('residentSetup').open ||
       ['INPUT', 'SELECT'].includes(e.target.tagName)
     )
       return;
@@ -1436,10 +1469,16 @@ function start() {
   window.addEventListener('blur', clearInputs);
   document.addEventListener('visibilitychange', () => {
     clearInputs();
-    if (document.hidden) music.quiet();
+    if (document.hidden) {
+      music.quiet();
+      if (kind === 'city' && data?.resident) save();
+    }
   });
   document.addEventListener('pointerdown', () => music.unlock());
   document.addEventListener('keydown', () => music.unlock());
+  window.addEventListener('pagehide', () => {
+    if (kind === 'city' && data?.resident) save();
+  });
   let first = 'free';
   try {
     const last = localStorage.getItem('wga.brick.active');
@@ -1458,10 +1497,11 @@ function start() {
     const dt = Math.min(0.1, s.engine.getDeltaTime() / 1000);
     elapsed += dt;
     let walking = false;
-    if (!menu.open && !$('cityMap').open) {
+    if (!menu.open && !$('cityMap').open && !$('residentSetup').open && !$('planBook').open) {
       const count = Math.max(1, Math.ceil(dt / 0.0167)),
         delta = dt / count;
       for (let i = 0; i < count; i++) {
+        if (kind === 'city') residents.step(delta);
         if (mode === 'play') {
           const x =
             vec.x +
@@ -1555,6 +1595,20 @@ function start() {
     if (kind === 'upstairs' && mode === 'play') updateHandover();
     if (kind === 'city' && mode === 'play' && renderedBlock !== blockAt(person.x, person.z))
       drawPieces(data.pieces, null);
+    if (kind === 'city') {
+      const trip = data.resident;
+      if (trip && residents.watching && mode === 'build') {
+        const b = blockAt(trip.x, trip.z);
+        if (data.focus !== b.id) {
+          data.focus = b.id;
+          drawPieces(data.pieces, selected);
+        }
+        s.orbit.focusX = trip.x;
+        s.orbit.focusZ = trip.z;
+      }
+      s.showResident(trip, !!trip && !trip.paused && residents.moving, elapsed);
+      residents.refresh();
+    }
     s.actors(
       mode,
       person,

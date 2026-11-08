@@ -20,7 +20,7 @@ export type GameEditorial = {
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "brick-playground-3d": {
     "category": "Simulation",
-    "summary": "Build a settlement across 64 city blocks. Lay streets, place homes and shops from blueprints, and walk through the neighbourhoods you create. Other worlds include buggy deliveries and a working drawbridge.",
+    "summary": "Build a settlement across 64 city blocks. Lay streets, place homes and shops from blueprints, and follow Lebo from home to a spaza along the streets you build. Other worlds include buggy deliveries and a working drawbridge.",
     "overview": [
         "Turn an open plot beside a neighbourhood park into a spaza shop, a house or a playground. All 20 pieces and eight colours are available when you arrive."
     ],
@@ -54,6 +54,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         }
     ],
     "progression": [
+        "In Settlement Builder, choose Residents for an optional shopping trip. Assign two ground-floor entrances and follow Lebo from home to the spaza and back. Lebo uses the streets that face the doorways. If the route stops, use Edit here to inspect the obstruction or reconnect a street on the map. Your trip resumes after a reload.",
         "Open Settlement Builder for a 192-by-192-stud town. In City map, name a block, choose its land use and mark streets on its edges. Build here and Walk here apply your map changes. Choose City view to see the whole settlement in 3D, then tap a block to edit it. In Plans, place a house, a three-house street, a spaza, a community hall, an office block or a pocket park, or reuse one of your own designs. Each block has a 20-by-20-stud building area.",
         "In Free Build, Settlement Builder, Market District or Flat Above the Shop, open Plans to save a named blueprint on this device. Select a brick first to capture its connected structure, or choose a whole plot. Rotate the preview and use Ground or Stack before placing the copy. One Undo removes the entire copy.",
         "In Flat Above the Shop, collect a parcel at the downstairs counter and walk it up to Flat 1. The starter shop has a low middle flight and a gap beside the landing. Fit steps or a ramp, then bridge the balcony gap. The parcel stays with you when you edit or reload.",
