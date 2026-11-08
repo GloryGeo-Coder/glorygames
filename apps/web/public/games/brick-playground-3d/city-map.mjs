@@ -15,6 +15,7 @@ import {
 import { planStreets, sectionLabel } from './street-planner.mjs';
 import { previewBlockRow, stageBlockRow } from './block-expansion.mjs';
 import { lightingMode, streetLamps, surveyLighting, suggestLamp } from './street-lighting.mjs';
+import { neighbourhoodMap } from './neighbourhood-map.mjs';
 import { trailMap } from './trail-map.mjs';
 import { PALETTE, size } from './model.mjs';
 const $ = (id) => document.getElementById(id);
@@ -81,6 +82,28 @@ export function cityMap(commit) {
       Math.round(z) +
       '). Place a streetlamp on a nearby plot.';
   }
+  const areas = neighbourhoodMap({
+    city: () => working,
+    active: () => block,
+    editable: () => editable,
+    stage: (blocks) => {
+      working = { ...working, blocks };
+    },
+    select,
+    paint
+  });
+  $('areaBoard').querySelector('summary').onclick = () => {
+    if (!$('areaBoard').open) areas.open();
+  };
+  $('areaBoard').ontoggle = () => {
+    if (!dialog.open) return;
+    if ($('areaBoard').open) {
+      $('trailBoard').open = $('blockRepeat').open = false;
+      $('mapRoute').value = '';
+      closeUp = false;
+    }
+    paint();
+  };
   const trails = trailMap({
     city: () => working,
     stage: (trail) => {
@@ -95,6 +118,7 @@ export function cityMap(commit) {
   $('trailBoard').ontoggle = () => {
     if (!dialog.open) return;
     if ($('trailBoard').open) {
+      $('areaBoard').open = false;
       trails.sync();
       trailClose = true;
       $('blockRepeat').open = false;
@@ -213,11 +237,11 @@ export function cityMap(commit) {
   $('blockRepeat').ontoggle = () => {
     if (!$('cityMap').open) return;
     if ($('blockRepeat').open) {
+      $('areaBoard').open = false;
       $('trailBoard').open = false;
       $('mapRoute').value = '';
       closeUp = false;
     }
-    $('mapFields').hidden = !editable || $('blockRepeat').open;
     paint();
   };
   $('repeatStage').onclick = () => {
@@ -332,6 +356,7 @@ export function cityMap(commit) {
     viewY = Math.max(0, Math.min(canvas.height - side, (top + bottom - side) / 2));
   }
   function paint() {
+    $('mapFields').hidden = !editable || $('blockRepeat').open || $('areaBoard').open;
     routePreview();
     lightPreview();
     fitRoute();
@@ -359,6 +384,7 @@ export function cityMap(commit) {
       ctx.fillStyle = PALETTE[p.color];
       ctx.fillRect((HALF + p.x) * scale, (HALF - p.z - a.d) * scale, a.w * scale, a.d * scale);
     }
+    areas.draw(ctx, PITCH * scale);
     paintRow(rowPreview());
     ctx.font = 'bold 15px sans-serif';
     ctx.textBaseline = 'top';
@@ -420,6 +446,7 @@ export function cityMap(commit) {
   };
   $('mapRoute').onchange = () => {
     if ($('mapRoute').value) {
+      $('areaBoard').open = false;
       $('blockRepeat').open = false;
       $('trailBoard').open = false;
     }
@@ -464,6 +491,7 @@ export function cityMap(commit) {
     closeUp = false;
     editable = editing;
     working = original = city;
+    $('areaBoard').open = false;
     $('trailBoard').open = false;
     trails.reset(editing);
     $('townLighting').value = lightingMode(city.lighting);
@@ -481,6 +509,7 @@ export function cityMap(commit) {
       $('mapRoute').add(new Option(profile.name + ' · ' + profile.destination, profile.key));
     $('mapFields').hidden = !editing;
     select(active);
+    areas.open();
     dialog.showModal();
   };
 }

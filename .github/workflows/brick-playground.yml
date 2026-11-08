@@ -29,7 +29,7 @@ jobs:
           - group: construction
             suites: playground vehicle canal blueprint builder
           - group: neighbourhoods
-            suites: district freight upstairs
+            suites: district freight upstairs settlement-neighbourhoods
           - group: settlements
             suites: settlement resident
     timeout-minutes: 25

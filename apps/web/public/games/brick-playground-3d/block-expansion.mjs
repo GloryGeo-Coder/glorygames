@@ -74,7 +74,8 @@ export function stageBlockRow(city, spec) {
   if (row.issue) return city;
   const blocks = { ...city.blocks };
   for (const b of row.targets) {
-    if (!blocks[b.id]) blocks[b.id] = { name: '', zone: blockInfo(city, spec.source).zone };
+    if (!blocks[b.id]?.zone)
+      blocks[b.id] = { ...blocks[b.id], name: '', zone: blockInfo(city, spec.source).zone };
   }
   const pieces = row.pieces.map((p) => ({
     ...p,
