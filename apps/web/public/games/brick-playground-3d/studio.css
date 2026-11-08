@@ -855,6 +855,59 @@ dialog p {
 #mapConnect {
   min-height: 40px;
 }
+#trailBoard {
+  margin: 6px 0;
+  padding: 5px 8px;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+}
+#trailBoard summary {
+  font-weight: 700;
+  cursor: pointer;
+  padding: 5px 0;
+}
+#trailBoard p,
+#trailPassport {
+  font-size: 13px;
+  margin: 6px 0;
+}
+#trailPassport {
+  padding-left: 20px;
+}
+#trailPassport .stamped {
+  color: #27694f;
+  font-weight: 700;
+}
+#trailPassport:empty,
+#trailLegs:empty {
+  display: none;
+}
+#trailRows > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto auto;
+  gap: 4px;
+  align-items: center;
+  margin: 5px 0;
+}
+#trailRows select,
+#trailRows input,
+#trailName {
+  width: 100%;
+  min-width: 0;
+}
+#trailRows button {
+  min-width: 32px;
+  min-height: 36px;
+  padding: 2px;
+}
+.trail-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+#trailHud {
+  background: #e2f3ea;
+}
 #blockRepeat {
   margin: 6px 0;
   border: 1px solid var(--edge);

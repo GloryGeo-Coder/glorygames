@@ -15,6 +15,7 @@ import {
 import { planStreets, sectionLabel } from './street-planner.mjs';
 import { previewBlockRow, stageBlockRow } from './block-expansion.mjs';
 import { lightingMode, streetLamps, surveyLighting, suggestLamp } from './street-lighting.mjs';
+import { trailMap } from './trail-map.mjs';
 import { PALETTE, size } from './model.mjs';
 const $ = (id) => document.getElementById(id);
 export function cityMap(commit) {
@@ -23,7 +24,8 @@ export function cityMap(commit) {
     ctx = canvas.getContext('2d');
   const scale = canvas.width / (HALF * 2);
   let original, working, block, editable, plan;
-  let closeUp = false,
+  let trailClose = true,
+    closeUp = false,
     viewX = 0,
     viewY = 0,
     zoom = 1;
@@ -79,6 +81,28 @@ export function cityMap(commit) {
       Math.round(z) +
       '). Place a streetlamp on a nearby plot.';
   }
+  const trails = trailMap({
+    city: () => working,
+    stage: (trail) => {
+      working = { ...working, trail };
+    },
+    repaint: paint,
+    launch: (front) => {
+      dialog.close();
+      commit(working, front.block, { kind: 'trail', front }, working !== original);
+    }
+  });
+  $('trailBoard').ontoggle = () => {
+    if (!dialog.open) return;
+    if ($('trailBoard').open) {
+      trails.sync();
+      trailClose = true;
+      $('blockRepeat').open = false;
+      $('mapRoute').value = '';
+      closeUp = false;
+    }
+    paint();
+  };
   function paintRoute() {
     if (!plan) return;
     ctx.save();
@@ -189,6 +213,7 @@ export function cityMap(commit) {
   $('blockRepeat').ontoggle = () => {
     if (!$('cityMap').open) return;
     if ($('blockRepeat').open) {
+      $('trailBoard').open = false;
       $('mapRoute').value = '';
       closeUp = false;
     }
@@ -279,9 +304,14 @@ export function cityMap(commit) {
     const canFit = plan?.home && plan?.destination;
     $('mapRouteZoom').hidden = !canFit;
     $('mapRouteZoom').textContent = closeUp ? 'Whole town' : 'Route close-up';
-    if (!closeUp || !canFit) return;
-    const points = [plan.home.center, plan.destination.center, ...plan.points];
-    for (const key of plan.missing) {
+    const trailPoints = trails.atlasPoints();
+    $('trailZoom').hidden = !trailPoints.length;
+    $('trailZoom').textContent = trailClose ? 'Whole town' : 'Trail close-up';
+    if (trailPoints.length ? !trailClose : !closeUp || !canFit) return;
+    const points = trailPoints.length
+      ? trailPoints
+      : [plan.home.center, plan.destination.center, ...plan.points];
+    for (const key of plan?.missing || []) {
       const edge = streetSegment(key),
         dx = edge.axis === 'h' ? PITCH / 2 : 0,
         dz = edge.axis === 'v' ? PITCH / 2 : 0;
@@ -344,6 +374,7 @@ export function cityMap(commit) {
       PITCH * scale - 6
     );
     paintRoute();
+    trails.draw(ctx, px, py, routeLine);
     ctx.restore();
   }
   function select(b) {
@@ -388,8 +419,15 @@ export function cityMap(commit) {
     );
   };
   $('mapRoute').onchange = () => {
-    if ($('mapRoute').value) $('blockRepeat').open = false;
+    if ($('mapRoute').value) {
+      $('blockRepeat').open = false;
+      $('trailBoard').open = false;
+    }
     closeUp = !!$('mapRoute').value;
+    paint();
+  };
+  $('trailZoom').onclick = () => {
+    trailClose = !trailClose;
     paint();
   };
   $('mapRouteZoom').onclick = () => {
@@ -426,6 +464,8 @@ export function cityMap(commit) {
     closeUp = false;
     editable = editing;
     working = original = city;
+    $('trailBoard').open = false;
+    trails.reset(editing);
     $('townLighting').value = lightingMode(city.lighting);
     $('routeLight').checked = false;
     $('blockRepeat').open = false;

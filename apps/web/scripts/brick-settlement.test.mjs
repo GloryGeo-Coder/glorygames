@@ -30,6 +30,14 @@ import {
   previewBlockRow,
   stageBlockRow
 } from '../public/games/brick-playground-3d/block-expansion.mjs';
+import {
+  prepareTrail,
+  canStamp,
+  stampTrail,
+  startingPavement,
+  trailLegs,
+  currentStop
+} from '../public/games/brick-playground-3d/town-trail.mjs';
 import { CITY_PLANS } from '../public/games/brick-playground-3d/city-plans.mjs';
 import { placement, readPlan } from '../public/games/brick-playground-3d/blueprint.mjs';
 test('all 64 city blocks independently accept each editable starter building and isolate the corridors', () => {
@@ -318,4 +326,52 @@ test('aiming at a dark gap chooses an unoccupied plot stud, even when the neares
     ),
     null
   );
+});
+
+test('a passport requires ordered visits on foot and restores the exact next doorway after a reload', () => {
+  const city = plannerCity();
+  const stops = city.pieces.map((p, i) => ({ door: p.id, label: ['Spaza', 'Reading room'][i] }));
+  city.trail = prepareTrail(city, 'High Street', stops);
+  const [a, b] = city.pieces.map(entrance);
+  const at = (p) => ({ ...p.inside, y: 0 });
+  assert.equal(startingPavement(city).block.code, a.block.code);
+  assert.equal(stampTrail(city, at(b), true), null);
+  assert.equal(stampTrail(city, at(a), false), null);
+  assert.equal(stampTrail(city, { ...a.center, y: 0 }, true), null);
+  assert.equal(stampTrail(city, { ...a.inside, y: 3 }, true), null);
+  assert.equal(stampTrail(city, at(a), true).label, 'Spaza');
+  assert.equal(stampTrail(city, at(a), true), null);
+  const reopened = loadWorld('city', { getItem: () => citySave({ ...world('city'), ...city }) });
+  assert.equal(currentStop(reopened).label, 'Reading room');
+  assert.deepEqual(startingPavement(reopened).curb, a.curb);
+  assert.ok(trailLegs(reopened)[0].missing.length);
+  reopened.streets = [...reopened.streets, ...trailLegs(reopened)[0].missing];
+  assert.equal(trailLegs(reopened)[0].missing.length, 0);
+  assert.equal(stampTrail(reopened, at(b), true).label, 'Reading room');
+  assert.equal(startingPavement(reopened), null);
+  assert.equal(stampTrail(reopened, at(b), true), null);
+});
+test('missing or moved stops cannot be stamped at stale coordinates; editing preserves only an unchanged visited prefix', () => {
+  const city = plannerCity(),
+    original = city.pieces,
+    stops = original.map((p, i) => ({ door: p.id, label: 'Stop ' + i }));
+  assert.equal(prepareTrail(city, ' ', stops), null);
+  assert.equal(prepareTrail(city, 'Town', [stops[0], stops[0]]), null);
+  city.trail = prepareTrail(city, 'Town', stops);
+  city.trail.stamps = 1;
+  city.pieces = [original[0]];
+  assert.equal(startingPavement(city), null);
+  const old = { ...entrance(original[1]).inside, y: 0 };
+  assert.equal(stampTrail(city, old, true), null);
+  const moved = { ...original[1], r: 1, x: original[1].x + 6 };
+  city.pieces = [original[0], moved];
+  assert.equal(canStamp(city, old, true), false);
+  assert.equal(prepareTrail(city, 'Renamed', stops).stamps, 1);
+  assert.equal(prepareTrail(city, 'Reversed', [...stops].reverse()).stamps, 0);
+  assert.ok(stampTrail(city, { ...entrance(moved).inside, y: 0 }, true));
+  assert.equal(prepareTrail(city, 'Same doors', stops).stamps, 2);
+  const bad = { ...world('city'), trail: { name: 'Broken', stops: [{}, {}], stamps: 1 } };
+  const loaded = loadWorld('city', { getItem: () => citySave(bad) });
+  assert.equal(loaded.trail, undefined);
+  assert.deepEqual(loaded.pieces, bad.pieces);
 });
