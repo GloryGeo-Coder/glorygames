@@ -16,6 +16,30 @@ async function delivery(browser, mobile) {
     p = await ctx.newPage();
     p.on('pageerror', (e) => errors.push(e.message));
     const tap = (id) => (mobile ? p.locator('#' + id).tap() : p.locator('#' + id).click());
+    async function closingTransport(action) {
+      // The native dialog close event clears held inputs asynchronously. Let it finish before
+      // pressing a new key, rather than racing that intentional safety reset.
+      const closed = p.evaluate(
+        () =>
+          new Promise((resolve, reject) => {
+            const timer = setTimeout(
+              () => reject(new Error('Transport dialog did not close')),
+              10000
+            );
+            document.getElementById('transportSetup').addEventListener(
+              'close',
+              () => {
+                clearTimeout(timer);
+                resolve();
+              },
+              { once: true }
+            );
+          })
+      );
+      await Promise.all([closed, action()]);
+    }
+    const cancelTransport = () =>
+      closingTransport(() => p.locator('[aria-label="Close transport settings"]').click());
     const save = () =>
       p.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
     const ready = () => p.locator('#tray button').first().waitFor();
@@ -156,7 +180,7 @@ async function delivery(browser, mobile) {
     await tap('transportDispatch');
     assert.match(await p.locator('#transportSetupHint').textContent(), /blocked/i);
     assert.equal(await p.locator('#transportSetup').evaluate((e) => e.open), true);
-    await p.locator('[aria-label="Close transport settings"]').click();
+    await cancelTransport();
     // Leave the game before repairing storage: its pagehide autosave must finish first.
     // This same-origin fixture page has no game code that could overwrite the repair.
     // Editor repair through public controls is covered by the resident suite.
@@ -181,7 +205,7 @@ async function delivery(browser, mobile) {
     await ready();
     assert.ok(!(await save()).pieces.some((piece) => piece[0] === 'blocked-bay'));
     await tap('transportButton');
-    await tap('transportDispatch');
+    await closingTransport(() => tap('transportDispatch'));
     assert.equal(
       await p.locator('#transportSetup').evaluate((e) => e.open),
       false,
@@ -196,7 +220,7 @@ async function delivery(browser, mobile) {
     assert.equal((await save()).transport.stage, 2);
     await tap('transportButton');
     assert.ok(await p.locator('#transportNew').isDisabled());
-    await p.locator('[aria-label="Close transport settings"]').click();
+    await cancelTransport();
     assert.equal((await save()).transport.stage, 2, 'cancel preserves cargo');
     await goTo(-6);
     assert.ok((await x()) > -7, 'buggy drove on the player street');
@@ -209,7 +233,7 @@ async function delivery(browser, mobile) {
     await ready();
     assert.equal((await save()).transport.stage, 2);
     await tap('transportButton');
-    await tap('transportDispatch');
+    await closingTransport(() => tap('transportDispatch'));
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'reload resumes cargo at checkpoint');
     await goTo(10.9, true);
