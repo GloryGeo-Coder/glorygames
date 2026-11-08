@@ -44,14 +44,14 @@ async function delivery(browser, mobile) {
       p.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
     const ready = () => p.locator('#tray button').first().waitFor();
     const touch = mobile && (await ctx.newCDPSession(p));
-    async function press(id) {
+    async function press(id, direction = 1) {
       const r = await p.locator('#' + id).boundingBox();
       await touch.send('Input.dispatchTouchEvent', {
         type: 'touchStart',
         touchPoints: [
           {
             x: r.x + r.width / 2,
-            y: r.y + r.height / 2 - (id === 'stick' ? 30 : 0)
+            y: r.y + r.height / 2 - (id === 'stick' ? 30 * direction : 0)
           }
         ]
       });
@@ -77,52 +77,65 @@ async function delivery(browser, mobile) {
         null,
         { timeout: 10000 }
       );
-    async function goTo(target, unload = false) {
-      if (mobile) await press('stick');
-      else await p.keyboard.down('w');
+    async function goTo(target, direction = 1) {
+      const key = direction > 0 ? 'w' : 's';
+      if (mobile) await press('stick', direction);
+      else {
+        await p.locator('#plot').focus();
+        await p.keyboard.down(key);
+      }
       await p.waitForFunction(
-        (target) =>
-          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis').position
-            .x >= target,
-        target,
+        ({ target, direction }) => {
+          const x =
+            BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis').position
+              .x;
+          return direction > 0 ? x >= target : x <= target;
+        },
+        { target, direction },
         { timeout: 60000 }
       );
       if (mobile) {
         await release();
         await press('brake');
       } else {
-        await p.keyboard.up('w');
+        await p.keyboard.up(key);
         await p.keyboard.down('Space');
       }
       try {
-        if (unload) {
-          await p.waitForFunction(
-            () => !document.getElementById('transportAction').disabled,
-            null,
-            {
-              timeout: 10000
-            }
-          );
-        } else {
-          // Wait for a stopped rendered pose, not wall-clock time: slow frames clamp simulation dt.
-          await p.waitForFunction(
-            async () => {
-              const rig =
-                BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis');
-              const before = rig.position.x;
-              await new Promise((resolve) =>
-                requestAnimationFrame(() => requestAnimationFrame(resolve))
-              );
-              return rig.position.x === before;
-            },
-            null,
-            { timeout: 10000 }
-          );
-        }
+        // Wait for a stopped rendered pose, not wall-clock time: slow frames clamp simulation dt.
+        await p.waitForFunction(
+          async () => {
+            const rig =
+              BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis');
+            const before = rig.position.x;
+            await new Promise((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(resolve))
+            );
+            return rig.position.x === before;
+          },
+          null,
+          { timeout: 10000 }
+        );
       } finally {
         if (mobile) await release();
         else await p.keyboard.up('Space');
       }
+    }
+    async function parkAtDropoff() {
+      // Brake early, then use short forward/reverse corrections from the observed pose.
+      // Input delivery and rendering latency vary in CI; a single full-speed brake target is brittle.
+      await goTo(9.8);
+      for (let attempt = 0; attempt < 8; attempt++) {
+        if (await p.locator('#transportAction').isEnabled()) return;
+        const current = await x();
+        const direction = Math.sign(12 - current);
+        assert.notEqual(direction, 0, 'a stopped, aligned buggy at the drop-off can unload');
+        await goTo(current + direction * Math.min(0.5, Math.abs(12 - current) / 2), direction);
+      }
+      assert.ok(
+        await p.locator('#transportAction').isEnabled(),
+        'public driving controls can park in the delivery bay'
+      );
     }
     const origin = process.env.GAME_ORIGIN || 'http://127.0.0.1:3000';
     const gameUrl = origin + '/play/brick-playground-3d';
@@ -236,7 +249,7 @@ async function delivery(browser, mobile) {
     await closingTransport(() => tap('transportDispatch'));
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'reload resumes cargo at checkpoint');
-    await goTo(10.9, true);
+    await parkAtDropoff();
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 3);
     if (process.env.BRICK_SCREENSHOTS) {
@@ -279,7 +292,9 @@ async function delivery(browser, mobile) {
               pose: rig && { x: rig.position.x, z: rig.position.z, yaw: rig.rotation.y },
               hint: document.getElementById('transportHint')?.textContent,
               setupHint: document.getElementById('transportSetupHint')?.textContent,
-              actionDisabled: document.getElementById('transportAction')?.disabled
+              actionDisabled: document.getElementById('transportAction')?.disabled,
+              activeElement: document.activeElement?.id,
+              setupOpen: document.getElementById('transportSetup')?.open
             };
           })
           .catch(() => null)
