@@ -152,6 +152,143 @@ async function town(browser, mobile) {
     await ctx.close();
   }
 }
+async function streetConnection(browser, mobile) {
+  const { world } = await import('../public/games/brick-playground-3d/model.mjs');
+  const { citySave } = await import('../public/games/brick-playground-3d/settlement.mjs');
+  const { practiceHallTrip, practiceSpaza, isEntrance, newTrip } =
+    await import('../public/games/brick-playground-3d/resident-trip.mjs');
+  const city = world('city'),
+    home = city.pieces.find(isEntrance);
+  const shop = practiceSpaza(city).map((p, i) => ({ ...p, id: 'map-spaza-' + i }));
+  city.pieces = [...city.pieces, ...shop];
+  const hall = practiceHallTrip(city).map((p, i) => ({ ...p, id: 'map-hall-' + i }));
+  city.pieces = [...city.pieces, ...hall];
+  city.resident = newTrip(home, shop.find(isEntrance));
+  city.resident.paused = true;
+  city.neighbour = newTrip(...hall.filter(isEntrance));
+  city.streets = city.streets.filter((k) => k !== 'v-3-3');
+  const ctx = await browser.newContext({
+    viewport: mobile ? { width: 393, height: 820 } : { width: 1100, height: 750 },
+    isMobile: mobile,
+    hasTouch: mobile
+  });
+  try {
+    await ctx.addInitScript((raw) => {
+      if (!localStorage.getItem('wga.brick-playground.v1.city')) {
+        localStorage.setItem('wga.brick-playground.v1.city', raw);
+        localStorage.setItem('wga.brick.active', 'city');
+      }
+    }, citySave(city));
+    const page = await ctx.newPage(),
+      errors = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    const tap = (id) => (mobile ? page.locator('#' + id).tap() : page.locator('#' + id).click());
+    const saved = () =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const summary = () => page.locator('#mapRouteSummary').innerText();
+    const openRoute = async () => {
+      await tap('cityMapButton');
+      await page.locator('#mapRoute').selectOption('neighbour');
+    };
+    const close = () => page.getByRole('button', { name: 'Close settlement map' }).click();
+    const state = (label) =>
+      page.waitForFunction(
+        (s) => document.getElementById('resState').textContent.includes(s),
+        label,
+        { timeout: 150000 }
+      );
+    await page.goto(
+      (process.env.GAME_ORIGIN || 'http://127.0.0.1:3000') + '/play/brick-playground-3d'
+    );
+    await page.locator('#tray button').first().waitFor();
+    await tap('resOther');
+    await state('Naledi · Stopped');
+    await tap('play');
+    await openRoute();
+    assert.match(await summary(), /Disconnected.*1 missing section/);
+    assert.ok(await page.locator('#mapConnect').isHidden(), 'Play offers inspection only');
+    await page.locator('#mapRoute').selectOption('resident');
+    assert.match(await summary(), /Connected/);
+    await close();
+    await tap('build');
+    await openRoute();
+    assert.equal(await page.locator('#mapRouteZoom').innerText(), 'Whole town');
+    await tap('mapRouteZoom');
+    await tap('mapRouteZoom');
+    const point = await page.locator('#cityAtlas').evaluate((c) => {
+      const pixels = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let x = 0,
+        y = 0,
+        count = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i] === 22 && pixels[i + 1] === 63 && pixels[i + 2] === 116) {
+          x += (i / 4) % c.width;
+          y += Math.floor(i / 4 / c.width);
+          count++;
+        }
+      }
+      if (!count) throw Error('Home marker was not painted');
+      const r = c.getBoundingClientRect();
+      return [
+        r.left + ((x / count) * r.width) / c.width,
+        r.top + ((y / count) * r.height) / c.height
+      ];
+    });
+    if (mobile) await page.touchscreen.tap(...point);
+    else await page.mouse.click(...point);
+    assert.equal(
+      await page.locator('#mapBlock').inputValue(),
+      '26',
+      'zoomed home marker selects C4'
+    );
+    if (process.env.BRICK_SCREENSHOTS) {
+      fs.mkdirSync(process.env.BRICK_SCREENSHOTS, { recursive: true });
+      await page.screenshot({
+        path: path.join(
+          process.env.BRICK_SCREENSHOTS,
+          'street-plan-' + (mobile ? 'phone' : 'desktop') + '.png'
+        )
+      });
+    }
+    const before = await saved();
+    await tap('mapConnect');
+    assert.match(await summary(), /New connection in this preview/);
+    assert.ok(await page.locator('#road-east').isChecked());
+    assert.deepEqual(await saved(), before, 'preview has not saved an edit');
+    await close();
+    await openRoute();
+    assert.match(await summary(), /Disconnected/);
+    await tap('mapConnect');
+    await tap('mapBuild');
+    assert.ok((await saved()).streets.includes('v-3-3'));
+    await tap('undo');
+    assert.deepEqual((await saved()).streets, before.streets);
+    await openRoute();
+    await tap('mapConnect');
+    await tap('mapBuild');
+    await page.reload();
+    await page.locator('#tray button').first().waitFor();
+    await openRoute();
+    assert.match(await summary(), /Connected/);
+    assert.ok(await page.locator('#mapConnect').isHidden());
+    await close();
+    await tap('resOther');
+    await tap('play');
+    await state('Naledi · Home again');
+    const finished = await saved();
+    assert.deepEqual(finished.resident, before.resident);
+    assert.deepEqual(finished.pieces, before.pieces);
+    assert.equal(finished.neighbour.shop, before.neighbour.shop);
+    assert.deepEqual(errors, []);
+    console.log(
+      (mobile ? 'Phone' : 'Desktop') +
+        ' street planner: inspected both routes, selected C4 in close-up, cancelled a repair, applied and undid it, then reopened the repaired town and watched Naledi finish.'
+    );
+  } finally {
+    await ctx.close();
+  }
+}
+
 // Open a pre-existing fully occupied town through the normal save loader on a phone viewport.
 async function largeTown(browser) {
   const { BLOCKS, cityWorld, citySave, streetKeys } =
@@ -260,7 +397,10 @@ async function largeTown(browser) {
     ]
   });
   try {
-    for (const mobile of [true, false]) await town(browser, mobile);
+    for (const mobile of [true, false]) {
+      await streetConnection(browser, mobile);
+      await town(browser, mobile);
+    }
     await largeTown(browser);
   } finally {
     await browser.close();
