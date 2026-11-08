@@ -1,8 +1,10 @@
+import { blockIndex, blockAt, fitsBlock } from './settlement.mjs';
 import { PLOT, TYPES, PALETTE, size, validPiece, snapHeight } from './model.mjs';
 import { LOTS } from './district.mjs';
 
 export const PLAN_PREFIX = 'wga.brick.blueprint.v1.';
-export const plansAllowed = (kind) => kind === 'free' || kind === 'district' || kind === 'upstairs';
+export const plansAllowed = (kind) =>
+  kind === 'free' || kind === 'district' || kind === 'upstairs' || kind === 'city';
 
 export function bounds(items) {
   let minX = Infinity,
@@ -96,11 +98,19 @@ export function placement(plan, anchor, turns, stack, items, kind) {
   }
   pieces = pieces.map((p) => ({ ...p, x: p.x + anchor.x, z: p.z + anchor.z }));
   let base = 0;
-  if (stack) for (const p of pieces) base = Math.max(base, snapHeight(p, items) - p.y);
+  if (stack)
+    for (const p of pieces) {
+      const nearby = kind === 'city' ? blockIndex(items)[blockAt(p.x, p.z).id] : items;
+      base = Math.max(base, snapHeight(p, nearby) - p.y);
+    }
   pieces = pieces.map((p) => ({ ...p, y: p.y + base }));
   const b = bounds(pieces);
   const sameLot = kind !== 'district' || LOTS.some((l) => b.x >= l.x - 6 && b.x + b.w <= l.x + 6);
-  const ok = plansAllowed(kind) && sameLot && pieces.every((p) => validPiece(p, items, null, kind));
+  const ok =
+    plansAllowed(kind) &&
+    (kind !== 'city' || fitsBlock(b.x, b.z, b.w, b.d)) &&
+    sameLot &&
+    pieces.every((p) => validPiece(p, items, null, kind));
   return { pieces, ok, base };
 }
 export const KIOSK = makePlan('Spaza kiosk', [

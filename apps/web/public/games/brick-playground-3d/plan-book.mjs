@@ -1,3 +1,4 @@
+import { CITY_PLANS } from './city-plans.mjs';
 import { LOTS } from './district.mjs';
 import { PALETTE, parts, partFootprint, size, intervals, TYPES } from './model.mjs';
 import { PLAN_PREFIX, KIOSK, readPlan, makePlan, capturePieces, bounds } from './blueprint.mjs';
@@ -46,6 +47,7 @@ export function planBook(use) {
     confirmDelete = false;
   function read() {
     designs = new Map([['kiosk', KIOSK]]);
+    if (context.kind === 'city') CITY_PLANS.forEach((plan, i) => designs.set('city-' + i, plan));
     try {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -68,7 +70,7 @@ export function planBook(use) {
     drawPlan(plan);
     confirmDelete = false;
     $('deletePlan').textContent = 'Delete';
-    $('deletePlan').hidden = list.value === 'kiosk';
+    $('deletePlan').hidden = !list.value.startsWith(PLAN_PREFIX);
   }
   function populate(key) {
     list.replaceChildren();
@@ -115,7 +117,7 @@ export function planBook(use) {
     count();
   };
   $('deletePlan').onclick = () => {
-    if (list.value === 'kiosk') return;
+    if (!list.value.startsWith(PLAN_PREFIX)) return;
     if (!confirmDelete) {
       confirmDelete = true;
       $('deletePlan').textContent = 'Confirm delete';
@@ -139,14 +141,14 @@ export function planBook(use) {
     use(plan);
   };
   return (items, seed, kind, lot) => {
-    context = { items, seed };
+    context = { items, seed, kind };
     msg.textContent = '';
     read();
     populate(list.value);
     source.replaceChildren();
     if (seed) source.add(new Option('Structure around selected brick', 'group'));
     if (kind === 'district') LOTS.forEach((l, i) => source.add(new Option(l.name, String(i))));
-    else source.add(new Option('Whole plot', 'plot'));
+    else source.add(new Option(kind === 'city' ? 'Current city block' : 'Whole plot', 'plot'));
     source.value = seed ? 'group' : kind === 'district' ? String(lot < 0 ? 1 : lot) : 'plot';
     $('planName').value = '';
     selectSource();

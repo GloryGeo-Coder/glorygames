@@ -797,3 +797,85 @@ dialog p {
     font-size: 11px;
   }
 }
+
+.side #cityMapButton {
+  font-size: 12px;
+  max-width: 90px;
+}
+#cityMap {
+  width: min(92vw, 440px);
+}
+#cityAtlas {
+  display: block;
+  width: min(100%, 34dvh);
+  height: auto;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  cursor: pointer;
+}
+#cityMap label {
+  font-size: 13px;
+}
+#cityMap select {
+  min-height: 33px;
+  font: inherit;
+  border: 1px solid var(--edge);
+  background: var(--paper);
+  border-radius: 6px;
+}
+#mapStats {
+  text-align: center;
+  font-size: 12px;
+  margin: 6px;
+}
+#mapFields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  margin: 8px 0;
+}
+#mapFields input:not([type='checkbox']),
+#mapFields select {
+  display: block;
+  margin: 3px 0 0;
+}
+#mapFields fieldset {
+  grid-column: 1 / -1;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  margin: 0;
+}
+#mapFields legend {
+  font-size: 12px;
+}
+#mapFields input[type='checkbox'] {
+  width: auto;
+  margin: 0;
+}
+#mapFields fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+}
+.map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 6px;
+  margin-top: 8px;
+}
+@media (max-height: 520px) and (min-width: 590px) {
+  #cityMap {
+    width: min(94vw, 690px);
+  }
+  #cityAtlas {
+    width: min(40%, 52dvh);
+    float: left;
+    margin-right: 15px;
+  }
+  .map-actions {
+    clear: both;
+  }
+}
