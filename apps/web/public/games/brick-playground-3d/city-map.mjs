@@ -6,6 +6,7 @@ import {
   SIDE,
   ZONES,
   blockInfo,
+  blockAt,
   blockIndex,
   layoutEdit,
   streetKeys,
@@ -13,6 +14,7 @@ import {
 } from './settlement.mjs';
 import { planStreets, sectionLabel } from './street-planner.mjs';
 import { previewBlockRow, stageBlockRow } from './block-expansion.mjs';
+import { lightingMode, streetLamps, surveyLighting, suggestLamp } from './street-lighting.mjs';
 import { PALETTE, size } from './model.mjs';
 const $ = (id) => document.getElementById(id);
 export function cityMap(commit) {
@@ -37,6 +39,46 @@ export function cityMap(commit) {
     for (const p of points.slice(1)) ctx.lineTo(px(p.x), py(p.z));
     ctx.stroke();
   }
+  let survey = null,
+    lampSite = null;
+  function lightPreview() {
+    const available = !!plan && !plan.missing.length && plan.distance !== null;
+    $('routeLightLabel').hidden = !available;
+    survey =
+      available && $('routeLight').checked
+        ? surveyLighting(plan.points, streetLamps(working.pieces))
+        : null;
+    lampSite = editable && survey ? suggestLamp(working.pieces, survey, plan.home.block) : null;
+    $('mapAimLamp').hidden = !lampSite;
+    const summary = $('routeLightSummary');
+    if (!survey) {
+      summary.textContent = '';
+      return;
+    }
+    if (!survey.total) {
+      summary.textContent = 'The entrances share a curb. There is no street segment to light.';
+      return;
+    }
+    const gaps = survey.spans.filter((s) => !s.lit);
+    if (!gaps.length) {
+      summary.textContent = 'Fully lit · ' + Math.round(survey.total) + ' street studs covered.';
+      return;
+    }
+    const gap = gaps[0],
+      x = (gap.a.x + gap.b.x) / 2,
+      z = (gap.a.z + gap.b.z) / 2;
+    summary.textContent =
+      Math.floor((100 * survey.lit) / survey.total) +
+      '% lit · ' +
+      Math.ceil(survey.total - survey.lit) +
+      ' unlit studs. First gap near ' +
+      blockAt(x, z).code +
+      ' (' +
+      Math.round(x) +
+      ', ' +
+      Math.round(z) +
+      '). Place a streetlamp on a nearby plot.';
+  }
   function paintRoute() {
     if (!plan) return;
     ctx.save();
@@ -57,7 +99,10 @@ export function cityMap(commit) {
       );
     }
     routeLine(plan.points, '#fff7da', 5);
-    routeLine(plan.points, '#174e78', 2.5, plan.missing.length ? [5, 4] : []);
+    if (survey) {
+      for (const span of survey.spans)
+        routeLine([span.a, span.b], span.lit ? '#af6c05' : '#403759', 4, span.lit ? [] : [4, 4]);
+    } else routeLine(plan.points, '#174e78', 2.5, plan.missing.length ? [5, 4] : []);
     for (const [front, letter, color] of [
       [plan.home, 'H', '#163f74'],
       [plan.destination, 'D', '#7d365c']
@@ -258,6 +303,7 @@ export function cityMap(commit) {
   }
   function paint() {
     routePreview();
+    lightPreview();
     fitRoute();
     ctx.save();
     ctx.setTransform(zoom, 0, 0, zoom, -viewX * zoom, -viewY * zoom);
@@ -326,6 +372,21 @@ export function cityMap(commit) {
     };
     paint();
   }
+  $('townLighting').onchange = () => {
+    working = { ...working, lighting: lightingMode($('townLighting').value) };
+    paint();
+  };
+  $('routeLight').onchange = paint;
+  $('mapAimLamp').onclick = () => {
+    if (!lampSite) return;
+    dialog.close();
+    commit(
+      working,
+      blockAt(lampSite.x, lampSite.z),
+      { kind: 'build', lamp: lampSite },
+      working !== original
+    );
+  };
   $('mapRoute').onchange = () => {
     if ($('mapRoute').value) $('blockRepeat').open = false;
     closeUp = !!$('mapRoute').value;
@@ -356,7 +417,7 @@ export function cityMap(commit) {
   function finish(action) {
     const changed = working !== original;
     dialog.close();
-    commit(working, block, action, changed);
+    commit(working, block, { kind: action }, changed);
   }
   $('mapOverview').onclick = () => finish('overview');
   $('mapBuild').onclick = () => finish('build');
@@ -365,6 +426,8 @@ export function cityMap(commit) {
     closeUp = false;
     editable = editing;
     working = original = city;
+    $('townLighting').value = lightingMode(city.lighting);
+    $('routeLight').checked = false;
     $('blockRepeat').open = false;
     $('repeatCount').value = '1';
     $('repeatDir').value = 'east';

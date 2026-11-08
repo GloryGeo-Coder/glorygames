@@ -237,6 +237,7 @@ export function cityLayout(v) {
   const market = restoreMarket(v.market);
   return {
     ...(market ? { market } : {}),
+    ...(['night', 'day'].includes(v.lighting) ? { lighting: v.lighting } : {}),
     ...(Number.isFinite(v.clockMinutes) &&
     v.clockMinutes >= 0 &&
     v.clockMinutes < Number.MAX_SAFE_INTEGER / 2

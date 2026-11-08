@@ -1,4 +1,5 @@
 import { residentFigure } from './resident-figure.mjs';
+import { townLighting } from './town-lighting.mjs';
 import { builder } from './builder.mjs';
 import { cityScene } from './city-scene.mjs';
 import { COUNTER, FLAT } from './upstairs.mjs';
@@ -244,6 +245,7 @@ export function studio(canvas) {
     plane.isPickable = false;
     return plane;
   }
+  const lighting = townLighting(B, scene, sky, sun);
   const settlement = cityScene(B, scene, box, mat);
   const residentModels = new Map();
   function showResident(profile, trip, moving, t, waiting = false) {
@@ -287,7 +289,10 @@ export function studio(canvas) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
     showMarket(null);
-    if (kind === 'city') settlement.close();
+    if (kind === 'city') {
+      lighting.reset();
+      settlement.close();
+    }
     kind = next;
     shopSigns = [];
     if (kind === 'upstairs') {
@@ -846,6 +851,7 @@ export function studio(canvas) {
     showResident,
     showMarket,
     removeResident,
+    townLighting: lighting.update,
     citySector: settlement.sector,
     drawPieces,
     ghost,
