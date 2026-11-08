@@ -1,3 +1,4 @@
+import { shopWorld, clearForecourt, FORECOURT } from './upstairs.mjs';
 import { DISTRICT, buildable, stationHeight, checkpoint } from './district.mjs';
 // A stud is one world unit. Plates are one third of a brick high.
 export const PLOT = 10;
@@ -174,6 +175,7 @@ export function validPiece(p, items, ignore = null, kind = 'free') {
   )
     return false;
   const a = size(p);
+  if (kind === 'upstairs' && !clearForecourt(p, a)) return false;
   if (kind === 'district') {
     if (!buildable(p.x, p.z, a.w, a.d)) return false;
   } else if (p.x < -PLOT || p.z < -PLOT || p.x + a.w > PLOT || p.z + a.d > PLOT) return false;
@@ -201,6 +203,7 @@ export function snapHeight(p, items, ignore = null) {
   }, 0);
 }
 export function world(kind) {
+  if (kind === 'upstairs') return shopWorld();
   if (kind === 'district')
     return {
       version: 1,
@@ -264,6 +267,9 @@ export function loadWorld(kind, storage) {
     ...fresh,
     name: v.name.slice(0, 40),
     pieces: v.pieces,
+    ...(kind === 'upstairs'
+      ? { stage: Number.isInteger(v.stage) && v.stage >= 0 && v.stage <= 3 ? v.stage : 0 }
+      : {}),
     ...(kind === 'district'
       ? {
           stage: Number.isInteger(v.stage) && v.stage >= 0 && v.stage <= 4 ? v.stage : 0,
@@ -274,7 +280,7 @@ export function loadWorld(kind, storage) {
           freightComplete: v.freightComplete === true || v.freightStop === 4
         }
       : {}),
-    complete: v.complete === true,
+    complete: v.complete === true || (kind === 'upstairs' && v.stage === 3),
     ...(kind === 'canal'
       ? {
           boatPassed: v.boatPassed === true || v.complete === true,
@@ -291,7 +297,7 @@ export const avatar = (kind = 'free') => ({
   vy: 0,
   grounded: true,
   heading: 0,
-  ...(kind === 'district' ? checkpoint(0) : {})
+  ...(kind === 'district' ? checkpoint(0) : kind === 'upstairs' ? FORECOURT : {})
 });
 const HEIGHT = 1.65,
   RADIUS = 0.27,

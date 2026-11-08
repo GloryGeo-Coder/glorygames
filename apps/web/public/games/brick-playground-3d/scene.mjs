@@ -1,3 +1,4 @@
+import { COUNTER, FLAT } from './upstairs.mjs';
 import { BAY_Z, BAY_WIDTH, BAY_DEPTH, cargoCount, openBed } from './freight.mjs';
 import { LOTS, STATIONS } from './district.mjs';
 import { PIVOTS, FERRY, hingeAngle, mountOf } from './canal.mjs';
@@ -151,6 +152,7 @@ export function studio(canvas) {
   let preview = null,
     previewKey = '',
     worldNodes = [],
+    shopSigns = [],
     kind = 'free';
   function drawPieces(items, selected) {
     const ids = new Set(items.map((p) => p.id));
@@ -176,6 +178,18 @@ export function studio(canvas) {
         m.metadata.selected = selected === p.id;
         m.showBoundingBox = m.metadata.selected;
       }
+    }
+    for (const sign of shopSigns) {
+      const anchor = pieces.get(sign.id);
+      sign.mesh.setEnabled(!!anchor);
+      if (!anchor) continue;
+      const yaw = anchor.rotation.y;
+      sign.mesh.rotation.y = yaw;
+      sign.mesh.position.set(
+        anchor.position.x - 0.52 * Math.sin(yaw),
+        anchor.position.y + sign.height,
+        anchor.position.z - 0.52 * Math.cos(yaw)
+      );
     }
   }
   function ghost(p, ok) {
@@ -227,6 +241,18 @@ export function studio(canvas) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
     kind = next;
+    shopSigns = [];
+    if (kind === 'upstairs') {
+      for (const [id, words, height, width] of [
+        ['shop-awning', 'PARCEL SHOP', 0, 3.4],
+        ['flat-door', 'FLAT 1', 2.8, 1.85]
+      ]) {
+        const mesh = label(words, 0, 0, 0, width);
+        mesh.metadata = { sign: true };
+        worldNodes.push(mesh);
+        shopSigns.push({ id, height, mesh });
+      }
+    }
     camera.maxZ = kind === 'district' ? 320 : 150;
     canalMechanism(0, -8);
     const scenery = [];
@@ -329,7 +355,7 @@ export function studio(canvas) {
     block(13, 3.18, 0.1, 4.6, 0.28, 5, '#e1a34b');
     for (let i = 0; i < 8; i++)
       block(11.0, 2.17, -1.75 + i * 0.5, 1.65, 0.18, 0.48, i % 2 ? '#f4cb55' : '#faf0be');
-    const sign = label('SPAZA', 13, 2.5, -2.2, 3.5);
+    const sign = label(kind === 'upstairs' ? 'PARCELS' : 'SPAZA', 13, 2.5, -2.2, 3.5);
     sign.metadata = { sign: true };
     worldNodes.push(sign);
     block(-2, -0.2, -15, 21, 0.38, 8, '#98bb76');
@@ -478,6 +504,12 @@ export function studio(canvas) {
   body('Crate rim', 0, 1, 0.49, 0.6, 0.1, 0.06, '#eac078', parcel);
   body('Crate brace', 0, 0.84, 0.09, 0.58, 0.07, 0.05, '#dfad6b', parcel);
   parcel.setEnabled(false);
+  const shopParcel = new B.TransformNode('Flat delivery parcel', scene);
+  shopParcel.parent = person;
+  body('Paper parcel', -0.36, 0.82, 0.19, 0.48, 0.39, 0.46, '#cb8c45', shopParcel);
+  body('String', -0.36, 1.025, 0.19, 0.055, 0.02, 0.47, '#fff3d8', shopParcel);
+  body('Label', -0.47, 1.028, 0.21, 0.13, 0.024, 0.19, '#f0e1b5', shopParcel);
+  shopParcel.setEnabled(false);
   const stopMarker = cyl('Delivery stop', 0, 0, 0, 0, 0.65, '#ffc437', null, 4, 0.32);
   stopMarker.setEnabled(false);
   const car = new B.TransformNode('Delivery buggy', scene),
@@ -729,10 +761,17 @@ export function studio(canvas) {
     return { x: hit.pickedPoint.x, z: hit.pickedPoint.z, id: hit.pickedMesh.metadata.id };
   }
   function actors(mode, a, c, walk, t, seat, deliveryStage = 0) {
-    parcel.setEnabled(deliveryStage === 2 || deliveryStage === 3);
-    const stop = LOTS[deliveryStage - 1];
+    const shop = kind === 'upstairs';
+    parcel.setEnabled(!shop && (deliveryStage === 2 || deliveryStage === 3));
+    shopParcel.setEnabled(shop && deliveryStage === 2);
+    const stop = shop ? [COUNTER, FLAT][deliveryStage - 1] : LOTS[deliveryStage - 1];
     stopMarker.setEnabled(!!stop);
-    if (stop) stopMarker.position.set(stop.x, 3.65 + 0.12 * Math.sin(t * 3), 1.5);
+    if (stop)
+      stopMarker.position.set(
+        stop.x,
+        (shop ? stop.y + 1.7 : 3.65) + 0.12 * Math.sin(t * 3),
+        shop ? stop.z : 1.5
+      );
     const seated = mode === 'drive' && seat;
     person.parent = seated ? chassis : null;
     person.setEnabled(kind !== 'garage' || Boolean(seated));

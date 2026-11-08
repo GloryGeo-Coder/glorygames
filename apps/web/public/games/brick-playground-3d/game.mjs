@@ -1,3 +1,4 @@
+import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
 import { plansAllowed, placement, bounds } from './blueprint.mjs';
 import { planBook } from './plan-book.mjs';
 import {
@@ -161,6 +162,10 @@ function start() {
       Object.assign(draft, { type: 'step', color: 'Sun', r: 1 });
       focusLot(data.stage > 0 && data.stage < 4 ? data.stage - 1 : 1);
     }
+    if (kind === 'upstairs') {
+      Object.assign(draft, REPAIRS.stairs);
+      Object.assign(s.orbit, { zoom: 0.8, focusX: 0.5, focusZ: -1.5 });
+    }
     if (kind === 'garage') s.orbit.zoom = 0.45;
     top = false;
     pressed('view', false);
@@ -176,6 +181,7 @@ function start() {
       btn.hidden = kind === 'garage' ? t.w > 4 || t.d > 4 : t.garageOnly;
       btn.style.order = t.garageOnly ? -1 : 0;
     }
+    $('shopPanel').hidden = kind !== 'upstairs';
     $('districtPanel').hidden = kind !== 'district';
     $('canalPanel').hidden = kind !== 'canal';
     $('garagePanel').hidden = kind !== 'garage';
@@ -400,7 +406,8 @@ function start() {
     $('home').hidden = edit;
     $('home').textContent = freight ? 'Last bay' : kind === 'garage' ? 'Restart' : 'Return';
     $('routeMap').hidden = mode !== 'drive' || kind !== 'garage';
-    $('jump').hidden = mode === 'drive' || onDelivery();
+    $('jump').hidden = mode === 'drive' || onDelivery() || carryingParcel();
+    if (kind === 'upstairs') shopPanel();
     if (kind === 'district') districtPanel();
     $('brake').hidden = mode !== 'drive';
     $('stick').setAttribute(
@@ -411,6 +418,12 @@ function start() {
     refresh();
   }
   function rescue() {
+    if (kind === 'upstairs') {
+      person = avatar(kind);
+      s.chase.yaw = 0;
+      clearInputs();
+      return;
+    }
     if (kind === 'district') {
       // Checkpoints sit on reserved land where edits cannot trap the explorer.
       person = { ...avatar(kind), ...checkpoint(data.stage) };
@@ -793,6 +806,64 @@ function start() {
     $('worldName').textContent = data.name;
     save();
   };
+  function carryingParcel() {
+    return kind === 'upstairs' && data.stage === 2;
+  }
+  function shopPanel() {
+    const stage = data.stage,
+      editing = mode === 'build';
+    $('shopProgress').textContent = [
+      'Parcel round',
+      '1 / 2 · Shop counter',
+      '2 / 2 · Upstairs flat',
+      'Parcel delivered'
+    ][stage];
+    $('shopRepair').hidden = !editing;
+    $('shopAction').hidden = editing && (stage === 1 || stage === 2);
+    $('shopAction').textContent = [
+      'Start delivery',
+      'Collect parcel',
+      'Deliver parcel',
+      'Deliver again'
+    ][stage];
+    updateHandover();
+  }
+  function updateHandover() {
+    const active = data.stage === 1 || data.stage === 2;
+    const disabled = active && (mode !== 'play' || !atHandover(data.stage, person));
+    if ($('shopAction').disabled !== disabled) $('shopAction').disabled = disabled;
+    const hint = routeHint(data.stage, mode === 'build', person);
+    if ($('shopHint').textContent !== hint) $('shopHint').textContent = hint;
+  }
+  function aimRepair(which) {
+    if (kind !== 'upstairs' || !editorAvailable()) return;
+    copy = null;
+    selected = null;
+    tool = 'add';
+    Object.assign(draft, REPAIRS[which]);
+    adjustHeight();
+    s.drawPieces(data.pieces, null);
+    s.orbit.focusX = draft.x + size(draft).w / 2;
+    s.orbit.focusZ = draft.z + size(draft).d / 2;
+    refresh();
+    announce('Preview ready. Tap Place brick to build here.');
+  }
+  $('aimStairs').onclick = () => aimRepair('stairs');
+  $('aimLink').onclick = () => aimRepair('balcony');
+  $('shopAction').onclick = () => {
+    if (kind !== 'upstairs') return;
+    if (data.stage === 0 || data.stage === 3) {
+      data.stage = 1;
+      rescue();
+      switchMode('play');
+    } else if (mode === 'play' && atHandover(data.stage, person)) {
+      data.stage++;
+      if (data.stage === 3) data.complete = true;
+      music.snap();
+    } else return;
+    save();
+    syncMode();
+  };
   function onDelivery() {
     return kind === 'district' && data.stage > 0 && data.stage < 4;
   }
@@ -978,6 +1049,7 @@ function start() {
     save();
     syncMode();
   };
+  $('shopWorld').onclick = () => openWorld('upstairs');
   $('districtWorld').onclick = () => openWorld('district');
   $('freeWorld').onclick = () => openWorld('free');
   $('bridgeWorld').onclick = () => openWorld('bridge');
@@ -1218,7 +1290,7 @@ function start() {
   let first = 'free';
   try {
     const last = localStorage.getItem('wga.brick.active');
-    if (['bridge', 'garage', 'canal', 'district'].includes(last)) first = last;
+    if (['bridge', 'garage', 'canal', 'district', 'upstairs'].includes(last)) first = last;
   } catch {}
   openWorld(first);
   if (first !== 'canal')
@@ -1254,7 +1326,7 @@ function start() {
             data.pieces,
             x * Math.cos(frontYaw) + z * Math.sin(frontYaw),
             z * Math.cos(frontYaw) - x * Math.sin(frontYaw),
-            jump && !onDelivery(),
+            jump && !onDelivery() && !carryingParcel(),
             delta
           );
           jump = false;
@@ -1327,6 +1399,7 @@ function start() {
       if ($('angleReadout').textContent !== angle) $('angleReadout').textContent = angle;
     }
     if (kind === 'district' && mode === 'play') districtDirection();
+    if (kind === 'upstairs' && mode === 'play') updateHandover();
     s.actors(
       mode,
       person,
@@ -1334,7 +1407,7 @@ function start() {
       walking,
       elapsed,
       driverSeat,
-      kind === 'district' && !freight ? data.stage : 0
+      (kind === 'district' && !freight) || kind === 'upstairs' ? data.stage : 0
     );
     s.view(mode, person, run);
     s.scene.render();

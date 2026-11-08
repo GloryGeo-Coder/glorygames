@@ -2,7 +2,7 @@ import { PLOT, TYPES, PALETTE, size, validPiece, snapHeight } from './model.mjs'
 import { LOTS } from './district.mjs';
 
 export const PLAN_PREFIX = 'wga.brick.blueprint.v1.';
-export const plansAllowed = (kind) => kind === 'free' || kind === 'district';
+export const plansAllowed = (kind) => kind === 'free' || kind === 'district' || kind === 'upstairs';
 
 export function bounds(items) {
   let minX = Infinity,
