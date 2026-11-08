@@ -246,18 +246,47 @@ export function studio(canvas) {
   }
   const settlement = cityScene(B, scene, box, mat);
   const residentModels = new Map();
-  function showResident(profile, trip, moving, t) {
+  function showResident(profile, trip, moving, t, waiting = false) {
     if (trip && !residentModels.has(profile.key))
       residentModels.set(profile.key, residentFigure(B, scene, mat('#ffffff'), profile));
-    residentModels.get(profile.key)?.show(trip, moving, t);
+    residentModels.get(profile.key)?.show(trip, moving, t, waiting);
   }
   function removeResident(key) {
     residentModels.get(key)?.dispose();
     residentModels.delete(key);
   }
+  let stallSign;
+  function showMarket(counter) {
+    if (counter && !stallSign) {
+      stallSign = new B.TransformNode('Market day storefront', scene);
+      for (let i = 0; i < 6; i++) {
+        const strip = box(
+          'Market canopy stripe',
+          (i - 2.5) * 0.55,
+          0,
+          -0.23,
+          0.55,
+          0.14,
+          1.05,
+          i % 2 ? '#ffbc45' : '#19695d',
+          stallSign
+        );
+        strip.rotation.x = -0.12;
+      }
+      label('MARKET', 0, 0.49, 0, 2.8).parent = stallSign;
+      box('Market till mat', 0, -3.245, 1.5, 1.45, 0.035, 1, '#f6bf43', stallSign);
+    }
+    if (!stallSign) return;
+    stallSign.setEnabled(!!counter);
+    if (counter) {
+      stallSign.position.set(counter.center.x, counter.y + 3.28, counter.center.z);
+      stallSign.rotation.y = (-counter.r * Math.PI) / 2;
+    }
+  }
   function neighbourhood(next) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
+    showMarket(null);
     if (kind === 'city') settlement.close();
     kind = next;
     shopSigns = [];
@@ -815,6 +844,7 @@ export function studio(canvas) {
     pick,
     neighbourhood,
     showResident,
+    showMarket,
     removeResident,
     citySector: settlement.sector,
     drawPieces,

@@ -25,7 +25,7 @@ jobs:
       matrix:
         include:
           - group: move-ins
-            suites: resident-move-in
+            suites: resident-move-in resident-market
           - group: construction
             suites: playground vehicle canal blueprint builder
           - group: neighbourhoods

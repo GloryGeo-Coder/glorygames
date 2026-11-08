@@ -32,6 +32,15 @@ import {
   DAY,
   clockLabel
 } from '../public/games/brick-playground-3d/resident-routines.mjs';
+import {
+  marketCounter,
+  openMarket,
+  callShoppers,
+  waitingAtTill,
+  stepHousehold,
+  serveCustomer,
+  nextCustomer
+} from '../public/games/brick-playground-3d/market-day.mjs';
 function fixture() {
   const city = world('city'),
     shop = practiceSpaza(city).map((p, i) => ({ ...p, id: 'practice-' + i }));
@@ -330,4 +339,95 @@ test('malformed move-ins do not discard older trips or steal an occupied home', 
   assert.ok(skipToDeparture(reopened));
   assert.equal(reopened.family2.phase, 'leave');
   assert.equal(reopened.resident.phase, 'done');
+});
+
+test('Market Day counts actual purchases from two different homes and resumes an unpaid queue', () => {
+  const { city: base, door, barrier } = fixture(),
+    city = stageBlockRow(base, {
+      source: BLOCKS[27],
+      first: BLOCKS[36],
+      count: 1,
+      direction: 'east',
+      turns: 2
+    });
+  const otherHome = blockIndex(city.pieces)[36].find(isEntrance);
+  moveIn(city, 'Ayanda', 'spaza', newTrip(otherHome, door));
+  city.resident.phase = city.family1.phase = 'done';
+  setRoutine(city.resident, 8);
+  city.family1.paused = true;
+  assert.ok(openMarket(city, door.id));
+  assert.equal(openMarket(city, door.id), false);
+  assert.equal(callShoppers(city), 1);
+  assert.equal(city.family1.phase, 'done');
+  city.family1.paused = false;
+  assert.equal(callShoppers(city), 1);
+  assert.equal(callShoppers(city), 0);
+  const counter = marketCounter(city),
+    position = { ...counter.inside, y: door.y },
+    runtimes = new Map();
+  const tick = (world, n) => {
+    for (let i = 0; i < n; i++)
+      for (const p of householdsFor(world)) {
+        if (!world[p.key]) continue;
+        if (!runtimes.has(p.key)) runtimes.set(p.key, tripRuntime());
+        stepHousehold(world, p, world[p.key], runtimes.get(p.key), 1 / 60);
+      }
+  };
+  tick(city, 6000);
+  assert.equal(serveCustomer(city, position, true), null, 'a brick blocks both shoppers');
+  city.pieces = city.pieces.filter((p) => p.id !== barrier.id);
+  tick(city, 6000);
+  const [lebo, , ayanda] = householdsFor(city);
+  assert.ok(waitingAtTill(city, lebo, city.resident) && waitingAtTill(city, ayanda, city.family1));
+  assert.equal(serveCustomer(city, position, false), null, 'the editor cannot make a sale');
+  assert.equal(
+    serveCustomer(city, { ...door, y: door.y }, true),
+    null,
+    'standing outside cannot make a sale'
+  );
+  assert.equal(
+    serveCustomer(city, { ...position, y: 3 }, true),
+    null,
+    'a floor above the till cannot make a sale'
+  );
+  assert.equal(serveCustomer(city, position, true).name, 'Lebo');
+  const restored = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(restored.market, city.market);
+  tick(restored, 6000);
+  assert.equal(restored.resident.routine.visits, 1);
+  assert.equal(nextCustomer(restored).name, 'Ayanda');
+  assert.equal(serveCustomer(restored, position, true).name, 'Ayanda');
+  assert.equal(serveCustomer(restored, position, true), null);
+  assert.equal(callShoppers(restored), 0);
+  tick(restored, 6000);
+  assert.equal(restored.family1.phase, 'done');
+  assert.deepEqual(
+    restored.market.receipts.map((r) => r.name),
+    ['Lebo', 'Ayanda']
+  );
+});
+test('a held shopper is released when a market ends; old saves and malformed receipts stay usable', () => {
+  const { city, door } = fixture();
+  assert.equal(openMarket(city, 'absent'), false);
+  assert.ok(openMarket(city, door.id));
+  Object.assign(city.resident, {
+    phase: 'shopping',
+    ...entrance(door).inside,
+    y: door.y,
+    wait: 0.01
+  });
+  const profile = householdsFor(city)[0],
+    rt = tripRuntime();
+  stepHousehold(city, profile, city.resident, rt, 0.02);
+  assert.equal(city.resident.phase, 'shopping');
+  city.market.receipts = [
+    { name: 'Lebo', home: city.resident.home, block: 'D4' },
+    { name: 'Another', home: city.resident.home, block: 'D5' },
+    null
+  ];
+  assert.equal(loadWorld('city', { getItem: () => citySave(city) }).market.receipts.length, 1);
+  delete city.market;
+  stepHousehold(city, profile, city.resident, rt, 0.02);
+  assert.ok(city.resident.returning);
+  assert.equal(loadWorld('city', { getItem: () => citySave(city) }).market, undefined);
 });

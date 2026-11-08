@@ -10,7 +10,6 @@ import {
   endHousehold
 } from './settlement.mjs';
 import {
-  advanceTrip,
   entrance,
   isEntrance,
   newTrip,
@@ -30,12 +29,14 @@ import {
   tickRoutines
 } from './resident-routines.mjs';
 
+import { stepHousehold, waitingAtTill } from './market-day.mjs';
 const $ = (id) => document.getElementById(id);
-function status(trip, runtime, profile) {
+function status(trip, runtime, profile, data) {
   if (!trip) return 'No trip';
   if (trip.paused) return 'Paused';
   if (runtime.issue) return 'Stopped';
   if (trip.phase === 'done') return trip.routine ? 'At home' : 'Home again';
+  if (waitingAtTill(data, profile, trip)) return 'At the till';
   if (trip.phase === 'shopping') return profile.activity;
   return trip.returning ? 'Walking home' : 'Walking to the ' + profile.destination.toLowerCase();
 }
@@ -102,9 +103,12 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     if (second)
       label(
         'resOther',
-        'View ' + alternate.name + ' · ' + status(second, runtimeFor(alternate.key), alternate)
+        'View ' +
+          alternate.name +
+          ' · ' +
+          status(second, runtimeFor(alternate.key), alternate, data)
       );
-    label('resState', trip ? p.name + ' · ' + status(trip, rt, p) : '');
+    label('resState', trip ? p.name + ' · ' + status(trip, rt, p, data) : '');
     label(
       'resHint',
       trip
@@ -133,13 +137,14 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     const data = city();
     let changed = tickRoutines(data, dt),
       walking = false;
-    for (const { key } of householdsFor(data)) {
+    for (const profile of householdsFor(data)) {
+      const { key } = profile;
       const trip = data[key];
       if (!trip || trip.paused || trip.phase === 'done') continue;
       const runtime = runtimeFor(key),
         phase = trip.phase,
         issue = runtime.issue;
-      advanceTrip(data, trip, runtime, dt);
+      stepHousehold(data, profile, trip, runtime, dt);
       walking ||= runtime.moving;
       changed ||= trip.phase !== phase || runtime.issue !== issue;
     }
