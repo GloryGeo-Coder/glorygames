@@ -12,6 +12,7 @@ on:
       - 'apps/web/scripts/brick-blueprint*'
       - 'apps/web/scripts/brick-upstairs*'
       - 'apps/web/scripts/brick-settlement*'
+      - 'apps/web/scripts/brick-builder*'
       - '.github/workflows/brick-playground.yml'
 permissions:
   contents: read
@@ -23,7 +24,7 @@ jobs:
       matrix:
         include:
           - group: construction
-            suites: playground vehicle canal blueprint
+            suites: playground vehicle canal blueprint builder
           - group: neighbourhoods
             suites: district freight upstairs settlement
     timeout-minutes: 25
