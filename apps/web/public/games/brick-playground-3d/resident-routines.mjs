@@ -1,18 +1,7 @@
+import { HOUSEHOLDS, DEPARTURES } from './settlement.mjs';
 // A settlement day takes 96 seconds of active simulation time.
 export const DAY = 1440;
 export const START_TIME = 450;
-export const DEPARTURES = [8, 14, 18];
-export const HOUSEHOLDS = [
-  { key: 'resident', name: 'Lebo', destination: 'Spaza', activity: 'Shopping' },
-  { key: 'neighbour', name: 'Naledi', destination: 'Community hall', activity: 'Visiting the hall' }
-];
-export function restoreRoutine(value) {
-  if (!DEPARTURES.includes(value?.hour)) return null;
-  return {
-    hour: value.hour,
-    visits: Number.isSafeInteger(value.visits) && value.visits >= 0 ? value.visits : 0
-  };
-}
 export function setRoutine(trip, hour) {
   if (DEPARTURES.includes(hour)) trip.routine = { hour, visits: trip.routine?.visits ?? 0 };
   else {

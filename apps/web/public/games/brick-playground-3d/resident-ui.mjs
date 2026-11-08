@@ -1,4 +1,4 @@
-import { blockAt, HOUSEHOLDS } from './settlement.mjs';
+import { blockAt, HOUSEHOLDS, DEPARTURES } from './settlement.mjs';
 import {
   advanceTrip,
   entrance,
@@ -11,7 +11,6 @@ import {
 
 import {
   START_TIME,
-  DEPARTURES,
   clockLabel,
   hasRoutines,
   nextDeparture,
@@ -60,7 +59,9 @@ export function residentControls({ city, editing, save, add, focus }) {
     const scheduled = hasRoutines(data),
       now = data.clockMinutes ?? START_TIME;
     label('resClock', scheduled ? 'Settlement time · ' + clockLabel(now) : '');
-    const canSkip = scheduled && nextIdleDeparture(data) !== null;
+    const next = scheduled ? nextIdleDeparture(data) : null;
+    const canSkip = next !== null;
+    if (canSkip) label('resSkip', 'Skip to next departure · ' + clockLabel(next).split(' · ')[1]);
     if ($('resSkip').hidden === canSkip) $('resSkip').hidden = !canSkip;
     if ($('resTools').hidden !== !trip) $('resTools').hidden = !trip;
     if ($('resOther').hidden !== !second) $('resOther').hidden = !second;
