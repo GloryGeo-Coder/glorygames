@@ -19,22 +19,24 @@ async function delivery(browser, mobile) {
     async function closingDialog(id, action) {
       // The native dialog close event clears held inputs asynchronously. Let it finish before
       // pressing a new key, rather than racing that intentional safety reset.
-      const closed = p.evaluate(
-        (id) =>
-          new Promise((resolve, reject) => {
-            const timer = setTimeout(() => reject(new Error(id + ' dialog did not close')), 10000);
-            document.getElementById(id).addEventListener(
-              'close',
-              () => {
-                clearTimeout(timer);
-                resolve();
-              },
-              { once: true }
-            );
-          }),
-        id
-      );
-      await Promise.all([closed, action()]);
+      // Register before clicking, but start the close timeout only after Playwright completes
+      // its own actionability/click wait. Slow software-rendered frames can delay the click.
+      await p.evaluate((id) => {
+        window.__transportDialogClosed ??= {};
+        window.__transportDialogClosed[id] = false;
+        document.getElementById(id).addEventListener(
+          'close',
+          () => {
+            window.__transportDialogClosed[id] = true;
+          },
+          { once: true }
+        );
+      }, id);
+      await action();
+      await p.waitForFunction((id) => window.__transportDialogClosed[id] === true, id, {
+        timeout: 10000,
+        polling: 50
+      });
     }
     const closingTransport = (action) => closingDialog('transportSetup', action);
     const cancelTransport = () =>
