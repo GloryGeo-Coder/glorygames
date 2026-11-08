@@ -908,6 +908,46 @@ dialog p {
 #trailHud {
   background: #e2f3ea;
 }
+#areaBoard {
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin: 6px 0;
+}
+#areaBoard summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 5px 0;
+}
+#areaBoard input,
+#areaList {
+  max-width: 100%;
+}
+#areaBoard p {
+  margin: 6px 0;
+  font-size: 13px;
+}
+#areaStats {
+  border-left: 4px solid;
+  padding-left: 6px;
+}
+#areaStats:empty {
+  display: none;
+}
+.area-actions {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+.area-actions button {
+  min-height: 38px;
+}
+#areaLocation {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  color: #215951;
+}
 #blockRepeat {
   margin: 6px 0;
   border: 1px solid var(--edge);
@@ -940,10 +980,14 @@ dialog p {
   min-height: 40px;
 }
 @media (max-width: 580px) {
-  #cityMap:has(#blockRepeat[open]) #cityAtlas {
+  #cityMap:has(#areaBoard[open]) :is(#blockRepeat, #trailBoard),
+  #cityMap:has(#blockRepeat[open], #trailBoard[open]) #areaBoard {
+    display: none;
+  }
+  #cityMap:has(#blockRepeat[open], #areaBoard[open]) #cityAtlas {
     width: min(100%, 28dvh);
   }
-  #cityMap:has(#blockRepeat[open]) .map-actions button {
+  #cityMap:has(#blockRepeat[open], #areaBoard[open]) .map-actions button {
     flex: 1 1 0;
     min-width: 0;
     padding: 7px 4px;

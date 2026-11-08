@@ -126,7 +126,12 @@ function start() {
       const b = mode === 'build' ? BLOCKS[data.focus] : blockAt(person.x, person.z);
       renderedBlock = b;
       $('cityMapButton').textContent = 'Map · ' + b.code;
-      $('cityMapButton').title = blockInfo(data, b).name || b.code;
+      const info = blockInfo(data, b);
+      $('cityMapButton').title = [info.neighbourhood, info.name || b.code]
+        .filter(Boolean)
+        .join(' · ');
+      $('areaLocation').hidden = !info.neighbourhood;
+      $('areaLocation').textContent = info.neighbourhood || '';
       items = s.citySector(data, b);
     }
     s.drawPieces(items, id);
