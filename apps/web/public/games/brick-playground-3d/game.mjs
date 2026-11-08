@@ -13,6 +13,7 @@ import {
 } from './settlement.mjs';
 import { marketControls } from './market-ui.mjs';
 import { marketCounter, waitingAtTill } from './market-day.mjs';
+import { currentStop, trailEntrance, canStamp, stampTrail } from './town-trail.mjs';
 import { cityMap } from './city-map.mjs';
 import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
 import { plansAllowed, placement, bounds } from './blueprint.mjs';
@@ -130,13 +131,14 @@ function start() {
     }
     s.drawPieces(items, id);
   }
-  function remember() {
+  function remember(trailEdited = false) {
     history.push(
       kind === 'city'
         ? {
             pieces: data.pieces,
             blocks: data.blocks,
             streets: data.streets,
+            ...(trailEdited ? { trail: data.trail } : {}),
             lighting: data.lighting
           }
         : data.pieces
@@ -540,10 +542,11 @@ function start() {
     }
   });
   const openCityMap = cityMap((layout, b, action, changed) => {
-    const walk = action.kind === 'walk';
+    const walk = action.kind === 'walk' || action.kind === 'trail';
     if (changed) {
-      remember();
+      remember(layout.trail !== data.trail);
       Object.assign(data, {
+        trail: layout.trail,
         lighting: layout.lighting,
         pieces: layout.pieces,
         blocks: layout.blocks,
@@ -559,6 +562,13 @@ function start() {
     adjustHeight();
     if (walk || blockAt(person.x, person.z) !== b) Object.assign(person, avatar(kind), spawnAt(b));
     if (walk) switchMode('play');
+    if (action.kind === 'trail') {
+      Object.assign(person, avatar('city'), action.front.curb, { y: 0 });
+      s.chase.yaw = Math.atan2(
+        action.front.center.x - action.front.curb.x,
+        action.front.center.z - action.front.curb.z
+      );
+    }
     if (action.kind === 'overview') {
       cityOverview = true;
       Object.assign(s.orbit, { focusX: 0, focusZ: 0, yaw: 0, pitch: 1.25, zoom: 11 });
@@ -588,6 +598,47 @@ function start() {
       mode === 'build' ? BLOCKS[data.focus] : blockAt(person.x, person.z),
       mode === 'build'
     );
+  };
+  function trailStatus() {
+    const trail = data.trail,
+      button = $('trailHud');
+    if (button.hidden !== !trail) button.hidden = !trail;
+    if (!trail) {
+      s.showTrail(null);
+      return;
+    }
+    const next = currentStop(data),
+      front = next && trailEntrance(data, next.door);
+    let label = trail.name + ' · ' + trail.stamps + '/' + trail.stops.length;
+    if (!next) label += ' · Complete';
+    else if (!front) label += ' · Missing ' + next.label;
+    else if (canStamp(data, person, mode === 'play')) label = 'Stamp ' + next.label;
+    else
+      label +=
+        ' · ' +
+        next.label +
+        ' · ' +
+        front.block.code +
+        (mode === 'play'
+          ? ' · ' +
+            Math.ceil(Math.hypot(person.x - front.inside.x, person.z - front.inside.z)) +
+            ' studs'
+          : '');
+    if (button.textContent !== label) button.textContent = label;
+    s.showTrail(front);
+  }
+  $('trailHud').onclick = () => {
+    const stop = stampTrail(data, person, mode === 'play');
+    if (stop) {
+      music.snap();
+      save();
+      trailStatus();
+      announce('Stamped ' + stop.label);
+    } else {
+      $('cityMapButton').click();
+      $('trailBoard').open = true;
+      $('trailBoard').scrollIntoView({ block: 'nearest' });
+    }
   };
   function rescue() {
     if (kind === 'city') {
@@ -1683,6 +1734,7 @@ function start() {
         mode === 'build' ? s.orbit.focusZ : s.camera.position.z
       );
       market.update();
+      trailStatus();
       residents.refresh();
     }
     s.actors(

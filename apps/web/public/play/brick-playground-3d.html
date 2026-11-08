@@ -44,6 +44,7 @@
     </section>
     <section id="residentPanel" hidden aria-label="Living Settlements">
       <div class="resident-switch"><button id="resSettings" aria-haspopup="dialog">Residents</button><button id="resOther" hidden></button></div>
+      <button id="trailHud" hidden></button>
       <button id="marketTill" hidden></button>
       <span id="resClock"></span>
       <b id="resState" role="status"></b><span id="resHint"></span>
@@ -140,6 +141,16 @@
         <p id="repeatPreview" role="status"></p><button id="repeatStage" type="button">Stage row</button>
       </details>
       <p id="repeatNotice" role="status"></p>
+      <details id="trailBoard"><summary>Town trail</summary>
+        <details id="trailFields"><summary>Edit trail stops</summary>
+          <label>Trail name <input id="trailName" maxlength="32" placeholder="Neighbourhood walk"></label>
+          <div id="trailRows"></div>
+          <button id="trailAdd" type="button">Add stop</button><button id="trailStage" type="button">Stage trail</button>
+        </details>
+        <p id="trailHint" role="status"></p><ol id="trailPassport"></ol>
+        <p id="trailLegs"></p><button id="trailZoom" type="button" hidden>Trail close-up</button>
+        <div class="trail-actions"><button id="trailWalk" type="button">Walk trail</button><button id="trailRestart" type="button">Restart passport</button><button id="trailRemove" type="button">Remove trail</button></div>
+      </details>
       <div id="mapFields"><label>Block name <input id="blockName" maxlength="32" placeholder="Name this block"></label>
         <label>Land use <select id="mapZone"></select></label>
         <fieldset><legend>Streets along this block</legend>
@@ -183,6 +194,7 @@
         brick. On a keyboard, use arrows to aim, R to rotate, Enter to place, Tab between controls,
         and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab. In Canal Crossing, choose a hinge before placing a deck. Raise the bridge for the ferry, then lower it for the buggy. In Market District, focus on a plot to build. Start a delivery at the depot, weigh the crate at the hall, then take it to the spaza. Use ramps or steps to reach the loading decks. In Settlement Builder, use City map to name blocks, choose land use and lay streets. Choose Build here or Walk here to apply the map. Open Plans for homes, offices, a hall or a park. Choose Residents to assign a home and spaza. Follow Lebo to the spaza or Naledi to the community hall. Both trips run together. Reconnect missing streets or move a brick to clear the entrance. In Flat Above the Shop, collect the parcel at the counter and walk it upstairs. Aim a repair to preview one possible route. In Free Build, Market District and Flat Above the Shop, Plans saves a whole plot or the structure around a selected brick. Preview a copy, tap its new starting stud, rotate it and choose Place copy. For Market Freight, fit a driver’s seat and an open cargo bed in the workshop. Dispatch to market and brake inside each marked bay to handle the crates.
       </p>
+      <p>In Settlement Builder, open Town trail on the city map to name a walk and choose two to five doorway stops. Start the walk and step inside each landmark to stamp your passport.</p>
       <div class="menufoot">
         <button id="audio">Mute audio</button><button id="fullscreen">Fullscreen</button
         ><a href="/games/brick-playground-3d/">Game page</a>
