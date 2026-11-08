@@ -104,7 +104,11 @@ async function shopping(browser, mobile) {
     assert.equal(hallComplete.phase, 'done');
     await tap('resOther');
     await state('Lebo · Stopped');
-    assert.equal((await saved()).resident.x, before.resident.x);
+    assert.deepEqual(
+      (await saved()).resident,
+      restored.resident,
+      'Lebo stays at the reopened obstruction throughout Naledi’s visit'
+    );
     await tap('resSettings');
     await tap('resPause');
     await state('Paused');
