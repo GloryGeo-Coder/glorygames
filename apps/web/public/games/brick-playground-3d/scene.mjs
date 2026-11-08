@@ -1,3 +1,4 @@
+import { builder } from './builder.mjs';
 import { cityScene } from './city-scene.mjs';
 import { COUNTER, FLAT } from './upstairs.mjs';
 import { BAY_Z, BAY_WIDTH, BAY_DEPTH, cargoCount, openBed } from './freight.mjs';
@@ -481,36 +482,14 @@ export function studio(canvas) {
         round(x, 3.9, z, 0.94, 1.5, '#7fac68', null, 8, 0.35);
       }
   }
-  const person = new B.TransformNode('Builder', scene),
-    legs = [];
-  const body = (name, x, y, z, w, h, d, color, parent = person) =>
+  const explorer = builder(B, scene),
+    person = explorer.root;
+  const body = (name, x, y, z, w, h, d, color, parent) =>
     box(name, x, y, z, w, h, d, color, parent);
-  const skin = '#825139',
-    teal = '#247c7c',
-    gold = '#edac36';
-  for (const x of [-0.16, 0.16]) {
-    const leg = new B.TransformNode('Leg', scene);
-    leg.parent = person;
-    leg.position.set(x, 0.63, 0);
-    legs.push(leg);
-    body('Trouser', 0, -0.26, 0, 0.24, 0.48, 0.25, teal, leg);
-    body('Boot', 0, -0.53, 0.045, 0.27, 0.17, 0.38, '#344551', leg);
-    body('Sleeve', x * 2.05, 0.94, 0, 0.2, 0.34, 0.27, gold);
-    body('Hand', x * 2.05, 0.72, 0.02, 0.18, 0.19, 0.2, skin);
-  }
-  body('Overalls', 0, 0.91, 0, 0.46, 0.59, 0.31, teal);
-  body('Pocket', 0, 0.96, 0.17, 0.24, 0.18, 0.045, '#74c2ad');
-  body('Head', 0, 1.38, 0, 0.46, 0.42, 0.42, skin);
-  body('Hair', 0, 1.53, -0.055, 0.49, 0.18, 0.43, '#443834');
-  for (const x of [-0.21, 0.21])
-    for (let i = 0; i < 3; i++)
-      body('Braid', x, 1.39 - i * 0.105, -0.18, 0.11, 0.12, 0.13, '#443834');
-  body('Cap', 0, 1.63, 0, 0.53, 0.15, 0.47, gold);
-  body('Visor', 0, 1.59, 0.23, 0.52, 0.065, 0.25, gold);
-  for (const x of [-0.11, 0.11]) body('Eye', x, 1.4, 0.214, 0.046, 0.054, 0.026, '#342828');
+  const gold = '#edac36';
   const parcel = new B.TransformNode('Market crate', scene);
   parcel.parent = person;
-  parcel.position.set(0.47, -0.15, -0.18);
+  parcel.position.set(0.24, -0.12, -0.005);
   body('Produce crate', 0, 0.85, 0.31, 0.55, 0.34, 0.41, '#a76a37', parcel);
   for (const x of [-0.13, 0.09]) cyl('Oranges', x, 1.05, 0.32, 0.11, 0.16, '#ef9e34', parcel);
   body('Crate rim', 0, 1, 0.49, 0.6, 0.1, 0.06, '#eac078', parcel);
@@ -518,6 +497,7 @@ export function studio(canvas) {
   parcel.setEnabled(false);
   const shopParcel = new B.TransformNode('Flat delivery parcel', scene);
   shopParcel.parent = person;
+  shopParcel.position.set(0.065, -0.07, 0.095);
   body('Paper parcel', -0.36, 0.82, 0.19, 0.48, 0.39, 0.46, '#cb8c45', shopParcel);
   body('String', -0.36, 1.025, 0.19, 0.055, 0.02, 0.47, '#fff3d8', shopParcel);
   body('Label', -0.47, 1.028, 0.21, 0.13, 0.024, 0.19, '#f0e1b5', shopParcel);
@@ -527,7 +507,7 @@ export function studio(canvas) {
   const car = new B.TransformNode('Delivery buggy', scene),
     wheels = [];
   body('Body', 0, 0.52, 0, 1.65, 0.46, 1.02, gold, car);
-  body('Cab', 0.37, 0.9, 0, 0.62, 0.52, 0.8, teal, car);
+  body('Cab', 0.37, 0.9, 0, 0.62, 0.52, 0.8, '#247c7c', car);
   body('Windscreen', 0.69, 0.92, 0, 0.04, 0.34, 0.65, '#badfdd', car);
   body('Crate', -0.4, 0.87, 0, 0.63, 0.33, 0.72, '#cd7851', car);
   for (const x of [-0.56, 0.56])
@@ -751,14 +731,14 @@ export function studio(canvas) {
       const distance = kind === 'district' ? 5.6 : 3.4;
       const delta = V(
         -Math.sin(chase.yaw) * distance,
-        kind === 'district' ? 2.25 : 1.18,
+        kind === 'district' ? 1.85 : 0.76,
         -Math.cos(chase.yaw) * distance
       );
       const ray = new B.Ray(head, delta.clone().normalize(), delta.length());
       const hit = scene.pickWithRay(ray, (m) => !!(m.metadata?.id || m.metadata?.cameraWall));
       const dist = hit?.hit ? Math.max(0.19, hit.distance - 0.2) : delta.length();
       camera.position.copyFrom(head.add(delta.normalize().scale(dist)));
-      camera.setTarget(head.add(V(Math.sin(chase.yaw) * 1.5, 0.02, Math.cos(chase.yaw) * 1.5)));
+      camera.setTarget(head.add(V(Math.sin(chase.yaw) * 1.25, -0.3, Math.cos(chase.yaw) * 1.25)));
       person.setEnabled(dist > 0.75);
     }
   }
@@ -795,8 +775,12 @@ export function studio(canvas) {
       person.position.set(a.x, a.y, a.z);
       person.rotation.y = a.heading;
     }
-    legs.forEach(
-      (l, i) => (l.rotation.x = seated ? -1.22 : walk ? Math.sin(t * 11 + i * Math.PI) * 0.43 : 0)
+    explorer.pose(
+      walk,
+      Boolean(seated),
+      parcel.isEnabled(false) ? 1 : shopParcel.isEnabled(false) ? -1 : 0,
+      !a.grounded,
+      t
     );
     car.setEnabled(hasChannel(kind));
     car.position.set(c.x, c.y + (c.state === 'fell' ? -0.48 : 0), c.z);
