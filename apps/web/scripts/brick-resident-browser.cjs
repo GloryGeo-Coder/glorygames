@@ -152,10 +152,56 @@ async function shopping(browser, mobile) {
     await tap('resEnd');
     assert.equal((await saved()).neighbour, undefined);
     assert.deepEqual((await saved()).pieces, complete.pieces);
+    // Reuse the repaired, player-built entrances for two daily departures.
+    for (const [key, trip, hour] of [
+      ['resident', before.resident, '18'],
+      ['neighbour', hallComplete, '14']
+    ]) {
+      await tap('resSettings');
+      await p.locator('#resHousehold').selectOption(key);
+      await p.locator('#resHome').selectOption(trip.home);
+      await p.locator('#resShop').selectOption(trip.shop);
+      await p.locator('#resSchedule').selectOption(hour);
+      await tap('resStart');
+      await state('At home');
+    }
+    await p.reload();
+    await state('Lebo · At home');
+    const routines = await saved();
+    assert.equal(routines.resident.routine.hour, 18);
+    assert.equal(routines.neighbour.routine.hour, 14);
+    assert.deepEqual(routines.pieces, complete.pieces);
+    await tap('resSkip');
+    const firstDeparture = await saved();
+    assert.equal(firstDeparture.resident.phase, 'done');
+    assert.equal(Math.floor(firstDeparture.clockMinutes / 1440), 0);
+    assert.ok(firstDeparture.clockMinutes >= 14 * 60);
+    await tap('resOther');
+    await state('Naledi · Walking to');
+    assert.ok(await p.locator('#resSkip').isHidden());
+    await state('Naledi · At home');
+    await tap('resOther');
+    await state('Lebo · At home');
+    const dayOne = await saved();
+    assert.equal(dayOne.resident.routine.visits, 1);
+    assert.equal(dayOne.neighbour.routine.visits, 1);
+    await shot('routine-returns');
+    await tap('resSkip');
+    await tap('resOther');
+    await state('Naledi · Walking to');
+    const dayTwo = await saved();
+    assert.equal(Math.floor(dayTwo.clockMinutes / 1440), 1);
+    assert.equal(dayTwo.neighbour.home, routines.neighbour.home);
+    await tap('resSettings');
+    await p.locator('#resSchedule').selectOption('');
+    await tap('resApplySchedule');
+    assert.equal((await saved()).neighbour.routine, undefined);
+    await state('Naledi · Walking to');
+    assert.equal((await saved()).resident.routine.hour, 18);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop keyboard/mouse') +
-        ': two households saved and reopened, Naledi visited the hall and returned in Play while Lebo waited, then a one-stud repair let Lebo shop and walk home.'
+        ': two households saved and reopened, Naledi visited the hall and returned in Play while Lebo waited, a one-stud repair let Lebo shop and walk home, and both residents kept their daily departures across a reload and a second day.'
     );
   } finally {
     await ctx.close();

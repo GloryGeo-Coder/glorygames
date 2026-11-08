@@ -168,6 +168,9 @@ async function delivery(browser, mobile) {
       });
       town.resident = { ...newTrip(doors[0], doors[1]), paused: true };
       town.neighbour = { ...newTrip(doors[2], doors[3]), paused: true };
+      town.resident.routine = { hour: 8, visits: 2 };
+      town.neighbour.routine = { hour: 14, visits: 3 };
+      town.clockMinutes = 450;
       localStorage.setItem(saveKey('city'), citySave(town));
       const snapshot = {};
       for (const kind of ['garage', 'free', 'district']) {
@@ -267,6 +270,10 @@ async function delivery(browser, mobile) {
     const after = await save();
     assert.deepEqual(after.resident, residents.resident);
     assert.deepEqual(after.neighbour, residents.neighbour);
+    assert.ok(
+      after.clockMinutes > residents.clockMinutes,
+      'the settlement clock survives driving and reload'
+    );
     for (const kind of Object.keys(isolated))
       assert.equal(
         await p.evaluate((kind) => localStorage.getItem('wga.brick-playground.v1.' + kind), kind),

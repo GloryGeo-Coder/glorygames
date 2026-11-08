@@ -893,6 +893,14 @@ dialog p {
   padding: 6px 9px;
   font-size: 13px;
 }
+#resClock {
+  font-variant-numeric: tabular-nums;
+  color: var(--teal);
+  font-weight: 700;
+}
+#resRoutineNote {
+  font-size: 12px;
+}
 .resident-switch {
   display: flex;
   gap: 4px;

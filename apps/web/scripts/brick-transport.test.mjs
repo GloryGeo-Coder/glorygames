@@ -3,6 +3,11 @@ import assert from 'node:assert/strict';
 import { starterBuggy } from '../public/games/brick-playground-3d/freight.mjs';
 import { world, loadWorld, saveKey } from '../public/games/brick-playground-3d/model.mjs';
 import { citySave, cityWorld, HALF } from '../public/games/brick-playground-3d/settlement.mjs';
+import { newTrip } from '../public/games/brick-playground-3d/resident-trip.mjs';
+import {
+  setRoutine,
+  tickRoutines
+} from '../public/games/brick-playground-3d/resident-routines.mjs';
 import {
   newTransport,
   restoreTransport,
@@ -248,4 +253,41 @@ test('town delivery saves never leak into the workshop, Free Build or Market Fre
     saves.set(saveKey(kind), JSON.stringify(external));
     assert.ok(!Object.hasOwn(loadWorld(kind, storage), 'transport'));
   }
+});
+
+test('routine departures and clock survive cargo collection, reload and delivery together', () => {
+  const town = city();
+  const doors = [30, 36].map((x, i) => ({
+    id: 'routine-door-' + i,
+    type: 'door',
+    color: 'Lagoon',
+    x,
+    z: 30,
+    y: 0,
+    r: 0
+  }));
+  town.pieces.push(...doors);
+  town.resident = newTrip(...doors);
+  town.resident.phase = 'done';
+  setRoutine(town.resident, 8);
+  town.resident.routine.visits = 3;
+  town.clockMinutes = 479;
+  town.transport = route();
+  const run = transportRun(buggy, town.transport, [], town);
+  assert.ok(serviceTransport(run, town.transport, town, []));
+  assert.ok(tickRoutines(town, 0.1), 'a household can depart during a delivery');
+  assert.equal(town.resident.phase, 'leave');
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(restored, town, 'both optional features round trip in one save');
+  const resident = structuredClone(restored.resident);
+  const resumed = transportRun(buggy, restored.transport, [], restored);
+  Object.assign(resumed, transportPoint(dropoff));
+  assert.ok(serviceTransport(resumed, restored.transport, restored, []));
+  assert.equal(restored.transport.stage, 3);
+  assert.equal(restored.clockMinutes, 480.5);
+  assert.deepEqual(
+    restored.resident,
+    resident,
+    'cargo handover preserves the household schedule and trip'
+  );
 });
