@@ -144,7 +144,9 @@ async function town(browser, mobile) {
     assert.equal(reopened.blocks[0].name, 'Civic Square');
     assert.deepEqual(await save('free'), free);
     const repeat = async () => {
-      await page.locator('#blockRepeat summary').click();
+      const summary = page.locator('#blockRepeat summary');
+      if (mobile) await summary.tap();
+      else await summary.click();
       await page.locator('#repeatSource').selectOption('0');
       await page.locator('#repeatCount').selectOption('3');
       await page.locator('#repeatTurns').selectOption('1');
@@ -160,6 +162,14 @@ async function town(browser, mobile) {
     assert.match(await page.locator('#repeatPreview').innerText(), /boundary/);
     await page.locator('#mapBlock').selectOption('11');
     assert.match(await page.locator('#repeatPreview').innerText(), /D2, E2, F2/);
+    if (mobile) {
+      const stage = await page.locator('#repeatStage').boundingBox();
+      const footer = await page.locator('.map-actions').boundingBox();
+      assert.ok(
+        stage.y + stage.height <= footer.y,
+        'the phone preview keeps Stage row visible above the map actions'
+      );
+    }
     await photo('row-preview');
     await tap('repeatStage');
     await closeMap();

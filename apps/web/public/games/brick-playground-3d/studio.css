@@ -876,6 +876,17 @@ dialog p {
 #repeatStage {
   min-height: 40px;
 }
+@media (max-width: 580px) {
+  #cityMap:has(#blockRepeat[open]) #cityAtlas {
+    width: min(100%, 28dvh);
+  }
+  #cityMap:has(#blockRepeat[open]) .map-actions button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 7px 4px;
+    font-size: 14px;
+  }
+}
 #mapFields {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
