@@ -41,7 +41,7 @@ async function town(browser, mobile) {
       );
       await tap('place');
     }
-    async function walk(key, axis, target) {
+    async function walk(key, axis, target, stickOffset = 30) {
       const sign = ['w', 'd'].includes(key) ? 1 : -1;
       if (mobile) {
         const r = await page.locator('#stick').boundingBox();
@@ -49,8 +49,8 @@ async function town(browser, mobile) {
           type: 'touchStart',
           touchPoints: [
             {
-              x: r.x + r.width / 2 + (axis === 'x' ? sign * 30 : 0),
-              y: r.y + r.height / 2 - (axis === 'z' ? sign * 30 : 0)
+              x: r.x + r.width / 2 + (axis === 'x' ? sign * stickOffset : 0),
+              y: r.y + r.height / 2 - (axis === 'z' ? sign * stickOffset : 0)
             }
           ]
         });
@@ -143,6 +143,91 @@ async function town(browser, mobile) {
     assert.deepEqual(reopened.pieces, far.pieces);
     assert.equal(reopened.blocks[0].name, 'Civic Square');
     assert.deepEqual(await save('free'), free);
+    const repeat = async () => {
+      const summary = page.locator('#blockRepeat summary');
+      if (mobile) await summary.tap();
+      else await summary.click();
+      await page.locator('#repeatSource').selectOption('0');
+      await page.locator('#repeatCount').selectOption('3');
+      await page.locator('#repeatTurns').selectOption('1');
+    };
+    const closeMap = () => page.getByRole('button', { name: 'Close settlement map' }).click();
+    await map(2);
+    await repeat();
+    await page.locator('#repeatDir').selectOption('west');
+    assert.match(await page.locator('#repeatPreview').innerText(), /Already built/);
+    assert.ok(await page.locator('#repeatStage').isDisabled());
+    await page.locator('#repeatDir').selectOption('east');
+    await page.locator('#mapBlock').selectOption('15');
+    assert.match(await page.locator('#repeatPreview').innerText(), /boundary/);
+    await page.locator('#mapBlock').selectOption('11');
+    assert.match(await page.locator('#repeatPreview').innerText(), /D2, E2, F2/);
+    if (mobile) {
+      const stage = await page.locator('#repeatStage').boundingBox();
+      const footer = await page.locator('.map-actions').boundingBox();
+      assert.ok(
+        stage.y + stage.height <= footer.y,
+        'the phone preview keeps Stage row visible above the map actions'
+      );
+    }
+    await photo('row-preview');
+    await tap('repeatStage');
+    await closeMap();
+    assert.deepEqual(await save('city'), reopened, 'cancel discards the staged row');
+    const placeRow = async () => {
+      await map(11);
+      await repeat();
+      await tap('repeatStage');
+      await tap('mapBuild');
+      return save('city');
+    };
+    const row = await placeRow();
+    const hallSize = first.pieces.length - initial.pieces.length;
+    assert.equal(row.pieces.length, reopened.pieces.length + 3 * hallSize);
+    assert.equal(row.blocks[11].zone, 'civic');
+    await tap('undo');
+    const undone = await save('city');
+    assert.deepEqual(
+      [undone.pieces, undone.blocks, undone.streets],
+      [reopened.pieces, reopened.blocks, reopened.streets]
+    );
+    const built = await placeRow();
+    await page.reload();
+    await page.locator('#tray button').first().waitFor();
+    assert.deepEqual((await save('city')).pieces, built.pieces);
+    await map(11);
+    await tap('mapWalk');
+    const door = built.pieces.slice(reopened.pieces.length).find((p) => p[1] === 'door');
+    assert.equal(door[6], 1);
+    await walk('d', 'x', -2);
+    const doorwayCentre = door[5] + 1.5;
+    await walk('w', 'z', doorwayCentre - 0.45);
+    // Line up on the pavement before turning into the doorway. Touch events may release a frame late.
+    const depth = () =>
+      page.evaluate(
+        () => BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder').position.z
+      );
+    for (let i = 0; i < 4; i++) {
+      const delta = doorwayCentre - (await depth());
+      if (Math.abs(delta) <= 0.65) break;
+      await walk(delta > 0 ? 'w' : 's', 'z', doorwayCentre - Math.sign(delta) * 0.25, 10);
+    }
+    assert.ok(
+      Math.abs(doorwayCentre - (await depth())) <= 0.65,
+      'aligned the character with the open doorway'
+    );
+    await walk('a', 'x', door[3] - 0.55);
+    assert.ok(
+      await page.evaluate(
+        () =>
+          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder').position.y > 0.3
+      ),
+      'walked inside the rotated copy'
+    );
+    console.log(
+      (mobile ? 'Phone' : 'Desktop') +
+        ': rejected an occupied row, cancelled and undid a three-block expansion, reopened the saved street and walked into its rotated hall.'
+    );
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone joystick' : 'Desktop keyboard') +

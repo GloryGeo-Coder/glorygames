@@ -114,6 +114,17 @@
         <p id="mapRouteSummary" role="status"></p><button id="mapConnect" hidden>Preview street connection</button>
       </div>
       <label>Block <select id="mapBlock"></select></label>
+      <details id="blockRepeat" hidden><summary>Repeat a block</summary>
+        <p>Choose a built block to copy, then tap the first empty block on the map.</p>
+        <div class="repeat-options">
+          <label>Source block <select id="repeatSource"></select></label>
+          <label>Copies <select id="repeatCount"></select></label>
+          <label>Extend towards <select id="repeatDir"><option value="east">East</option><option value="west">West</option><option value="north">North</option><option value="south">South</option></select></label>
+          <label>Rotation <select id="repeatTurns"><option value="0">0°</option><option value="1">90°</option><option value="2">180°</option><option value="3">270°</option></select></label>
+        </div>
+        <p id="repeatPreview" role="status"></p><button id="repeatStage" type="button">Stage row</button>
+      </details>
+      <p id="repeatNotice" role="status"></p>
       <div id="mapFields"><label>Block name <input id="blockName" maxlength="32" placeholder="Name this block"></label>
         <label>Land use <select id="mapZone"></select></label>
         <fieldset><legend>Streets along this block</legend>
