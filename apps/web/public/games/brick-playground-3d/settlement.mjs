@@ -190,6 +190,35 @@ export function restoreRoutine(value) {
     visits: Number.isSafeInteger(value.visits) && value.visits >= 0 ? value.visits : 0
   };
 }
+export const MAX_TRAIL_STOPS = 5;
+export function restoreTrail(value) {
+  if (
+    typeof value?.name !== 'string' ||
+    !value.name.trim() ||
+    value.name.trim().length > 32 ||
+    !Array.isArray(value.stops) ||
+    value.stops.length < 2 ||
+    value.stops.length > MAX_TRAIL_STOPS
+  )
+    return null;
+  const stops = [];
+  for (const stop of value.stops) {
+    if (
+      typeof stop?.door !== 'string' ||
+      !stop.door ||
+      typeof stop.label !== 'string' ||
+      !stop.label.trim() ||
+      stop.label.trim().length > 28 ||
+      stops.some((s) => s.door === stop.door)
+    )
+      return null;
+    stops.push({ door: stop.door, label: stop.label.trim() });
+  }
+  const stamps = Number.isInteger(value.stamps)
+    ? Math.max(0, Math.min(value.stamps, stops.length))
+    : 0;
+  return { name: value.name.trim(), stops, stamps };
+}
 export function restoreMarket(value) {
   if (typeof value?.shop !== 'string' || !value.shop || !Array.isArray(value.receipts)) return null;
   const receipts = [];
@@ -240,8 +269,10 @@ export function cityLayout(v) {
       moveIn(households, member.name, member.visit, restoreTrip(v[member.key]), member.key);
     }
   }
+  const trail = restoreTrail(v.trail);
   const market = restoreMarket(v.market);
   return {
+    ...(trail ? { trail } : {}),
     ...(market ? { market } : {}),
     ...(['night', 'day'].includes(v.lighting) ? { lighting: v.lighting } : {}),
     ...(Number.isFinite(v.clockMinutes) &&

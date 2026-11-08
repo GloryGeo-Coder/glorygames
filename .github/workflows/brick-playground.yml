@@ -26,7 +26,7 @@ jobs:
       matrix:
         include:
           - group: move-ins
-            suites: resident-move-in resident-market settlement-lighting
+            suites: resident-move-in resident-market settlement-lighting settlement-trail
           - group: construction
             suites: playground vehicle canal blueprint builder
           - group: neighbourhoods

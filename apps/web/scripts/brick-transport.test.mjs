@@ -12,6 +12,12 @@ import {
   moveIn,
   endHousehold
 } from '../public/games/brick-playground-3d/settlement.mjs';
+import {
+  prepareTrail,
+  trailEntrance,
+  stampTrail,
+  startingPavement
+} from '../public/games/brick-playground-3d/town-trail.mjs';
 import { newTrip, tripRuntime } from '../public/games/brick-playground-3d/resident-trip.mjs';
 import {
   openMarket,
@@ -561,4 +567,54 @@ test('streetlamp collision and lighting previews preserve loaded cargo, schedule
     assert.equal(recovered.x, transportPoint(pickup).x);
     assert.equal(recovered.load, run.load);
   }
+});
+
+test('walking passports survive cargo recovery and reload without granting driving stamps', () => {
+  const town = city();
+  const doors = [0, 1].map((i) => ({
+    id: 'trail-door-' + i,
+    type: 'door',
+    color: 'Lagoon',
+    x: BLOCKS[i].x,
+    z: BLOCKS[i].z,
+    y: 0,
+    r: 0
+  }));
+  town.pieces.push(...doors);
+  town.trail = prepareTrail(
+    town,
+    'Landmarks',
+    doors.map((p, i) => ({ door: p.id, label: 'Stop ' + i }))
+  );
+  const at = (i) => ({ ...trailEntrance(town, doors[i].id).inside, y: 0 });
+  assert.equal(stampTrail(town, at(0), true).label, 'Stop 0');
+  town.transport = route();
+  let run = transportRun(buggy, town.transport, [], town);
+  assert.ok(serviceTransport(run, town.transport, town, []));
+  const passport = structuredClone(town.trail);
+  for (let i = 0; i < 90; i++) tick(run, []);
+  assert.equal(stampTrail(town, at(1), false), null, 'driving cannot stamp even at a landmark');
+  run = transportRun(buggy, town.transport, [], town);
+  assert.equal(run.x, transportPoint(pickup).x);
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(restored.trail, passport);
+  assert.deepEqual(restored.transport, town.transport);
+  assert.deepEqual(startingPavement(restored).curb, trailEntrance(town, doors[0].id).curb);
+  restored.trail = prepareTrail(
+    restored,
+    'Renamed walk',
+    passport.stops.map((s) => ({ ...s, label: s.label + ' renamed' }))
+  );
+  assert.equal(restored.trail.stamps, 1, 'renaming landmarks keeps prior stamps');
+  const resumed = transportRun(buggy, restored.transport, [], restored);
+  Object.assign(resumed, transportPoint(dropoff));
+  assert.ok(serviceTransport(resumed, restored.transport, restored, []));
+  assert.equal(restored.trail.stamps, 1, 'delivery cannot stamp a landmark');
+  assert.ok(stampTrail(restored, at(1), true));
+  assert.equal(restored.trail.stamps, 2);
+  assert.equal(restored.transport.stage, 3, 'walking stamps preserve completed delivery');
+  const corrupt = { ...restored, trail: { name: 'Bad', stops: [{}, {}], stamps: 2 } };
+  const cleaned = loadWorld('city', { getItem: () => citySave(corrupt) });
+  assert.equal(cleaned.trail, undefined);
+  assert.deepEqual(cleaned.transport, restored.transport, 'invalid trail cannot erase delivery');
 });

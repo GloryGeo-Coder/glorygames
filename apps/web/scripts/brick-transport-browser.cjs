@@ -209,6 +209,14 @@ async function delivery(browser, mobile) {
           r: 0
         }))
       );
+      town.trail = {
+        name: 'Town deliveries walk',
+        stops: [
+          { door: doors[0].id, label: 'Home' },
+          { door: doors[1].id, label: 'Market' }
+        ],
+        stamps: 1
+      };
       town.market = {
         shop: doors[1].id,
         receipts: [{ name: 'Lebo', home: doors[0].id, block: 'F3' }]
@@ -281,6 +289,10 @@ async function delivery(browser, mobile) {
       'market and resident panel yields to driving'
     );
     assert.ok(await p.locator('#marketTill').isHidden());
+    assert.ok(
+      await p.locator('#trailHud').isHidden(),
+      'walking stamps are not offered while driving'
+    );
     await p.waitForFunction(() => !document.getElementById('transportAction').disabled);
     assert.ok(await p.locator('#brake').isVisible());
     await atPickup();
@@ -301,15 +313,71 @@ async function delivery(browser, mobile) {
     await nightLights([-19.5, -9.5]);
     assert.deepEqual((await save()).market, residents.market, 'recovery preserves receipts');
     assert.deepEqual(
+      (await save()).trail,
+      residents.trail,
+      'driving and recovery preserve passport'
+    );
+    assert.deepEqual(
       (await save()).family1,
       residents.family1,
       'recovery preserves the market queue'
     );
+    await tap('cityMapButton');
+    if (!(await p.locator('#trailBoard').evaluate((e) => e.open)))
+      await p.locator('#trailBoard > summary').click();
+    await closingDialog('cityMap', () => tap('trailWalk'));
+    await p.waitForFunction(() => {
+      const person = BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder');
+      return (
+        person.isEnabled() &&
+        Math.abs(person.position.x - 31.5) < 0.1 &&
+        Math.abs(person.position.z - 24) < 0.1
+      );
+    });
+    assert.ok(await p.locator('#jump').isVisible());
+    assert.ok(await p.locator('#brake').isHidden());
+    assert.ok(await p.locator('#transportPanel').isHidden());
+    assert.ok(await p.locator('#trailHud').isVisible());
+    assert.deepEqual(
+      (await save()).trail,
+      residents.trail,
+      'resuming the walking trail preserves stamps'
+    );
+    assert.equal(
+      (await save()).transport.stage,
+      2,
+      'leaving the buggy for a trail preserves cargo'
+    );
+    await tap('transportButton');
+    await closingTransport(() => tap('transportDispatch'));
+    await atPickup();
+    await tap('cityMapButton');
+    await p.locator('#mapBlock').selectOption('0');
+    await closingDialog('cityMap', () => tap('mapWalk'));
+    await p.waitForFunction(() => {
+      const person = BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder');
+      return (
+        person.isEnabled() &&
+        Math.abs(person.position.x + 83.5) < 0.1 &&
+        Math.abs(person.position.z - 73) < 0.1
+      );
+    });
+    assert.equal(
+      (await save()).focus,
+      0,
+      'map walking honors the selected block after leaving the buggy'
+    );
+    assert.equal((await save()).transport.stage, 2);
+    assert.deepEqual((await save()).trail, residents.trail);
+    await tap('transportButton');
+    await closingTransport(() => tap('transportDispatch'));
+    await atPickup();
     await goTo(-6);
     await p.reload();
     await ready();
     assert.equal((await save()).transport.stage, 2);
     assert.deepEqual((await save()).market, residents.market, 'reload preserves receipts');
+    assert.deepEqual((await save()).trail, residents.trail, 'reload preserves passport');
     assert.deepEqual(
       (await save()).family1,
       residents.family1,
@@ -351,6 +419,7 @@ async function delivery(browser, mobile) {
     assert.deepEqual(after.neighbour, residents.neighbour);
     assert.deepEqual(after.members, residents.members);
     assert.deepEqual(after.market, residents.market, 'delivery preserves the half-served market');
+    assert.deepEqual(after.trail, residents.trail, 'delivery preserves the walking passport');
     for (const { key } of residents.members)
       assert.deepEqual(
         after[key],
@@ -384,7 +453,9 @@ async function delivery(browser, mobile) {
     }
     try {
       await p.waitForFunction(
-        () => document.getElementById('marketTill').textContent === 'Serve Household 0',
+        () =>
+          document.getElementById('marketTill').textContent === 'Serve Household 0' &&
+          document.getElementById('trailHud').textContent === 'Stamp Market',
         null,
         { timeout: 60000 }
       );
@@ -392,6 +463,9 @@ async function delivery(browser, mobile) {
       if (mobile) await release();
       else await p.keyboard.up('w');
     }
+    await tap('trailHud');
+    assert.equal((await save()).trail.stamps, 2, 'walking can stamp after delivery');
+    assert.equal((await save()).transport.stage, 3, 'stamping keeps the completed delivery');
     await tap('marketTill');
     assert.deepEqual(
       (await save()).market.receipts.map((r) => r.name),
@@ -422,10 +496,11 @@ async function delivery(browser, mobile) {
     });
     assert.equal((await save()).lighting, 'night', 'leaving town keeps its saved lighting');
     assert.equal((await save()).transport.stage, 3);
+    assert.equal((await save()).trail.stamps, 2, 'switching worlds keeps the passport');
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, restored walking service, world lighting reset and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

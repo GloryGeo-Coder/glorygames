@@ -298,10 +298,24 @@ export function studio(canvas) {
       stallSign.rotation.y = (-counter.r * Math.PI) / 2;
     }
   }
+  let trailMarker;
+  function showTrail(front) {
+    if (front && !trailMarker) {
+      trailMarker = new B.TransformNode('Trail checkpoint', scene);
+      box('Trail stamp pad', 0, 0.035, 0, 1.5, 0.05, 1.5, '#e8bf61', trailMarker);
+      const sign = label('TRAIL', 0, 2.15, 0, 1.65);
+      sign.parent = trailMarker;
+      sign.billboardMode = B.Mesh.BILLBOARDMODE_Y;
+    }
+    if (!trailMarker) return;
+    trailMarker.setEnabled(!!front);
+    if (front) trailMarker.position.set(front.inside.x, front.y, front.inside.z);
+  }
   function neighbourhood(next) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
     showMarket(null);
+    showTrail(null);
     if (kind === 'city') {
       lighting.reset();
       settlement.close();
@@ -885,6 +899,7 @@ export function studio(canvas) {
     neighbourhood,
     showResident,
     showMarket,
+    showTrail,
     removeResident,
     townLighting: lighting.update,
     citySector: settlement.sector,
