@@ -45,6 +45,7 @@ const specs = [
   ['step', 'Steps', 3, 2, 1, 'step'],
   ['bench', 'Bench', 3, 1, 1, 'bench'],
   ['pot', 'Planter', 2, 2, 1, 'pot'],
+  ['streetlamp', 'Streetlamp', 1, 1, 3, 'lantern'],
   ['cab', 'Open cab', 2, 2, 2, 'cab', true],
   ['seat', 'Seat', 1, 2, 1, 'seat', true],
   ['cargo', 'Cargo bed', 2, 2, 1, 'cargo', true]
@@ -74,6 +75,14 @@ function makeParts(type) {
       frame.push(box(t, 0, 0, w - 2 * t, d, t), box(w / 2 - 0.08, 0, t, 0.16, d, h - 2 * t));
     return frame;
   }
+  if (shape === 'lantern')
+    return [
+      box(0.05, 0.05, 0, 0.9, 0.9, 0.25),
+      box(0.37, 0.37, 0.25, 0.26, 0.26, 2.02),
+      box(0.1, 0.1, 2.27, 0.8, 0.8, 0.08),
+      box(0.15, 0.15, 2.35, 0.7, 0.7, 0.4),
+      box(0, 0, 2.75, 1, 1, 0.25)
+    ];
   if (shape === 'cab') {
     const t = 0.24,
       frame = [box(0, 0, h - t, w, d, t)];

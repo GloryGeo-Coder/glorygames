@@ -509,3 +509,56 @@ test('half-served market queues and receipts survive cargo driving, recovery and
   delete restored.market;
   assert.equal(restored.transport.stage, 3, 'closing the market preserves completed transport');
 });
+
+test('streetlamp collision and lighting previews preserve loaded cargo, schedules and receipts', () => {
+  const town = city();
+  const lamps = [-20, -10, 10, 20].map((x, i) => ({
+    id: 'lamp-' + i,
+    type: 'streetlamp',
+    color: 'Sun',
+    x,
+    y: 0,
+    z: 4,
+    r: 0
+  }));
+  const doors = [0, 1].map((i) => ({
+    id: 'lamp-home-' + i,
+    type: 'door',
+    color: 'Lagoon',
+    x: BLOCKS[i].x,
+    z: BLOCKS[i].z,
+    y: 0,
+    r: 0
+  }));
+  town.pieces.push(...lamps, ...doors);
+  town.transport = { ...route(), stage: 2 };
+  town.resident = { ...newTrip(...doors), paused: true, routine: { hour: 18, visits: 3 } };
+  town.market = { shop: doors[1].id, receipts: [{ name: 'Lebo', home: doors[0].id, block: 'A1' }] };
+  town.clockMinutes = 1080;
+  const progress = (w) => ({
+    transport: w.transport,
+    resident: w.resident,
+    market: w.market,
+    clockMinutes: w.clockMinutes
+  });
+  const before = structuredClone(progress(town));
+  const obstacles = transportObstacles(town.pieces, buggy);
+  const run = transportRun(buggy, town.transport, obstacles, town);
+  assert.ok(run, 'set-back lamps leave the full buggy width clear');
+  for (let i = 0; i < 180; i++) tick(run, obstacles);
+  assert.ok(run.x > transportPoint(pickup).x + 10 && !run.blocked);
+  const post = transportObstacles([lamps[0]], buggy);
+  assert.ok(
+    !transportClear({ x: lamps[0].x + 0.5, z: lamps[0].z + 0.5, yaw: Math.PI / 2 }, post),
+    'lamps remain real collision obstacles'
+  );
+  for (const lighting of ['night', 'day', 'clock', 'invalid']) {
+    const restored = loadWorld('city', { getItem: () => citySave({ ...town, lighting }) });
+    assert.deepEqual(progress(restored), before);
+    assert.deepEqual(restored.pieces, town.pieces);
+    assert.equal(restored.lighting, ['night', 'day'].includes(lighting) ? lighting : undefined);
+    const recovered = transportRun(buggy, restored.transport, obstacles, restored);
+    assert.equal(recovered.x, transportPoint(pickup).x);
+    assert.equal(recovered.load, run.load);
+  }
+});

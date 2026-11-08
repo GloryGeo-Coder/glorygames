@@ -41,6 +41,24 @@ async function delivery(browser, mobile) {
       closingTransport(() => p.locator('[aria-label="Close transport settings"]').click());
     const save = () =>
       p.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    async function nightLights(expected) {
+      await p.waitForFunction(
+        (expected) => {
+          const scene = BABYLON.EngineStore.LastCreatedScene;
+          const xs = scene.lights
+            .filter((l) => l.name.startsWith('Nearby streetlamp') && l.isEnabled())
+            .map((l) => l.position.x)
+            .sort((a, b) => a - b);
+          return (
+            scene.getLightByName('Sky').intensity < 0.4 &&
+            JSON.stringify(xs) === JSON.stringify(expected)
+          );
+        },
+        expected,
+        { timeout: 10000 }
+      );
+      assert.equal((await save()).lighting, 'night');
+    }
     const ready = () => p.locator('#tray button').first().waitFor();
     const touch = mobile && (await ctx.newCDPSession(p));
     async function press(id, direction = 1) {
@@ -179,6 +197,18 @@ async function delivery(browser, mobile) {
         moveIn(town, 'Household ' + i, i % 2 ? 'hall' : 'spaza', trip);
       }
       town.clockMinutes = 450;
+      town.lighting = 'night';
+      town.pieces.push(
+        ...[-20, -10, 10, 20].map((x, i) => ({
+          id: 'transport-lamp-' + i,
+          type: 'streetlamp',
+          color: 'Sun',
+          x,
+          y: 0,
+          z: 4,
+          r: 0
+        }))
+      );
       town.market = {
         shop: doors[1].id,
         receipts: [{ name: 'Lebo', home: doors[0].id, block: 'F3' }]
@@ -255,6 +285,7 @@ async function delivery(browser, mobile) {
     assert.ok(await p.locator('#brake').isVisible());
     await atPickup();
     assert.equal(await x(), -12);
+    await nightLights([-19.5, -9.5]);
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 2);
     await tap('transportButton');
@@ -267,6 +298,7 @@ async function delivery(browser, mobile) {
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'last stop recovers to pickup with cargo');
     assert.equal((await save()).transport.stage, 2, 'recovery preserves cargo');
+    await nightLights([-19.5, -9.5]);
     assert.deepEqual((await save()).market, residents.market, 'recovery preserves receipts');
     assert.deepEqual(
       (await save()).family1,
@@ -287,7 +319,9 @@ async function delivery(browser, mobile) {
     await closingTransport(() => tap('transportDispatch'));
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'reload resumes cargo at checkpoint');
+    await nightLights([-19.5, -9.5]);
     await parkAtDropoff();
+    await nightLights([10.5, 20.5]);
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 3);
     if (process.env.BRICK_SCREENSHOTS) {
@@ -308,6 +342,11 @@ async function delivery(browser, mobile) {
       'market controls return after exiting the buggy'
     );
     const after = await save();
+    assert.equal(after.lighting, 'night');
+    assert.deepEqual(
+      after.pieces.filter((p) => p[1] === 'streetlamp'),
+      residents.pieces.filter((p) => p[1] === 'streetlamp')
+    );
     assert.deepEqual(after.resident, residents.resident);
     assert.deepEqual(after.neighbour, residents.neighbour);
     assert.deepEqual(after.members, residents.members);
@@ -370,10 +409,23 @@ async function delivery(browser, mobile) {
           'transport-market-restored-' + (mobile ? 'phone' : 'desktop') + '.png'
         )
       });
+    await tap('worlds');
+    await tap('freeWorld');
+    await p.waitForFunction(() => {
+      const scene = BABYLON.EngineStore.LastCreatedScene;
+      return (
+        scene.getLightByName('Sky').intensity > 0.65 &&
+        scene.lights
+          .filter((l) => l.name.startsWith('Nearby streetlamp'))
+          .every((l) => !l.isEnabled())
+      );
+    });
+    assert.equal((await save()).lighting, 'night', 'leaving town keeps its saved lighting');
+    assert.equal((await save()).transport.stage, 3);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, restored walking service and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, restored walking service, world lighting reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

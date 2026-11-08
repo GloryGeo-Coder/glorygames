@@ -18,6 +18,12 @@ import {
   streetKeys,
   spawnAt
 } from '../public/games/brick-playground-3d/settlement.mjs';
+import {
+  streetLamps,
+  suggestLamp,
+  surveyLighting,
+  darkness
+} from '../public/games/brick-playground-3d/street-lighting.mjs';
 import { planStreets } from '../public/games/brick-playground-3d/street-planner.mjs';
 import { entrance, streetPath } from '../public/games/brick-playground-3d/resident-trip.mjs';
 import {
@@ -209,4 +215,107 @@ test('an occupied block or map edge rejects the entire row and a staged row cann
     assert.strictEqual(stageBlockRow(stamped, ok), stamped);
     for (const b of stamped.pieces) assert.ok(validPiece(b, [], null, 'city'));
   }
+});
+
+test('street lighting clips and merges illuminated spans along turns without double counting overlap', () => {
+  const points = [
+    { x: 0, z: 0 },
+    { x: 20, z: 0 },
+    { x: 20, z: 10 }
+  ];
+  const survey = surveyLighting(points, [
+    { x: 4, z: 0, radius: 5 },
+    { x: 8, z: 0, radius: 4 },
+    { x: 20, z: 5, radius: 3 }
+  ]);
+  assert.equal(survey.total, 30);
+  assert.equal(survey.lit, 18);
+  assert.deepEqual(
+    survey.spans.map((s) => s.lit),
+    [true, false, false, true, false]
+  );
+  assert.equal(surveyLighting(points.slice().reverse(), [{ x: 4, z: 0, radius: 5 }]).lit, 9);
+  assert.equal(surveyLighting([points[0], points[0]], []).total, 0);
+  assert.equal(
+    surveyLighting(points, [{ x: 10, z: -4, radius: 4 }]).lit,
+    0,
+    'a tangent adds no lit distance'
+  );
+});
+test('a copied or elevated streetlamp uses its real height and placement after reloading', () => {
+  const city = world('city'),
+    p = { id: 'town-lamp', type: 'streetlamp', color: 'Sun', x: -12, y: 0, z: 2, r: 1 };
+  city.pieces = [...city.pieces, p];
+  city.lighting = 'night';
+  assert.ok(validPiece(p, city.pieces, p.id, 'city'));
+  const copy = stageBlockRow(city, {
+    source: BLOCKS[27],
+    first: BLOCKS[0],
+    count: 1,
+    direction: 'east',
+    turns: 1
+  });
+  const restored = loadWorld('city', { getItem: () => citySave(copy) });
+  assert.equal(restored.lighting, 'night');
+  assert.equal(streetLamps(restored.pieces).length, 2);
+  const raised = streetLamps([{ ...p, y: 12 }])[0];
+  assert.equal(raised.radius, 0);
+  assert.equal(
+    surveyLighting(
+      [
+        { x: -20, z: 0 },
+        { x: -5, z: 0 }
+      ],
+      streetLamps(city.pieces)
+    ).lit,
+    15
+  );
+  assert.equal(
+    surveyLighting(
+      [
+        { x: -20, z: 0 },
+        { x: -5, z: 0 }
+      ],
+      [raised]
+    ).lit,
+    0
+  );
+  city.lighting = 'bad';
+  assert.equal(loadWorld('city', { getItem: () => citySave(city) }).lighting, undefined);
+});
+test('settlement twilight follows the saved clock, with independent day and night previews', () => {
+  assert.equal(darkness('clock', 450), 0);
+  assert.equal(darkness('clock', 1080) > 0, true);
+  assert.equal(darkness('clock', 1140), 1);
+  assert.equal(darkness('clock', 360) > 0, true);
+  assert.equal(darkness('clock', 1440 + 450), 0);
+  assert.equal(darkness('day', 0), 0);
+  assert.equal(darkness('night', 800), 1);
+});
+
+test('aiming at a dark gap chooses an unoccupied plot stud, even when the nearest edge is built up', () => {
+  const pieces = [{ id: 'wall', type: 'wall', color: 'Plum', x: -14, y: 0, z: 2, r: 0 }];
+  const points = [
+    { x: -18, z: 0 },
+    { x: -8, z: 0 }
+  ];
+  const dark = surveyLighting(points, []);
+  const lamp = suggestLamp(pieces, dark, BLOCKS[27]);
+  assert.ok(lamp && validPiece(lamp, pieces, null, 'city'));
+  const lit = surveyLighting(points, streetLamps([...pieces, lamp]));
+  assert.equal(lit.lit, lit.total);
+  assert.equal(suggestLamp(pieces, lit), null);
+  assert.equal(
+    suggestLamp(
+      [],
+      surveyLighting(
+        [
+          { x: 200, z: 210 },
+          { x: 208, z: 210 }
+        ],
+        []
+      )
+    ),
+    null
+  );
 });
