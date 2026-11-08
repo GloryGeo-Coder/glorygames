@@ -62,9 +62,9 @@ async function delivery(browser, mobile) {
       if (mobile) await release();
       else await p.keyboard.up('Space');
     }
-    await p.goto(
-      (process.env.GAME_ORIGIN || 'http://127.0.0.1:3000') + '/play/brick-playground-3d'
-    );
+    const origin = process.env.GAME_ORIGIN || 'http://127.0.0.1:3000';
+    const gameUrl = origin + '/play/brick-playground-3d';
+    await p.goto(gameUrl);
     await ready();
     const isolated = await p.evaluate(async () => {
       const { world, saveKey } = await import('/games/brick-playground-3d/model.mjs');
@@ -119,17 +119,37 @@ async function delivery(browser, mobile) {
     assert.match(await p.locator('#transportSetupHint').textContent(), /blocked/i);
     assert.equal(await p.locator('#transportSetup').evaluate((e) => e.open), true);
     await p.locator('[aria-label="Close transport settings"]').click();
-    // Fixture repair, not a claim of exercising brick editing here. Editor repair is covered by resident suite.
+    // Leave the game before repairing storage: its pagehide autosave must finish first.
+    // This same-origin fixture page has no game code that could overwrite the repair.
+    // Editor repair through public controls is covered by the resident suite.
+    const fixtureUrl = origin + '/__transport-fixture';
+    await p.route(
+      fixtureUrl,
+      (route) =>
+        route.fulfill({
+          contentType: 'text/html',
+          body: '<!doctype html><title>Transport fixture</title>'
+        }),
+      { times: 1 }
+    );
+    await p.goto(fixtureUrl);
     await p.evaluate(() => {
       const key = 'wga.brick-playground.v1.city';
       const w = JSON.parse(localStorage.getItem(key));
       w.pieces = w.pieces.filter((p) => p[0] !== 'blocked-bay');
       localStorage.setItem(key, JSON.stringify(w));
     });
-    await p.reload();
+    await p.goto(gameUrl);
     await ready();
+    assert.ok(!(await save()).pieces.some((piece) => piece[0] === 'blocked-bay'));
     await tap('transportButton');
     await tap('transportDispatch');
+    assert.equal(
+      await p.locator('#transportSetup').evaluate((e) => e.open),
+      false,
+      await p.locator('#transportSetupHint').textContent()
+    );
+    assert.ok(await p.locator('#transportPanel').isVisible());
     await p.waitForFunction(() => !document.getElementById('transportAction').disabled);
     assert.ok(await p.locator('#brake').isVisible());
     assert.equal(await x(), -12);
