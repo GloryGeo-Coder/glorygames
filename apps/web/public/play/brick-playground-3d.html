@@ -124,6 +124,9 @@
       <form method="dialog"><h2 id="cityMapTitle">Settlement map</h2><button aria-label="Close settlement map">×</button></form>
       <canvas width="512" height="512" id="cityAtlas" aria-label="City blocks, streets and buildings. Choose a block on the map or from the block list."></canvas>
       <p id="mapStats"></p>
+      <div id="mapRouteTools" hidden><label>Household route <select id="mapRoute"></select></label> <button id="mapRouteZoom" hidden>Route close-up</button>
+        <p id="mapRouteSummary" role="status"></p><button id="mapConnect" hidden>Preview street connection</button>
+      </div>
       <label>Block <select id="mapBlock"></select></label>
       <div id="mapFields"><label>Block name <input id="blockName" maxlength="32" placeholder="Name this block"></label>
         <label>Land use <select id="mapZone"></select></label>

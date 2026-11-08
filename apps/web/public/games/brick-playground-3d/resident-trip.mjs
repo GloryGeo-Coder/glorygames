@@ -3,6 +3,7 @@ import {
   BLOCKS,
   CENTRE,
   HALF,
+  PITCH,
   blockAt,
   blockIndex,
   streetKeys,
@@ -59,6 +60,11 @@ export function newTrip(home, shop) {
 // Split the painted segments at the walker's current position and the destination curb.
 // Shortest distance is measured along those segments, including partial first and last edges.
 export function streetPath(streets, start, destination) {
+  return traceStreets(streets, start, destination)?.points ?? null;
+}
+// The planner can also search unbuilt sections. A new section costs more than an entire city route.
+export function traceStreets(streets, start, destination, existing = null) {
+  const penalty = (streets.length + 1) * PITCH;
   const nodes = new Map();
   const node = (x, z) => {
     const key = Math.round(x * 10000) + ',' + Math.round(z * 10000);
@@ -90,8 +96,8 @@ export function streetPath(streets, start, destination) {
     on.sort((a, b) => (horizontal ? a.x - b.x : a.z - b.z));
     for (let i = 1; i < on.length; i++)
       if (on[i] !== on[i - 1]) {
-        on[i].edges.push(on[i - 1]);
-        on[i - 1].edges.push(on[i]);
+        on[i].edges.push({ to: on[i - 1], key });
+        on[i - 1].edges.push({ to: on[i], key });
       }
   }
   if (!at.edges.length || !end.edges.length) return null;
@@ -102,16 +108,25 @@ export function streetPath(streets, start, destination) {
     let best;
     for (const n of pending) if (!best || distance.get(n) < distance.get(best)) best = n;
     if (best === end) {
-      const path = [];
-      for (let n = end; n !== at; n = previous.get(n)) path.unshift({ x: n.x, z: n.z });
-      return path;
+      const points = [],
+        sections = [];
+      for (let n = end; n !== at;) {
+        points.unshift({ x: n.x, z: n.z });
+        const edge = previous.get(n);
+        sections.unshift(edge.key);
+        n = edge.from;
+      }
+      return { points, sections };
     }
     pending.delete(best);
-    for (const next of best.edges) {
-      const length = distance.get(best) + separation(best, next);
+    for (const { to: next, key } of best.edges) {
+      const length =
+        distance.get(best) +
+        separation(best, next) +
+        (existing && !existing.has(key) ? penalty : 0);
       if (length < (distance.get(next) ?? Infinity)) {
         distance.set(next, length);
-        previous.set(next, best);
+        previous.set(next, { from: best, key });
         pending.add(next);
       }
     }

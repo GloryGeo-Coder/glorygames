@@ -2,8 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { starterBuggy } from '../public/games/brick-playground-3d/freight.mjs';
 import { world, loadWorld, saveKey } from '../public/games/brick-playground-3d/model.mjs';
-import { citySave, cityWorld, HALF } from '../public/games/brick-playground-3d/settlement.mjs';
+import {
+  citySave,
+  cityWorld,
+  HALF,
+  BLOCKS
+} from '../public/games/brick-playground-3d/settlement.mjs';
 import { newTrip } from '../public/games/brick-playground-3d/resident-trip.mjs';
+import { planStreets } from '../public/games/brick-playground-3d/street-planner.mjs';
 import {
   setRoutine,
   tickRoutines
@@ -290,4 +296,39 @@ test('routine departures and clock survive cargo collection, reload and delivery
     resident,
     'cargo handover preserves the household schedule and trip'
   );
+});
+
+test('street repair preserves loaded cargo, household schedules and clock through reload', () => {
+  const town = city();
+  const doors = [18, 20].map((id, i) => ({
+    id: 'planner-door-' + i,
+    type: 'door',
+    color: 'Chalk',
+    x: BLOCKS[id].x,
+    y: 0,
+    z: BLOCKS[id].z,
+    r: 0
+  }));
+  town.pieces.push(...doors);
+  town.streets.push('h-2-3', 'h-4-3');
+  town.resident = newTrip(...doors);
+  setRoutine(town.resident, 14);
+  town.clockMinutes = 750;
+  town.transport = { ...route(), stage: 2 };
+  const before = structuredClone(town);
+  const plan = planStreets(town, town.resident);
+  assert.deepEqual(plan.missing, ['h-3-3']);
+  assert.deepEqual(town, before, 'preview does not mutate the saved delivery');
+  const repaired = { ...town, streets: [...town.streets, ...plan.missing] };
+  const restored = loadWorld('city', { getItem: () => citySave(repaired) });
+  assert.deepEqual(restored, repaired);
+  assert.deepEqual(restored.transport, before.transport);
+  assert.deepEqual(restored.resident, before.resident);
+  assert.equal(restored.clockMinutes, before.clockMinutes);
+  assert.deepEqual(planStreets(restored, restored.resident).missing, []);
+  const resumed = transportRun(buggy, restored.transport, [], restored);
+  Object.assign(resumed, transportPoint(dropoff));
+  assert.ok(serviceTransport(resumed, restored.transport, restored, []));
+  assert.equal(restored.transport.stage, 3);
+  assert.deepEqual(restored.resident, before.resident);
 });
