@@ -327,19 +327,34 @@ export const avatar = (kind = 'free') => ({
 const HEIGHT = 1.65,
   RADIUS = 0.27,
   STEP = 0.365;
+const BODY_SAMPLES = [
+  [0, 0],
+  [RADIUS, 0],
+  [-RADIUS, 0],
+  [0, RADIUS],
+  [0, -RADIUS],
+  [0.19, 0.19],
+  [0.19, -0.19],
+  [-0.19, 0.19],
+  [-0.19, -0.19]
+];
+export function blockingBrick(a, items, dx, dz) {
+  const x = a.x + dx * 0.11,
+    z = a.z + dz * 0.11;
+  for (const p of items)
+    for (const [ox, oz] of BODY_SAMPLES) {
+      if (
+        intervals(p, x + ox, z + oz).some(
+          ([low, high]) => low < a.y + HEIGHT - 0.001 && high > a.y + STEP
+        )
+      )
+        return p.id;
+    }
+  return null;
+}
 function bodySurfaces(kind, items, x, z) {
   const solids = [];
-  for (const [ox, oz] of [
-    [0, 0],
-    [RADIUS, 0],
-    [-RADIUS, 0],
-    [0, RADIUS],
-    [0, -RADIUS],
-    [0.19, 0.19],
-    [0.19, -0.19],
-    [-0.19, 0.19],
-    [-0.19, -0.19]
-  ]) {
+  for (const [ox, oz] of BODY_SAMPLES) {
     const floor = floorAt(kind, x + ox, z + oz);
     if (Number.isFinite(floor)) solids.push([-100, floor]);
     if (kind === 'district') {

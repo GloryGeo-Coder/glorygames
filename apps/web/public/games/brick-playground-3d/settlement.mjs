@@ -86,6 +86,34 @@ export function cityWorld() {
     streets: Object.values(streetKeys(b))
   };
 }
+export function restoreTrip(v) {
+  if (
+    !v ||
+    !['leave', 'approach', 'street', 'door', 'enter', 'shopping', 'done'].includes(v.phase) ||
+    typeof v.home !== 'string' ||
+    typeof v.shop !== 'string' ||
+    v.home === v.shop ||
+    ![v.x, v.y, v.z, v.heading, v.vy, v.wait].every(Number.isFinite) ||
+    Math.abs(v.x) > HALF ||
+    Math.abs(v.z) > HALF
+  )
+    return null;
+  const { home, shop, phase, x, y, z, heading, vy } = v;
+  return {
+    home,
+    shop,
+    phase,
+    x,
+    y,
+    z,
+    heading,
+    vy,
+    wait: Math.max(0, Math.min(1.5, v.wait)),
+    grounded: v.grounded === true,
+    paused: v.paused === true,
+    returning: v.returning === true
+  };
+}
 export function cityLayout(v) {
   const blocks = {};
   for (const b of BLOCKS) {
@@ -97,8 +125,10 @@ export function cityLayout(v) {
   }
   if (!Array.isArray(v.streets) || v.streets.some((k) => !streetSet.has(k)))
     throw Error('Invalid street');
+  const resident = restoreTrip(v.resident);
   return {
     blocks,
+    ...(resident ? { resident } : {}),
     focus: Number.isInteger(v.focus) && BLOCKS[v.focus] ? v.focus : CENTRE,
     streets: [...new Set(v.streets)]
   };
