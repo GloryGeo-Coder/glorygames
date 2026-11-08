@@ -893,6 +893,17 @@ dialog p {
   padding: 6px 9px;
   font-size: 13px;
 }
+.resident-switch {
+  display: flex;
+  gap: 4px;
+}
+.resident-switch button {
+  flex: 1 1 auto;
+}
+#resOther {
+  font-size: 12px;
+  line-height: 1.15;
+}
 #residentPanel button,
 #nudgeTools button {
   min-width: 44px;

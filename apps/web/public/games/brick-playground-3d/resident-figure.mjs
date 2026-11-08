@@ -1,12 +1,13 @@
 import { surface } from './builder-geometry.mjs';
 
 // A distinct shopper with a knitted cap, plum jacket and a reusable market bag.
-export function residentFigure(B, scene, material) {
-  const root = new B.TransformNode('Resident Lebo', scene),
+export function residentFigure(B, scene, material, profile) {
+  const hallVisitor = profile.key === 'neighbour';
+  const root = new B.TransformNode('Resident ' + profile.name, scene),
     body = surface(B, scene);
-  const purple = '#814f85',
+  const jacket = hallVisitor ? '#227e82' : '#814f85',
     skin = '#995b3a',
-    orange = '#d88037',
+    cap = hallVisitor ? '#efce5a' : '#d88037',
     navy = '#385263';
   body.profile(
     0,
@@ -18,7 +19,7 @@ export function residentFigure(B, scene, material) {
       [1.01, 0.16, 0.12],
       [1.03, 0.08, 0.08]
     ],
-    purple
+    jacket
   );
   body.oval(0, 1.065, 0, 0.075, 0.12, 0.072, skin);
   body.oval(0, 1.265, 0, 0.202, 0.223, 0.172, skin, 22, 12);
@@ -56,7 +57,7 @@ export function residentFigure(B, scene, material) {
       [1.515, 0.122, 0.1],
       [1.54, 0.03, 0.025]
     ],
-    orange
+    cap
   );
   body.profile(
     0,
@@ -66,7 +67,7 @@ export function residentFigure(B, scene, material) {
       [1.36, 0.218, 0.184],
       [1.394, 0.214, 0.181]
     ],
-    '#ac622e'
+    hallVisitor ? '#317b75' : '#ac622e'
   );
   body.cord(
     [
@@ -78,14 +79,31 @@ export function residentFigure(B, scene, material) {
     0.017,
     '#efcb7d'
   );
-  body.mesh('Lebo coat and cap', root, material);
+  body.mesh(profile.name + ' coat and cap', root, material);
   const bag = surface(B, scene);
   bag.oval(0.194, 0.57, 0.057, 0.093, 0.1, 0.067, '#e2b771');
   bag.mesh('Shopping bag', root, material);
   const groceries = surface(B, scene);
-  groceries.oval(0.18, 0.665, 0.06, 0.037, 0.045, 0.036, '#85aa4b');
-  groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
-  const contents = groceries.mesh('Shopping bag produce', root, material);
+  if (hallVisitor) {
+    // A blue library book peeks out of the satchel on the way home.
+    groceries.profile(
+      0.2,
+      0.06,
+      [
+        [0.62, 0.061, 0.027],
+        [0.72, 0.061, 0.027]
+      ],
+      '#3867a6'
+    );
+  } else {
+    groceries.oval(0.18, 0.665, 0.06, 0.037, 0.045, 0.036, '#85aa4b');
+    groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
+  }
+  const contents = groceries.mesh(
+    hallVisitor ? 'Naledi library book' : 'Shopping bag produce',
+    root,
+    material
+  );
   const limbs = [-1, 1].map((side) => {
     const leg = new B.TransformNode('Resident leg', scene);
     leg.parent = root;
@@ -108,7 +126,7 @@ export function residentFigure(B, scene, material) {
     arm.parent = root;
     arm.position.set(side * 0.207, 0.936, 0);
     const sleeve = surface(B, scene);
-    sleeve.oval(side * 0.02, -0.147, 0, 0.069, 0.192, 0.067, purple);
+    sleeve.oval(side * 0.02, -0.147, 0, 0.069, 0.192, 0.067, jacket);
     sleeve.oval(side * 0.027, -0.323, 0.012, 0.047, 0.069, 0.052, skin);
     sleeve.mesh('Resident sleeve', arm, material);
     return { leg, arm, side };

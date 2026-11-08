@@ -1,4 +1,4 @@
-// Follow one actual resident. Only read the scene and save to assert progress; repair through the editor.
+// Drive both households through the public editor. The scene and saved city are read only for assertions.
 const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
 const assert = require('node:assert/strict'),
   fs = require('node:fs'),
@@ -49,6 +49,29 @@ async function shopping(browser, mobile) {
     await p.waitForFunction(() =>
       BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Resident Lebo')?.isEnabled()
     );
+    await tap('resSettings');
+    await p.locator('#resHousehold').selectOption('neighbour');
+    assert.ok(
+      !(
+        await p.locator('#resHome option').evaluateAll((opts) => opts.map((o) => o.value))
+      ).includes((await saved()).resident.home),
+      'each household has its own home'
+    );
+    await tap('resPractice');
+    await tap('resStart');
+    await state('Naledi · Walking to the community hall');
+    await p.waitForFunction(
+      () =>
+        JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')).neighbour.phase ===
+        'street',
+      null,
+      { timeout: 150000 }
+    );
+    await tap('resSettings');
+    await tap('resPause');
+    await state('Naledi · Paused');
+    const paused = (await saved()).neighbour;
+    await tap('resOther');
     await state('Stopped');
     const before = await saved();
     assert.equal(before.resident.phase, 'door');
@@ -62,6 +85,29 @@ async function shopping(browser, mobile) {
     assert.ok(
       Math.hypot(restored.resident.x - before.resident.x, restored.resident.z - before.resident.z) <
         0.08
+    );
+    assert.deepEqual(restored.neighbour, paused, 'Naledi reopened at exactly the same position');
+    await tap('resOther');
+    await state('Naledi · Paused');
+    await tap('resSettings');
+    await tap('resPause');
+    await tap('play');
+    await state('Naledi · Walking home');
+    assert.ok(
+      await p.evaluate(() =>
+        BABYLON.EngineStore.LastCreatedScene.getMeshByName('Naledi library book').isEnabled()
+      )
+    );
+    await shot('hall-return');
+    await state('Naledi · Home again');
+    const hallComplete = (await saved()).neighbour;
+    assert.equal(hallComplete.phase, 'done');
+    await tap('resOther');
+    await state('Lebo · Stopped');
+    assert.deepEqual(
+      (await saved()).resident,
+      restored.resident,
+      'Lebo stays at the reopened obstruction throughout Naledi’s visit'
     );
     await tap('resSettings');
     await tap('resPause');
@@ -100,11 +146,16 @@ async function shopping(browser, mobile) {
     await tap('resSettings');
     await tap('resEnd');
     assert.equal((await saved()).resident, undefined);
+    assert.deepEqual((await saved()).neighbour, hallComplete);
+    await state('Naledi · Home again');
+    await tap('resSettings');
+    await tap('resEnd');
+    assert.equal((await saved()).neighbour, undefined);
     assert.deepEqual((await saved()).pieces, complete.pieces);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop keyboard/mouse') +
-        ': stopped, reopened, paused, moved the obstruction one stud, shopped, walked home and disabled the resident.'
+        ': two households saved and reopened, Naledi visited the hall and returned in Play while Lebo waited, then a one-stud repair let Lebo shop and walk home.'
     );
   } finally {
     await ctx.close();

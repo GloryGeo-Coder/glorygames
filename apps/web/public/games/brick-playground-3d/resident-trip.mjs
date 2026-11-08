@@ -8,6 +8,7 @@ import {
   streetKeys,
   streetSegment
 } from './settlement.mjs';
+import { CITY_PLANS } from './city-plans.mjs';
 import { placement, KIOSK } from './blueprint.mjs';
 
 const DIRECTIONS = ['south', 'east', 'north', 'west'];
@@ -149,7 +150,8 @@ export function advanceTrip(city, t, rt, dt) {
     shop = rt.doors.get(t.shop);
   if (!home || !shop) {
     rt.issue =
-      (!home ? 'Home' : 'Shop') + ' entrance missing. Restore the doorway or choose a new trip.';
+      (!home ? 'Home' : 'Destination') +
+      ' entrance missing. Restore the doorway or choose a new trip.';
     rt.blocker = null;
     return;
   }
@@ -228,7 +230,7 @@ export function advanceTrip(city, t, rt, dt) {
     rt.blocker = null;
   } else if ((rt.stalled += dt) > 0.25) {
     rt.issue =
-      'Path blocked in ' + blockAt(t.x, t.z).code + '. Move the obstruction to let Lebo pass.';
+      'Path blocked in ' + blockAt(t.x, t.z).code + '. Move the obstruction to reopen the walkway.';
     rt.blocker = blockingBrick(t, blockIndex(city.pieces)[blockAt(t.x, t.z).id], dx, dz);
   }
 }
@@ -238,4 +240,27 @@ export function practiceSpaza(city) {
   const barrier = { type: 'single', color: 'Plum', r: 0, x: b.x - 7, z: b.z + 6, y: 0 };
   if (!group.ok || !validPiece(barrier, city.pieces, null, 'city')) return null;
   return [...group.pieces, barrier];
+}
+
+export function practiceHallTrip(city) {
+  const houseBlock = BLOCKS[CENTRE - 1],
+    hallBlock = BLOCKS[CENTRE + 8];
+  const house = placement(
+    CITY_PLANS[0],
+    { x: houseBlock.x + 1, z: houseBlock.z - 3 },
+    1,
+    false,
+    city.pieces,
+    'city'
+  );
+  const hall = placement(
+    CITY_PLANS[1],
+    { x: hallBlock.x - 2, z: hallBlock.z + 1 },
+    2,
+    false,
+    city.pieces,
+    'city'
+  );
+  if (!house.ok || !hall.ok) return null;
+  return [...house.pieces, ...hall.pieces];
 }

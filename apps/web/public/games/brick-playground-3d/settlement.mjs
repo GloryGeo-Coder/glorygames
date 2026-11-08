@@ -86,6 +86,11 @@ export function cityWorld() {
     streets: Object.values(streetKeys(b))
   };
 }
+// Keep the original resident slot readable by settlements saved before the second household.
+export const HOUSEHOLDS = [
+  { key: 'resident', name: 'Lebo', destination: 'Spaza', activity: 'Shopping' },
+  { key: 'neighbour', name: 'Naledi', destination: 'Community hall', activity: 'Visiting the hall' }
+];
 export function restoreTrip(v) {
   if (
     !v ||
@@ -125,10 +130,14 @@ export function cityLayout(v) {
   }
   if (!Array.isArray(v.streets) || v.streets.some((k) => !streetSet.has(k)))
     throw Error('Invalid street');
-  const resident = restoreTrip(v.resident);
+  const households = {};
+  for (const { key } of HOUSEHOLDS) {
+    const trip = restoreTrip(v[key]);
+    if (trip) households[key] = trip;
+  }
   return {
     blocks,
-    ...(resident ? { resident } : {}),
+    ...households,
     focus: Number.isInteger(v.focus) && BLOCKS[v.focus] ? v.focus : CENTRE,
     streets: [...new Set(v.streets)]
   };
