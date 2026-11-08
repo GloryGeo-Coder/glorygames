@@ -41,7 +41,7 @@ async function town(browser, mobile) {
       );
       await tap('place');
     }
-    async function walk(key, axis, target) {
+    async function walk(key, axis, target, stickOffset = 30) {
       const sign = ['w', 'd'].includes(key) ? 1 : -1;
       if (mobile) {
         const r = await page.locator('#stick').boundingBox();
@@ -49,8 +49,8 @@ async function town(browser, mobile) {
           type: 'touchStart',
           touchPoints: [
             {
-              x: r.x + r.width / 2 + (axis === 'x' ? sign * 30 : 0),
-              y: r.y + r.height / 2 - (axis === 'z' ? sign * 30 : 0)
+              x: r.x + r.width / 2 + (axis === 'x' ? sign * stickOffset : 0),
+              y: r.y + r.height / 2 - (axis === 'z' ? sign * stickOffset : 0)
             }
           ]
         });
@@ -200,7 +200,22 @@ async function town(browser, mobile) {
     const door = built.pieces.slice(reopened.pieces.length).find((p) => p[1] === 'door');
     assert.equal(door[6], 1);
     await walk('d', 'x', -2);
-    await walk('w', 'z', door[5] + 1.5);
+    const doorwayCentre = door[5] + 1.5;
+    await walk('w', 'z', doorwayCentre - 0.45);
+    // Line up on the pavement before turning into the doorway. Touch events may release a frame late.
+    const depth = () =>
+      page.evaluate(
+        () => BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder').position.z
+      );
+    for (let i = 0; i < 4; i++) {
+      const delta = doorwayCentre - (await depth());
+      if (Math.abs(delta) <= 0.65) break;
+      await walk(delta > 0 ? 'w' : 's', 'z', doorwayCentre - Math.sign(delta) * 0.25, 10);
+    }
+    assert.ok(
+      Math.abs(doorwayCentre - (await depth())) <= 0.65,
+      'aligned the character with the open doorway'
+    );
     await walk('a', 'x', door[3] - 0.55);
     assert.ok(
       await page.evaluate(
