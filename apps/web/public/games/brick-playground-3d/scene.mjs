@@ -249,7 +249,11 @@ export function studio(canvas) {
   function showResident(profile, trip, moving, t) {
     if (trip && !residentModels.has(profile.key))
       residentModels.set(profile.key, residentFigure(B, scene, mat('#ffffff'), profile));
-    residentModels.get(profile.key)?.(trip, moving, t);
+    residentModels.get(profile.key)?.show(trip, moving, t);
+  }
+  function removeResident(key) {
+    residentModels.get(key)?.dispose();
+    residentModels.delete(key);
   }
   function neighbourhood(next) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
@@ -811,6 +815,7 @@ export function studio(canvas) {
     pick,
     neighbourhood,
     showResident,
+    removeResident,
     citySector: settlement.sector,
     drawPieces,
     ghost,

@@ -96,11 +96,16 @@
     <dialog id="residentSetup" aria-labelledby="residentTitle">
       <form method="dialog"><h2 id="residentTitle">Resident trip</h2><button aria-label="Close resident settings">×</button></form>
       <label>Household <select id="resHousehold"></select></label>
+      <span id="resOccupied"></span>
+      <div id="resMoveFields" hidden>
+        <label>Resident name <input id="resName" maxlength="28" autocomplete="off"></label>
+        <label>Visit <select id="resVisit"><option value="spaza">Spaza</option><option value="hall">Community hall</option></select></label>
+      </div>
       <p id="resDescription"></p>
       <label>Home <select id="resHome"></select></label>
       <label><span id="resDestination">Spaza</span> <select id="resShop"></select></label>
       <label>Departure <select id="resSchedule"><option value="">One trip now</option></select></label>
-      <p>Daily visits repeat on the settlement clock. When both households are home, you can skip to the next departure.</p>
+      <p>Daily visits repeat on the settlement clock. When all households are home, you can skip to the next departure.</p>
       <button id="resApplySchedule" hidden>Apply schedule to current trip</button>
       <p id="resSetupHint" role="status"></p>
       <button id="resPractice">Add practice spaza with blocked door · E4</button>

@@ -9,7 +9,7 @@ export type GameCategoryValue = (typeof GAME_CATEGORIES)[number];
 type CatalogEntry = { title?: string; category: GameCategoryValue; description: string };
 
 export const GAME_CATALOG: Record<string, CatalogEntry> = {
-  "brick-playground-3d": { title: "Brick Playground 3D", category: "SIMULATION", description: "Build a settlement across 64 city blocks. Lay streets, place homes and shops from blueprints, and follow two neighbours along the streets you build. Lebo shops at the spaza while Naledi visits the community hall. Other worlds include buggy deliveries and a working drawbridge." },
+  "brick-playground-3d": { title: "Brick Playground 3D", category: "SIMULATION", description: "Build a settlement across 64 city blocks. Lay streets, place homes and shops from blueprints, and move up to eight households into the streets you build. Follow residents to a spaza or community hall. Other worlds include buggy deliveries and a working drawbridge." },
   "bioquest-guardians-of-life": { title: "BioQuest: Guardians of Life", category: "EDUCATIONAL", description: "Join Nala and Pip in 35 untimed Grades 4–10 biology missions across the nature reserve and Living Archive. Survey illustrated locations, sort specimens and collect field notes as you investigate plants, ecosystems, cells and body systems." },
   "brick-blaster": { category: "ARCADE", description: "Restore Neon Grid through five missions with interactive bricks, rescue drones, enemies and the Grid Warden, or chase high scores in Classic Arcade." },
   "bubble-pop-arena": { category: "CASUAL", description: "Pop and drag through a continuous score attack across six changing arenas. Chain combos, collect time, freeze and bonus bubbles, and avoid bombs." },

@@ -91,6 +91,61 @@ export const HOUSEHOLDS = [
   { key: 'resident', name: 'Lebo', destination: 'Spaza', activity: 'Shopping' },
   { key: 'neighbour', name: 'Naledi', destination: 'Community hall', activity: 'Visiting the hall' }
 ];
+// Stable slots keep earlier saves readable and bound the number of simultaneous walkers on phones.
+export const MOVE_IN_SLOTS = Array.from({ length: 6 }, (_, i) => 'family' + (i + 1));
+const directoryCache = new WeakMap();
+export function householdsFor(city) {
+  if (!city?.members?.length) return HOUSEHOLDS;
+  let roster = directoryCache.get(city.members);
+  if (!roster) {
+    roster = [
+      ...HOUSEHOLDS,
+      ...city.members.map((member) => ({
+        ...member,
+        destination: member.visit === 'hall' ? 'Community hall' : 'Spaza',
+        activity: member.visit === 'hall' ? 'Visiting the hall' : 'Shopping'
+      }))
+    ];
+    directoryCache.set(city.members, roster);
+  }
+  return roster;
+}
+export function homeClaimed(city, home, except) {
+  return householdsFor(city).some((p) => p.key !== except && city[p.key]?.home === home);
+}
+export function moveInProblem(city, name) {
+  if (!MOVE_IN_SLOTS.some((key) => !city[key]))
+    return 'All six additional households have moved in.';
+  if (typeof name !== 'string' || !name.trim() || name.trim().length > 28)
+    return 'Enter a name of 1–28 characters.';
+  if (householdsFor(city).some((p) => p.name.toLowerCase() === name.trim().toLowerCase()))
+    return 'Choose a different resident name.';
+  return '';
+}
+export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => !city[k])) {
+  if (
+    moveInProblem(city, name) ||
+    !MOVE_IN_SLOTS.includes(key) ||
+    city[key] ||
+    !['hall', 'spaza'].includes(visit) ||
+    !trip?.home ||
+    !trip.shop ||
+    trip.home === trip.shop ||
+    homeClaimed(city, trip.home, key)
+  )
+    return null;
+  city.members = [...(city.members || []), { key, name: name.trim(), visit }];
+  city[key] = trip;
+  return householdsFor(city).find((p) => p.key === key);
+}
+export function endHousehold(city, key) {
+  if (!householdsFor(city).some((p) => p.key === key)) return;
+  delete city[key];
+  if (MOVE_IN_SLOTS.includes(key)) {
+    city.members = city.members.filter((m) => m.key !== key);
+    if (!city.members.length) delete city.members;
+  }
+}
 export function restoreTrip(v) {
   if (
     !v ||
@@ -144,6 +199,12 @@ export function cityLayout(v) {
   for (const { key } of HOUSEHOLDS) {
     const trip = restoreTrip(v[key]);
     if (trip) households[key] = trip;
+  }
+  if (Array.isArray(v.members)) {
+    for (const member of v.members) {
+      if (!MOVE_IN_SLOTS.includes(member?.key)) continue;
+      moveIn(households, member.name, member.visit, restoreTrip(v[member.key]), member.key);
+    }
   }
   return {
     ...(Number.isFinite(v.clockMinutes) &&
