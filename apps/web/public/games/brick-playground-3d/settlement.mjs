@@ -104,6 +104,7 @@ export function restoreTrip(v) {
   )
     return null;
   const { home, shop, phase, x, y, z, heading, vy } = v;
+  const routine = restoreRoutine(v.routine);
   return {
     home,
     shop,
@@ -114,9 +115,18 @@ export function restoreTrip(v) {
     heading,
     vy,
     wait: Math.max(0, Math.min(1.5, v.wait)),
+    ...(routine ? { routine } : {}),
     grounded: v.grounded === true,
     paused: v.paused === true,
     returning: v.returning === true
+  };
+}
+export const DEPARTURES = [8, 14, 18];
+export function restoreRoutine(value) {
+  if (!DEPARTURES.includes(value?.hour)) return null;
+  return {
+    hour: value.hour,
+    visits: Number.isSafeInteger(value.visits) && value.visits >= 0 ? value.visits : 0
   };
 }
 export function cityLayout(v) {
@@ -136,6 +146,11 @@ export function cityLayout(v) {
     if (trip) households[key] = trip;
   }
   return {
+    ...(Number.isFinite(v.clockMinutes) &&
+    v.clockMinutes >= 0 &&
+    v.clockMinutes < Number.MAX_SAFE_INTEGER / 2
+      ? { clockMinutes: v.clockMinutes }
+      : {}),
     blocks,
     ...households,
     focus: Number.isInteger(v.focus) && BLOCKS[v.focus] ? v.focus : CENTRE,

@@ -214,6 +214,7 @@ export function advanceTrip(city, t, rt, dt) {
     else if (t.phase === 'door') t.phase = 'enter';
     else if (t.phase === 'enter') {
       t.phase = t.returning ? 'done' : 'shopping';
+      if (t.returning && t.routine) t.routine.visits++;
       t.wait = t.returning ? 0 : 1.5;
     }
     return;

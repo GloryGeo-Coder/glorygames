@@ -12,6 +12,15 @@ import {
   entrance,
   streetPath
 } from '../public/games/brick-playground-3d/resident-trip.mjs';
+import {
+  tickRoutines,
+  skipToDeparture,
+  setRoutine,
+  nextDeparture,
+  START_TIME,
+  DAY,
+  clockLabel
+} from '../public/games/brick-playground-3d/resident-routines.mjs';
 function fixture() {
   const city = world('city'),
     shop = practiceSpaza(city).map((p, i) => ({ ...p, id: 'practice-' + i }));
@@ -165,4 +174,81 @@ test('reopening the C4 street resumes only the household that needs it', () => {
   }
   assert.equal(city.neighbour.phase, 'done');
   assert.deepEqual(city.resident, finished);
+});
+
+test('daily households repeat independently while a missed visit waits for a street repair', () => {
+  const { city, barrier } = fixture();
+  const buildings = practiceHallTrip(city).map((p, i) => ({ ...p, id: 'daily-hall-' + i }));
+  const [h, d] = buildings.filter(isEntrance);
+  city.pieces = [...city.pieces, ...buildings];
+  city.neighbour = newTrip(h, d);
+  setRoutine(city.resident, 8);
+  setRoutine(city.neighbour, 14);
+  city.resident.phase = city.neighbour.phase = 'done';
+  const runtimes = [tripRuntime(), tripRuntime()];
+  const step = () => {
+    tickRoutines(city, 1 / 60);
+    advanceTrip(city, city.resident, runtimes[0], 1 / 60);
+    advanceTrip(city, city.neighbour, runtimes[1], 1 / 60);
+  };
+  const runUntil = (check) => {
+    for (let i = 0; i < 30000; i++) {
+      if (check()) return;
+      step();
+    }
+    assert.fail('Daily routine did not reach its destination');
+  };
+  assert.ok(skipToDeparture(city));
+  assert.equal(city.clockMinutes, 480);
+  assert.equal(city.neighbour.phase, 'done');
+  runUntil(() => runtimes[0].blocker === barrier.id);
+  const blocked = { ...city.resident };
+  assert.equal(skipToDeparture(city), false);
+  runUntil(() => city.neighbour.routine.visits === 2);
+  assert.deepEqual(city.resident, blocked);
+  assert.equal(city.resident.routine.visits, 0);
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(reopened.resident, city.resident);
+  assert.deepEqual(reopened.neighbour, city.neighbour);
+  assert.equal(reopened.clockMinutes, city.clockMinutes);
+  city.pieces = city.pieces.map((p) => (p.id === barrier.id ? { ...p, z: p.z + 1 } : p));
+  runUntil(() => city.resident.phase === 'done');
+  assert.equal(city.resident.routine.visits, 1);
+  const due = nextDeparture(city.clockMinutes, 8);
+  step();
+  assert.equal(city.resident.phase, 'done', 'missed departures do not queue');
+  runUntil(() => city.clockMinutes >= due);
+  assert.equal(city.resident.phase, 'leave');
+});
+test('shared departures, pause, midnight and old one-off saves', () => {
+  const { city } = fixture();
+  city.resident.phase = 'done';
+  tickRoutines(city, 1);
+  assert.equal(city.clockMinutes, undefined);
+  assert.equal(skipToDeparture(city), false);
+  setRoutine(city.resident, 8);
+  city.neighbour = structuredClone(city.resident);
+  city.neighbour.paused = true;
+  city.clockMinutes = START_TIME;
+  tickRoutines(city, 2);
+  assert.equal(city.resident.phase, 'leave');
+  assert.equal(city.neighbour.phase, 'done');
+  city.neighbour.paused = false;
+  tickRoutines(city, 1);
+  assert.equal(city.neighbour.phase, 'done', 'missed departures stay skipped');
+  setRoutine(city.resident, 14);
+  assert.equal(city.resident.phase, 'leave', 'editing a schedule leaves the active route intact');
+  city.resident.phase = 'done';
+  setRoutine(city.resident, 8);
+  assert.ok(skipToDeparture(city));
+  assert.equal(clockLabel(city.clockMinutes), 'Day 2 · 08:00');
+  assert.equal(city.resident.phase, 'leave');
+  assert.equal(city.neighbour.phase, 'leave');
+  setRoutine(city.resident, 0);
+  assert.equal(city.resident.routine, undefined);
+  assert.equal(clockLabel(DAY), 'Day 2 · 00:00');
+  city.neighbour.routine.hour = 99;
+  const saved = loadWorld('city', { getItem: () => citySave(city) });
+  assert.equal(saved.neighbour.routine, undefined);
+  assert.equal(saved.resident.phase, 'leave');
 });
