@@ -20,7 +20,7 @@ export type GameEditorial = {
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "brick-playground-3d": {
     "category": "Simulation",
-    "summary": "Build a township and save your designs as blueprints. Carry a parcel to the flat above a spaza shop, operate a drawbridge or haul market crates in your own buggy.",
+    "summary": "Build a settlement across 64 city blocks. Lay streets, place homes and shops from blueprints, and walk through the neighbourhoods you create. Other worlds include buggy deliveries and a working drawbridge.",
     "overview": [
         "Turn an open plot beside a neighbourhood park into a spaza shop, a house or a playground. All 20 pieces and eight colours are available when you arrive."
     ],
@@ -54,7 +54,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         }
     ],
     "progression": [
-        "In Free Build, Market District or Flat Above the Shop, open Plans to save a named blueprint on this device. Select a brick first to capture its connected structure, or choose a whole plot. Rotate the preview and use Ground or Stack before placing the copy. One Undo removes the entire copy.",
+        "Open Settlement Builder for a 192-by-192-stud town. In City map, name a block, choose its land use and mark streets on its edges. Build here and Walk here apply your map changes. Choose City view to see the whole settlement in 3D, then tap a block to edit it. In Plans, place a house, a three-house street, a spaza, a community hall, an office block or a pocket park, or reuse one of your own designs. Each block has a 20-by-20-stud building area.",
+        "In Free Build, Settlement Builder, Market District or Flat Above the Shop, open Plans to save a named blueprint on this device. Select a brick first to capture its connected structure, or choose a whole plot. Rotate the preview and use Ground or Stack before placing the copy. One Undo removes the entire copy.",
         "In Flat Above the Shop, collect a parcel at the downstairs counter and walk it up to Flat 1. The starter shop has a low middle flight and a gap beside the landing. Fit steps or a ramp, then bridge the balcony gap. The parcel stays with you when you edit or reload.",
         "For Market Freight, fit a clear seat and cargo bed in the Vehicle Workshop, or build the starter hauler on an empty chassis. Choose Dispatch to market, load two crates at Produce Depot, then park and brake at Market Hall and Corner Spaza to unload one at each stop. Resume freight returns you to the last serviced bay.",
         "In Market District, collect produce at the depot, weigh it at Market Hall and deliver it to Corner Spaza. Walk onto each raised deck and use its action button. Your world saves each stop, so you can return later with the crate.",

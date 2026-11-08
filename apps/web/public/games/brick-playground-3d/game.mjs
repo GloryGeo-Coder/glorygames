@@ -1,3 +1,5 @@
+import { BLOCKS, HALF, blockAt, blockIndex, blockInfo, citySave, spawnAt } from './settlement.mjs';
+import { cityMap } from './city-map.mjs';
 import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
 import { plansAllowed, placement, bounds } from './blueprint.mjs';
 import { planBook } from './plan-book.mjs';
@@ -82,7 +84,9 @@ function start() {
     stepSound = 0,
     noticeTimer,
     top = false,
-    activeStick = null;
+    activeStick = null,
+    renderedBlock = null,
+    cityOverview = false;
   const unreadable = new Set();
   const vec = { x: 0, z: 0 },
     pressed = (id, b) => $(id).setAttribute('aria-pressed', String(b));
@@ -95,20 +99,37 @@ function start() {
     volatile.set(kind, data);
     if (!canSave) return;
     try {
-      localStorage.setItem(saveKey(kind), JSON.stringify(data));
+      localStorage.setItem(saveKey(kind), kind === 'city' ? citySave(data) : JSON.stringify(data));
       $('stored').textContent = 'Saved on this device.';
     } catch {
       $('stored').textContent = 'Storage unavailable. This world is open for this session.';
       announce('Device storage unavailable');
     }
   }
-  function change(items) {
-    history.push(data.pieces);
+  function drawPieces(items, id) {
+    if (kind === 'city') {
+      const b = mode === 'build' ? BLOCKS[data.focus] : blockAt(person.x, person.z);
+      renderedBlock = b;
+      $('cityMapButton').textContent = 'Map · ' + b.code;
+      $('cityMapButton').title = blockInfo(data, b).name || b.code;
+      items = s.citySector(data, b);
+    }
+    s.drawPieces(items, id);
+  }
+  function remember() {
+    history.push(
+      kind === 'city'
+        ? { pieces: data.pieces, blocks: data.blocks, streets: data.streets }
+        : data.pieces
+    );
     if (history.length > 80) history.shift();
+  }
+  function change(items) {
+    remember();
     resetTrafficOnEdit(items);
     data.pieces = items;
     save();
-    s.drawPieces(items, selected);
+    drawPieces(items, selected);
     refresh();
   }
   function openWorld(next) {
@@ -119,6 +140,8 @@ function start() {
     driverSeat = null;
     copy = null;
     kind = next;
+    renderedBlock = null;
+    cityOverview = false;
     canSave = !unreadable.has(kind);
     try {
       data = volatile.get(kind) || loadWorld(kind, localStorage);
@@ -166,12 +189,17 @@ function start() {
       Object.assign(draft, REPAIRS.stairs);
       Object.assign(s.orbit, { zoom: 0.8, focusX: 0.5, focusZ: -1.5 });
     }
+    if (kind === 'city') {
+      const b = BLOCKS[data.focus];
+      Object.assign(person, spawnAt(b));
+      focusCity(b);
+    }
     if (kind === 'garage') s.orbit.zoom = 0.45;
     top = false;
     pressed('view', false);
     s.neighbourhood(kind);
     s.workshop(false, run, data.tyres);
-    s.drawPieces(data.pieces, null);
+    drawPieces(data.pieces, null);
     s.chase.yaw = 0;
     $('worldName').textContent = data.name;
     $('name').value = data.name;
@@ -181,6 +209,7 @@ function start() {
       btn.hidden = kind === 'garage' ? t.w > 4 || t.d > 4 : t.garageOnly;
       btn.style.order = t.garageOnly ? -1 : 0;
     }
+    $('cityMapButton').hidden = kind !== 'city';
     $('shopPanel').hidden = kind !== 'upstairs';
     $('districtPanel').hidden = kind !== 'district';
     $('canalPanel').hidden = kind !== 'canal';
@@ -194,7 +223,12 @@ function start() {
     menu.open && menu.close();
   }
   function editorAvailable() {
-    return mode === 'build' && car.state !== 'running' && (kind !== 'canal' || canEditCanal(canal));
+    return (
+      mode === 'build' &&
+      !cityOverview &&
+      car.state !== 'running' &&
+      (kind !== 'canal' || canEditCanal(canal))
+    );
   }
   function resetTrafficOnEdit(next) {
     if (kind !== 'canal') return;
@@ -235,7 +269,11 @@ function start() {
     draft.y =
       kind === 'garage'
         ? mountHeight(draft, data.pieces, moving?.id)
-        : snapHeight(draft, data.pieces, moving?.id);
+        : snapHeight(
+            draft,
+            kind === 'city' ? blockIndex(data.pieces)[blockAt(draft.x, draft.z).id] : data.pieces,
+            moving?.id
+          );
   }
   function projectCopy() {
     return placement(
@@ -252,14 +290,20 @@ function start() {
     tool = 'copy';
     selected = null;
     $('copyBase').value = 'ground';
-    s.drawPieces(data.pieces, null);
+    if (kind === 'city') fitCityCopy(BLOCKS[data.focus]);
+    drawPieces(data.pieces, null);
     refresh();
     announce('Tap the starting stud, then Place copy');
   });
   $('blueprints').onclick = () => {
     if (!editorAvailable() || !plansAllowed(kind)) return;
     clearInputs();
-    openPlans(data.pieces, chosen(), kind, Number($('lot').value));
+    const seed = chosen();
+    const source =
+      kind === 'city'
+        ? blockIndex(data.pieces)[seed ? blockAt(seed.x, seed.z).id : data.focus]
+        : data.pieces;
+    openPlans(source, seed, kind, Number($('lot').value));
   };
   $('copyBase').onchange = refresh;
   $('cancelCopy').onclick = () => $('add').click();
@@ -270,7 +314,14 @@ function start() {
     const group = projecting ? projectCopy() : null;
     const ok = showing && (group ? group.ok : canPlace(draft, tool === 'move' ? selected : null));
     s.ghost(showing && !group ? draft : null, ok);
-    s.planGhost(group?.pieces || [], ok);
+    const stamped =
+      kind === 'city' &&
+      group &&
+      !ok &&
+      copy.stamp?.x === draft.x &&
+      copy.stamp.z === draft.z &&
+      copy.stamp.turns === copy.turns;
+    s.planGhost(stamped ? [] : group?.pieces || [], ok);
     $('copyTools').hidden = !group;
     $('colors').hidden = !!group;
     $('blueprints').hidden = !editable || !plansAllowed(kind);
@@ -308,7 +359,7 @@ function start() {
       canalPanel();
     }
     $('readout').textContent = showing
-      ? (ok ? '' : 'Blocked · ') +
+      ? (ok ? '' : stamped ? 'Placed · ' : 'Blocked · ') +
         `(${draft.x}, ${draft.z}) ↑${Number((group?.base ?? draft.y).toFixed(2))}`
       : chosen()
         ? TYPES[chosen().type].label
@@ -318,7 +369,7 @@ function start() {
     selected = id ?? null;
     tool = 'select';
     if (chosen()) draft = { ...chosen() };
-    s.drawPieces(data.pieces, selected);
+    drawPieces(data.pieces, selected);
     refresh();
   }
   function place() {
@@ -326,6 +377,7 @@ function start() {
     if (tool === 'copy') {
       const group = projectCopy();
       if (!group.ok) return;
+      copy.stamp = { x: draft.x, z: draft.z, turns: copy.turns };
       change([
         ...data.pieces,
         ...group.pieces.map((p) => ({
@@ -381,10 +433,18 @@ function start() {
   }
   function aim(x, z) {
     const a = draftSize();
-    const edge = kind === 'district' ? DISTRICT.x : kind === 'garage' ? 2 : 10;
+    const edge =
+      kind === 'city' ? HALF : kind === 'district' ? DISTRICT.x : kind === 'garage' ? 2 : 10;
     const depth = kind === 'district' ? DISTRICT.z : edge;
     draft.x = Math.max(-edge, Math.min(edge - a.w, x));
     draft.z = Math.max(-depth, Math.min(depth - a.d, z));
+    if (kind === 'city') {
+      const b = blockAt(draft.x, draft.z);
+      if (b.id !== data.focus) {
+        data.focus = b.id;
+        drawPieces(data.pieces, selected);
+      }
+    }
     adjustHeight();
     refresh();
   }
@@ -402,7 +462,7 @@ function start() {
     pressed('play', !edit && !freight);
     $('bench').hidden = !editorAvailable();
     $('walk').hidden = edit;
-    for (const id of ['view', 'closer', 'farther', 'center']) $(id).hidden = !edit;
+    for (const id of ['view', 'closer', 'farther', 'center']) $(id).hidden = !edit || cityOverview;
     $('home').hidden = edit;
     $('home').textContent = freight ? 'Last bay' : kind === 'garage' ? 'Restart' : 'Return';
     $('routeMap').hidden = mode !== 'drive' || kind !== 'garage';
@@ -417,7 +477,66 @@ function start() {
     $('play').disabled = car.state === 'running';
     refresh();
   }
+  function fitCityCopy(b) {
+    if (tool !== 'copy') return;
+    const { w, d } = draftSize();
+    draft.x = Math.max(b.x - 10, Math.min(b.x + 10 - w, draft.x));
+    draft.z = Math.max(b.z - 10, Math.min(b.z + 10 - d, draft.z));
+  }
+  function focusCity(b) {
+    if (cityOverview) {
+      Object.assign(s.orbit, { pitch: 0.91, yaw: -0.63 });
+      top = false;
+      pressed('view', false);
+    }
+    cityOverview = false;
+    data.focus = b.id;
+    Object.assign(s.orbit, { focusX: b.x, focusZ: b.z, zoom: 0.88 });
+    Object.assign(draft, { x: b.x - 2, z: b.z - 2 });
+    fitCityCopy(b);
+  }
+  const openCityMap = cityMap((layout, b, action, changed) => {
+    const walk = action === 'walk';
+    if (changed) {
+      remember();
+      Object.assign(data, { blocks: layout.blocks, streets: layout.streets });
+    }
+    if (!walk && mode !== 'build') switchMode('build');
+    if (tool !== 'copy') {
+      selected = null;
+      tool = 'add';
+    }
+    focusCity(b);
+    adjustHeight();
+    if (walk || blockAt(person.x, person.z) !== b) Object.assign(person, avatar(kind), spawnAt(b));
+    if (walk) switchMode('play');
+    if (action === 'overview') {
+      cityOverview = true;
+      Object.assign(s.orbit, { focusX: 0, focusZ: 0, yaw: 0, pitch: 1.25, zoom: 11 });
+      top = false;
+      pressed('view', false);
+      announce('Tap a block to open its editor');
+    }
+    clearInputs();
+    drawPieces(data.pieces, selected);
+    syncMode();
+    save();
+  });
+  $('cityMapButton').onclick = () => {
+    clearInputs();
+    openCityMap(
+      data,
+      mode === 'build' ? BLOCKS[data.focus] : blockAt(person.x, person.z),
+      mode === 'build'
+    );
+  };
   function rescue() {
+    if (kind === 'city') {
+      person = { ...avatar(kind), ...spawnAt(blockAt(person.x, person.z)) };
+      s.chase.yaw = 0;
+      clearInputs();
+      return;
+    }
     if (kind === 'upstairs') {
       person = avatar(kind);
       s.chase.yaw = 0;
@@ -477,7 +596,16 @@ function start() {
       tool = 'add';
       adjustHeight();
     }
+    cityOverview = false;
     mode = to;
+    if (kind === 'city' && to === 'build') {
+      focusCity(blockAt(person.x, person.z));
+      adjustHeight();
+      drawPieces(data.pieces, selected);
+    }
+    if (kind === 'city' && to === 'play' && blockAt(person.x, person.z).id !== data.focus) {
+      Object.assign(person, avatar(kind), spawnAt(BLOCKS[data.focus]));
+    }
     if (kind === 'district') $('play').textContent = freight ? 'Walk' : 'Play';
     if (to === 'build' && onDelivery()) {
       focusLot(data.stage - 1);
@@ -738,7 +866,7 @@ function start() {
   $('add').onclick = () => {
     selected = null;
     tool = 'add';
-    s.drawPieces(data.pieces, null);
+    drawPieces(data.pieces, null);
     adjustHeight();
     refresh();
   };
@@ -747,12 +875,15 @@ function start() {
   $('undo').onclick = () => {
     if (!history.length || !editorAvailable()) return;
     const previous = history.pop();
-    resetTrafficOnEdit(previous);
-    data.pieces = previous;
+    if (kind === 'city') Object.assign(data, previous);
+    else {
+      resetTrafficOnEdit(previous);
+      data.pieces = previous;
+    }
     selected = null;
     tool = 'add';
     save();
-    s.drawPieces(data.pieces, null);
+    drawPieces(data.pieces, null);
     adjustHeight();
     refresh();
   };
@@ -766,7 +897,7 @@ function start() {
     draft = { ...chosen() };
     selected = null;
     tool = 'add';
-    s.drawPieces(data.pieces, null);
+    drawPieces(data.pieces, null);
     aim(draft.x + 1, draft.z);
   };
   $('paint').onclick = () => {
@@ -781,7 +912,7 @@ function start() {
   function zoom(scale) {
     s.orbit.zoom = Math.max(
       0.32,
-      Math.min(kind === 'district' ? 2.25 : 1.65, s.orbit.zoom * scale)
+      Math.min(cityOverview ? 14 : kind === 'district' ? 2.25 : 1.65, s.orbit.zoom * scale)
     );
   }
   $('closer').onclick = () => zoom(0.82);
@@ -842,7 +973,7 @@ function start() {
     tool = 'add';
     Object.assign(draft, REPAIRS[which]);
     adjustHeight();
-    s.drawPieces(data.pieces, null);
+    drawPieces(data.pieces, null);
     s.orbit.focusX = draft.x + size(draft).w / 2;
     s.orbit.focusZ = draft.z + size(draft).d / 2;
     refresh();
@@ -1049,6 +1180,10 @@ function start() {
     save();
     syncMode();
   };
+  $('cityWorld').onclick = () => {
+    openWorld('city');
+    announce('City map opens all 64 blocks. Plans has buildings ready to place.');
+  };
   $('shopWorld').onclick = () => openWorld('upstairs');
   $('districtWorld').onclick = () => openWorld('district');
   $('freeWorld').onclick = () => openWorld('free');
@@ -1111,7 +1246,7 @@ function start() {
       tool = 'add';
       draft.type = id;
       draft.r = 0;
-      s.drawPieces(data.pieces, null);
+      drawPieces(data.pieces, null);
       aim(draft.x, draft.z);
     };
     $('tray').append(b);
@@ -1163,8 +1298,8 @@ function start() {
           pz = (n.y - previousPinch.y) * scale;
         const c = Math.cos(s.orbit.yaw),
           t = Math.sin(s.orbit.yaw);
-        const edgeX = kind === 'district' ? DISTRICT.x : 10;
-        const edgeZ = kind === 'district' ? DISTRICT.z : 10;
+        const edgeX = kind === 'city' ? HALF : kind === 'district' ? DISTRICT.x : 10;
+        const edgeZ = kind === 'city' ? HALF : kind === 'district' ? DISTRICT.z : 10;
         s.orbit.focusX = Math.max(-edgeX, Math.min(edgeX, s.orbit.focusX - px * c + pz * t));
         s.orbit.focusZ = Math.max(-edgeZ, Math.min(edgeZ, s.orbit.focusZ - px * t + pz * c));
       }
@@ -1182,7 +1317,19 @@ function start() {
   canvas.onpointerup = (e) => {
     const pt = touches.get(e.pointerId);
     touches.delete(e.pointerId);
-    if (!pt || gesture || e.button !== 0 || !editorAvailable()) return;
+    if (!pt || gesture || e.button !== 0) return;
+    if (cityOverview) {
+      const hit = s.pick(e.clientX, e.clientY);
+      if (hit) {
+        focusCity(blockAt(hit.x, hit.z));
+        adjustHeight();
+        drawPieces(data.pieces, selected);
+        syncMode();
+        save();
+      }
+      return;
+    }
+    if (!editorAvailable()) return;
     const hit = s.pick(e.clientX, e.clientY);
     if (!hit) return;
     if (tool === 'select') {
@@ -1244,7 +1391,13 @@ function start() {
     if (!e.detail) jump = true;
   };
   window.addEventListener('keydown', (e) => {
-    if (menu.open || $('planBook').open || ['INPUT', 'SELECT'].includes(e.target.tagName)) return;
+    if (
+      menu.open ||
+      $('cityMap').open ||
+      $('planBook').open ||
+      ['INPUT', 'SELECT'].includes(e.target.tagName)
+    )
+      return;
     const k = e.key.toLowerCase();
     if (k === 'tab') return;
     if (k === 'b' && !e.ctrlKey && !e.metaKey) {
@@ -1290,7 +1443,7 @@ function start() {
   let first = 'free';
   try {
     const last = localStorage.getItem('wga.brick.active');
-    if (['bridge', 'garage', 'canal', 'district', 'upstairs'].includes(last)) first = last;
+    if (['bridge', 'garage', 'canal', 'district', 'upstairs', 'city'].includes(last)) first = last;
   } catch {}
   openWorld(first);
   if (first !== 'canal')
@@ -1305,7 +1458,7 @@ function start() {
     const dt = Math.min(0.1, s.engine.getDeltaTime() / 1000);
     elapsed += dt;
     let walking = false;
-    if (!menu.open) {
+    if (!menu.open && !$('cityMap').open) {
       const count = Math.max(1, Math.ceil(dt / 0.0167)),
         delta = dt / count;
       for (let i = 0; i < count; i++) {
@@ -1400,6 +1553,8 @@ function start() {
     }
     if (kind === 'district' && mode === 'play') districtDirection();
     if (kind === 'upstairs' && mode === 'play') updateHandover();
+    if (kind === 'city' && mode === 'play' && renderedBlock !== blockAt(person.x, person.z))
+      drawPieces(data.pieces, null);
     s.actors(
       mode,
       person,

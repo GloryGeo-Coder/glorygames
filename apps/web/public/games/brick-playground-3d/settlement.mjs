@@ -1,0 +1,141 @@
+import { CITY_PLANS } from './city-plans.mjs';
+// Each block has a 20-stud building area and a shared four-stud street corridor.
+export const SIDE = 8,
+  PITCH = 24,
+  HALF = (SIDE * PITCH) / 2,
+  LOT = 20;
+export const ZONES = {
+  mixed: { name: 'Mixed use', color: '#e4c995' },
+  homes: { name: 'Residential', color: '#e7bfa3' },
+  shops: { name: 'Commercial', color: '#e7cf88' },
+  civic: { name: 'Civic', color: '#afd0cb' },
+  park: { name: 'Park', color: '#a5c68c' }
+};
+export const BLOCKS = Array.from({ length: SIDE * SIDE }, (_, id) => {
+  const col = id % SIDE,
+    row = Math.floor(id / SIDE);
+  return {
+    id,
+    col,
+    row,
+    code: String.fromCharCode(65 + col) + (row + 1),
+    x: -HALF + (col + 0.5) * PITCH,
+    z: HALF - (row + 0.5) * PITCH
+  };
+});
+export const CENTRE = 27;
+export function blockAt(x, z) {
+  const clamp = (n) => Math.max(0, Math.min(SIDE - 1, Math.floor(n)));
+  return BLOCKS[clamp((HALF - z) / PITCH) * SIDE + clamp((x + HALF) / PITCH)];
+}
+export function fitsBlock(x, z, w, d) {
+  const b = blockAt(x, z);
+  return (
+    x >= b.x - LOT / 2 && z >= b.z - LOT / 2 && x + w <= b.x + LOT / 2 && z + d <= b.z + LOT / 2
+  );
+}
+export function blockInfo(city, b) {
+  return city.blocks[b.id] || { name: '', zone: 'mixed' };
+}
+export function streetKeys(b) {
+  return {
+    north: 'h-' + b.col + '-' + b.row,
+    south: 'h-' + b.col + '-' + (b.row + 1),
+    west: 'v-' + b.col + '-' + b.row,
+    east: 'v-' + (b.col + 1) + '-' + b.row
+  };
+}
+export function streetSegment(key) {
+  const [axis, cs, rs] = key.split('-'),
+    c = Number(cs),
+    r = Number(rs);
+  const x = -HALF + c * PITCH,
+    z = HALF - r * PITCH;
+  return axis === 'h'
+    ? { x: x + PITCH / 2, z, w: PITCH, d: 4, axis }
+    : { x, z: z - PITCH / 2, w: 4, d: PITCH, axis };
+}
+const streetSet = new Set(BLOCKS.flatMap((b) => Object.values(streetKeys(b))));
+export function cityWorld() {
+  const b = BLOCKS[CENTRE],
+    pieces = CITY_PLANS[0].pieces.map((p, i) => ({
+      ...p,
+      id: 'town-house-' + i,
+      x: p.x + b.x + 3,
+      z: p.z + b.z + 1
+    }));
+  const garden = BLOCKS[CENTRE + 1];
+  pieces.push(
+    ...CITY_PLANS[3].pieces.map((p, i) => ({
+      ...p,
+      id: 'town-park-' + i,
+      x: p.x + garden.x - 6,
+      z: p.z + garden.z - 3
+    }))
+  );
+  return {
+    version: 1,
+    name: 'My settlement',
+    pieces,
+    complete: false,
+    focus: CENTRE,
+    blocks: {
+      [CENTRE]: { name: 'Town Centre', zone: 'mixed' },
+      [garden.id]: { name: 'Pocket Gardens', zone: 'park' }
+    },
+    streets: Object.values(streetKeys(b))
+  };
+}
+export function cityLayout(v) {
+  const blocks = {};
+  for (const b of BLOCKS) {
+    const info = v.blocks?.[b.id];
+    if (!info) continue;
+    if (typeof info.name !== 'string' || !Object.hasOwn(ZONES, info.zone))
+      throw Error('Invalid city block');
+    blocks[b.id] = { name: info.name.slice(0, 32), zone: info.zone };
+  }
+  if (!Array.isArray(v.streets) || v.streets.some((k) => !streetSet.has(k)))
+    throw Error('Invalid street');
+  return {
+    blocks,
+    focus: Number.isInteger(v.focus) && BLOCKS[v.focus] ? v.focus : CENTRE,
+    streets: [...new Set(v.streets)]
+  };
+}
+export function layoutEdit(city, b, name, zone, edges) {
+  const info = { name: name.trim().slice(0, 32), zone };
+  const blocks = { ...city.blocks, [b.id]: info };
+  const streets = new Set(city.streets);
+  for (const [dir, key] of Object.entries(streetKeys(b))) {
+    if (edges.includes(dir)) streets.add(key);
+    else streets.delete(key);
+  }
+  return { blocks, streets: [...streets], focus: b.id };
+}
+export function spawnAt(b) {
+  return { x: b.x + 0.5, y: 0, z: b.z - LOT / 2 - 1 };
+}
+const indexCache = new WeakMap();
+export function blockIndex(items) {
+  let index = indexCache.get(items);
+  if (!index) {
+    index = Array.from({ length: BLOCKS.length }, () => []);
+    for (const p of items) index[blockAt(p.x, p.z).id].push(p);
+    indexCache.set(items, index);
+  }
+  return index;
+}
+export const neighbouring = (a, b) => Math.abs(a.col - b.col) <= 1 && Math.abs(a.row - b.row) <= 1;
+// A single storage write commits layout and bricks together; tuples avoid repeating field names across the city.
+export function citySave(city) {
+  return JSON.stringify({
+    ...city,
+    pieces: city.pieces.map((p) => [p.id, p.type, p.color, p.x, p.y, p.z, p.r])
+  });
+}
+export function unpackBrick(row) {
+  if (!Array.isArray(row) || row.length !== 7) throw Error('Invalid city brick');
+  const [id, type, color, x, y, z, r] = row;
+  return { id, type, color, x, y, z, r };
+}

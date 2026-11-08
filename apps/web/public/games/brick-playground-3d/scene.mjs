@@ -1,3 +1,4 @@
+import { cityScene } from './city-scene.mjs';
 import { COUNTER, FLAT } from './upstairs.mjs';
 import { BAY_Z, BAY_WIDTH, BAY_DEPTH, cargoCount, openBed } from './freight.mjs';
 import { LOTS, STATIONS } from './district.mjs';
@@ -158,6 +159,7 @@ export function studio(canvas) {
     const ids = new Set(items.map((p) => p.id));
     for (const [id, m] of pieces)
       if (!ids.has(id)) {
+        shadows.removeShadowCaster(m);
         m.dispose();
         pieces.delete(id);
       }
@@ -165,7 +167,10 @@ export function studio(canvas) {
       const key = p.type + ':' + p.color;
       let m = pieces.get(p.id);
       if (m?.metadata.key !== key) {
-        m?.dispose();
+        if (m) {
+          shadows.removeShadowCaster(m);
+          m.dispose();
+        }
         m = template(p.type, PALETTE[p.color]).createInstance(p.id);
         m.metadata = { id: p.id, key };
         m.isPickable = true;
@@ -237,9 +242,11 @@ export function studio(canvas) {
     plane.isPickable = false;
     return plane;
   }
+  const settlement = cityScene(B, scene, box, mat);
   function neighbourhood(next) {
     for (const m of worldNodes) m.dispose(false, !!m.metadata?.sign);
     worldNodes = [];
+    if (kind === 'city') settlement.close();
     kind = next;
     shopSigns = [];
     if (kind === 'upstairs') {
@@ -253,8 +260,13 @@ export function studio(canvas) {
         shopSigns.push({ id, height, mesh });
       }
     }
-    camera.maxZ = kind === 'district' ? 320 : 150;
+    camera.maxZ = kind === 'city' ? 1500 : kind === 'district' ? 420 : 150;
+    scene.fogDensity = kind === 'city' ? 0.0007 : 0.004;
     canalMechanism(0, -8);
+    if (kind === 'city') {
+      settlement.open();
+      return;
+    }
     const scenery = [];
     const block = (...args) => {
       const m = box('Neighbourhood', ...args);
@@ -807,6 +819,7 @@ export function studio(canvas) {
     view,
     pick,
     neighbourhood,
+    citySector: settlement.sector,
     drawPieces,
     ghost,
     planGhost,

@@ -11,12 +11,21 @@ on:
       - 'apps/web/scripts/brick-freight*'
       - 'apps/web/scripts/brick-blueprint*'
       - 'apps/web/scripts/brick-upstairs*'
+      - 'apps/web/scripts/brick-settlement*'
       - '.github/workflows/brick-playground.yml'
 permissions:
   contents: read
 jobs:
   workshop:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: construction
+            suites: playground vehicle canal blueprint
+          - group: neighbourhoods
+            suites: district freight upstairs settlement
     timeout-minutes: 25
     env:
       DATABASE_URL: postgresql://test:test@127.0.0.1:5432/brick_ci
@@ -25,7 +34,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
-      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs apps/web/scripts/brick-canal.test.mjs apps/web/scripts/brick-district.test.mjs apps/web/scripts/brick-freight.test.mjs apps/web/scripts/brick-blueprint.test.mjs apps/web/scripts/brick-upstairs.test.mjs
+      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs apps/web/scripts/brick-canal.test.mjs apps/web/scripts/brick-district.test.mjs apps/web/scripts/brick-freight.test.mjs apps/web/scripts/brick-blueprint.test.mjs apps/web/scripts/brick-upstairs.test.mjs apps/web/scripts/brick-settlement.test.mjs
       - run: npm ci --prefix apps/web --ignore-scripts --no-audit --no-fund
       - run: npm run build --prefix apps/web
       - name: Prepare Chromium
@@ -33,25 +42,22 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/brick-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
           echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/brick-browser/node_modules/playwright" >> "$GITHUB_ENV"
           "$RUNNER_TEMP/brick-browser/node_modules/.bin/playwright" install --with-deps chromium
-      - name: Test production game page, editor, bridge and driving course
+      - name: Test production games on phone and desktop
         working-directory: apps/web
         env:
+          BROWSER_SUITES: ${{ matrix.suites }}
           BRICK_SCREENSHOTS: ${{ runner.temp }}/brick-screenshots
         run: |
           npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/brick-next.log 2>&1 &
           server=$!
           trap 'kill "$server" 2>/dev/null || true' EXIT
           curl --retry 20 --retry-delay 1 --retry-all-errors -fsS http://127.0.0.1:3000/play/brick-playground-3d -o /dev/null
-          node scripts/brick-playground-browser.cjs
-          node scripts/brick-vehicle-browser.cjs
-          node scripts/brick-canal-browser.cjs
-          node scripts/brick-district-browser.cjs
-          node scripts/brick-freight-browser.cjs
-          node scripts/brick-blueprint-browser.cjs
-          node scripts/brick-upstairs-browser.cjs
+          for suite in $BROWSER_SUITES; do
+            node "scripts/brick-$suite-browser.cjs"
+          done
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: brick-workshop-on-phone-and-desktop
+          name: brick-${{ matrix.group }}-on-phone-and-desktop
           path: ${{ runner.temp }}/brick-screenshots
           if-no-files-found: warn

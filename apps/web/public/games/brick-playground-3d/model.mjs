@@ -1,3 +1,15 @@
+import {
+  HALF,
+  BLOCKS,
+  CENTRE,
+  blockAt,
+  blockIndex,
+  fitsBlock,
+  cityWorld,
+  cityLayout,
+  spawnAt,
+  unpackBrick
+} from './settlement.mjs';
 import { shopWorld, clearForecourt, FORECOURT } from './upstairs.mjs';
 import { DISTRICT, buildable, stationHeight, checkpoint } from './district.mjs';
 // A stud is one world unit. Plates are one third of a brick high.
@@ -156,6 +168,7 @@ export function intervals(p, x, z) {
 export const hasChannel = (kind) => kind === 'bridge' || kind === 'canal';
 export const isChannel = (kind, x, z) => hasChannel(kind) && x >= -3 && x < 3 && Math.abs(z) <= 10;
 export function floorAt(kind, x, z) {
+  if (kind === 'city') return Math.abs(x) <= HALF && Math.abs(z) <= HALF ? 0 : -Infinity;
   if (kind === 'district')
     return Math.abs(x) <= DISTRICT.x && Math.abs(z) <= DISTRICT.z ? 0 : -Infinity;
   return Math.abs(x) <= PLOT && Math.abs(z) <= PLOT && !isChannel(kind, x, z) ? 0 : -Infinity;
@@ -176,7 +189,10 @@ export function validPiece(p, items, ignore = null, kind = 'free') {
     return false;
   const a = size(p);
   if (kind === 'upstairs' && !clearForecourt(p, a)) return false;
-  if (kind === 'district') {
+  if (kind === 'city') {
+    if (!fitsBlock(p.x, p.z, a.w, a.d)) return false;
+    if (items.length) items = blockIndex(items)[blockAt(p.x, p.z).id];
+  } else if (kind === 'district') {
     if (!buildable(p.x, p.z, a.w, a.d)) return false;
   } else if (p.x < -PLOT || p.z < -PLOT || p.x + a.w > PLOT || p.z + a.d > PLOT) return false;
   return !items.some((b) => {
@@ -203,6 +219,7 @@ export function snapHeight(p, items, ignore = null) {
   }, 0);
 }
 export function world(kind) {
+  if (kind === 'city') return cityWorld();
   if (kind === 'upstairs') return shopWorld();
   if (kind === 'district')
     return {
@@ -255,6 +272,7 @@ export function loadWorld(kind, storage) {
   const v = JSON.parse(raw);
   if (v?.version !== 1 || !Array.isArray(v.pieces) || typeof v.name !== 'string')
     throw Error('Unrecognised world');
+  if (kind === 'city') v.pieces = v.pieces.map(unpackBrick);
   const ids = new Set();
   for (const p of v.pieces) {
     if (!p || typeof p.id !== 'string' || ids.has(p.id) || !validPiece(p, [], null, kind))
@@ -267,6 +285,7 @@ export function loadWorld(kind, storage) {
     ...fresh,
     name: v.name.slice(0, 40),
     pieces: v.pieces,
+    ...(kind === 'city' ? cityLayout(v) : {}),
     ...(kind === 'upstairs'
       ? { stage: Number.isInteger(v.stage) && v.stage >= 0 && v.stage <= 3 ? v.stage : 0 }
       : {}),
@@ -297,7 +316,13 @@ export const avatar = (kind = 'free') => ({
   vy: 0,
   grounded: true,
   heading: 0,
-  ...(kind === 'district' ? checkpoint(0) : kind === 'upstairs' ? FORECOURT : {})
+  ...(kind === 'district'
+    ? checkpoint(0)
+    : kind === 'upstairs'
+      ? FORECOURT
+      : kind === 'city'
+        ? spawnAt(BLOCKS[CENTRE])
+        : {})
 });
 const HEIGHT = 1.65,
   RADIUS = 0.27,
@@ -326,6 +351,7 @@ function bodySurfaces(kind, items, x, z) {
   return solids;
 }
 export function advanceAvatar(a, kind, items, dx, dz, jump, dt) {
+  if (kind === 'city') items = blockIndex(items)[blockAt(a.x, a.z).id];
   if (jump && a.grounded) {
     a.vy = 6.3;
     a.grounded = false;
@@ -336,8 +362,8 @@ export function advanceAvatar(a, kind, items, dx, dz, jump, dt) {
     [0, (dz / len) * dt * 3.8]
   ]) {
     if (!mx && !mz) continue;
-    const edgeX = kind === 'district' ? DISTRICT.x : PLOT;
-    const edgeZ = kind === 'district' ? DISTRICT.z : PLOT;
+    const edgeX = kind === 'district' ? DISTRICT.x : kind === 'city' ? HALF : PLOT;
+    const edgeZ = kind === 'district' ? DISTRICT.z : kind === 'city' ? HALF : PLOT;
     if (Math.abs(a.x + mx) > edgeX - RADIUS || Math.abs(a.z + mz) > edgeZ - RADIUS) continue;
     const solids = bodySurfaces(kind, items, a.x + mx, a.z + mz);
     let y = a.y;
