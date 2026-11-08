@@ -36,7 +36,8 @@ export function fitsBlock(x, z, w, d) {
   );
 }
 export function blockInfo(city, b) {
-  return city.blocks[b.id] || { name: '', zone: 'mixed' };
+  const info = city.blocks[b.id];
+  return info?.zone ? info : { name: '', zone: 'mixed', ...info };
 }
 export function streetKeys(b) {
   return {
@@ -252,9 +253,19 @@ export function cityLayout(v) {
   for (const b of BLOCKS) {
     const info = v.blocks?.[b.id];
     if (!info) continue;
+    const neighbourhood =
+      typeof info.neighbourhood === 'string' && info.neighbourhood.trim().length <= 32
+        ? info.neighbourhood.trim()
+        : '';
+    // A boundary can exist before the player gives the block a name or land use.
+    if (neighbourhood && info.name === undefined && info.zone === undefined) {
+      blocks[b.id] = { neighbourhood };
+      continue;
+    }
     if (typeof info.name !== 'string' || !Object.hasOwn(ZONES, info.zone))
       throw Error('Invalid city block');
     blocks[b.id] = { name: info.name.slice(0, 32), zone: info.zone };
+    if (neighbourhood) blocks[b.id].neighbourhood = neighbourhood;
   }
   if (!Array.isArray(v.streets) || v.streets.some((k) => !streetSet.has(k)))
     throw Error('Invalid street');
@@ -288,7 +299,7 @@ export function cityLayout(v) {
   };
 }
 export function layoutEdit(city, b, name, zone, edges) {
-  const info = { name: name.trim().slice(0, 32), zone };
+  const info = { ...blockInfo(city, b), name: name.trim().slice(0, 32), zone };
   const blocks = { ...city.blocks, [b.id]: info };
   const streets = new Set(city.streets);
   for (const [dir, key] of Object.entries(streetKeys(b))) {

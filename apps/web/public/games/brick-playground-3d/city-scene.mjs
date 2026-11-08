@@ -10,11 +10,12 @@ import {
   streetSegment
 } from './settlement.mjs';
 import { PALETTE, size } from './model.mjs';
-export function cityScene(B, scene, box, mat) {
+export function cityScene(B, scene, box, mat, label) {
   const lots = [],
     land = [],
     roads = [],
-    distant = new Map();
+    distant = new Map(),
+    signs = new Map();
   let grid,
     lastStreets,
     lastBlocks,
@@ -81,6 +82,11 @@ export function cityScene(B, scene, box, mat) {
     grid = null;
     for (const mesh of distant.values()) mesh.dispose();
     distant.clear();
+    for (const sign of signs.values()) {
+      sign.face.dispose(false, true);
+      sign.post.dispose();
+    }
+    signs.clear();
     lastStreets = lastBlocks = lastItems = lastBlock = null;
     detail = [];
   }
@@ -121,11 +127,42 @@ export function cityScene(B, scene, box, mat) {
         roads.push(mesh);
       }
   }
+  function streetSigns(city, focus) {
+    // Show one entrance sign per neighbourhood, within the usual detailed city sector.
+    const seen = new Set(),
+      visible = new Set();
+    for (const b of BLOCKS) {
+      const name = blockInfo(city, b).neighbourhood;
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      if (!neighbouring(focus, b)) continue;
+      visible.add(name);
+      let sign = signs.get(name);
+      if (!sign) {
+        const face = label(name, 0, 1.85, 0, 4.4, true);
+        face.billboardMode = B.Mesh.BILLBOARDMODE_Y;
+        const post = box('Neighbourhood signpost', 0, 0.9, 0, 0.12, 1.8, 0.12, '#38554a');
+        sign = { face, post };
+        signs.set(name, sign);
+      }
+      const x = b.x - 8,
+        z = b.z - LOT / 2 - 0.55;
+      sign.face.position.set(x, 1.85, z);
+      sign.post.position.set(x, 0.9, z);
+    }
+    for (const [name, sign] of signs) {
+      if (visible.has(name)) continue;
+      sign.face.dispose(false, true);
+      sign.post.dispose();
+      signs.delete(name);
+    }
+  }
   function sector(city, b) {
     if (lastStreets !== city.streets) {
       layStreets(city.streets);
       lastStreets = city.streets;
     }
+    if (lastBlock !== b || lastBlocks !== city.blocks) streetSigns(city, b);
     if (lastBlocks !== city.blocks) {
       for (const lot of BLOCKS) lots[lot.id].material = mat(ZONES[blockInfo(city, lot).zone].color);
       lastBlocks = city.blocks;

@@ -46,7 +46,7 @@
       <div class="resident-switch"><button id="resSettings" aria-haspopup="dialog">Residents</button><button id="resOther" hidden></button></div>
       <button id="trailHud" hidden></button>
       <button id="marketTill" hidden></button>
-      <span id="resClock"></span>
+      <span id="areaLocation" hidden></span><span id="resClock"></span>
       <b id="resState" role="status"></b><span id="resHint"></span>
       <span id="resRoutineNote"></span><button id="resSkip" hidden>Skip to next departure</button>
       <div id="resTools"><button id="resFollow">Follow Lebo</button><button id="resEdit">Edit here</button></div>
@@ -164,6 +164,15 @@
         <p id="trailHint" role="status"></p><ol id="trailPassport"></ol>
         <p id="trailLegs"></p><button id="trailZoom" type="button" hidden>Trail close-up</button>
         <div class="trail-actions"><button id="trailWalk" type="button">Walk trail</button><button id="trailRestart" type="button">Restart passport</button><button id="trailRemove" type="button">Remove trail</button></div>
+      </details>
+      <details id="areaBoard"><summary>Neighbourhoods</summary>
+        <label>Neighbourhood <select id="areaList"></select></label>
+        <p id="areaStats"></p>
+        <div id="areaEdit">
+          <label>Name <input id="areaName" maxlength="32" placeholder="e.g. Market Quarter"></label>
+          <div class="area-actions"><button type="button" id="areaMembership"></button><button id="areaRename" type="button">Rename</button><button id="areaDissolve" type="button">Dissolve</button></div>
+        </div>
+        <p id="areaHint" role="status"></p>
       </details>
       <div id="mapFields"><label>Block name <input id="blockName" maxlength="32" placeholder="Name this block"></label>
         <label>Land use <select id="mapZone"></select></label>

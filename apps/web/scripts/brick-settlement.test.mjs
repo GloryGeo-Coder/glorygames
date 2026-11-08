@@ -1,3 +1,8 @@
+import {
+  boundaryChange,
+  neighbourhoodStats,
+  neighbourhoodNames
+} from '../public/games/brick-playground-3d/neighbourhoods.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -374,4 +379,67 @@ test('missing or moved stops cannot be stamped at stale coordinates; editing pre
   const loaded = loadWorld('city', { getItem: () => citySave(bad) });
   assert.equal(loaded.trail, undefined);
   assert.deepEqual(loaded.pieces, bad.pieces);
+});
+
+test('neighbourhoods grow edge to edge, keep other claims and cannot split at a joining block', () => {
+  const city = world('city'),
+    initial = city.blocks;
+  const edit = (action, name, id, input) => {
+    const result = boundaryChange(city, action, name, BLOCKS[id], input);
+    if (result.blocks) city.blocks = result.blocks;
+    return result.issue || '';
+  };
+  assert.equal(edit('create', '', 27, ' Market Quarter '), '');
+  assert.equal(edit('add', 'Market Quarter', 28), '');
+  assert.equal(edit('add', 'Market Quarter', 29), '');
+  assert.match(edit('add', 'Market Quarter', 38), /shares an edge/);
+  assert.match(edit('remove', 'Market Quarter', 28), /split/);
+  assert.equal(edit('create', '', 35, 'Station Side'), '');
+  assert.match(edit('add', 'Market Quarter', 35), /Station Side/);
+  assert.match(edit('rename', 'Market Quarter', 27, 'station side'), /already in use/);
+  assert.equal(edit('rename', 'Market Quarter', 27, 'Market Gardens'), '');
+  assert.equal(edit('remove', 'Market Gardens', 29), '');
+  assert.equal(edit('dissolve', 'Station Side', 35), '');
+  assert.deepEqual(neighbourhoodNames(city), ['Market Gardens']);
+  assert.equal(city.blocks[27].name, initial[27].name);
+  assert.equal(initial[27].neighbourhood, undefined);
+  const edge = world('city');
+  edge.blocks = boundaryChange(edge, 'create', '', BLOCKS[7], 'Border').blocks;
+  assert.ok(boundaryChange(edge, 'add', 'Border', BLOCKS[8]).issue);
+});
+test('neighbourhood counts follow actual buildings and home doors and survive map edits and reloading', () => {
+  const city = world('city');
+  const home = city.pieces.find((p) => p.type === 'door');
+  city.blocks = boundaryChange(city, 'create', '', BLOCKS[27], 'Market Quarter').blocks;
+  city.blocks = boundaryChange(city, 'add', 'Market Quarter', BLOCKS[28]).blocks;
+  city.resident = { home: home.id };
+  assert.deepEqual(neighbourhoodStats(city, 'Market Quarter'), {
+    blocks: 2,
+    built: 2,
+    households: 1
+  });
+  city.pieces = city.pieces.filter((p) => p.id !== home.id);
+  assert.equal(neighbourhoodStats(city, 'Market Quarter').households, 0);
+  Object.assign(city, layoutEdit(city, BLOCKS[27], 'Square', 'shops', ['south']));
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(reopened.blocks[27], {
+    name: 'Square',
+    zone: 'shops',
+    neighbourhood: 'Market Quarter'
+  });
+  assert.equal(neighbourhoodStats(reopened, 'Market Quarter').built, 2);
+  assert.deepEqual(neighbourhoodNames(world('city')), []);
+  const vacant = BLOCKS[3];
+  city.blocks = boundaryChange(city, 'create', '', vacant, 'North End').blocks;
+  const saved = loadWorld('city', { getItem: () => citySave(city) });
+  const row = stageBlockRow(saved, {
+    source: BLOCKS[27],
+    first: vacant,
+    count: 1,
+    direction: 'east',
+    turns: 0
+  });
+  assert.deepEqual(row.blocks[vacant.id], { neighbourhood: 'North End', name: '', zone: 'shops' });
+  const dissolved = boundaryChange(saved, 'dissolve', 'North End', vacant);
+  assert.equal(dissolved.blocks[vacant.id], undefined);
 });

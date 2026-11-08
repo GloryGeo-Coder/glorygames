@@ -43,6 +43,13 @@ async function delivery(browser, mobile) {
       closingTransport(() => p.locator('[aria-label="Close transport settings"]').click());
     const save = () =>
       p.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    async function districtLocation(name) {
+      await p.waitForFunction(
+        (name) => document.getElementById('cityMapButton').title.startsWith(name + ' · '),
+        name
+      );
+      assert.equal(await p.locator('#areaLocation').textContent(), name);
+    }
     async function nightLights(expected) {
       await p.waitForFunction(
         (expected) => {
@@ -168,6 +175,13 @@ async function delivery(browser, mobile) {
       const { newTrip } = await import('/games/brick-playground-3d/resident-trip.mjs');
       const { marketCounter } = await import('/games/brick-playground-3d/market-day.mjs');
       const town = world('city');
+      for (const [id, neighbourhood] of [
+        [27, 'Western Delivery Neighbourhood'],
+        [35, 'Western Delivery Neighbourhood'],
+        [28, 'Eastern Market Neighbourhood'],
+        [36, 'Eastern Market Neighbourhood']
+      ])
+        town.blocks[id] = { ...town.blocks[id], neighbourhood };
       town.streets = ['h-3-4', 'h-4-4'];
       const doors = [30, 36, 54, 60].map((x, i) => ({
         id: 'test-door-' + i,
@@ -300,6 +314,19 @@ async function delivery(browser, mobile) {
     await atPickup();
     assert.equal(await x(), -12);
     await nightLights([-19.5, -9.5]);
+    await districtLocation('Western Delivery Neighbourhood');
+    const signs = await p.evaluate(() => {
+      const scene = BABYLON.EngineStore.LastCreatedScene;
+      return ['Western Delivery Neighbourhood', 'Eastern Market Neighbourhood'].map((name) => {
+        const sign = scene.getMeshByName(name);
+        const ctx = sign?.material.diffuseTexture.getContext();
+        return { name, present: !!sign, width: ctx?.measureText(name).width };
+      });
+    });
+    assert.ok(
+      signs.every((s) => s.present && s.width <= 480),
+      'neighbourhood signs render and fit their long names'
+    );
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 2);
     await tap('transportButton');
@@ -314,6 +341,11 @@ async function delivery(browser, mobile) {
     assert.equal((await save()).transport.stage, 2, 'recovery preserves cargo');
     await nightLights([-19.5, -9.5]);
     assert.deepEqual((await save()).market, residents.market, 'recovery preserves receipts');
+    assert.deepEqual(
+      (await save()).blocks,
+      residents.blocks,
+      'recovery preserves neighbourhood boundaries'
+    );
     assert.deepEqual(
       (await save()).trail,
       residents.trail,
@@ -381,6 +413,11 @@ async function delivery(browser, mobile) {
     assert.deepEqual((await save()).market, residents.market, 'reload preserves receipts');
     assert.deepEqual((await save()).trail, residents.trail, 'reload preserves passport');
     assert.deepEqual(
+      (await save()).blocks,
+      residents.blocks,
+      'reload preserves neighbourhood boundaries'
+    );
+    assert.deepEqual(
       (await save()).family1,
       residents.family1,
       'reload preserves the market queue'
@@ -392,6 +429,7 @@ async function delivery(browser, mobile) {
     await nightLights([-19.5, -9.5]);
     await parkAtDropoff();
     await nightLights([10.5, 20.5]);
+    await districtLocation('Eastern Market Neighbourhood');
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 3);
     if (process.env.BRICK_SCREENSHOTS) {
@@ -411,7 +449,13 @@ async function delivery(browser, mobile) {
       await p.locator('#marketTill').isVisible(),
       'market controls return after exiting the buggy'
     );
+    await districtLocation('Eastern Market Neighbourhood');
+    assert.ok(
+      await p.locator('#areaLocation').isVisible(),
+      'neighbourhood label returns after exiting the buggy'
+    );
     const after = await save();
+    assert.deepEqual(after.blocks, residents.blocks, 'delivery preserves named neighbourhoods');
     assert.equal(after.lighting, 'night');
     assert.deepEqual(
       after.pieces.filter((p) => p[1] === 'streetlamp'),
@@ -499,10 +543,20 @@ async function delivery(browser, mobile) {
     assert.equal((await save()).lighting, 'night', 'leaving town keeps its saved lighting');
     assert.equal((await save()).transport.stage, 3);
     assert.equal((await save()).trail.stamps, 2, 'switching worlds keeps the passport');
+    assert.ok(await p.locator('#areaLocation').isHidden());
+    assert.deepEqual(
+      await p.evaluate(() =>
+        BABYLON.EngineStore.LastCreatedScene.meshes
+          .filter((m) => m.name.endsWith('Neighbourhood'))
+          .map((m) => m.name)
+      ),
+      [],
+      'neighbourhood signs are removed outside the city'
+    );
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting reset and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, named neighbourhoods/signs and location transitions, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

@@ -238,9 +238,18 @@ export function studio(canvas) {
       transform(planMeshes[i], p);
     });
   }
-  function label(words, x, y, z, width) {
+  function label(words, x, y, z, width, fit = false) {
     const tex = new B.DynamicTexture(words, { width: 512, height: 120 }, scene, false);
-    tex.drawText(words, null, 83, 'bold 66px sans-serif', '#fff1bc', '#174c4b', true);
+    let font = 'bold 66px sans-serif';
+    if (fit) {
+      const ctx = tex.getContext();
+      ctx.font = font;
+      font =
+        'bold ' +
+        Math.min(66, Math.floor((66 * 480) / Math.max(1, ctx.measureText(words).width))) +
+        'px sans-serif';
+    }
+    tex.drawText(words, null, 83, font, '#fff1bc', '#174c4b', true);
     const plane = B.MeshBuilder.CreatePlane(
       words,
       {
@@ -259,7 +268,7 @@ export function studio(canvas) {
     return plane;
   }
   const lighting = townLighting(B, scene, sky, sun);
-  const settlement = cityScene(B, scene, box, mat);
+  const settlement = cityScene(B, scene, box, mat, label);
   const residentModels = new Map();
   function showResident(profile, trip, moving, t, waiting = false) {
     if (trip && !residentModels.has(profile.key))

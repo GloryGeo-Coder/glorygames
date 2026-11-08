@@ -1,3 +1,7 @@
+import {
+  boundaryChange,
+  neighbourhoodNames
+} from '../public/games/brick-playground-3d/neighbourhoods.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { starterBuggy } from '../public/games/brick-playground-3d/freight.mjs';
@@ -617,4 +621,68 @@ test('walking passports survive cargo recovery and reload without granting drivi
   const cleaned = loadWorld('city', { getItem: () => citySave(corrupt) });
   assert.equal(cleaned.trail, undefined);
   assert.deepEqual(cleaned.transport, restored.transport, 'invalid trail cannot erase delivery');
+});
+
+test('neighbourhood boundaries round trip with cargo, households, market and walking passport', () => {
+  const town = city();
+  const doors = [0, 1].map((i) => ({
+    id: 'area-home-' + i,
+    type: 'door',
+    color: 'Lagoon',
+    x: BLOCKS[i].x,
+    z: BLOCKS[i].z,
+    y: 0,
+    r: 0
+  }));
+  town.pieces.push(...doors);
+  town.transport = { ...route(), stage: 2 };
+  town.resident = { ...newTrip(...doors), paused: true, routine: { hour: 18, visits: 2 } };
+  town.market = { shop: doors[1].id, receipts: [{ name: 'Lebo', home: doors[0].id, block: 'A1' }] };
+  town.trail = prepareTrail(
+    town,
+    'Home walk',
+    doors.map((p, i) => ({ door: p.id, label: 'Stop ' + i }))
+  );
+  town.trail.stamps = 1;
+  town.clockMinutes = 1080;
+  town.lighting = 'night';
+  const savedProgress = (w) => ({
+    transport: w.transport,
+    resident: w.resident,
+    market: w.market,
+    trail: w.trail,
+    clockMinutes: w.clockMinutes,
+    lighting: w.lighting
+  });
+  const progress = structuredClone(savedProgress(town));
+  for (const [action, area, id, name] of [
+    ['create', '', 35, 'Depot Quarter'],
+    ['add', 'Depot Quarter', 36],
+    ['rename', 'Depot Quarter', 35, 'Delivery District']
+  ]) {
+    const result = boundaryChange(town, action, area, BLOCKS[id], name);
+    assert.ok(result.blocks);
+    town.blocks = result.blocks;
+    const reopened = loadWorld('city', { getItem: () => citySave(town) });
+    assert.deepEqual(reopened.blocks, town.blocks);
+    assert.deepEqual(savedProgress(reopened), progress);
+  }
+  assert.deepEqual(neighbourhoodNames(town), ['Delivery District']);
+  const boundaries = town.blocks;
+  town.blocks = boundaryChange(town, 'dissolve', 'Delivery District', BLOCKS[35]).blocks;
+  const run = transportRun(buggy, town.transport, [], town);
+  Object.assign(run, transportPoint(dropoff));
+  assert.ok(serviceTransport(run, town.transport, town, []));
+  town.blocks = boundaries;
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(neighbourhoodNames(restored), ['Delivery District']);
+  assert.equal(
+    restored.transport.stage,
+    3,
+    'restoring boundary metadata cannot undo a later delivery'
+  );
+  assert.deepEqual(savedProgress(restored), {
+    ...progress,
+    transport: { ...progress.transport, stage: 3 }
+  });
 });
