@@ -130,15 +130,6 @@
         <p id="routeLightSummary" role="status"></p><button id="mapAimLamp" hidden>Build here with streetlamp</button><button id="mapConnect" hidden>Preview street connection</button>
       </div>
       <label>Block <select id="mapBlock"></select></label>
-      <details id="areaBoard"><summary>Neighbourhoods</summary>
-        <label>Neighbourhood <select id="areaList"></select></label>
-        <p id="areaStats"></p>
-        <div id="areaEdit">
-          <label>Name <input id="areaName" maxlength="32" placeholder="e.g. Market Quarter"></label>
-          <div class="area-actions"><button type="button" id="areaMembership"></button><button id="areaRename" type="button">Rename</button><button id="areaDissolve" type="button">Dissolve</button></div>
-        </div>
-        <p id="areaHint" role="status"></p>
-      </details>
       <details id="blockRepeat" hidden><summary>Repeat a block</summary>
         <p>Choose a built block to copy, then tap the first empty block on the map.</p>
         <div class="repeat-options">
@@ -159,6 +150,15 @@
         <p id="trailHint" role="status"></p><ol id="trailPassport"></ol>
         <p id="trailLegs"></p><button id="trailZoom" type="button" hidden>Trail close-up</button>
         <div class="trail-actions"><button id="trailWalk" type="button">Walk trail</button><button id="trailRestart" type="button">Restart passport</button><button id="trailRemove" type="button">Remove trail</button></div>
+      </details>
+      <details id="areaBoard"><summary>Neighbourhoods</summary>
+        <label>Neighbourhood <select id="areaList"></select></label>
+        <p id="areaStats"></p>
+        <div id="areaEdit">
+          <label>Name <input id="areaName" maxlength="32" placeholder="e.g. Market Quarter"></label>
+          <div class="area-actions"><button type="button" id="areaMembership"></button><button id="areaRename" type="button">Rename</button><button id="areaDissolve" type="button">Dissolve</button></div>
+        </div>
+        <p id="areaHint" role="status"></p>
       </details>
       <div id="mapFields"><label>Block name <input id="blockName" maxlength="32" placeholder="Name this block"></label>
         <label>Land use <select id="mapZone"></select></label>

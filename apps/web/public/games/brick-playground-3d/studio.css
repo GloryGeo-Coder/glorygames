@@ -980,6 +980,10 @@ dialog p {
   min-height: 40px;
 }
 @media (max-width: 580px) {
+  #cityMap:has(#areaBoard[open]) :is(#blockRepeat, #trailBoard),
+  #cityMap:has(#blockRepeat[open], #trailBoard[open]) #areaBoard {
+    display: none;
+  }
   #cityMap:has(#blockRepeat[open], #areaBoard[open]) #cityAtlas {
     width: min(100%, 28dvh);
   }
