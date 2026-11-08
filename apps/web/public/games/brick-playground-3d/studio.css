@@ -845,6 +845,37 @@ dialog p {
 #mapConnect {
   min-height: 40px;
 }
+#blockRepeat {
+  margin: 6px 0;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+#blockRepeat summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 5px 0;
+}
+#blockRepeat p,
+#repeatNotice {
+  font-size: 13px;
+  margin: 6px 0;
+}
+#repeatNotice:empty {
+  display: none;
+}
+.repeat-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.repeat-options select {
+  display: block;
+  width: 100%;
+}
+#repeatStage {
+  min-height: 40px;
+}
 #mapFields {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

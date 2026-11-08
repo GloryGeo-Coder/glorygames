@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   world,
   validPiece,
+  size,
   loadWorld,
   saveKey,
   avatar,
@@ -19,6 +20,10 @@ import {
 } from '../public/games/brick-playground-3d/settlement.mjs';
 import { planStreets } from '../public/games/brick-playground-3d/street-planner.mjs';
 import { entrance, streetPath } from '../public/games/brick-playground-3d/resident-trip.mjs';
+import {
+  previewBlockRow,
+  stageBlockRow
+} from '../public/games/brick-playground-3d/block-expansion.mjs';
 import { CITY_PLANS } from '../public/games/brick-playground-3d/city-plans.mjs';
 import { placement, readPlan } from '../public/games/brick-playground-3d/blueprint.mjs';
 test('all 64 city blocks independently accept each editable starter building and isolate the corridors', () => {
@@ -131,5 +136,77 @@ test('planner restores a cross-city route using valid sections at the map bounda
       city.resident
     );
     assert.ok(without.missing.length, 'no superfluous streets in the repair');
+  }
+});
+
+test('repeated blocks rotate around the lot centre and keep independent brick IDs, roads and land uses', () => {
+  const city = world('city'),
+    source = BLOCKS[27],
+    first = BLOCKS[8],
+    second = BLOCKS[9];
+  city.blocks[source.id].zone = 'homes';
+  city.blocks[second.id] = { name: 'Market Row', zone: 'shops' };
+  city.streets = [streetKeys(source).south, streetKeys(source).west, streetKeys(second).north];
+  const original = structuredClone(city),
+    items = blockIndex(city.pieces)[source.id];
+  const spec = { source, first, count: 2, direction: 'east', turns: 1 };
+  const preview = previewBlockRow(city, spec);
+  assert.equal(preview.issue, '');
+  assert.deepEqual(city, original);
+  assert.equal(preview.pieces.length, items.length * 2);
+  const staged = stageBlockRow(city, spec);
+  assert.deepEqual(city, original);
+  assert.equal(staged.pieces.length, city.pieces.length + items.length * 2);
+  for (const b of [first, second]) {
+    const row = blockIndex(staged.pieces)[b.id];
+    assert.equal(row.length, items.length);
+    for (const [i, p] of row.entries()) {
+      const old = items[i];
+      assert.deepEqual(
+        [p.x, p.z, p.r, p.y, p.color, p.type],
+        [
+          b.x - (old.z - source.z) - size(old).d,
+          b.z + (old.x - source.x),
+          (old.r + 1) % 4,
+          old.y,
+          old.color,
+          old.type
+        ]
+      );
+      assert.ok(validPiece(p, row, p.id, 'city'));
+    }
+    assert.ok(
+      staged.streets.includes(streetKeys(b).east) && staged.streets.includes(streetKeys(b).south)
+    );
+  }
+  assert.deepEqual(staged.blocks[first.id], { name: '', zone: 'homes' });
+  assert.deepEqual(staged.blocks[second.id], city.blocks[second.id]);
+  assert.ok(staged.streets.includes(streetKeys(second).north));
+  assert.equal(new Set(staged.streets).size, staged.streets.length);
+  assert.equal(new Set(staged.pieces.map((p) => p.id)).size, staged.pieces.length);
+  assert.deepEqual(loadWorld('city', { getItem: () => citySave(staged) }).pieces, staged.pieces);
+});
+test('an occupied block or map edge rejects the entire row and a staged row cannot be applied twice', () => {
+  const city = world('city'),
+    source = BLOCKS[27],
+    spec = { source, first: BLOCKS[25], count: 4, direction: 'east', turns: 2 };
+  assert.match(previewBlockRow(city, spec).issue, /D4/);
+  assert.strictEqual(stageBlockRow(city, spec), city);
+  for (const [first, direction] of [
+    [7, 'east'],
+    [0, 'north'],
+    [0, 'west'],
+    [63, 'south']
+  ]) {
+    const off = { ...spec, first: BLOCKS[first], direction, count: 2 };
+    assert.match(previewBlockRow(city, off).issue, /boundary/);
+    assert.strictEqual(stageBlockRow(city, off), city);
+  }
+  for (const turns of [0, 1, 2, 3]) {
+    const ok = { ...spec, first: BLOCKS[8], count: 8, turns };
+    const stamped = stageBlockRow(city, ok);
+    assert.equal(blockIndex(stamped.pieces)[15].length, blockIndex(city.pieces)[27].length);
+    assert.strictEqual(stageBlockRow(stamped, ok), stamped);
+    for (const b of stamped.pieces) assert.ok(validPiece(b, [], null, 'city'));
   }
 });
