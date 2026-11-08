@@ -41,6 +41,17 @@ async function delivery(browser, mobile) {
         () =>
           BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis').position.x
       );
+    // Public actions update the run immediately; the scene copies its pose on the next frame.
+    const atPickup = () =>
+      p.waitForFunction(
+        () =>
+          Math.abs(
+            BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis')
+              .position.x + 12
+          ) < 0.1,
+        null,
+        { timeout: 10000 }
+      );
     async function goTo(target) {
       if (mobile) await press('stick');
       else await p.keyboard.down('w');
@@ -152,6 +163,7 @@ async function delivery(browser, mobile) {
     assert.ok(await p.locator('#transportPanel').isVisible());
     await p.waitForFunction(() => !document.getElementById('transportAction').disabled);
     assert.ok(await p.locator('#brake').isVisible());
+    await atPickup();
     assert.equal(await x(), -12);
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 2);
@@ -162,13 +174,16 @@ async function delivery(browser, mobile) {
     await goTo(-6);
     assert.ok((await x()) > -7, 'buggy drove on the player street');
     await tap('home');
+    await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'last stop recovers to pickup with cargo');
+    assert.equal((await save()).transport.stage, 2, 'recovery preserves cargo');
     await goTo(-6);
     await p.reload();
     await ready();
     assert.equal((await save()).transport.stage, 2);
     await tap('transportButton');
     await tap('transportDispatch');
+    await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'reload resumes cargo at checkpoint');
     await goTo(11.15);
     await p.waitForFunction(() => !document.getElementById('transportAction').disabled, null, {
