@@ -27,23 +27,34 @@ export function cityScene(B, scene, box, mat) {
     mesh.metadata = { ground: true };
     return mesh;
   }
-  function open() {
-    land.push(box('Grassland', 0, -0.8, 0, 660, 1.25, 660, '#88a86d'));
-    // Low hills frame the map without occupying any buildable ground.
-    const hills = [];
-    for (let i = 0; i < 24; i++) {
-      const angle = (i * Math.PI) / 12,
-        radius = 158 + (i % 3) * 9;
-      const hill = B.MeshBuilder.CreateSphere('Ridge', { segments: 6 }, scene);
-      hill.position.set(Math.cos(angle) * radius, -4, Math.sin(angle) * radius);
-      hill.scaling.set(42 + (i % 4) * 5, 11 + (i % 3) * 4, 40);
-      hill.material = mat('#75966b');
-      hill.isPickable = false;
-      hills.push(hill);
+  function countryside() {
+    const mesh = B.MeshBuilder.CreateGround(
+      'Highveld',
+      { width: 720, height: 720, subdivisions: 72 },
+      scene
+    );
+    const positions = mesh.getVerticesData(B.VertexBuffer.PositionKind),
+      normals = [],
+      colors = [];
+    for (let i = 0; i < positions.length; i += 3) {
+      const x = positions[i],
+        z = positions[i + 2];
+      const distance = Math.max(Math.abs(x), Math.abs(z)) - HALF - 12;
+      const t = Math.max(0, Math.min(1, distance / 60));
+      const ridge = (Math.sin(x / 47 + z / 83) + Math.cos(z / 31 - x / 93)) * 0.25 + 0.5;
+      positions[i + 1] = -0.32 + t * t * (3 - 2 * t) * (3 + ridge * 24);
+      colors.push(0.4 + ridge * 0.09, 0.55 + ridge * 0.08, 0.34 + ridge * 0.08, 1);
     }
-    const ridge = B.Mesh.MergeMeshes(hills, true, true);
-    ridge.isPickable = false;
-    land.push(ridge);
+    B.VertexData.ComputeNormals(positions, mesh.getIndices(), normals);
+    mesh.setVerticesData(B.VertexBuffer.PositionKind, positions);
+    mesh.setVerticesData(B.VertexBuffer.NormalKind, normals);
+    mesh.setVerticesData(B.VertexBuffer.ColorKind, colors);
+    mesh.material = mat('#ffffff');
+    mesh.isPickable = false;
+    return mesh;
+  }
+  function open() {
+    land.push(countryside());
     land.push(ground('Settlement ground', 0, -0.22, 0, HALF * 2, 0.4, HALF * 2, '#b3c093'));
     for (const b of BLOCKS) {
       lots.push(ground('City block ' + b.code, b.x, -0.08, b.z, LOT, 0.16, LOT, ZONES.mixed.color));
