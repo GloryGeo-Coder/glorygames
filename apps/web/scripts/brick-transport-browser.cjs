@@ -10,9 +10,10 @@ async function delivery(browser, mobile) {
     isMobile: mobile,
     hasTouch: mobile
   });
+  let p;
+  const errors = [];
   try {
-    const p = await ctx.newPage(),
-      errors = [];
+    p = await ctx.newPage();
     p.on('pageerror', (e) => errors.push(e.message));
     const tap = (id) => (mobile ? p.locator('#' + id).tap() : p.locator('#' + id).click());
     const save = () =>
@@ -46,13 +47,13 @@ async function delivery(browser, mobile) {
       p.waitForFunction(
         () =>
           Math.abs(
-            BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis')
-              .position.x + 12
+            BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis').position
+              .x + 12
           ) < 0.1,
         null,
         { timeout: 10000 }
       );
-    async function goTo(target) {
+    async function goTo(target, unload = false) {
       if (mobile) await press('stick');
       else await p.keyboard.down('w');
       await p.waitForFunction(
@@ -69,9 +70,35 @@ async function delivery(browser, mobile) {
         await p.keyboard.up('w');
         await p.keyboard.down('Space');
       }
-      await p.waitForTimeout(500);
-      if (mobile) await release();
-      else await p.keyboard.up('Space');
+      try {
+        if (unload) {
+          await p.waitForFunction(
+            () => !document.getElementById('transportAction').disabled,
+            null,
+            {
+              timeout: 10000
+            }
+          );
+        } else {
+          // Wait for a stopped rendered pose, not wall-clock time: slow frames clamp simulation dt.
+          await p.waitForFunction(
+            async () => {
+              const rig =
+                BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis');
+              const before = rig.position.x;
+              await new Promise((resolve) =>
+                requestAnimationFrame(() => requestAnimationFrame(resolve))
+              );
+              return rig.position.x === before;
+            },
+            null,
+            { timeout: 10000 }
+          );
+        }
+      } finally {
+        if (mobile) await release();
+        else await p.keyboard.up('Space');
+      }
     }
     const origin = process.env.GAME_ORIGIN || 'http://127.0.0.1:3000';
     const gameUrl = origin + '/play/brick-playground-3d';
@@ -185,10 +212,7 @@ async function delivery(browser, mobile) {
     await tap('transportDispatch');
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'reload resumes cargo at checkpoint');
-    await goTo(11.15);
-    await p.waitForFunction(() => !document.getElementById('transportAction').disabled, null, {
-      timeout: 10000
-    });
+    await goTo(10.9, true);
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 3);
     if (process.env.BRICK_SCREENSHOTS) {
@@ -217,6 +241,38 @@ async function delivery(browser, mobile) {
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
         ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, residents and save isolation passed.'
     );
+  } catch (error) {
+    console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);
+    if (p) {
+      console.error(
+        await p
+          .evaluate(() => {
+            const rig =
+              window.BABYLON?.EngineStore.LastCreatedScene?.getTransformNodeByName(
+                'Workshop chassis'
+              );
+            return {
+              pose: rig && { x: rig.position.x, z: rig.position.z, yaw: rig.rotation.y },
+              hint: document.getElementById('transportHint')?.textContent,
+              setupHint: document.getElementById('transportSetupHint')?.textContent,
+              actionDisabled: document.getElementById('transportAction')?.disabled
+            };
+          })
+          .catch(() => null)
+      );
+      if (process.env.BRICK_SCREENSHOTS) {
+        fs.mkdirSync(process.env.BRICK_SCREENSHOTS, { recursive: true });
+        await p
+          .screenshot({
+            path: path.join(
+              process.env.BRICK_SCREENSHOTS,
+              'transport-failed-' + (mobile ? 'phone' : 'desktop') + '.png'
+            )
+          })
+          .catch(() => {});
+      }
+    }
+    throw error;
   } finally {
     await ctx.close();
   }
