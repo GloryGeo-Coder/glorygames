@@ -20,7 +20,7 @@ export type GameEditorial = {
 export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   "brick-playground-3d": {
     "category": "Simulation",
-    "summary": "Build a township, operate a drawbridge and take your own buggy from the workshop to the market. Deliver produce on foot or haul two crates to the neighbourhood shops.",
+    "summary": "Build a township and save your designs as blueprints. Walk through your creations, operate a drawbridge or drive your own buggy to deliver crates to the neighbourhood shops.",
     "overview": [
         "Turn an open plot beside a neighbourhood park into a spaza shop, a house or a playground. All 20 pieces and eight colours are available when you arrive."
     ],
@@ -54,6 +54,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
         }
     ],
     "progression": [
+        "In Free Build or Market District, open Plans to save a named blueprint on this device. Select a brick first to capture its connected structure, or choose a whole plot. Rotate the preview and use Ground or Stack before placing the copy. One Undo removes the entire copy.",
         "For Market Freight, fit a clear seat and cargo bed in the Vehicle Workshop, or build the starter hauler on an empty chassis. Choose Dispatch to market, load two crates at Produce Depot, then park and brake at Market Hall and Corner Spaza to unload one at each stop. Resume freight returns you to the last serviced bay.",
         "In Market District, collect produce at the depot, weigh it at Market Hall and deliver it to Corner Spaza. Walk onto each raised deck and use its action button. Your world saves each stop, so you can return later with the crate.",
         "In Canal Crossing, attach bricks to either hinge or leave them fixed. Choose a 10°, 40° or 80° lift, send the ferry through the opening, then lower the bridge and send the buggy. Changes to the structure require a new ferry test.",

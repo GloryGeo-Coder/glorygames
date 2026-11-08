@@ -194,6 +194,19 @@ export function studio(canvas) {
     preview.setEnabled(true);
     transform(preview, p);
   }
+  const planMeshes = [];
+  function planGhost(items, ok) {
+    while (planMeshes.length > items.length) planMeshes.pop().dispose();
+    items.forEach((p, i) => {
+      const source = template(p.type, ok ? PALETTE[p.color] : '#ff5052', true);
+      if (planMeshes[i]?.sourceMesh !== source) {
+        planMeshes[i]?.dispose();
+        planMeshes[i] = source.createInstance('Blueprint preview');
+        planMeshes[i].isPickable = false;
+      }
+      transform(planMeshes[i], p);
+    });
+  }
   function label(words, x, y, z, width) {
     const tex = new B.DynamicTexture(words, { width: 512, height: 120 }, scene, false);
     tex.drawText(words, null, 83, 'bold 66px sans-serif', '#fff1bc', '#174c4b', true);
@@ -757,6 +770,7 @@ export function studio(canvas) {
     neighbourhood,
     drawPieces,
     ghost,
+    planGhost,
     actors,
     workshop,
     canalMechanism,
