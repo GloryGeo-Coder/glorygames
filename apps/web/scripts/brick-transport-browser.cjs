@@ -1,0 +1,208 @@
+// Production UI test. Storage fixtures set up towns and repair one obstruction;
+// driving, cargo actions, modal cancellation and recovery use public controls.
+const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+async function delivery(browser, mobile) {
+  const ctx = await browser.newContext({
+    viewport: mobile ? { width: 393, height: 820 } : { width: 1280, height: 800 },
+    isMobile: mobile,
+    hasTouch: mobile
+  });
+  try {
+    const p = await ctx.newPage(),
+      errors = [];
+    p.on('pageerror', (e) => errors.push(e.message));
+    const tap = (id) => (mobile ? p.locator('#' + id).tap() : p.locator('#' + id).click());
+    const save = () =>
+      p.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const ready = () => p.locator('#tray button').first().waitFor();
+    const touch = mobile && (await ctx.newCDPSession(p));
+    async function press(id) {
+      const r = await p.locator('#' + id).boundingBox();
+      await touch.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [
+          {
+            x: r.x + r.width / 2,
+            y: r.y + r.height / 2 - (id === 'stick' ? 30 : 0)
+          }
+        ]
+      });
+    }
+    const release = () =>
+      touch.send('Input.dispatchTouchEvent', {
+        type: 'touchEnd',
+        touchPoints: []
+      });
+    const x = () =>
+      p.evaluate(
+        () =>
+          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis').position.x
+      );
+    async function goTo(target) {
+      if (mobile) await press('stick');
+      else await p.keyboard.down('w');
+      await p.waitForFunction(
+        (target) =>
+          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis').position
+            .x >= target,
+        target,
+        { timeout: 60000 }
+      );
+      if (mobile) {
+        await release();
+        await press('brake');
+      } else {
+        await p.keyboard.up('w');
+        await p.keyboard.down('Space');
+      }
+      await p.waitForTimeout(500);
+      if (mobile) await release();
+      else await p.keyboard.up('Space');
+    }
+    await p.goto(
+      (process.env.GAME_ORIGIN || 'http://127.0.0.1:3000') + '/play/brick-playground-3d'
+    );
+    await ready();
+    const isolated = await p.evaluate(async () => {
+      const { world, saveKey } = await import('/games/brick-playground-3d/model.mjs');
+      const { citySave } = await import('/games/brick-playground-3d/settlement.mjs');
+      const { starterBuggy } = await import('/games/brick-playground-3d/freight.mjs');
+      const { newTrip } = await import('/games/brick-playground-3d/resident-trip.mjs');
+      const town = world('city');
+      town.streets = ['h-3-4', 'h-4-4'];
+      const doors = [30, 36, 54, 60].map((x, i) => ({
+        id: 'test-door-' + i,
+        type: 'door',
+        color: 'Lagoon',
+        x,
+        z: 30,
+        y: 0,
+        r: 0
+      }));
+      town.pieces.push(...doors, {
+        id: 'blocked-bay',
+        type: 'single',
+        color: 'Plum',
+        x: -12,
+        z: 2,
+        y: 0,
+        r: 0
+      });
+      town.resident = { ...newTrip(doors[0], doors[1]), paused: true };
+      town.neighbour = { ...newTrip(doors[2], doors[3]), paused: true };
+      localStorage.setItem(saveKey('city'), citySave(town));
+      const snapshot = {};
+      for (const kind of ['garage', 'free', 'district']) {
+        const w = world(kind);
+        if (kind === 'garage') {
+          w.pieces = starterBuggy();
+          w.pieces[0].color = 'Plum';
+          w.tyres = 'road';
+        }
+        snapshot[kind] = JSON.stringify(w);
+        localStorage.setItem(saveKey(kind), snapshot[kind]);
+      }
+      localStorage.setItem('wga.brick.active', 'city');
+      return snapshot;
+    });
+    await p.reload();
+    await ready();
+    const residents = await save();
+    await tap('transportButton');
+    await p.locator('#transportPickup').selectOption('h-3-4');
+    await p.locator('#transportDropoff').selectOption('h-4-4');
+    await tap('transportNew');
+    await tap('transportDispatch');
+    assert.match(await p.locator('#transportSetupHint').textContent(), /blocked/i);
+    assert.equal(await p.locator('#transportSetup').evaluate((e) => e.open), true);
+    await p.locator('[aria-label="Close transport settings"]').click();
+    // Fixture repair, not a claim of exercising brick editing here. Editor repair is covered by resident suite.
+    await p.evaluate(() => {
+      const key = 'wga.brick-playground.v1.city';
+      const w = JSON.parse(localStorage.getItem(key));
+      w.pieces = w.pieces.filter((p) => p[0] !== 'blocked-bay');
+      localStorage.setItem(key, JSON.stringify(w));
+    });
+    await p.reload();
+    await ready();
+    await tap('transportButton');
+    await tap('transportDispatch');
+    await p.waitForFunction(() => !document.getElementById('transportAction').disabled);
+    assert.ok(await p.locator('#brake').isVisible());
+    assert.equal(await x(), -12);
+    await tap('transportAction');
+    assert.equal((await save()).transport.stage, 2);
+    await tap('transportButton');
+    assert.ok(await p.locator('#transportNew').isDisabled());
+    await p.locator('[aria-label="Close transport settings"]').click();
+    assert.equal((await save()).transport.stage, 2, 'cancel preserves cargo');
+    await goTo(-6);
+    assert.ok((await x()) > -7, 'buggy drove on the player street');
+    await tap('home');
+    assert.ok(Math.abs((await x()) + 12) < 0.1, 'last stop recovers to pickup with cargo');
+    await goTo(-6);
+    await p.reload();
+    await ready();
+    assert.equal((await save()).transport.stage, 2);
+    await tap('transportButton');
+    await tap('transportDispatch');
+    assert.ok(Math.abs((await x()) + 12) < 0.1, 'reload resumes cargo at checkpoint');
+    await goTo(11.15);
+    await p.waitForFunction(() => !document.getElementById('transportAction').disabled, null, {
+      timeout: 10000
+    });
+    await tap('transportAction');
+    assert.equal((await save()).transport.stage, 3);
+    if (process.env.BRICK_SCREENSHOTS) {
+      fs.mkdirSync(process.env.BRICK_SCREENSHOTS, { recursive: true });
+      await p.screenshot({
+        path: path.join(
+          process.env.BRICK_SCREENSHOTS,
+          'transport-complete-' + (mobile ? 'phone' : 'desktop') + '.png'
+        )
+      });
+    }
+    await tap('build');
+    assert.ok(await p.locator('#bench').isVisible());
+    assert.ok(await p.locator('#transportPanel').isHidden());
+    const after = await save();
+    assert.deepEqual(after.resident, residents.resident);
+    assert.deepEqual(after.neighbour, residents.neighbour);
+    for (const kind of Object.keys(isolated))
+      assert.equal(
+        await p.evaluate((kind) => localStorage.getItem('wga.brick-playground.v1.' + kind), kind),
+        isolated[kind],
+        kind + ' save isolation'
+      );
+    assert.deepEqual(errors, []);
+    console.log(
+      (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, residents and save isolation passed.'
+    );
+  } finally {
+    await ctx.close();
+  }
+}
+(async () => {
+  const browser = await chromium.launch({
+    executablePath:
+      process.env.PLAYWRIGHT_EXECUTABLE_PATH || process.env.CHROMIUM_PATH || undefined,
+    args: [
+      '--no-sandbox',
+      '--use-gl=angle',
+      '--use-angle=swiftshader',
+      '--enable-unsafe-swiftshader'
+    ]
+  });
+  try {
+    for (const mobile of [true, false]) await delivery(browser, mobile);
+  } finally {
+    await browser.close();
+  }
+})().catch((e) => {
+  console.error(e);
+  process.exitCode = 1;
+});

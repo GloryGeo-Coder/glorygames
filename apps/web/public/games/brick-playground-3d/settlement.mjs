@@ -1,3 +1,4 @@
+import { restoreTransport } from './transport.mjs';
 import { CITY_PLANS } from './city-plans.mjs';
 // Each block has a 20-stud building area and a shared four-stud street corridor.
 export const SIDE = 8,
@@ -89,7 +90,12 @@ export function cityWorld() {
 // Keep the original resident slot readable by settlements saved before the second household.
 export const HOUSEHOLDS = [
   { key: 'resident', name: 'Lebo', destination: 'Spaza', activity: 'Shopping' },
-  { key: 'neighbour', name: 'Naledi', destination: 'Community hall', activity: 'Visiting the hall' }
+  {
+    key: 'neighbour',
+    name: 'Naledi',
+    destination: 'Community hall',
+    activity: 'Visiting the hall'
+  }
 ];
 export function restoreTrip(v) {
   if (
@@ -138,6 +144,7 @@ export function cityLayout(v) {
   return {
     blocks,
     ...households,
+    ...(restoreTransport(v.transport) ? { transport: restoreTransport(v.transport) } : {}),
     focus: Number.isInteger(v.focus) && BLOCKS[v.focus] ? v.focus : CENTRE,
     streets: [...new Set(v.streets)]
   };

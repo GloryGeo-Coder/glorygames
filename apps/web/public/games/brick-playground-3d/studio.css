@@ -951,3 +951,54 @@ dialog p {
     font-size: 11px;
   }
 }
+
+.side #transportButton {
+  font-size: 12px;
+  max-width: 90px;
+  min-height: 44px;
+}
+#transportPanel {
+  position: absolute;
+  top: max(76px, calc(env(safe-area-inset-top) + 60px));
+  left: max(10px, env(safe-area-inset-left));
+  display: grid;
+  gap: 5px;
+  width: min(265px, 67vw);
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  padding: 6px 9px;
+  font-size: 13px;
+}
+.town-driving #residentPanel {
+  display: none;
+}
+#transportPanel button,
+.transport-actions button {
+  min-height: 44px;
+}
+#transportSetup select {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: 4px 0 8px;
+  font: inherit;
+}
+.transport-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+@media (max-height: 550px) {
+  #transportPanel {
+    top: 54px;
+    width: min(225px, 40vw);
+    font-size: 11px;
+    padding: 4px 6px;
+    gap: 3px;
+  }
+  .side:has(#transportButton:not([hidden])) {
+    grid-template-columns: repeat(2, auto);
+    top: 24%;
+  }
+}

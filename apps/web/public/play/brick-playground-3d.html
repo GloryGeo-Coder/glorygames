@@ -28,7 +28,7 @@
       ><button id="closer" aria-label="Zoom in">+</button
       ><button id="farther" aria-label="Zoom out">−</button
       ><button id="center" aria-label="Centre view on preview" title="Centre on preview">◎</button
-      ><button id="cityMapButton" aria-haspopup="dialog" hidden>City map</button><button id="blueprints" title="Open blueprints" aria-haspopup="dialog" hidden>Plans</button
+      ><button id="transportButton" aria-haspopup="dialog" hidden>Transport</button><button id="cityMapButton" aria-haspopup="dialog" hidden>City map</button><button id="blueprints" title="Open blueprints" aria-haspopup="dialog" hidden>Plans</button
       ><button id="home" hidden>Return</button>
     </div>
     <section id="delivery" hidden>
@@ -46,6 +46,10 @@
       <div class="resident-switch"><button id="resSettings" aria-haspopup="dialog">Residents</button><button id="resOther" hidden></button></div>
       <b id="resState" role="status"></b><span id="resHint"></span>
       <div id="resTools"><button id="resFollow">Follow Lebo</button><button id="resEdit">Edit here</button></div>
+    </section>
+    <section id="transportPanel" hidden aria-label="City Transport">
+      <b id="transportState" role="status"></b><span id="transportTarget"></span><span id="transportHint"></span>
+      <button id="transportAction">Collect crate</button>
     </section>
     <section id="shopPanel" aria-label="Flat Above the Shop" hidden>
       <b id="shopProgress"></b><span id="shopHint" role="status"></span>
@@ -91,6 +95,16 @@
       <div id="stick" role="group" aria-label="Movement joystick"><i></i></div>
       <button id="jump">Jump ↑</button><button id="brake" hidden>Brake</button>
     </div>
+    <dialog id="transportSetup" aria-labelledby="transportTitle">
+      <form method="dialog"><h2 id="transportTitle">City Transport</h2><button aria-label="Close transport settings">×</button></form>
+      <p>Drive your saved Vehicle Workshop buggy through this settlement. Fit a driver's seat and an open cargo bed in the workshop first.</p>
+      <p>The buggy is wider than the four-stud road paint. Leave building setbacks and room to turn at corners.</p>
+      <label>Pickup street <select id="transportPickup"></select></label>
+      <label>Drop-off street <select id="transportDropoff"></select></label>
+      <p id="transportSaved"></p><p id="transportSetupHint" role="status"></p>
+      <p>Saving a new delivery replaces the current route and starts with an empty buggy. Reloads resume at the last delivery checkpoint.</p>
+      <div class="transport-actions"><button id="transportNew">Save new delivery</button><button class="primary" id="transportDispatch">Drive workshop buggy</button></div>
+    </dialog>
     <dialog id="residentSetup" aria-labelledby="residentTitle">
       <form method="dialog"><h2 id="residentTitle">Resident trip</h2><button aria-label="Close resident settings">×</button></form>
       <label>Household <select id="resHousehold"></select></label>
@@ -147,7 +161,7 @@
       <p class="guide">
         Tap the plot to aim, then Place. Drag to orbit. Pinch to zoom or pan. Use Select to change a
         brick. On a keyboard, use arrows to aim, R to rotate, Enter to place, Tab between controls,
-        and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab. In Canal Crossing, choose a hinge before placing a deck. Raise the bridge for the ferry, then lower it for the buggy. In Market District, focus on a plot to build. Start a delivery at the depot, weigh the crate at the hall, then take it to the spaza. Use ramps or steps to reach the loading decks. In Settlement Builder, use City map to name blocks, choose land use and lay streets. Choose Build here or Walk here to apply the map. Open Plans for homes, offices, a hall or a park. Choose Residents to assign a home and spaza. Follow Lebo to the spaza or Naledi to the community hall. Both trips run together. Reconnect missing streets or move a brick to clear the entrance. In Flat Above the Shop, collect the parcel at the counter and walk it upstairs. Aim a repair to preview one possible route. In Free Build, Market District and Flat Above the Shop, Plans saves a whole plot or the structure around a selected brick. Preview a copy, tap its new starting stud, rotate it and choose Place copy. For Market Freight, fit a driver’s seat and an open cargo bed in the workshop. Dispatch to market and brake inside each marked bay to handle the crates.
+        and WASD and Space to explore. In the workshop, steer and accelerate with the joystick or WASD, and use Brake or Space to slow down. A heavier brick body accelerates more slowly. Tap the same stud again in Select to reach the seat under a cab. In Canal Crossing, choose a hinge before placing a deck. Raise the bridge for the ferry, then lower it for the buggy. In Market District, focus on a plot to build. Start a delivery at the depot, weigh the crate at the hall, then take it to the spaza. Use ramps or steps to reach the loading decks. In Settlement Builder, Transport lets you choose two street stops and drive your saved workshop buggy between them. Brake at each marker to collect or deliver one crate. Use Last stop to recover, or Build to clear an obstruction. Use City map to name blocks, choose land use and lay streets. Choose Build here or Walk here to apply the map. Open Plans for homes, offices, a hall or a park. Choose Residents to assign a home and spaza. Follow Lebo to the spaza or Naledi to the community hall. Both trips run together. Reconnect missing streets or move a brick to clear the entrance. In Flat Above the Shop, collect the parcel at the counter and walk it upstairs. Aim a repair to preview one possible route. In Free Build, Market District and Flat Above the Shop, Plans saves a whole plot or the structure around a selected brick. Preview a copy, tap its new starting stud, rotate it and choose Place copy. For Market Freight, fit a driver’s seat and an open cargo bed in the workshop. Dispatch to market and brake inside each marked bay to handle the crates.
       </p>
       <div class="menufoot">
         <button id="audio">Mute audio</button><button id="fullscreen">Fullscreen</button

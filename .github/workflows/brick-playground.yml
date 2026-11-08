@@ -14,6 +14,7 @@ on:
       - 'apps/web/scripts/brick-settlement*'
       - 'apps/web/scripts/brick-builder*'
       - 'apps/web/scripts/brick-resident*'
+      - 'apps/web/scripts/brick-transport*'
       - '.github/workflows/brick-playground.yml'
 permissions:
   contents: read
@@ -29,7 +30,7 @@ jobs:
           - group: neighbourhoods
             suites: district freight upstairs
           - group: settlements
-            suites: settlement resident
+            suites: settlement resident transport
     timeout-minutes: 25
     env:
       DATABASE_URL: postgresql://test:test@127.0.0.1:5432/brick_ci
@@ -38,7 +39,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
-      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs apps/web/scripts/brick-canal.test.mjs apps/web/scripts/brick-district.test.mjs apps/web/scripts/brick-freight.test.mjs apps/web/scripts/brick-blueprint.test.mjs apps/web/scripts/brick-upstairs.test.mjs apps/web/scripts/brick-settlement.test.mjs apps/web/scripts/brick-resident.test.mjs
+      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs apps/web/scripts/brick-canal.test.mjs apps/web/scripts/brick-district.test.mjs apps/web/scripts/brick-freight.test.mjs apps/web/scripts/brick-blueprint.test.mjs apps/web/scripts/brick-upstairs.test.mjs apps/web/scripts/brick-settlement.test.mjs apps/web/scripts/brick-resident.test.mjs apps/web/scripts/brick-transport.test.mjs
       - run: npm ci --prefix apps/web --ignore-scripts --no-audit --no-fund
       - run: npm run build --prefix apps/web
       - name: Prepare Chromium
