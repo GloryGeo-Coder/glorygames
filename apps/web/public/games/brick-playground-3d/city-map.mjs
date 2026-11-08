@@ -1,7 +1,7 @@
 import {
   BLOCKS,
   HALF,
-  HOUSEHOLDS,
+  householdsFor,
   PITCH,
   SIDE,
   ZONES,
@@ -172,7 +172,7 @@ export function cityMap(commit) {
     select(block);
   };
   function routePreview() {
-    const profile = HOUSEHOLDS.find((p) => p.key === $('mapRoute').value);
+    const profile = householdsFor(working).find((p) => p.key === $('mapRoute').value);
     plan = profile && planStreets(working, working[profile.key]);
     $('mapConnect').hidden = !editable || !plan?.missing.length;
     const summary = $('mapRouteSummary');
@@ -371,7 +371,7 @@ export function cityMap(commit) {
     $('repeatTurns').value = '0';
     $('repeatNotice').textContent = '';
     sourceOptions(active.id);
-    const routes = HOUSEHOLDS.filter(({ key }) => city[key]);
+    const routes = householdsFor(city).filter(({ key }) => city[key]);
     $('mapRouteTools').hidden = !routes.length;
     $('mapRoute').replaceChildren(new Option('Map only', ''));
     for (const profile of routes)

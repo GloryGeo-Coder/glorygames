@@ -1,4 +1,4 @@
-import { HOUSEHOLDS, DEPARTURES } from './settlement.mjs';
+import { householdsFor, DEPARTURES } from './settlement.mjs';
 // A settlement day takes 96 seconds of active simulation time.
 export const DAY = 1440;
 export const START_TIME = 450;
@@ -26,13 +26,13 @@ export function clockLabel(now) {
   );
 }
 export function hasRoutines(city) {
-  return HOUSEHOLDS.some(({ key }) => city[key]?.routine);
+  return householdsFor(city).some(({ key }) => city[key]?.routine);
 }
 function advanceTo(city, time) {
   const previous = city.clockMinutes ?? START_TIME;
   city.clockMinutes = time;
   let departed = false;
-  for (const { key } of HOUSEHOLDS) {
+  for (const { key } of householdsFor(city)) {
     const trip = city[key];
     if (
       !trip?.routine ||
@@ -55,7 +55,7 @@ export function tickRoutines(city, dt) {
 }
 export function nextIdleDeparture(city) {
   let next = Infinity;
-  for (const { key } of HOUSEHOLDS) {
+  for (const { key } of householdsFor(city)) {
     const trip = city[key];
     if (!trip) continue;
     if (trip.phase !== 'done') return null;

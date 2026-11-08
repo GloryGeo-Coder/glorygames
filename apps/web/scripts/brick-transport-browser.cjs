@@ -143,7 +143,8 @@ async function delivery(browser, mobile) {
     await ready();
     const isolated = await p.evaluate(async () => {
       const { world, saveKey } = await import('/games/brick-playground-3d/model.mjs');
-      const { citySave } = await import('/games/brick-playground-3d/settlement.mjs');
+      const { citySave, moveIn, BLOCKS } =
+        await import('/games/brick-playground-3d/settlement.mjs');
       const { starterBuggy } = await import('/games/brick-playground-3d/freight.mjs');
       const { newTrip } = await import('/games/brick-playground-3d/resident-trip.mjs');
       const town = world('city');
@@ -170,6 +171,13 @@ async function delivery(browser, mobile) {
       town.neighbour = { ...newTrip(doors[2], doors[3]), paused: true };
       town.resident.routine = { hour: 8, visits: 2 };
       town.neighbour.routine = { hour: 14, visits: 3 };
+      for (let i = 0; i < 6; i++) {
+        const door = { ...doors[0], id: 'extra-home-' + i, x: BLOCKS[8 + i].x, z: BLOCKS[8 + i].z };
+        town.pieces.push(door);
+        const trip = { ...newTrip(door, doors[i % 2 ? 3 : 1]), paused: true };
+        trip.routine = { hour: [8, 14, 18][i % 3], visits: i + 1 };
+        moveIn(town, 'Household ' + i, i % 2 ? 'hall' : 'spaza', trip);
+      }
       town.clockMinutes = 450;
       localStorage.setItem(saveKey('city'), citySave(town));
       const snapshot = {};
@@ -189,6 +197,7 @@ async function delivery(browser, mobile) {
     await p.reload();
     await ready();
     const residents = await save();
+    assert.equal(residents.members.length, 6, 'all six additional households loaded');
     await tap('transportButton');
     await p.locator('#transportPickup').selectOption('h-3-4');
     await p.locator('#transportDropoff').selectOption('h-4-4');
@@ -270,6 +279,13 @@ async function delivery(browser, mobile) {
     const after = await save();
     assert.deepEqual(after.resident, residents.resident);
     assert.deepEqual(after.neighbour, residents.neighbour);
+    assert.deepEqual(after.members, residents.members);
+    for (const { key } of residents.members)
+      assert.deepEqual(
+        after[key],
+        residents[key],
+        key + ' survives driving, cargo reload and delivery'
+      );
     assert.ok(
       after.clockMinutes > residents.clockMinutes,
       'the settlement clock survives driving and reload'
@@ -283,7 +299,7 @@ async function delivery(browser, mobile) {
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, residents and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

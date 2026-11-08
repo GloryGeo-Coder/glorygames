@@ -6,7 +6,11 @@ import {
   citySave,
   cityWorld,
   HALF,
-  BLOCKS
+  BLOCKS,
+  MOVE_IN_SLOTS,
+  householdsFor,
+  moveIn,
+  endHousehold
 } from '../public/games/brick-playground-3d/settlement.mjs';
 import { newTrip } from '../public/games/brick-playground-3d/resident-trip.mjs';
 import { planStreets } from '../public/games/brick-playground-3d/street-planner.mjs';
@@ -375,4 +379,72 @@ test('block expansion keeps the original delivery and household saves without du
   assert.equal(restored.transport.stage, 3);
   assert.deepEqual(restored.resident, before.resident);
   assert.deepEqual(restored.neighbour, before.neighbour);
+});
+
+test('all eight household schedules and cargo survive delivery reload and move-in slot reuse', () => {
+  const town = city();
+  const doors = Array.from({ length: 10 }, (_, i) => ({
+    id: 'full-roster-door-' + i,
+    type: 'door',
+    color: 'Lagoon',
+    x: BLOCKS[i].x,
+    z: BLOCKS[i].z,
+    y: 0,
+    r: 0
+  }));
+  town.pieces.push(...doors);
+  town.resident = newTrip(doors[0], doors[8]);
+  town.neighbour = newTrip(doors[1], doors[9]);
+  for (let i = 0; i < 6; i++) {
+    assert.equal(
+      moveIn(
+        town,
+        'Household ' + i,
+        i % 2 ? 'hall' : 'spaza',
+        newTrip(doors[i + 2], doors[8 + (i % 2)])
+      ).key,
+      MOVE_IN_SLOTS[i]
+    );
+  }
+  const profiles = householdsFor(town);
+  assert.equal(profiles.length, 8);
+  profiles.forEach(({ key }, i) => {
+    town[key].phase = 'done';
+    setRoutine(town[key], 8);
+    town[key].routine.visits = i;
+  });
+  town.family6.paused = true;
+  town.clockMinutes = 479;
+  town.transport = route();
+  const run = transportRun(buggy, town.transport, [], town);
+  assert.ok(serviceTransport(run, town.transport, town, []));
+  assert.ok(tickRoutines(town, 0.1));
+  for (const { key } of profiles)
+    assert.equal(town[key].phase, key === 'family6' ? 'done' : 'leave');
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(restored, town, 'the entire roster and loaded delivery round trip together');
+  const occupants = profiles.map(({ key }) => structuredClone(restored[key]));
+  const resumed = transportRun(buggy, restored.transport, [], restored);
+  Object.assign(resumed, transportPoint(dropoff));
+  assert.ok(serviceTransport(resumed, restored.transport, restored, []));
+  assert.equal(restored.transport.stage, 3);
+  assert.equal(restored.clockMinutes, 480.5);
+  profiles.forEach(({ key }, i) => assert.deepEqual(restored[key], occupants[i]));
+  const released = restored.family3.home;
+  endHousehold(restored, 'family3');
+  assert.equal(moveIn(restored, 'Replacement', 'hall', newTrip(doors[4], doors[9])).key, 'family3');
+  assert.equal(restored.family3.home, released);
+  assert.equal(restored.transport.stage, 3);
+  for (const { key } of profiles.filter(({ key }) => key !== 'family3'))
+    assert.deepEqual(restored[key], town[key]);
+  const malformed = {
+    ...restored,
+    members: [...restored.members, { key: '__proto__', name: 'Bad', visit: 'hall' }]
+  };
+  const cleaned = loadWorld('city', { getItem: () => citySave(malformed) });
+  assert.deepEqual(
+    cleaned,
+    restored,
+    'a malformed member cannot discard cargo or valid households'
+  );
 });

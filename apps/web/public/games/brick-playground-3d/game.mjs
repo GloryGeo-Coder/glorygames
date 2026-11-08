@@ -9,7 +9,17 @@ import {
 } from './transport.mjs';
 import { HOUSEHOLDS } from './settlement.mjs';
 import { residentControls } from './resident-ui.mjs';
-import { BLOCKS, HALF, blockAt, blockIndex, blockInfo, citySave, spawnAt } from './settlement.mjs';
+import {
+  BLOCKS,
+  HALF,
+  blockAt,
+  blockIndex,
+  blockInfo,
+  citySave,
+  spawnAt,
+  householdsFor,
+  neighbouring
+} from './settlement.mjs';
 import { cityMap } from './city-map.mjs';
 import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
 import { plansAllowed, placement, bounds } from './blueprint.mjs';
@@ -148,7 +158,7 @@ function start() {
     refresh();
   }
   function openWorld(next) {
-    if (kind === 'city' && HOUSEHOLDS.some(({ key }) => data?.[key])) save();
+    if (kind === 'city' && householdsFor(data).some(({ key }) => data?.[key])) save();
     residents.reset();
     transport.reset();
     townVehicle = null;
@@ -539,6 +549,7 @@ function start() {
   }
   const residents = residentControls({
     city: () => (kind === 'city' ? data : null),
+    removeModel: s.removeResident,
     editing: () => mode === 'build' && !cityOverview,
     save,
     add: (pieces) => change([...data.pieces, ...pieces]),
@@ -1623,13 +1634,13 @@ function start() {
     clearInputs();
     if (document.hidden) {
       music.quiet();
-      if (kind === 'city' && HOUSEHOLDS.some(({ key }) => data?.[key])) save();
+      if (kind === 'city' && householdsFor(data).some(({ key }) => data?.[key])) save();
     }
   });
   document.addEventListener('pointerdown', () => music.unlock());
   document.addEventListener('keydown', () => music.unlock());
   window.addEventListener('pagehide', () => {
-    if (kind === 'city' && HOUSEHOLDS.some(({ key }) => data?.[key])) save();
+    if (kind === 'city' && householdsFor(data).some(({ key }) => data?.[key])) save();
   });
   let first = 'free';
   try {
@@ -1773,12 +1784,17 @@ function start() {
         s.orbit.focusX = trip.x;
         s.orbit.focusZ = trip.z;
       }
-      for (const profile of HOUSEHOLDS) {
+      for (const profile of householdsFor(data)) {
         const occupant = data[profile.key];
+        const visible =
+          occupant &&
+          (!profile.visit ||
+            cityOverview ||
+            (renderedBlock && neighbouring(renderedBlock, blockAt(occupant.x, occupant.z))));
         s.showResident(
           profile,
-          occupant,
-          !!occupant && !occupant.paused && residents.moving(profile.key),
+          visible ? occupant : null,
+          !!visible && !occupant.paused && residents.moving(profile.key),
           elapsed
         );
       }
