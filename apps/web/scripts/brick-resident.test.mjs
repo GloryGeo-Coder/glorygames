@@ -1,3 +1,5 @@
+import { planStreets } from '../public/games/brick-playground-3d/street-planner.mjs';
+import { restingSeat, visitFront } from '../public/games/brick-playground-3d/resident-trip.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { world, loadWorld, saveKey } from '../public/games/brick-playground-3d/model.mjs';
@@ -430,4 +432,99 @@ test('a held shopper is released when a market ends; old saves and malformed rec
   stepHousehold(city, profile, city.resident, rt, 0.02);
   assert.ok(city.resident.returning);
   assert.equal(loadWorld('city', { getItem: () => citySave(city) }).market, undefined);
+});
+
+test('a park visitor needs the actual bench street, clear approach and a free seat; the saved rest resumes', () => {
+  const city = world('city'),
+    home = city.pieces.find(isEntrance),
+    bench = city.pieces.find((p) => p.type === 'bench'),
+    front = visitFront(city, bench, true),
+    trip = newTrip(home, bench, city),
+    runtime = tripRuntime();
+  moveIn(city, 'Thandi', 'park', trip);
+  setRoutine(trip, 14);
+  const run = (condition, n = 6000) => {
+    for (let i = 0; i < n; i++) {
+      advanceTrip(city, trip, runtime, 1 / 60);
+      if (condition()) return;
+    }
+    assert.fail(JSON.stringify([trip, runtime.issue]));
+  };
+  const plan = planStreets(city, trip);
+  assert.ok(plan.missing.includes(front.street));
+  run(() => runtime.issue.includes('street'));
+  city.streets = [...city.streets, ...plan.missing];
+  const barrier = {
+    id: 'fence',
+    type: 'wall',
+    x: Math.floor(front.inside.x) - 1,
+    z: Math.floor(front.center.z) - 1,
+    r: 0,
+    y: 0,
+    color: 'Chalk'
+  };
+  city.pieces = [...city.pieces, barrier];
+  run(() => runtime.blocker === barrier.id);
+  assert.equal(restingSeat(city, trip), null);
+  const roof = { ...barrier, id: 'roof', x: bench.x, z: bench.z, y: 1 };
+  city.pieces = city.pieces.filter((p) => p !== barrier).concat(roof);
+  run(() => runtime.issue.includes('seat is blocked'));
+  city.pieces = city.pieces.filter((p) => p !== roof);
+  run(() => trip.phase === 'shopping');
+  assert.deepEqual(restingSeat(city, trip), front.seat);
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(reopened.family1, trip);
+  assert.equal(householdsFor(reopened).at(-1).destination, 'Park bench');
+  const rt2 = tripRuntime(),
+    restored = reopened.family1,
+    zoned = reopened.blocks;
+  reopened.blocks = { ...zoned, [front.block.id]: { name: 'Yard', zone: 'shops' } };
+  advanceTrip(reopened, restored, rt2, 1 / 60);
+  assert.match(rt2.issue, /Park bench unavailable/);
+  assert.equal(restingSeat(reopened, restored), null);
+  reopened.blocks = zoned;
+  for (let i = 0; i < 6500 && restored.phase !== 'done'; i++)
+    advanceTrip(reopened, restored, rt2, 1 / 60);
+  assert.equal(restored.phase, 'done');
+  assert.equal(restored.routine.visits, 1);
+});
+test('shared park benches seat visitors in turn and a moved bench cannot teleport a resting visitor', () => {
+  const city = world('city'),
+    home = city.pieces.find(isEntrance),
+    bench = city.pieces.find((p) => p.type === 'bench'),
+    front = visitFront(city, bench, true);
+  const otherHome = { ...home, id: 'other', x: home.x - 4 };
+  city.pieces = [...city.pieces, otherHome];
+  const first = newTrip(home, bench, city),
+    second = newTrip(otherHome, bench, city);
+  city.family1 = first;
+  city.family2 = second;
+  city.members = [
+    { key: 'family1', name: 'Sipho', visit: 'park' },
+    { key: 'family2', name: 'Mina', visit: 'park' }
+  ];
+  Object.assign(first, front.inside, { phase: 'shopping', wait: 0.08, y: 0 });
+  Object.assign(second, front.inside, { phase: 'enter', y: 0 });
+  const a = tripRuntime(),
+    b = tripRuntime();
+  advanceTrip(city, second, b, 0.02);
+  assert.equal(second.phase, 'enter');
+  for (let i = 0; i < 5; i++) advanceTrip(city, first, a, 0.02);
+  advanceTrip(city, second, b, 0.02);
+  assert.equal(second.phase, 'shopping');
+  const old = { x: second.x, z: second.z };
+  city.pieces = city.pieces.map((p) => (p === bench ? { ...p, x: p.x + 3, r: 1 } : p));
+  assert.equal(restingSeat(city, second), null);
+  advanceTrip(city, second, b, 0.02);
+  assert.equal(second.phase, 'door');
+  assert.deepEqual({ x: second.x, z: second.z }, old);
+  for (const rot of [0, 1, 2, 3]) {
+    const target = visitFront(city, { ...bench, r: rot }, true);
+    assert.equal(target.direction, ['south', 'east', 'north', 'west'][rot]);
+    assert.equal(
+      Math.hypot(target.center.x - target.inside.x, target.center.z - target.inside.z).toFixed(2),
+      '0.81'
+    );
+  }
+  assert.throws(() => newTrip(home, { ...bench, y: 2 }, city));
 });

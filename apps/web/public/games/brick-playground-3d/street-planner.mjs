@@ -1,5 +1,5 @@
 import { BLOCKS, streetKeys } from './settlement.mjs';
-import { isEntrance, entrance, traceStreets } from './resident-trip.mjs';
+import { visitFront, traceStreets } from './resident-trip.mjs';
 
 const labels = new Map();
 for (const block of BLOCKS) {
@@ -11,12 +11,15 @@ const allStreets = [...labels.keys()];
 export const sectionLabel = (key) => labels.get(key);
 
 export function planStreets(city, trip) {
-  const front = (id) => {
-    const brick = city.pieces.find((p) => p.id === id);
-    return isEntrance(brick) ? entrance(brick) : null;
-  };
-  const home = front(trip.home),
-    destination = front(trip.shop);
+  const home = visitFront(
+      city,
+      city.pieces.find((p) => p.id === trip.home)
+    ),
+    destination = visitFront(
+      city,
+      city.pieces.find((p) => p.id === trip.shop),
+      trip.park
+    );
   if (!home || !destination) return { home, destination, points: [], missing: [], distance: null };
   const built = new Set(city.streets);
   const required = [home.street, destination.street];

@@ -1,4 +1,4 @@
-import { advanceAvatar, blockingBrick, size, validPiece } from './model.mjs';
+import { advanceAvatar, blockingBrick, intervals, size, validPiece } from './model.mjs';
 import {
   BLOCKS,
   CENTRE,
@@ -6,6 +6,9 @@ import {
   PITCH,
   blockAt,
   blockIndex,
+  blockInfo,
+  householdsFor,
+  PARK_REST_SECONDS,
   streetKeys,
   streetSegment
 } from './settlement.mjs';
@@ -40,10 +43,88 @@ export function entrance(p) {
     curb: { x: nx ? laneCoord(s.x) : x, z: nz ? laneCoord(s.z) : z }
   };
 }
-export function newTrip(home, shop) {
-  if (!isEntrance(home) || !isEntrance(shop) || home.id === shop.id)
-    throw Error('Choose two different ground-floor entrances.');
+export function isParkBench(city, p) {
+  return p?.type === 'bench' && p.y <= 0.365 && blockInfo(city, blockAt(p.x, p.z)).zone === 'park';
+}
+const benchFronts = new WeakMap();
+function benchFront(p) {
+  if (benchFronts.has(p)) return benchFronts.get(p);
+  const front = entrance(p),
+    [nx, nz] = NORMALS[p.r];
+  // Leave the centre of the bench free for a bouquet.
+  const x = front.center.x - nz * 0.72,
+    z = front.center.z + nx * 0.72;
+  const result = {
+    ...front,
+    groundY: p.y,
+    curb: { x: front.curb.x - nz * 0.72, z: front.curb.z + nx * 0.72 },
+    center: { x: x + nx * 1.7, z: z + nz * 1.7 },
+    inside: { x: x + nx * 0.89, z: z + nz * 0.89 },
+    seat: {
+      x: x + nx * 0.23,
+      y: p.y + size(p).h - 0.55,
+      z: z + nz * 0.23,
+      heading: Math.atan2(nx, nz)
+    }
+  };
+  benchFronts.set(p, result);
+  return result;
+}
+const fixtureCache = new WeakMap();
+function fixtures(city) {
+  let map = fixtureCache.get(city.pieces);
+  if (!map) {
+    map = new Map(
+      city.pieces.filter((p) => isEntrance(p) || p.type === 'bench').map((p) => [p.id, p])
+    );
+    fixtureCache.set(city.pieces, map);
+  }
+  return map;
+}
+export function visitFront(city, p, park = false) {
+  if (park) return isParkBench(city, p) ? benchFront(p) : null;
+  return isEntrance(p) ? entrance(p) : null;
+}
+const seatClearance = new WeakMap();
+function seatBlocker(city, front) {
+  let cache = seatClearance.get(city.pieces);
+  if (!cache) {
+    cache = new Map();
+    seatClearance.set(city.pieces, cache);
+  }
+  if (!cache.has(front)) {
+    const { x, y, z } = front.seat;
+    const brick = blockIndex(city.pieces)[front.block.id].find((p) =>
+      [
+        [0, 0],
+        [0.19, 0],
+        [-0.19, 0],
+        [0, 0.19],
+        [0, -0.19]
+      ].some(([dx, dz]) =>
+        intervals(p, x + dx, z + dz).some(([lo, hi]) => lo < y + 1.55 && hi > y + 0.56)
+      )
+    );
+    cache.set(front, brick?.id || null);
+  }
+  return cache.get(front);
+}
+export function restingSeat(city, trip) {
+  if (!trip?.park || trip.phase !== 'shopping') return null;
+  const front = visitFront(city, fixtures(city).get(trip.shop), true);
+  return front &&
+    separation(trip, front.inside) <= 0.025 &&
+    Math.abs(trip.y - front.groundY) <= 0.65 &&
+    !seatBlocker(city, front)
+    ? front.seat
+    : null;
+}
+export function newTrip(home, shop, city) {
+  const park = !!city && isParkBench(city, shop);
+  if (!isEntrance(home) || (!park && !isEntrance(shop)) || home.id === shop.id)
+    throw Error('Choose a home entrance and a different valid destination.');
   return {
+    ...(park ? { park: true } : {}),
     home: home.id,
     shop: shop.id,
     phase: 'leave',
@@ -136,7 +217,7 @@ export function traceStreets(streets, start, destination, existing = null) {
 export function tripRuntime() {
   return {
     items: null,
-    doors: new Map(),
+    observedBlocks: null,
     streets: null,
     path: null,
     routeKey: '',
@@ -148,31 +229,58 @@ export function tripRuntime() {
 }
 export function advanceTrip(city, t, rt, dt) {
   rt.moving = false;
+  rt.waitingForSeat = false;
   if (t.paused || t.phase === 'done') return;
-  if (rt.issue && rt.items === city.pieces && rt.observedStreets === city.streets) return;
-  if (rt.items !== city.pieces || rt.observedStreets !== city.streets) {
+  const edited =
+    rt.items !== city.pieces ||
+    rt.observedStreets !== city.streets ||
+    (t.park && rt.observedBlocks !== city.blocks);
+  if (rt.issue && !edited) return;
+  if (edited) {
     rt.issue = '';
     rt.blocker = null;
     rt.stalled = 0;
-  }
-  rt.observedStreets = city.streets;
-  if (rt.items !== city.pieces) {
-    rt.doors = new Map(city.pieces.filter(isEntrance).map((p) => [p.id, p]));
-    rt.items = city.pieces;
     rt.routeKey = '';
+    rt.items = city.pieces;
+    rt.observedStreets = city.streets;
+    rt.observedBlocks = city.blocks;
   }
-  const home = rt.doors.get(t.home),
-    shop = rt.doors.get(t.shop);
-  if (!home || !shop) {
+  const stops = fixtures(city);
+  const home = visitFront(city, stops.get(t.home)),
+    destination = visitFront(city, stops.get(t.shop), t.park);
+  if (!home || !destination) {
     rt.issue =
-      (!home ? 'Home' : 'Destination') +
-      ' entrance missing. Restore the doorway or choose a new trip.';
+      home && t.park
+        ? 'Park bench unavailable. Restore the ground-floor bench and Park land use, or choose another bench.'
+        : (!home ? 'Home' : 'Destination') +
+          ' entrance missing. Restore the doorway or choose a new trip.';
     rt.blocker = null;
     return;
   }
-  const from = entrance(t.returning ? shop : home),
-    to = entrance(t.returning ? home : shop);
+  const from = t.returning ? destination : home,
+    to = t.returning ? home : destination;
+  if (
+    t.park &&
+    !t.returning &&
+    (t.phase === 'shopping' || (t.phase === 'enter' && separation(t, to.inside) <= 0.012))
+  ) {
+    const blocker = seatBlocker(city, destination);
+    if (
+      blocker ||
+      (Math.abs(t.y - destination.groundY) > 0.65 && separation(t, to.inside) < 0.025)
+    ) {
+      rt.blocker = blocker;
+      rt.issue = blocker
+        ? 'The park seat is blocked. Move the brick above the bench.'
+        : 'The bench needs a level approach. Clear the ground beside it.';
+      return;
+    }
+  }
   if (t.phase === 'shopping') {
+    if (t.park && separation(t, destination.inside) > 0.025) {
+      t.phase = 'door';
+      return;
+    }
     t.wait = Math.max(0, t.wait - dt);
     if (t.wait === 0) {
       t.returning = true;
@@ -216,11 +324,7 @@ export function advanceTrip(city, t, rt, dt) {
     else if (t.phase === 'approach') {
       if (!city.streets.includes(from.street)) {
         rt.issue =
-          'Missing ' +
-          DIRECTIONS[(t.returning ? shop : home).r] +
-          ' street at ' +
-          from.block.code +
-          '. Add it on the map.';
+          'Missing ' + from.direction + ' street at ' + from.block.code + '. Add it on the map.';
         return;
       }
       t.phase = 'street';
@@ -228,9 +332,21 @@ export function advanceTrip(city, t, rt, dt) {
     } else if (t.phase === 'street') rt.path.shift();
     else if (t.phase === 'door') t.phase = 'enter';
     else if (t.phase === 'enter') {
+      // A second visitor waits at the approach until the first one stands up.
+      if (
+        t.park &&
+        !t.returning &&
+        householdsFor(city).some(({ key }) => {
+          const other = city[key];
+          return other !== t && other?.park && other.shop === t.shop && restingSeat(city, other);
+        })
+      ) {
+        rt.waitingForSeat = true;
+        return;
+      }
       t.phase = t.returning ? 'done' : 'shopping';
       if (t.returning && t.routine) t.routine.visits++;
-      t.wait = t.returning ? 0 : 1.5;
+      t.wait = t.returning ? 0 : t.park ? PARK_REST_SECONDS : 1.5;
     }
     return;
   }
