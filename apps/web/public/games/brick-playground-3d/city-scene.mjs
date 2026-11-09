@@ -1,3 +1,4 @@
+import { gardenFlowers } from './garden-flowers.mjs';
 import {
   BLOCKS,
   HALF,
@@ -11,6 +12,7 @@ import {
 } from './settlement.mjs';
 import { PALETTE, size } from './model.mjs';
 export function cityScene(B, scene, box, mat, label) {
+  const flowers = gardenFlowers(B, scene, box, mat);
   const lots = [],
     land = [],
     roads = [],
@@ -75,6 +77,7 @@ export function cityScene(B, scene, box, mat, label) {
     list.length = 0;
   }
   function close() {
+    flowers.close();
     clear(land);
     clear(lots);
     clear(roads);
@@ -217,5 +220,5 @@ export function cityScene(B, scene, box, mat, label) {
     }
     return detail;
   }
-  return { open, close, sector };
+  return { open, close, sector, flowers };
 }
