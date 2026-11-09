@@ -95,6 +95,12 @@ export const HOUSEHOLDS = [
 ];
 // Stable slots keep earlier saves readable and bound the number of simultaneous walkers on phones.
 export const MOVE_IN_SLOTS = Array.from({ length: 6 }, (_, i) => 'family' + (i + 1));
+export const VISITS = {
+  spaza: { destination: 'Spaza', activity: 'Shopping' },
+  hall: { destination: 'Community hall', activity: 'Visiting the hall' },
+  park: { destination: 'Park bench', activity: 'Resting in the park' }
+};
+export const PARK_REST_SECONDS = 6;
 const directoryCache = new WeakMap();
 export function householdsFor(city) {
   if (!city?.members?.length) return HOUSEHOLDS;
@@ -104,8 +110,7 @@ export function householdsFor(city) {
       ...HOUSEHOLDS,
       ...city.members.map((member) => ({
         ...member,
-        destination: member.visit === 'hall' ? 'Community hall' : 'Spaza',
-        activity: member.visit === 'hall' ? 'Visiting the hall' : 'Shopping'
+        ...VISITS[member.visit]
       }))
     ];
     directoryCache.set(city.members, roster);
@@ -129,7 +134,8 @@ export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => 
     moveInProblem(city, name) ||
     !MOVE_IN_SLOTS.includes(key) ||
     city[key] ||
-    !['hall', 'spaza'].includes(visit) ||
+    !Object.hasOwn(VISITS, visit) ||
+    (visit === 'park') !== (trip?.park === true) ||
     !trip?.home ||
     !trip.shop ||
     trip.home === trip.shop ||
@@ -171,7 +177,8 @@ export function restoreTrip(v) {
     z,
     heading,
     vy,
-    wait: Math.max(0, Math.min(1.5, v.wait)),
+    ...(v.park === true ? { park: true } : {}),
+    wait: Math.max(0, Math.min(v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
     ...(routine ? { routine } : {}),
     grounded: v.grounded === true,
     paused: v.paused === true,

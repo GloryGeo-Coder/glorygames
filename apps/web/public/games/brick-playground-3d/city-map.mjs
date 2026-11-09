@@ -154,7 +154,11 @@ export function cityMap(commit) {
     } else routeLine(plan.points, '#174e78', 2.5, plan.missing.length ? [5, 4] : []);
     for (const [front, letter, color] of [
       [plan.home, 'H', '#163f74'],
-      [plan.destination, 'D', '#7d365c']
+      [
+        plan.destination,
+        plan.destination?.seat ? 'P' : 'D',
+        plan.destination?.seat ? '#30654c' : '#7d365c'
+      ]
     ]) {
       if (!front) continue;
       routeLine([front.center, front.curb], color, 2, [3, 4]);
@@ -276,6 +280,14 @@ export function cityMap(commit) {
       return;
     }
     if (!plan.home || !plan.destination) {
+      if (profile.visit === 'park' && !plan.destination) {
+        summary.textContent =
+          profile.name +
+          ' needs ' +
+          (!plan.home ? 'a home entrance and ' : '') +
+          'a ground-floor bench in a park. Restore it or reassign the trip in Residents.';
+        return;
+      }
       const absent = [!plan.home && 'home', !plan.destination && 'destination']
         .filter(Boolean)
         .join(' and ');
@@ -289,7 +301,7 @@ export function cityMap(commit) {
     const endpoints =
       'H · ' +
       plan.home.block.code +
-      ' → D · ' +
+      (profile.visit === 'park' ? ' → P · ' : ' → D · ') +
       profile.destination +
       ' in ' +
       plan.destination.block.code +
@@ -314,7 +326,12 @@ export function cityMap(commit) {
     }
     const prior =
       working.streets !== original.streets ? planStreets(original, original[profile.key]) : plan;
-    let detail = 'Connected · ' + Math.round(plan.distance) + ' studs between entrance streets.';
+    let detail =
+      'Connected · ' +
+      Math.round(plan.distance) +
+      (profile.visit === 'park'
+        ? ' studs between the home and park streets.'
+        : ' studs between entrance streets.');
     if (prior.missing.length)
       detail += ' New connection in this preview. Build here saves it. Closing discards it.';
     else if (prior.distance !== null && Math.abs(prior.distance - plan.distance) >= 0.5)
