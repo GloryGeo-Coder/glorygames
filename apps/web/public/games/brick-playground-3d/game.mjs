@@ -14,6 +14,7 @@ import {
 import { marketControls } from './market-ui.mjs';
 import { marketCounter, waitingAtTill } from './market-day.mjs';
 import { currentStop, trailEntrance, canStamp, stampTrail } from './town-trail.mjs';
+import { FLOWERS, gardenVisit, tendGarden } from './community-garden.mjs';
 import { cityMap } from './city-map.mjs';
 import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
 import { plansAllowed, placement, bounds } from './blueprint.mjs';
@@ -644,6 +645,34 @@ function start() {
       $('trailBoard').open = true;
       $('trailBoard').scrollIntoView({ block: 'nearest' });
     }
+  };
+  for (const [key, flower] of Object.entries(FLOWERS))
+    $('gardenSeed').add(new Option(flower.name, key));
+  let gardenTarget,
+    gardenUpdated = -Infinity;
+  function refreshGarden(now) {
+    gardenTarget = gardenVisit(data, person, mode === 'play', now);
+    $('gardenHud').hidden = !gardenTarget;
+    if (gardenTarget) {
+      $('gardenHint').textContent = gardenTarget.hint;
+      $('gardenSeed').hidden = gardenTarget.action !== 'sow';
+      $('gardenAction').hidden = !gardenTarget.action;
+      $('gardenAction').textContent = gardenTarget.label || '';
+    }
+    s.showFlowers(data, renderedBlock, now, mode === 'play');
+    gardenUpdated = now;
+  }
+  $('gardenAction').onclick = () => {
+    const now = Date.now();
+    if (
+      kind === 'city' &&
+      tendGarden(data, person, mode === 'play', gardenTarget, $('gardenSeed').value, now)
+    ) {
+      music.snap();
+      save();
+      if (gardenTarget.action === 'display') announce('Bouquet placed on the park bench');
+    }
+    if (kind === 'city') refreshGarden(now);
   };
   function rescue() {
     if (kind === 'city') {
@@ -1740,6 +1769,8 @@ function start() {
       );
       market.update();
       trailStatus();
+      const now = Date.now();
+      if (now < gardenUpdated || now - gardenUpdated >= 180) refreshGarden(now);
       residents.refresh();
     }
     s.actors(

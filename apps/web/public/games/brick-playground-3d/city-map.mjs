@@ -1,3 +1,4 @@
+import { parkSummary } from './community-garden.mjs';
 import {
   BLOCKS,
   HALF,
@@ -357,6 +358,8 @@ export function cityMap(commit) {
   }
   function paint() {
     $('mapFields').hidden = !editable || $('blockRepeat').open || $('areaBoard').open;
+    $('parkMapTip').textContent =
+      $('mapFields').hidden && editable ? '' : parkSummary(working, block, Date.now());
     routePreview();
     lightPreview();
     fitRoute();
