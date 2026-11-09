@@ -3,6 +3,11 @@ import {
   neighbourhoodNames
 } from '../public/games/brick-playground-3d/neighbourhoods.mjs';
 import test from 'node:test';
+import {
+  gardenVisit,
+  tendGarden,
+  GROW_MS
+} from '../public/games/brick-playground-3d/community-garden.mjs';
 import assert from 'node:assert/strict';
 import { starterBuggy } from '../public/games/brick-playground-3d/freight.mjs';
 import { world, loadWorld, saveKey } from '../public/games/brick-playground-3d/model.mjs';
@@ -685,4 +690,49 @@ test('neighbourhood boundaries round trip with cargo, households, market and wal
     ...progress,
     transport: { ...progress.transport, stage: 3 }
   });
+});
+
+test('gardening and delivery preserve each other across growth, recovery, reload and fixture edits', () => {
+  let town = city();
+  const pot = { id: 'garden-pot', type: 'pot', color: 'Leaf', r: 0, x: 12, y: 0, z: 5 };
+  const bench = { id: 'garden-seat', type: 'bench', color: 'Sun', r: 0, x: 12, y: 0, z: -6 };
+  town.pieces = [pot, bench];
+  town.blocks = {
+    28: { name: 'Flower court', zone: 'park', neighbourhood: 'Garden Quarter' },
+    36: { name: 'Rest court', zone: 'park', neighbourhood: 'Garden Quarter' }
+  };
+  town.transport = { ...route(), stage: 2 };
+  const hand = { x: pot.x + 1, y: 0, z: pot.z - 0.4 };
+  const garden = (now, playing = true) => gardenVisit(town, hand, playing, now);
+  const fire = (now, playing = true) => tendGarden(town, hand, playing, garden(now), 'daisy', now);
+  assert.ok(fire(100));
+  assert.ok(fire(200));
+  assert.equal(town.transport.stage, 2);
+  const wet = structuredClone(town.garden);
+  let run = transportRun(buggy, town.transport, transportObstacles(town.pieces, buggy), town);
+  assert.ok(run);
+  for (let i = 0; i < 90; i++) tick(run, []);
+  assert.equal(fire(200 + GROW_MS, false), false, 'driving cannot pick flowers');
+  town = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(town.garden, wet);
+  assert.equal(garden(200 + GROW_MS).action, 'pick', 'growth survives driving and reload');
+  run = transportRun(buggy, town.transport, [], town);
+  assert.equal(run.x, transportPoint(pickup).x);
+  assert.ok(fire(200 + GROW_MS));
+  assert.equal(town.garden.bouquet, 'daisy');
+  Object.assign(run, transportPoint(dropoff));
+  assert.ok(serviceTransport(run, town.transport, town, []));
+  assert.equal(town.garden.bouquet, 'daisy', 'delivery cannot consume a bouquet');
+  Object.assign(hand, { x: bench.x + 1, z: bench.z - 0.4 });
+  assert.equal(garden(30000).action, 'display');
+  assert.ok(fire(30000));
+  assert.equal(town.transport.stage, 3, 'placing flowers cannot reset delivery');
+  const pieces = town.pieces;
+  town.pieces = town.pieces.filter((p) => p.id !== bench.id);
+  assert.equal(loadWorld('city', { getItem: () => citySave(town) }).garden, undefined);
+  town.pieces = pieces;
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(restored.garden.displays, [{ id: bench.id, flower: 'daisy' }]);
+  assert.equal(restored.transport.stage, 3, 'restoring a fixture cannot undo delivery');
+  assert.deepEqual(restored.blocks, town.blocks);
 });

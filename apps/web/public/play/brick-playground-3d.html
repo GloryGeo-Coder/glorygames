@@ -46,6 +46,9 @@
       <div class="resident-switch"><button id="resSettings" aria-haspopup="dialog">Residents</button><button id="resOther" hidden></button></div>
       <button id="trailHud" hidden></button>
       <button id="marketTill" hidden></button>
+      <div id="gardenHud" hidden><span id="gardenHint"></span>
+        <select id="gardenSeed" aria-label="Flower seeds" hidden></select><button id="gardenAction" type="button" hidden></button>
+      </div>
       <span id="areaLocation" hidden></span><span id="resClock"></span>
       <b id="resState" role="status"></b><span id="resHint"></span>
       <span id="resRoutineNote"></span><button id="resSkip" hidden>Skip to next departure</button>
@@ -181,6 +184,7 @@
           <label><input type="checkbox" id="road-south"> South</label><label><input type="checkbox" id="road-west"> West</label>
         </fieldset>
       </div>
+      <p id="parkMapTip"></p>
       <div class="map-actions"><button id="mapOverview">City view</button><button id="mapWalk">Walk here</button><button class="primary" id="mapBuild">Build here</button></div>
     </dialog>
     <dialog id="planBook" aria-labelledby="plansTitle">

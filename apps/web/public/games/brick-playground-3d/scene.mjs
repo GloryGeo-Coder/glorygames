@@ -881,7 +881,11 @@ export function studio(canvas) {
     explorer.pose(
       walk,
       Boolean(seated),
-      parcel.isEnabled(false) ? 1 : shopParcel.isEnabled(false) ? -1 : 0,
+      parcel.isEnabled(false) || settlement.flowers.holding
+        ? 1
+        : shopParcel.isEnabled(false)
+          ? -1
+          : 0,
       !a.grounded,
       t
     );
@@ -912,6 +916,10 @@ export function studio(canvas) {
     removeResident,
     townLighting: lighting.update,
     citySector: settlement.sector,
+    showFlowers(city, focus, now, playing) {
+      settlement.flowers.update(city, focus, now);
+      settlement.flowers.carry(playing ? city.garden?.bouquet : null, person);
+    },
     drawPieces,
     ghost,
     planGhost,

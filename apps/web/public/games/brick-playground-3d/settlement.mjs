@@ -1,5 +1,6 @@
 import { restoreTransport } from './transport.mjs';
 import { CITY_PLANS } from './city-plans.mjs';
+import { restoreGarden } from './community-garden.mjs';
 // Each block has a 20-stud building area and a shared four-stud street corridor.
 export const SIDE = 8,
   PITCH = 24,
@@ -280,9 +281,11 @@ export function cityLayout(v) {
       moveIn(households, member.name, member.visit, restoreTrip(v[member.key]), member.key);
     }
   }
+  const garden = restoreGarden(v.garden, v.pieces);
   const trail = restoreTrail(v.trail);
   const market = restoreMarket(v.market);
   return {
+    ...(garden ? { garden } : {}),
     ...(trail ? { trail } : {}),
     ...(market ? { market } : {}),
     ...(['night', 'day'].includes(v.lighting) ? { lighting: v.lighting } : {}),
@@ -326,6 +329,7 @@ export const neighbouring = (a, b) => Math.abs(a.col - b.col) <= 1 && Math.abs(a
 export function citySave(city) {
   return JSON.stringify({
     ...city,
+    garden: restoreGarden(city.garden, city.pieces),
     pieces: city.pieces.map((p) => [p.id, p.type, p.color, p.x, p.y, p.z, p.r])
   });
 }

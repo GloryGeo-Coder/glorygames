@@ -943,6 +943,29 @@ dialog p {
 .area-actions button {
   min-height: 38px;
 }
+
+#gardenHud {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+#gardenHud[hidden],
+#parkMapTip:empty {
+  display: none;
+}
+#gardenHint {
+  flex-basis: 100%;
+}
+#gardenSeed {
+  min-height: 34px;
+  max-width: 100%;
+}
+#parkMapTip {
+  font-size: 13px;
+  margin: 6px 0;
+}
+
 #areaLocation {
   font-weight: 700;
   overflow-wrap: anywhere;

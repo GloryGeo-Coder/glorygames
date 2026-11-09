@@ -214,6 +214,11 @@ async function delivery(browser, mobile) {
       }
       town.clockMinutes = 450;
       town.lighting = 'night';
+      town.garden = {
+        plants: [{ id: 'town-park-3', flower: 'daisy', watered: 0 }],
+        displays: [{ id: 'town-park-2', flower: 'marigold' }],
+        bouquet: 'daisy'
+      };
       town.pieces.push(
         ...[-20, -10, 10, 20].map((x, i) => ({
           id: 'transport-lamp-' + i,
@@ -305,6 +310,19 @@ async function delivery(browser, mobile) {
       'market and resident panel yields to driving'
     );
     assert.ok(await p.locator('#marketTill').isHidden());
+    assert.ok(await p.locator('#gardenHud').isHidden(), 'gardening yields to driving');
+    await p.waitForFunction(() => {
+      const scene = BABYLON.EngineStore.LastCreatedScene;
+      const visible = (name) => {
+        const mesh = scene.getMeshByName(name);
+        return mesh?.isEnabled() && mesh.isVisible;
+      };
+      return (
+        !scene.getMeshByName('Carried garden bouquet') &&
+        visible('Garden bloom town-park-3') &&
+        visible('Garden display town-park-2')
+      );
+    });
     assert.ok(
       await p.locator('#trailHud').isHidden(),
       'walking stamps are not offered while driving'
@@ -339,6 +357,11 @@ async function delivery(browser, mobile) {
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'last stop recovers to pickup with cargo');
     assert.equal((await save()).transport.stage, 2, 'recovery preserves cargo');
+    assert.deepEqual(
+      (await save()).garden,
+      residents.garden,
+      'recovery preserves the garden and held bouquet'
+    );
     await nightLights([-19.5, -9.5]);
     assert.deepEqual((await save()).market, residents.market, 'recovery preserves receipts');
     assert.deepEqual(
@@ -372,6 +395,14 @@ async function delivery(browser, mobile) {
     assert.ok(await p.locator('#brake').isHidden());
     assert.ok(await p.locator('#transportPanel').isHidden());
     assert.ok(await p.locator('#trailHud').isVisible());
+    await p.waitForFunction(() => {
+      const mesh = BABYLON.EngineStore.LastCreatedScene.getMeshByName('Carried garden bouquet');
+      return mesh?.parent?.name === 'Builder' && mesh.isEnabled() && mesh.isVisible;
+    });
+    assert.ok(
+      await p.locator('#gardenHud').isVisible(),
+      'garden controls return when leaving the buggy'
+    );
     assert.deepEqual(
       (await save()).trail,
       residents.trail,
@@ -403,6 +434,10 @@ async function delivery(browser, mobile) {
     );
     assert.equal((await save()).transport.stage, 2);
     assert.deepEqual((await save()).trail, residents.trail);
+    assert.deepEqual((await save()).garden, residents.garden, 'map walking preserves garden state');
+    await p.waitForFunction(
+      () => !BABYLON.EngineStore.LastCreatedScene.getMeshByName('Garden display town-park-2')
+    );
     await tap('transportButton');
     await closingTransport(() => tap('transportDispatch'));
     await atPickup();
@@ -411,6 +446,11 @@ async function delivery(browser, mobile) {
     await ready();
     assert.equal((await save()).transport.stage, 2);
     assert.deepEqual((await save()).market, residents.market, 'reload preserves receipts');
+    assert.deepEqual(
+      (await save()).garden,
+      residents.garden,
+      'cargo reload preserves garden state'
+    );
     assert.deepEqual((await save()).trail, residents.trail, 'reload preserves passport');
     assert.deepEqual(
       (await save()).blocks,
@@ -466,6 +506,11 @@ async function delivery(browser, mobile) {
     assert.deepEqual(after.members, residents.members);
     assert.deepEqual(after.market, residents.market, 'delivery preserves the half-served market');
     assert.deepEqual(after.trail, residents.trail, 'delivery preserves the walking passport');
+    assert.deepEqual(
+      after.garden,
+      residents.garden,
+      'delivery preserves flowers and the held bouquet'
+    );
     for (const { key } of residents.members)
       assert.deepEqual(
         after[key],
@@ -543,6 +588,17 @@ async function delivery(browser, mobile) {
     assert.equal((await save()).lighting, 'night', 'leaving town keeps its saved lighting');
     assert.equal((await save()).transport.stage, 3);
     assert.equal((await save()).trail.stamps, 2, 'switching worlds keeps the passport');
+    assert.deepEqual((await save()).garden, residents.garden, 'switching worlds keeps the garden');
+    assert.ok(await p.locator('#gardenHud').isHidden());
+    assert.deepEqual(
+      await p.evaluate(() =>
+        BABYLON.EngineStore.LastCreatedScene.meshes
+          .filter((m) => m.name.startsWith('Garden ') || m.name === 'Carried garden bouquet')
+          .map((m) => m.name)
+      ),
+      [],
+      'garden meshes are removed outside the city'
+    );
     assert.ok(await p.locator('#areaLocation').isHidden());
     assert.deepEqual(
       await p.evaluate(() =>
@@ -556,7 +612,7 @@ async function delivery(browser, mobile) {
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, named neighbourhoods/signs and location transitions, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting reset and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, named neighbourhoods/signs and location transitions, gardens and held bouquets, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

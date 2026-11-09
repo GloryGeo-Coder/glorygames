@@ -1,4 +1,10 @@
 import {
+  GROW_MS,
+  gardenVisit,
+  tendGarden,
+  parkSummary
+} from '../public/games/brick-playground-3d/community-garden.mjs';
+import {
   boundaryChange,
   neighbourhoodStats,
   neighbourhoodNames
@@ -442,4 +448,79 @@ test('neighbourhood counts follow actual buildings and home doors and survive ma
   assert.deepEqual(row.blocks[vacant.id], { neighbourhood: 'North End', name: '', zone: 'shops' });
   const dissolved = boundaryChange(saved, 'dissolve', 'North End', vacant);
   assert.equal(dissolved.blocks[vacant.id], undefined);
+});
+
+test('park gardening needs reachable fixtures, grows across a reload, and only hands out one bouquet', () => {
+  const city = world('city'),
+    p = city.pieces.find((p) => p.type === 'pot'),
+    b = blockAt(p.x, p.z);
+  const hand = { x: p.x + 1, z: p.z - 0.4, y: 0 };
+  const get = (now, play = true) => gardenVisit(city, hand, play, now);
+  const fire = (request, time, flower = 'daisy') =>
+    tendGarden(city, hand, true, request, flower, time);
+  const ready = get(10);
+  assert.equal(ready.action, 'sow');
+  assert.equal(get(10, false), null);
+  assert.equal(tendGarden(city, hand, false, ready, 'daisy', 10), false);
+  assert.equal(fire(ready, 10, 'bogus'), false);
+  city.pieces = [
+    ...city.pieces,
+    { id: 'wall', type: 'wall', color: 'Chalk', r: 0, x: p.x, y: 0, z: p.z - 1 }
+  ];
+  assert.equal(fire(ready, 10), false);
+  city.pieces = city.pieces.filter((brick) => brick.id !== 'wall');
+  assert.equal(fire(ready, 10), true);
+  assert.equal(fire(ready, 10), false);
+  assert.equal(get(10000).action, 'water');
+  assert.equal(fire(get(10000), 10000), true);
+  const saved = loadWorld('city', { getItem: () => citySave(city) });
+  assert.equal(gardenVisit(saved, hand, true, 10001).action, undefined);
+  assert.equal(gardenVisit(saved, hand, true, 10000 + GROW_MS).action, 'pick');
+  hand.y = 3;
+  assert.equal(get(30000).action, undefined);
+  hand.y = 0;
+  const pick = get(30000);
+  assert.equal(fire(pick, 30000), true);
+  assert.equal(fire(pick, 30000), false);
+  const bench = city.pieces.find((p) => p.type === 'bench'),
+    second = BLOCKS[b.id + 8];
+  city.pieces = city.pieces.map((p) =>
+    p.id === bench.id ? { ...p, x: second.x, z: second.z } : p
+  );
+  Object.assign(hand, { x: second.x + 1, z: second.z - 0.4 });
+  assert.equal(get(30000).action, undefined);
+  city.blocks = { ...city.blocks, [second.id]: { name: 'Garden court', zone: 'park' } };
+  assert.equal(fire(get(30000), 30000), true);
+  const restored = loadWorld('city', { getItem: () => citySave(city) });
+  assert.equal(restored.garden.bouquet, null);
+  assert.deepEqual(restored.garden.displays, [{ id: bench.id, flower: 'daisy' }]);
+  restored.pieces = restored.pieces.filter((p) => p.id !== bench.id);
+  assert.equal(loadWorld('city', { getItem: () => citySave(restored) }).garden, undefined);
+});
+test('garden decorations follow placed IDs and corrupt garden data leaves the settlement usable', () => {
+  const city = world('city'),
+    pot = city.pieces.find((p) => p.type === 'pot');
+  city.garden = {
+    plants: [{ id: pot.id, flower: 'marigold', watered: 100 }],
+    displays: [],
+    bouquet: null
+  };
+  const moved = { ...pot, x: pot.x + 2 },
+    original = { x: pot.x + 0.1, z: pot.z - 0.4, y: 0 };
+  city.pieces = city.pieces.map((p) => (p.id === pot.id ? moved : p));
+  assert.notEqual(gardenVisit(city, original, true, 99999)?.action, 'pick');
+  assert.equal(gardenVisit(city, { ...original, x: moved.x + 1 }, true, 99999)?.action, 'pick');
+  assert.match(parkSummary(city, blockAt(moved.x, moved.z), 99999), /In bloom 1/);
+  const raw = JSON.parse(citySave(city));
+  raw.garden = {
+    plants: [
+      null,
+      { id: pot.id, flower: 'constructor', watered: 0 },
+      { id: pot.id, flower: 'daisy', watered: 'yesterday' }
+    ],
+    bouquet: 'bad'
+  };
+  const old = loadWorld('city', { getItem: () => JSON.stringify(raw) });
+  assert.equal(old.garden, undefined);
+  assert.deepEqual(old.pieces, city.pieces);
 });
