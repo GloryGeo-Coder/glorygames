@@ -86,20 +86,31 @@ function inReach(person, fixture, items, point, distance) {
   }
   return true;
 }
+const benchCache = new WeakMap();
+function parkBenches(city) {
+  let index = benchCache.get(city.pieces);
+  if (!index || index.blocks !== city.blocks) {
+    index = {
+      blocks: city.blocks,
+      benches: city.pieces.filter((p) => p.type === 'bench' && isPark(city, blockAt(p.x, p.z)))
+    };
+    benchCache.set(city.pieces, index);
+  }
+  return index.benches;
+}
 export function gardenVisit(city, person, playing, now) {
   if (!playing || !person) return null;
   const block = blockAt(person.x, person.z),
     garden = city.garden,
     bouquet = garden?.bouquet;
-  if (!isPark(city, block))
-    return bouquet ? { hint: 'Carrying ' + FLOWERS[bouquet].name + ' · Find a park bench.' } : null;
+  if (!bouquet && !isPark(city, block)) return null;
   const items = blockIndex(city.pieces)[block.id],
     type = bouquet ? 'bench' : 'pot';
   let nearest,
     nearestDistance = Infinity,
     reachable,
     reachDistance = Infinity;
-  for (const p of items) {
+  for (const p of bouquet ? parkBenches(city) : items) {
     if (p.type !== type) continue;
     const { w, d, h } = size(p),
       point = {
@@ -112,7 +123,11 @@ export function gardenVisit(city, person, playing, now) {
       nearest = p;
       nearestDistance = range;
     }
-    if (range < reachDistance && inReach(person, p, items, point, distance)) {
+    if (
+      range < reachDistance &&
+      blockAt(p.x, p.z) === block &&
+      inReach(person, p, items, point, distance)
+    ) {
       reachable = p;
       reachDistance = range;
     }
@@ -120,12 +135,24 @@ export function gardenVisit(city, person, playing, now) {
   const what = bouquet ? 'park bench' : 'planter';
   if (!nearest)
     return {
-      hint:
-        (bouquet ? 'Carrying ' + FLOWERS[bouquet].name + '. ' : '') +
-        'Add a ' +
-        what +
-        ' to this park in Build mode.'
+      hint: bouquet
+        ? 'Carrying ' + FLOWERS[bouquet].name + ' · Add a bench to a park in Build mode.'
+        : 'Add a planter to this park in Build mode.'
     };
+  if (bouquet && !reachable && blockAt(nearest.x, nearest.z) !== block) {
+    const target = blockAt(nearest.x, nearest.z),
+      park = blockInfo(city, target).name;
+    return {
+      hint:
+        'Carrying ' +
+        FLOWERS[bouquet].name +
+        ' · Bench in ' +
+        (park ? park + ' (' + target.code + ')' : target.code) +
+        ' · ' +
+        Math.ceil(nearestDistance) +
+        ' studs'
+    };
+  }
   if (!reachable)
     return {
       hint:

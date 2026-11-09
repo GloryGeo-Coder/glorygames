@@ -103,6 +103,7 @@ async function visit(browser, mobile) {
         BABYLON.EngineStore.LastCreatedScene.getMeshByName('Carried garden bouquet')?.parent
           ?.name === 'Builder'
     );
+    assert.match(await page.locator('#gardenHint').innerText(), /Bench in E5/);
     await photo('carrying');
     await page.reload();
     await page.locator('#tray button').first().waitFor();
