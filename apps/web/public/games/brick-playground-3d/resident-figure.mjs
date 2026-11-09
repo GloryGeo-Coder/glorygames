@@ -105,37 +105,71 @@ export function residentFigure(B, scene, material, profile) {
       ],
       '#3867a6'
     );
-  } else {
+  } else if (profile.visit !== 'park') {
     groceries.oval(0.18, 0.665, 0.06, 0.037, 0.045, 0.036, '#85aa4b');
     groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
   }
-  const contents = groceries.mesh(
-    hallVisitor
-      ? profile.name + ' library book'
-      : profile.key === 'resident'
-        ? 'Shopping bag produce'
-        : profile.name + ' groceries',
-    root,
-    material
-  );
+  const contents =
+    profile.visit === 'park'
+      ? null
+      : groceries.mesh(
+          hallVisitor
+            ? profile.name + ' library book'
+            : profile.key === 'resident'
+              ? 'Shopping bag produce'
+              : profile.name + ' groceries',
+          root,
+          material
+        );
   const limbs = [-1, 1].map((side) => {
     const leg = new B.TransformNode('Resident leg', scene);
     leg.parent = root;
     leg.position.set(side * 0.1, 0.575, 0);
     const trousers = surface(B, scene);
-    trousers.profile(
-      0,
-      0,
-      [
-        [-0.48, 0.071, 0.075],
-        [-0.25, 0.077, 0.087],
-        [-0.04, 0.092, 0.106],
-        [0.02, 0.083, 0.1]
-      ],
-      navy
-    );
-    trousers.oval(0, -0.502, 0.032, 0.086, 0.066, 0.119, '#674938');
-    trousers.mesh('Resident trousers', leg, material);
+    let knee = null;
+    if (profile.visit === 'park') {
+      trousers.profile(
+        0,
+        0,
+        [
+          [-0.26, 0.078, 0.084],
+          [-0.04, 0.092, 0.106],
+          [0.02, 0.083, 0.1]
+        ],
+        navy
+      );
+      trousers.mesh('Park visitor thigh', leg, material);
+      knee = new B.TransformNode('Park visitor knee', scene);
+      knee.parent = leg;
+      knee.position.y = -0.25;
+      const shin = surface(B, scene);
+      shin.profile(
+        0,
+        0,
+        [
+          [-0.23, 0.071, 0.075],
+          [0, 0.077, 0.087],
+          [0.015, 0.072, 0.078]
+        ],
+        navy
+      );
+      shin.oval(0, -0.252, 0.032, 0.086, 0.066, 0.119, '#674938');
+      shin.mesh('Park visitor shoe and shin', knee, material);
+    } else {
+      trousers.profile(
+        0,
+        0,
+        [
+          [-0.48, 0.071, 0.075],
+          [-0.25, 0.077, 0.087],
+          [-0.04, 0.092, 0.106],
+          [0.02, 0.083, 0.1]
+        ],
+        navy
+      );
+      trousers.oval(0, -0.502, 0.032, 0.086, 0.066, 0.119, '#674938');
+      trousers.mesh('Resident trousers', leg, material);
+    }
     const arm = new B.TransformNode('Resident shoulder', scene);
     arm.parent = root;
     arm.position.set(side * 0.207, 0.936, 0);
@@ -143,19 +177,21 @@ export function residentFigure(B, scene, material, profile) {
     sleeve.oval(side * 0.02, -0.147, 0, 0.069, 0.192, 0.067, jacket);
     sleeve.oval(side * 0.027, -0.323, 0.012, 0.047, 0.069, 0.052, skin);
     sleeve.mesh('Resident sleeve', arm, material);
-    return { leg, arm, side };
+    return { leg, knee, arm, side };
   });
   root.setEnabled(false);
-  function show(trip, moving, t, waiting) {
+  function show(trip, moving, t, waiting, seat) {
     root.setEnabled(!!trip);
     if (!trip) return;
-    root.position.set(trip.x, trip.y, trip.z);
-    root.rotation.y = trip.heading;
-    contents.setEnabled(!waiting && (trip.returning || trip.phase === 'shopping'));
-    for (const { leg, arm, side } of limbs) {
+    const position = seat || trip;
+    root.position.set(position.x, position.y, position.z);
+    root.rotation.y = position.heading;
+    contents?.setEnabled(!waiting && (trip.returning || trip.phase === 'shopping'));
+    for (const { leg, knee, arm, side } of limbs) {
       const swing = moving ? side * Math.sin(t * 9) * 0.38 : 0;
-      leg.rotation.x = swing;
-      arm.rotation.x = -swing - 0.09;
+      leg.rotation.x = seat ? -1.42 : swing;
+      if (knee) knee.rotation.x = seat ? 1.48 : Math.max(0, -swing * 0.6);
+      arm.rotation.x = seat ? -0.48 : -swing - 0.09;
     }
   }
   return { show, dispose: () => root.dispose() };

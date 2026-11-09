@@ -172,7 +172,7 @@ async function delivery(browser, mobile) {
       const { citySave, moveIn, BLOCKS } =
         await import('/games/brick-playground-3d/settlement.mjs');
       const { starterBuggy } = await import('/games/brick-playground-3d/freight.mjs');
-      const { newTrip } = await import('/games/brick-playground-3d/resident-trip.mjs');
+      const { newTrip, visitFront } = await import('/games/brick-playground-3d/resident-trip.mjs');
       const { marketCounter } = await import('/games/brick-playground-3d/market-day.mjs');
       const town = world('city');
       for (const [id, neighbourhood] of [
@@ -205,12 +205,20 @@ async function delivery(browser, mobile) {
       town.neighbour = { ...newTrip(doors[2], doors[3]), paused: true };
       town.resident.routine = { hour: 8, visits: 2 };
       town.neighbour.routine = { hour: 14, visits: 3 };
+      const bench = town.pieces.find((p) => p.type === 'bench');
       for (let i = 0; i < 6; i++) {
         const door = { ...doors[0], id: 'extra-home-' + i, x: BLOCKS[8 + i].x, z: BLOCKS[8 + i].z };
         town.pieces.push(door);
-        const trip = { ...newTrip(door, doors[i % 2 ? 3 : 1]), paused: true };
+        const park = i >= 4;
+        const trip = { ...newTrip(door, park ? bench : doors[i % 2 ? 3 : 1], town), paused: true };
+        if (park)
+          Object.assign(trip, visitFront(town, bench, true).inside, {
+            phase: i === 4 ? 'shopping' : 'enter',
+            wait: i === 4 ? 4.5 : 0,
+            y: 0
+          });
         trip.routine = { hour: [8, 14, 18][i % 3], visits: i + 1 };
-        moveIn(town, 'Household ' + i, i % 2 ? 'hall' : 'spaza', trip);
+        moveIn(town, 'Household ' + i, park ? 'park' : i % 2 ? 'hall' : 'spaza', trip);
       }
       town.clockMinutes = 450;
       town.lighting = 'night';
@@ -266,6 +274,24 @@ async function delivery(browser, mobile) {
     await ready();
     const residents = await save();
     assert.equal(residents.members.length, 6, 'all six additional households loaded');
+    assert.equal(residents.members.filter((p) => p.visit === 'park').length, 2);
+    assert.equal(residents.family5.wait, 4.5, 'saved park rest is not clamped to a shop visit');
+    async function seatedVisitor() {
+      await p.waitForFunction(async () => {
+        const { loadWorld } = await import('/games/brick-playground-3d/model.mjs');
+        const { restingSeat } = await import('/games/brick-playground-3d/resident-trip.mjs');
+        const town = loadWorld('city', localStorage);
+        const seat = restingSeat(town, town.family5);
+        const root =
+          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Resident Household 4');
+        return (
+          seat &&
+          root?.isEnabled() &&
+          Math.hypot(root.position.x - seat.x, root.position.y - seat.y, root.position.z - seat.z) <
+            0.01
+        );
+      });
+    }
     await tap('transportButton');
     await p.locator('#transportPickup').selectOption('h-3-4');
     await p.locator('#transportDropoff').selectOption('h-4-4');
@@ -332,6 +358,7 @@ async function delivery(browser, mobile) {
     await atPickup();
     assert.equal(await x(), -12);
     await nightLights([-19.5, -9.5]);
+    await seatedVisitor();
     await districtLocation('Western Delivery Neighbourhood');
     const signs = await p.evaluate(() => {
       const scene = BABYLON.EngineStore.LastCreatedScene;
@@ -357,6 +384,16 @@ async function delivery(browser, mobile) {
     await atPickup();
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'last stop recovers to pickup with cargo');
     assert.equal((await save()).transport.stage, 2, 'recovery preserves cargo');
+    assert.deepEqual(
+      (await save()).family5,
+      residents.family5,
+      'recovery preserves seated park visitor'
+    );
+    assert.deepEqual(
+      (await save()).family6,
+      residents.family6,
+      'recovery preserves waiting park visitor'
+    );
     assert.deepEqual(
       (await save()).garden,
       residents.garden,
@@ -438,6 +475,12 @@ async function delivery(browser, mobile) {
     await p.waitForFunction(
       () => !BABYLON.EngineStore.LastCreatedScene.getMeshByName('Garden display town-park-2')
     );
+    await p.waitForFunction(
+      () =>
+        !BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName(
+          'Resident Household 4'
+        )?.isEnabled()
+    );
     await tap('transportButton');
     await closingTransport(() => tap('transportDispatch'));
     await atPickup();
@@ -446,6 +489,16 @@ async function delivery(browser, mobile) {
     await ready();
     assert.equal((await save()).transport.stage, 2);
     assert.deepEqual((await save()).market, residents.market, 'reload preserves receipts');
+    assert.deepEqual(
+      (await save()).family5,
+      residents.family5,
+      'cargo reload preserves the seated park rest'
+    );
+    assert.deepEqual(
+      (await save()).family6,
+      residents.family6,
+      'cargo reload preserves the bench queue'
+    );
     assert.deepEqual(
       (await save()).garden,
       residents.garden,
@@ -468,6 +521,7 @@ async function delivery(browser, mobile) {
     assert.ok(Math.abs((await x()) + 12) < 0.1, 'reload resumes cargo at checkpoint');
     await nightLights([-19.5, -9.5]);
     await parkAtDropoff();
+    await seatedVisitor();
     await nightLights([10.5, 20.5]);
     await districtLocation('Eastern Market Neighbourhood');
     await tap('transportAction');
@@ -589,6 +643,25 @@ async function delivery(browser, mobile) {
     assert.equal((await save()).transport.stage, 3);
     assert.equal((await save()).trail.stamps, 2, 'switching worlds keeps the passport');
     assert.deepEqual((await save()).garden, residents.garden, 'switching worlds keeps the garden');
+    assert.deepEqual(
+      (await save()).family5,
+      residents.family5,
+      'switching worlds keeps the seated visitor'
+    );
+    assert.deepEqual(
+      (await save()).family6,
+      residents.family6,
+      'switching worlds keeps the bench queue'
+    );
+    assert.equal(
+      await p.evaluate(
+        () =>
+          !!BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName(
+            'Resident Household 4'
+          )?.isEnabled()
+      ),
+      false
+    );
     assert.ok(await p.locator('#gardenHud').isHidden());
     assert.deepEqual(
       await p.evaluate(() =>
@@ -609,10 +682,18 @@ async function delivery(browser, mobile) {
       [],
       'neighbourhood signs are removed outside the city'
     );
+    await tap('worlds');
+    await tap('cityWorld');
+    await seatedVisitor();
+    assert.equal((await save()).transport.stage, 3);
+    assert.equal((await save()).trail.stamps, 2);
+    assert.deepEqual((await save()).garden, residents.garden);
+    assert.deepEqual((await save()).family5, residents.family5);
+    assert.deepEqual((await save()).family6, residents.family6);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules, market queue/receipts, night lights tracking the buggy, named neighbourhoods/signs and location transitions, gardens and held bouquets, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules including seated and queued park visits, market queue/receipts, night lights tracking the buggy, named neighbourhoods/signs and location transitions, gardens and held bouquets, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

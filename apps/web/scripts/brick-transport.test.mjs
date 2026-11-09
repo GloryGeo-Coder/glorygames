@@ -27,7 +27,13 @@ import {
   stampTrail,
   startingPavement
 } from '../public/games/brick-playground-3d/town-trail.mjs';
-import { newTrip, tripRuntime } from '../public/games/brick-playground-3d/resident-trip.mjs';
+import {
+  newTrip,
+  tripRuntime,
+  visitFront,
+  restingSeat,
+  advanceTrip
+} from '../public/games/brick-playground-3d/resident-trip.mjs';
 import {
   openMarket,
   marketCounter,
@@ -735,4 +741,65 @@ test('gardening and delivery preserve each other across growth, recovery, reload
   assert.deepEqual(restored.garden.displays, [{ id: bench.id, flower: 'daisy' }]);
   assert.equal(restored.transport.stage, 3, 'restoring a fixture cannot undo delivery');
   assert.deepEqual(restored.blocks, town.blocks);
+});
+
+test('seated and queued park visits retain rest time and routines through cargo recovery and delivery', () => {
+  const town = world('city');
+  const home = town.pieces.find((p) => p.type === 'door');
+  const secondHome = { ...home, id: 'park-transport-home', x: BLOCKS[0].x, z: BLOCKS[0].z };
+  const bench = town.pieces.find((p) => p.type === 'bench');
+  town.pieces.push(secondHome);
+  const front = visitFront(town, bench, true);
+  const first = newTrip(home, bench, town),
+    second = newTrip(secondHome, bench, town);
+  Object.assign(first, front.inside, {
+    phase: 'shopping',
+    wait: 4.5,
+    y: 0,
+    paused: true,
+    routine: { hour: 14, visits: 2 }
+  });
+  Object.assign(second, front.inside, {
+    phase: 'enter',
+    y: 0,
+    paused: true,
+    routine: { hour: 18, visits: 1 }
+  });
+  moveIn(town, 'Park first', 'park', first);
+  moveIn(town, 'Park next', 'park', second);
+  town.transport = { ...route(), stage: 2 };
+  town.streets = [...new Set([...town.streets, pickup, dropoff])];
+  town.garden = { plants: [], bouquet: 'daisy', displays: [{ id: bench.id, flower: 'marigold' }] };
+  const garden = structuredClone(town.garden);
+  let run = transportRun(buggy, town.transport, [], town);
+  for (let i = 0; i < 120; i++) tick(run, []);
+  run = transportRun(buggy, town.transport, [], town);
+  assert.equal(run.x, transportPoint(pickup).x);
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(restored.family1, first);
+  assert.deepEqual(restored.family2, second);
+  assert.deepEqual(restingSeat(restored, restored.family1), front.seat);
+  assert.equal(restored.family1.wait, 4.5);
+  assert.equal(householdsFor(restored).find((p) => p.key === 'family2').destination, 'Park bench');
+  run = transportRun(buggy, restored.transport, [], restored);
+  Object.assign(run, transportPoint(dropoff));
+  assert.ok(serviceTransport(run, restored.transport, restored, []));
+  assert.deepEqual(restored.family1, first, 'unloading does not advance a paused park rest');
+  assert.deepEqual(restored.family2, second, 'unloading does not discard the bench queue');
+  restored.family1.paused = restored.family2.paused = false;
+  const a = tripRuntime(),
+    b = tripRuntime();
+  advanceTrip(restored, restored.family2, b, 0.02);
+  assert.equal(b.waitingForSeat, true);
+  for (let i = 0; i < 226; i++) advanceTrip(restored, restored.family1, a, 0.02);
+  advanceTrip(restored, restored.family2, b, 0.02);
+  assert.equal(restored.family2.phase, 'shopping', 'queue resumes after the saved rest finishes');
+  assert.equal(restored.family1.returning, true);
+  assert.deepEqual(restingSeat(restored, restored.family2), front.seat);
+  const reopened = loadWorld('city', { getItem: () => citySave(restored) });
+  assert.equal(reopened.transport.stage, 3);
+  assert.deepEqual(reopened.garden, garden);
+  assert.deepEqual(reopened.family1.routine, first.routine);
+  assert.deepEqual(reopened.family2.routine, second.routine);
+  assert.equal(reopened.family2.wait, 6, 'a newly seated park visitor retains the full rest');
 });

@@ -270,10 +270,10 @@ export function studio(canvas) {
   const lighting = townLighting(B, scene, sky, sun);
   const settlement = cityScene(B, scene, box, mat, label);
   const residentModels = new Map();
-  function showResident(profile, trip, moving, t, waiting = false) {
+  function showResident(profile, trip, moving, t, waiting = false, seat = null) {
     if (trip && !residentModels.has(profile.key))
       residentModels.set(profile.key, residentFigure(B, scene, mat('#ffffff'), profile));
-    residentModels.get(profile.key)?.show(trip, moving, t, waiting);
+    residentModels.get(profile.key)?.show(trip, moving, t, waiting, seat);
   }
   function removeResident(key) {
     residentModels.get(key)?.dispose();

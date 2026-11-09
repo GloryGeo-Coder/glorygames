@@ -3,6 +3,7 @@ import {
   HOUSEHOLDS,
   DEPARTURES,
   MOVE_IN_SLOTS,
+  VISITS,
   householdsFor,
   homeClaimed,
   moveInProblem,
@@ -12,6 +13,8 @@ import {
 import {
   entrance,
   isEntrance,
+  isParkBench,
+  visitFront,
   newTrip,
   practiceHallTrip,
   practiceSpaza,
@@ -35,7 +38,12 @@ function status(trip, runtime, profile, data) {
   if (!trip) return 'No trip';
   if (trip.paused) return 'Paused';
   if (runtime.issue) return 'Stopped';
+  if (runtime.waitingForSeat) return 'Waiting for the park bench';
   if (trip.phase === 'done') return trip.routine ? 'At home' : 'Home again';
+  if (trip.park && trip.phase === 'shopping') {
+    const flower = data.garden?.displays.find((p) => p.id === trip.shop)?.flower;
+    if (flower) return flower === 'daisy' ? 'Resting by African daisies' : 'Resting by marigolds';
+  }
   if (waitingAtTill(data, profile, trip)) return 'At the till';
   if (trip.phase === 'shopping') return profile.activity;
   return trip.returning ? 'Walking home' : 'Walking to the ' + profile.destination.toLowerCase();
@@ -70,7 +78,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     return {
       key: 'new',
 
-      destination: $('resVisit').value === 'hall' ? 'Community hall' : 'Spaza'
+      visit: $('resVisit').value,
+      ...VISITS[$('resVisit').value]
     };
   }
   function reset() {
@@ -171,34 +180,44 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       data = city(),
       trip = data[p.key],
       doors = data.pieces.filter(isEntrance);
+    const destinations =
+      p.visit === 'park' ? data.pieces.filter((piece) => isParkBench(data, piece)) : doors;
     const homes = doors.filter((d) => !homeClaimed(data, d.id, p.key));
     for (const [id, list] of [
       ['resHome', homes],
-      ['resShop', doors]
+      ['resShop', destinations]
     ]) {
       $(id).replaceChildren();
       for (const d of list)
         $(id).add(
           new Option(
-            blockAt(d.x, d.z).code + ' · (' + d.x + ', ' + d.z + ') · ' + entrance(d).direction,
+            blockAt(d.x, d.z).code +
+              ' · (' +
+              d.x +
+              ', ' +
+              d.z +
+              ') · ' +
+              (d.type === 'bench' ? visitFront(data, d, true) : entrance(d)).direction,
             d.id
           )
         );
     }
     const home = homes.find((d) => d.id === (homeId || trip?.home)) || homes[0];
     const shop =
-      doors.find((d) => d.id === (shopId || trip?.shop)) ||
-      doors.find((d) => d !== home && !homeClaimed(data, d.id, p.key)) ||
-      doors.find((d) => d !== home);
+      destinations.find((d) => d.id === (shopId || trip?.shop)) ||
+      destinations.find((d) => d !== home && !homeClaimed(data, d.id, p.key)) ||
+      destinations.find((d) => d !== home);
     $('resHousehold').value = p.key;
     $('resHome').value = home?.id || '';
     $('resShop').value = shop?.id || '';
     label('resDestination', p.destination);
     label(
       'resDescription',
-      joining
-        ? 'Choose a street-facing home and destination for the new household.'
-        : p.name +
+      p.visit === 'park'
+        ? 'Choose a home and a ground-floor bench on a park block. The bench faces its approach street.'
+        : joining
+          ? 'Choose a street-facing home and destination for the new household.'
+          : p.name +
             ' walks from home to the ' +
             p.destination.toLowerCase() +
             ' and back. Choose two street-facing entrances.'
@@ -214,9 +233,11 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     );
     label(
       'resSetupHint',
-      homes.length && doors.length >= 2
-        ? 'Each household needs its own home. Face both entrances towards streets connected on the map.'
-        : 'Build ground-floor entrances or use an available practice layout.'
+      p.visit === 'park'
+        ? 'Turn the bench towards a connected street and leave its front clear.'
+        : homes.length && doors.length >= 2
+          ? 'Each household needs its own home. Face both entrances towards streets connected on the map.'
+          : 'Build ground-floor entrances or use an available practice layout.'
     );
     $('resEnd').hidden = $('resPause').hidden = !trip;
     label('resEnd', MOVE_IN_SLOTS.includes(p.key) ? 'Move out' : 'End trip');
@@ -274,7 +295,9 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
           (!home
             ? 'Build an unclaimed ground-floor home entrance.'
             : !destination || home === destination
-              ? 'Choose a different entrance for the destination.'
+              ? $('resVisit').value === 'park'
+                ? 'Build a ground-floor bench in a block with Park land use.'
+                : 'Choose a different entrance for the destination.'
               : 'This household will use its own home and can share a destination.')
       );
     $('resStart').disabled = !!problem || !home || !destination || home === destination;
@@ -343,12 +366,12 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       shop = data.pieces.find((d) => d.id === $('resShop').value);
     if (
       !isEntrance(home) ||
-      !isEntrance(shop) ||
+      !(p.visit === 'park' ? isParkBench(data, shop) : isEntrance(shop)) ||
       home === shop ||
       homeClaimed(data, home.id, p.key)
     )
       return;
-    const trip = newTrip(home, shop);
+    const trip = newTrip(home, shop, data);
     const profile = joining ? moveIn(data, $('resName').value, $('resVisit').value, trip) : p;
     if (!profile) return;
     data[profile.key] = trip;

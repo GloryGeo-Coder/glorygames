@@ -8,6 +8,7 @@ import {
   advanceTransport
 } from './transport.mjs';
 import { HOUSEHOLDS } from './settlement.mjs';
+import { restingSeat } from './resident-trip.mjs';
 import { residentControls } from './resident-ui.mjs';
 import {
   BLOCKS,
@@ -1920,7 +1921,8 @@ function start() {
           visible ? occupant : null,
           !!visible && !occupant.paused && residents.moving(profile.key),
           elapsed,
-          waitingAtTill(data, profile, occupant)
+          waitingAtTill(data, profile, occupant),
+          visible ? restingSeat(data, occupant) : null
         );
       }
       s.showMarket(data.market?.receipts.length < 2 ? marketCounter(data) : null);
