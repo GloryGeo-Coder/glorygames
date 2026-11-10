@@ -104,13 +104,11 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("[auth/login] failed", error);
-
-    const message = error instanceof Error ? error.message : String(error);
+    console.error("[auth/login] failed", { errorClass: error instanceof Error ? error.name : "UnknownError" });
 
     return NextResponse.json(
       {
-        error: `Login failed: ${message}`,
+        error: "Unable to sign in right now. Please try again.",
       },
       { status: 500 }
     );
