@@ -47,7 +47,7 @@ jobs:
           - group: construction
             suites: playground vehicle canal blueprint builder
           - group: neighbourhoods
-            suites: district freight upstairs settlement-neighbourhoods settlement-garden resident-park
+            suites: district freight upstairs settlement-neighbourhoods settlement-garden resident-park settlement-street-builder
           - group: settlements
             suites: settlement transport
           - group: residents

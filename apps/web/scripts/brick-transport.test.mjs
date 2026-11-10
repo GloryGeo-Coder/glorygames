@@ -1,3 +1,4 @@
+import { previewStreet } from '../public/games/brick-playground-3d/street-builder.mjs';
 import {
   boundaryChange,
   neighbourhoodNames
@@ -802,4 +803,53 @@ test('seated and queued park visits retain rest time and routines through cargo 
   assert.deepEqual(reopened.family1.routine, first.routine);
   assert.deepEqual(reopened.family2.routine, second.routine);
   assert.equal(reopened.family2.wait, 6, 'a newly seated park visitor retains the full rest');
+});
+
+
+test('Street Builder destination edits preserve cargo and block unloading until the street is restored', () => {
+  const town = world('city');
+  town.transport = { ...route(), stage: 2 };
+  const initial = citySave(town);
+  const sketch = previewStreet(town, 4 * 9 + 4, 4 * 9 + 5, 'horizontal', 'lay');
+  assert.equal(citySave(town), initial, 'preview and cancellation do not change saved cargo or roads');
+  town.streets = sketch.streets;
+  const restored = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(restored.transport, town.transport);
+  const run = transportRun(buggy, restored.transport, [], restored);
+  const loaded = run.load;
+  Object.assign(run, transportPoint(dropoff));
+  assert.ok(canServiceTransport(run, restored.transport, restored, []));
+  restored.streets = previewStreet(restored, 4 * 9 + 4, 4 * 9 + 5, 'horizontal', 'remove').streets;
+  assert.equal(serviceTransport(run, restored.transport, restored, []), false);
+  assert.equal(run.load, loaded);
+  const missing = loadWorld('city', { getItem: () => citySave(restored) });
+  assert.deepEqual(missing.transport, town.transport);
+  missing.streets = previewStreet(missing, 4 * 9 + 4, 4 * 9 + 5, 'horizontal', 'lay').streets;
+  assert.ok(serviceTransport(run, missing.transport, missing, []));
+  assert.equal(missing.transport.stage, 3);
+  assert.equal(run.load, loaded - 5);
+  assert.deepEqual(missing.pieces, town.pieces);
+  assert.deepEqual(missing.blocks, town.blocks);
+  const completed = loadWorld('city', { getItem: () => citySave(missing) });
+  assert.equal(completed.transport.stage, 3);
+  completed.streets = previewStreet(completed, 4 * 9 + 4, 4 * 9 + 5, 'horizontal', 'remove').streets;
+  assert.equal(transportRun(buggy, completed.transport, [], completed), null);
+  assert.equal(completed.transport.stage, 3, 'later road removal cannot replay a delivery');
+});
+test('Street Builder pickup removal and reinstatement preserve the loaded recovery checkpoint', () => {
+  const town = world('city');
+  town.transport = { ...route(), stage: 2 };
+  const before = transportRun(buggy, town.transport, [], town);
+  town.streets = previewStreet(town, 4 * 9 + 3, 4 * 9 + 4, 'horizontal', 'remove').streets;
+  const missing = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(missing.transport, town.transport);
+  assert.equal(transportRun(buggy, missing.transport, [], missing), null);
+  missing.streets = previewStreet(missing, 4 * 9 + 3, 4 * 9 + 4, 'horizontal', 'lay').streets;
+  const restored = loadWorld('city', { getItem: () => citySave(missing) });
+  const after = transportRun(buggy, restored.transport, [], restored);
+  assert.ok(after);
+  assert.equal(after.load, before.load);
+  assert.equal(after.x, before.x);
+  assert.equal(after.z, before.z);
+  assert.deepEqual(restored.transport, town.transport);
 });
