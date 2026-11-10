@@ -1052,6 +1052,38 @@ dialog p {
 #directoryWalk {
   min-height: 38px;
 }
+#postHud {
+  display: grid;
+  gap: 4px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+#postHint,
+#postDirectoryTip {
+  font-size: 13px;
+}
+#postDirectoryTip {
+  margin: 6px 0;
+}
+#postSheet {
+  max-height: 24dvh;
+  overflow: auto;
+}
+#postSheet summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+#postOffice,
+#postManifest {
+  font-size: 12px;
+  margin: 4px 0;
+}
+#postManifest {
+  padding-left: 18px;
+}
+#postAction {
+  background: #ffe5bc;
+}
 #roadLocation {
   font-weight: 700;
   color: #1c4c72;
