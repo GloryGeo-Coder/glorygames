@@ -1,3 +1,4 @@
+import { transportStreetLabel } from '../public/games/brick-playground-3d/transport-ui.mjs';
 import { previewStreet } from '../public/games/brick-playground-3d/street-builder.mjs';
 import {
   boundaryChange,
@@ -805,13 +806,16 @@ test('seated and queued park visits retain rest time and routines through cargo 
   assert.equal(reopened.family2.wait, 6, 'a newly seated park visitor retains the full rest');
 });
 
-
 test('Street Builder destination edits preserve cargo and block unloading until the street is restored', () => {
   const town = world('city');
   town.transport = { ...route(), stage: 2 };
   const initial = citySave(town);
   const sketch = previewStreet(town, 4 * 9 + 4, 4 * 9 + 5, 'horizontal', 'lay');
-  assert.equal(citySave(town), initial, 'preview and cancellation do not change saved cargo or roads');
+  assert.equal(
+    citySave(town),
+    initial,
+    'preview and cancellation do not change saved cargo or roads'
+  );
   town.streets = sketch.streets;
   const restored = loadWorld('city', { getItem: () => citySave(town) });
   assert.deepEqual(restored.transport, town.transport);
@@ -832,7 +836,13 @@ test('Street Builder destination edits preserve cargo and block unloading until 
   assert.deepEqual(missing.blocks, town.blocks);
   const completed = loadWorld('city', { getItem: () => citySave(missing) });
   assert.equal(completed.transport.stage, 3);
-  completed.streets = previewStreet(completed, 4 * 9 + 4, 4 * 9 + 5, 'horizontal', 'remove').streets;
+  completed.streets = previewStreet(
+    completed,
+    4 * 9 + 4,
+    4 * 9 + 5,
+    'horizontal',
+    'remove'
+  ).streets;
   assert.equal(transportRun(buggy, completed.transport, [], completed), null);
   assert.equal(completed.transport.stage, 3, 'later road removal cannot replay a delivery');
 });
@@ -852,4 +862,55 @@ test('Street Builder pickup removal and reinstatement preserve the loaded recove
   assert.equal(after.x, before.x);
   assert.equal(after.z, before.z);
   assert.deepEqual(restored.transport, town.transport);
+});
+
+test('named roads survive cargo recovery and delivery, while road Undo restores names without replaying cargo', () => {
+  const town = world('city');
+  town.streets = [pickup, dropoff];
+  town.streetNames = { [pickup]: 'Cargo Lane', [dropoff]: 'Market Road' };
+  town.transport = { ...route(), stage: 2 };
+  const baseline = { streets: town.streets, streetNames: town.streetNames };
+  const apply = (preview) =>
+    Object.assign(town, { streets: preview.streets, streetNames: preview.streetNames });
+  const rename = previewStreet(town, 4 * 9 + 3, 4 * 9 + 4, 'horizontal', 'name', 'Depot Lane');
+  assert.equal(
+    town.streetNames[pickup],
+    'Cargo Lane',
+    'preview does not change the active delivery'
+  );
+  apply(rename);
+  const saved = loadWorld('city', { getItem: () => citySave(town) });
+  assert.equal(saved.streetNames[pickup], 'Depot Lane');
+  assert.deepEqual(saved.transport, town.transport);
+  const run = transportRun(buggy, saved.transport, [], saved);
+  assert.ok(run);
+  const loaded = run.load;
+  apply(previewStreet(town, 4 * 9 + 4, 4 * 9 + 5, 'horizontal', 'remove'));
+  assert.equal(town.streetNames[dropoff], undefined);
+  Object.assign(run, transportPoint(dropoff));
+  assert.equal(serviceTransport(run, town.transport, town, []), false);
+  assert.equal(run.load, loaded);
+  Object.assign(town, baseline);
+  assert.ok(serviceTransport(run, town.transport, town, []));
+  assert.equal(town.transport.stage, 3);
+  const completed = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(completed.streetNames, baseline.streetNames);
+  assert.equal(completed.transport.stage, 3);
+  apply(previewStreet(town, 4 * 9 + 3, 4 * 9 + 4, 'horizontal', 'unname'));
+  assert.equal(town.streetNames[pickup], undefined);
+  Object.assign(town, baseline);
+  assert.equal(town.transport.stage, 3, 'construction Undo cannot restore already delivered cargo');
+  assert.deepEqual(town.streetNames, baseline.streetNames);
+});
+
+test('transport stop labels use current street names while retaining the grid fallback', () => {
+  const town = city();
+  const grid = transportStreetLabel(pickup);
+  town.streetNames = { [pickup]: 'Cargo Lane' };
+  assert.equal(transportStreetLabel(pickup, town), 'Cargo Lane · ' + grid);
+  town.streetNames = { [pickup]: 'Depot Road' };
+  assert.equal(transportStreetLabel(pickup, town), 'Depot Road · ' + grid);
+  town.streetNames = undefined;
+  assert.equal(transportStreetLabel(pickup, town), grid);
+  assert.equal(transportStreetLabel('missing', town), 'Unavailable street');
 });

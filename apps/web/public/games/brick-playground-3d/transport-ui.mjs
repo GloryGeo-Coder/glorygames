@@ -5,10 +5,12 @@ const $ = (id) => document.getElementById(id);
 const text = (id, value) => {
   if ($(id).textContent !== value) $(id).textContent = value;
 };
-export function transportStreetLabel(key) {
+export function transportStreetLabel(key, city = null) {
+  const name = city?.streetNames?.[key];
+  const prefix = typeof name === 'string' && name.trim() ? name.trim() + ' · ' : '';
   for (const b of BLOCKS) {
     for (const [edge, street] of Object.entries(streetKeys(b)))
-      if (street === key) return b.code + ' · ' + edge + ' street';
+      if (street === key) return prefix + b.code + ' · ' + edge + ' street';
   }
   return 'Unavailable street';
 }
@@ -35,7 +37,7 @@ export function transportControls({
       for (const street of data.streets) {
         const option = document.createElement('option');
         option.value = street;
-        option.textContent = transportStreetLabel(street);
+        option.textContent = transportStreetLabel(street, data);
         $(id).append(option);
       }
       $(id).value = data.streets.includes(key) ? key : data.streets[fallback] || '';
@@ -62,9 +64,9 @@ export function transportControls({
       'transportSaved',
       trip
         ? (trip.stage === 3 ? 'Completed: ' : 'Saved delivery: ') +
-            transportStreetLabel(trip.pickup) +
+            transportStreetLabel(trip.pickup, city()) +
             ' → ' +
-            transportStreetLabel(trip.dropoff)
+            transportStreetLabel(trip.dropoff, city())
         : 'No delivery assigned.'
     );
   }
@@ -126,7 +128,7 @@ export function transportControls({
     );
     text(
       'transportTarget',
-      transportStreetLabel(key) + (complete ? '' : ' · ' + distance + ' studs')
+      transportStreetLabel(key, data) + (complete ? '' : ' · ' + distance + ' studs')
     );
     text(
       'transportHint',

@@ -67,6 +67,18 @@ async function delivery(browser, mobile) {
         { timeout: 10000 }
       );
       assert.equal((await save()).lighting, 'night');
+      assert.match(await p.locator('#transportTarget').innerText(), /^(Cargo Lane|Market Road) · /);
+      assert.deepEqual((await save()).streetNames, {
+        'h-3-4': 'Cargo Lane',
+        'h-4-4': 'Market Road'
+      });
+      await p.waitForFunction(() => {
+        const scene = BABYLON.EngineStore.LastCreatedScene;
+        return (
+          scene.getMeshByName('Street sign · Cargo Lane') &&
+          scene.getMeshByName('Street sign · Market Road')
+        );
+      });
     }
     const ready = () => p.locator('#tray button').first().waitFor();
     const touch = mobile && (await ctx.newCDPSession(p));
@@ -169,8 +181,9 @@ async function delivery(browser, mobile) {
     await ready();
     const isolated = await p.evaluate(async () => {
       const { world, saveKey } = await import('/games/brick-playground-3d/model.mjs');
-      const { citySave, moveIn, BLOCKS } =
-        await import('/games/brick-playground-3d/settlement.mjs');
+      const { citySave, moveIn, BLOCKS } = await import(
+        '/games/brick-playground-3d/settlement.mjs'
+      );
       const { starterBuggy } = await import('/games/brick-playground-3d/freight.mjs');
       const { newTrip, visitFront } = await import('/games/brick-playground-3d/resident-trip.mjs');
       const { marketCounter } = await import('/games/brick-playground-3d/market-day.mjs');
@@ -183,6 +196,7 @@ async function delivery(browser, mobile) {
       ])
         town.blocks[id] = { ...town.blocks[id], neighbourhood };
       town.streets = ['h-3-4', 'h-4-4'];
+      town.streetNames = { 'h-3-4': 'Cargo Lane', 'h-4-4': 'Market Road' };
       const doors = [30, 36, 54, 60].map((x, i) => ({
         id: 'test-door-' + i,
         type: 'door',
@@ -470,6 +484,10 @@ async function delivery(browser, mobile) {
       'map walking honors the selected block after leaving the buggy'
     );
     assert.equal((await save()).transport.stage, 2);
+    assert.deepEqual((await save()).streetNames, residents.streetNames);
+    await p.waitForFunction(
+      () => !BABYLON.EngineStore.LastCreatedScene.getMeshByName('Street sign · Cargo Lane')
+    );
     assert.deepEqual((await save()).trail, residents.trail);
     assert.deepEqual((await save()).garden, residents.garden, 'map walking preserves garden state');
     await p.waitForFunction(
@@ -489,6 +507,11 @@ async function delivery(browser, mobile) {
     await ready();
     assert.equal((await save()).transport.stage, 2);
     assert.deepEqual((await save()).market, residents.market, 'reload preserves receipts');
+    assert.deepEqual(
+      (await save()).streetNames,
+      residents.streetNames,
+      'cargo reload preserves named roads'
+    );
     assert.deepEqual(
       (await save()).family5,
       residents.family5,
@@ -693,7 +716,7 @@ async function delivery(browser, mobile) {
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules including seated and queued park visits, market queue/receipts, night lights tracking the buggy, named neighbourhoods/signs and location transitions, gardens and held bouquets, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules including seated and queued park visits, market queue/receipts, night lights tracking the buggy, named neighbourhoods/streets/signs and location transitions, gardens and held bouquets, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

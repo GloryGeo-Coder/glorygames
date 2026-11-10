@@ -18,6 +18,7 @@ import { previewBlockRow, stageBlockRow } from './block-expansion.mjs';
 import { lightingMode, streetLamps, surveyLighting, suggestLamp } from './street-lighting.mjs';
 import { neighbourhoodMap } from './neighbourhood-map.mjs';
 import { streetBuilderMap } from './street-builder-map.mjs';
+import { streetDirectoryMap } from './street-directory.mjs';
 import { trailMap } from './trail-map.mjs';
 import { PALETTE, size } from './model.mjs';
 const $ = (id) => document.getElementById(id);
@@ -87,15 +88,44 @@ export function cityMap(commit) {
   const builder = streetBuilderMap({
     city: () => working,
     paint,
-    stage: (streets) => {
+    stage: (streets, streetNames) => {
       if (!editable) return;
-      working = { ...working, streets };
+      working = { ...working, streets, streetNames };
       select(block);
     }
   });
+  // The original town-trail map action starts a walk at a specific curb.
+  function walkFromCurb(front) {
+    dialog.close();
+    commit(working, front.block, { kind: 'trail', front }, working !== original);
+  }
+  let directoryClose = true;
+  const directory = streetDirectoryMap({ city: () => working, paint, walk: walkFromCurb });
+  $('directoryZoom').onclick = () => {
+    directoryClose = !directoryClose;
+    paint();
+  };
+  $('streetDirectory').querySelector('summary').onclick = () => {
+    if (!$('streetDirectory').open) directory.open();
+  };
+  $('streetDirectory').ontoggle = () => {
+    if (!dialog.open) return;
+    if ($('streetDirectory').open) {
+      directoryClose = true;
+      $('streetBuilder').open =
+        $('areaBoard').open =
+        $('trailBoard').open =
+        $('blockRepeat').open =
+          false;
+      $('mapRoute').value = '';
+      closeUp = false;
+    }
+    paint();
+  };
   $('streetBuilder').ontoggle = () => {
     if (!dialog.open) return;
     if ($('streetBuilder').open) {
+      $('streetDirectory').open = false;
       $('areaBoard').open = $('trailBoard').open = $('blockRepeat').open = false;
       $('mapRoute').value = '';
       closeUp = false;
@@ -118,6 +148,7 @@ export function cityMap(commit) {
   $('areaBoard').ontoggle = () => {
     if (!dialog.open) return;
     if ($('areaBoard').open) {
+      $('streetDirectory').open = false;
       $('streetBuilder').open = false;
       $('trailBoard').open = $('blockRepeat').open = false;
       $('mapRoute').value = '';
@@ -131,14 +162,12 @@ export function cityMap(commit) {
       working = { ...working, trail };
     },
     repaint: paint,
-    launch: (front) => {
-      dialog.close();
-      commit(working, front.block, { kind: 'trail', front }, working !== original);
-    }
+    launch: walkFromCurb
   });
   $('trailBoard').ontoggle = () => {
     if (!dialog.open) return;
     if ($('trailBoard').open) {
+      $('streetDirectory').open = false;
       $('streetBuilder').open = false;
       $('areaBoard').open = false;
       trails.sync();
@@ -263,6 +292,7 @@ export function cityMap(commit) {
   $('blockRepeat').ontoggle = () => {
     if (!$('cityMap').open) return;
     if ($('blockRepeat').open) {
+      $('streetDirectory').open = false;
       $('streetBuilder').open = false;
       $('areaBoard').open = false;
       $('trailBoard').open = false;
@@ -371,10 +401,14 @@ export function cityMap(commit) {
     const trailPoints = trails.atlasPoints();
     $('trailZoom').hidden = !trailPoints.length;
     $('trailZoom').textContent = trailClose ? 'Whole town' : 'Trail close-up';
-    if (trailPoints.length ? !trailClose : !closeUp || !canFit) return;
-    const points = trailPoints.length
-      ? trailPoints
-      : [plan.home.center, plan.destination.center, ...plan.points];
+    const directoryPoints = directory.atlasPoints();
+    $('directoryZoom').textContent = directoryClose ? 'Whole town' : 'Street close-up';
+    let points;
+    if (directoryPoints.length && directoryClose) points = directoryPoints;
+    else if (trailPoints.length && trailClose) points = trailPoints;
+    else if (canFit && closeUp)
+      points = [plan.home.center, plan.destination.center, ...plan.points];
+    else return;
     for (const key of plan?.missing || []) {
       const edge = streetSegment(key),
         dx = edge.axis === 'h' ? PITCH / 2 : 0,
@@ -397,7 +431,11 @@ export function cityMap(commit) {
   }
   function paint() {
     $('mapFields').hidden =
-      !editable || $('blockRepeat').open || $('areaBoard').open || $('streetBuilder').open;
+      !editable ||
+      $('blockRepeat').open ||
+      $('areaBoard').open ||
+      $('streetBuilder').open ||
+      $('streetDirectory').open;
     $('parkMapTip').textContent =
       $('mapFields').hidden && editable ? '' : parkSummary(working, block, Date.now());
     routePreview();
@@ -445,6 +483,7 @@ export function cityMap(commit) {
     paintRoute();
     trails.draw(ctx, px, py, routeLine);
     builder.draw(ctx, PITCH * scale);
+    directory.draw(ctx, px, py, routeLine);
     ctx.restore();
   }
   function select(b) {
@@ -490,6 +529,7 @@ export function cityMap(commit) {
   };
   $('mapRoute').onchange = () => {
     if ($('mapRoute').value) {
+      $('streetDirectory').open = false;
       $('streetBuilder').open = false;
       $('areaBoard').open = false;
       $('blockRepeat').open = false;
@@ -518,7 +558,8 @@ export function cityMap(commit) {
     const r = canvas.getBoundingClientRect(),
       x = (viewX + (((e.clientX - r.left) / r.width) * canvas.width) / zoom) / (PITCH * scale),
       y = (viewY + (((e.clientY - r.top) / r.height) * canvas.height) / zoom) / (PITCH * scale);
-    if (editable && builder.pick(x, y)) return;
+    if (directory.pick(x * PITCH - HALF, HALF - y * PITCH) || (editable && builder.pick(x, y)))
+      return;
     const col = Math.floor(x),
       row = Math.floor(y);
     if (col >= 0 && row >= 0 && col < SIDE && row < SIDE) select(BLOCKS[row * SIDE + col]);
@@ -535,6 +576,7 @@ export function cityMap(commit) {
     closeUp = false;
     editable = editing;
     working = original = city;
+    $('streetDirectory').open = false;
     $('streetBuilder').open = false;
     $('streetBuilder').hidden = !editing;
     builder.reset();

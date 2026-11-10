@@ -238,7 +238,7 @@ export function studio(canvas) {
       transform(planMeshes[i], p);
     });
   }
-  function label(words, x, y, z, width, fit = false) {
+  function label(words, x, y, z, width, fit = false, background = '#174c4b') {
     const tex = new B.DynamicTexture(words, { width: 512, height: 120 }, scene, false);
     let font = 'bold 66px sans-serif';
     if (fit) {
@@ -249,7 +249,7 @@ export function studio(canvas) {
         Math.min(66, Math.floor((66 * 480) / Math.max(1, ctx.measureText(words).width))) +
         'px sans-serif';
     }
-    tex.drawText(words, null, 83, font, '#fff1bc', '#174c4b', true);
+    tex.drawText(words, null, 83, font, '#fff1bc', background, true);
     const plane = B.MeshBuilder.CreatePlane(
       words,
       {
