@@ -1,3 +1,9 @@
+import { SIDE } from '../public/games/brick-playground-3d/settlement.mjs';
+import {
+  previewStreet,
+  streetEffects,
+  JUNCTIONS
+} from '../public/games/brick-playground-3d/street-builder.mjs';
 import {
   GROW_MS,
   gardenVisit,
@@ -523,4 +529,60 @@ test('garden decorations follow placed IDs and corrupt garden data leaves the se
   const old = loadWorld('city', { getItem: () => JSON.stringify(raw) });
   assert.equal(old.garden, undefined);
   assert.deepEqual(old.pieces, city.pieces);
+});
+
+test('street sketches trace both bends, reuse shared sections and stay on valid city edges', () => {
+  const city = world('city'),
+    saved = citySave(city),
+    corner = (col, row) => row * (SIDE + 1) + col;
+  const start = corner(3, 4),
+    end = corner(6, 5);
+  const run = previewStreet(city, start, end, 'horizontal', 'lay');
+  assert.deepEqual(
+    run.sections.map((s) => s.key),
+    ['h-3-4', 'h-4-4', 'h-5-4', 'v-6-4']
+  );
+  assert.deepEqual(run.changed, ['h-4-4', 'h-5-4', 'v-6-4']);
+  const other = previewStreet(city, start, end, 'vertical', 'lay');
+  assert.deepEqual(other.changed, ['v-3-4', 'h-3-5', 'h-4-5', 'h-5-5']);
+  const staged = { ...city, streets: run.streets };
+  assert.equal(previewStreet(staged, end, start, 'vertical', 'lay').streets, staged.streets);
+  assert.deepEqual(
+    previewStreet(staged, end, corner(4, 4), 'vertical', 'remove').streets,
+    city.streets
+  );
+  assert.equal(citySave(city), saved);
+  const valid = new Set(BLOCKS.flatMap((b) => Object.values(streetKeys(b))));
+  for (const a of JUNCTIONS)
+    for (const b of JUNCTIONS)
+      for (const bend of ['horizontal', 'vertical']) {
+        const path = previewStreet(city, a.id, b.id, bend, 'lay');
+        if (a === b) {
+          assert.equal(path, null);
+          continue;
+        }
+        assert.equal(path.sections.length, Math.abs(a.col - b.col) + Math.abs(a.row - b.row));
+        assert.ok(path.sections.every((s) => valid.has(s.key)));
+        assert.equal(new Set(path.sections.map((s) => s.key)).size, path.sections.length);
+      }
+  for (const invalid of [-1, 81, 'map', null, undefined])
+    assert.equal(previewStreet(city, invalid, 0, 'horizontal', 'lay'), null);
+});
+test('street previews predict gaining, losing, and shortening a household connection against the staged layout', () => {
+  const city = plannerCity();
+  let route = previewStreet(city, 3 * 9 + 3, 3 * 9 + 4, 'horizontal', 'lay');
+  assert.deepEqual(streetEffects(city, route.streets), ['Lebo gains a street connection.']);
+  const direct = { ...city, streets: route.streets };
+  route = previewStreet(direct, 3 * 9 + 4, 3 * 9 + 3, 'horizontal', 'remove');
+  assert.deepEqual(streetEffects(direct, route.streets), ['Lebo loses the street connection.']);
+  const detour = { ...city, streets: [...city.streets, 'v-3-2', 'h-3-2', 'v-4-2'] };
+  route = previewStreet(detour, 3 * 9 + 3, 3 * 9 + 4, 'horizontal', 'lay');
+  assert.deepEqual(streetEffects(detour, route.streets), [
+    'Lebo’s street route is 48 studs shorter.'
+  ]);
+  const shorter = { ...detour, streets: route.streets };
+  assert.deepEqual(streetEffects(shorter, detour.streets), [
+    'Lebo’s street route is 48 studs longer.'
+  ]);
+  assert.deepEqual(streetEffects(shorter, shorter.streets), []);
 });
