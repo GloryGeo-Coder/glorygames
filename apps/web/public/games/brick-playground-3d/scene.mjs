@@ -1,6 +1,7 @@
 import { transportPoint } from './transport.mjs';
 import { residentFigure } from './resident-figure.mjs';
 import { townLighting } from './town-lighting.mjs';
+import { postScene } from './post-scene.mjs';
 import { builder } from './builder.mjs';
 import { cityScene } from './city-scene.mjs';
 import { COUNTER, FLAT } from './upstairs.mjs';
@@ -325,6 +326,7 @@ export function studio(canvas) {
     worldNodes = [];
     showMarket(null);
     showTrail(null);
+    showPost(null, null, false);
     if (kind === 'city') {
       lighting.reset();
       settlement.close();
@@ -567,6 +569,7 @@ export function studio(canvas) {
     person = explorer.root;
   const body = (name, x, y, z, w, h, d, color, parent) =>
     box(name, x, y, z, w, h, d, color, parent);
+  const showPost = postScene(B, box, person);
   const gold = '#edac36';
   const parcel = new B.TransformNode('Market crate', scene);
   parcel.parent = person;
@@ -913,6 +916,7 @@ export function studio(canvas) {
     showResident,
     showMarket,
     showTrail,
+    showPost,
     removeResident,
     townLighting: lighting.update,
     citySector: settlement.sector,

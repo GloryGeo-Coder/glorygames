@@ -256,6 +256,36 @@ export function restoreMarket(value) {
   }
   return { shop: value.shop, receipts };
 }
+export const MAX_LETTERS = 3;
+function restoreAddress(value) {
+  if (
+    typeof value?.id !== 'string' ||
+    !value.id ||
+    typeof value.address !== 'string' ||
+    !value.address.trim()
+  )
+    return null;
+  return { id: value.id, address: value.address.slice(0, 96) };
+}
+export function restorePost(value) {
+  const office = restoreAddress(value?.office);
+  if (
+    !office ||
+    !Array.isArray(value.stops) ||
+    !value.stops.length ||
+    value.stops.length > MAX_LETTERS
+  )
+    return null;
+  const ids = new Set([office.id]),
+    stops = [];
+  for (const row of value.stops) {
+    const stop = restoreAddress(row);
+    if (!stop || ids.has(stop.id)) return null;
+    ids.add(stop.id);
+    stops.push({ ...stop, delivered: row.delivered === true });
+  }
+  return { office, stops, complete: value.complete === true && stops.every((s) => s.delivered) };
+}
 export function retainedStreetNames(names, streets) {
   if (!names || typeof names !== 'object' || Array.isArray(names)) return undefined;
   const kept = {};
@@ -299,12 +329,14 @@ export function cityLayout(v) {
     }
   }
   const streetNames = retainedStreetNames(v.streetNames, v.streets);
+  const post = restorePost(v.post);
   const garden = restoreGarden(v.garden, v.pieces);
   const trail = restoreTrail(v.trail);
   const market = restoreMarket(v.market);
   return {
     ...(streetNames ? { streetNames } : {}),
     ...(garden ? { garden } : {}),
+    ...(post ? { post } : {}),
     ...(trail ? { trail } : {}),
     ...(market ? { market } : {}),
     ...(['night', 'day'].includes(v.lighting) ? { lighting: v.lighting } : {}),

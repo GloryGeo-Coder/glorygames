@@ -67,6 +67,7 @@ async function delivery(browser, mobile) {
         { timeout: 10000 }
       );
       assert.equal((await save()).lighting, 'night');
+      await postalState(false);
       assert.match(await p.locator('#transportTarget').innerText(), /^(Cargo Lane|Market Road) · /);
       assert.deepEqual((await save()).streetNames, {
         'h-3-4': 'Cargo Lane',
@@ -187,6 +188,7 @@ async function delivery(browser, mobile) {
       const { starterBuggy } = await import('/games/brick-playground-3d/freight.mjs');
       const { newTrip, visitFront } = await import('/games/brick-playground-3d/resident-trip.mjs');
       const { marketCounter } = await import('/games/brick-playground-3d/market-day.mjs');
+      const { namedDoors } = await import('/games/brick-playground-3d/street-directory.mjs');
       const town = world('city');
       for (const [id, neighbourhood] of [
         [27, 'Western Delivery Neighbourhood'],
@@ -269,6 +271,25 @@ async function delivery(browser, mobile) {
         paused: false,
         wait: 1
       });
+      const postOffice = town.pieces.find((piece) => piece.type === 'door');
+      town.pieces.push(
+        ...[-21, -15].map((x, i) => ({
+          id: 'postal-door-' + i,
+          type: 'door',
+          color: 'Coral',
+          x,
+          y: 0,
+          z: 5,
+          r: 0
+        }))
+      );
+      const postalDoors = namedDoors(town);
+      const address = (id) => ({ id, address: postalDoors.get(id).address });
+      town.post = {
+        office: address(postOffice.id),
+        stops: [-21, -15].map((_, i) => ({ ...address('postal-door-' + i), delivered: i === 0 })),
+        complete: false
+      };
       localStorage.setItem(saveKey('city'), citySave(town));
       const snapshot = {};
       for (const kind of ['garage', 'free', 'district']) {
@@ -287,6 +308,22 @@ async function delivery(browser, mobile) {
     await p.reload();
     await ready();
     const residents = await save();
+    async function postalState(carrying) {
+      assert.deepEqual(
+        (await save()).post,
+        residents.post,
+        'buggy actions preserve the half-delivered postbag'
+      );
+      await p.waitForFunction(
+        (carrying) =>
+          !!BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName(
+            'Post satchel'
+          )?.isEnabled() === carrying,
+        carrying
+      );
+      if (!carrying && (await p.locator('#transportPanel').isVisible()))
+        assert.ok(await p.locator('#postHud').isHidden());
+    }
     assert.equal(residents.members.length, 6, 'all six additional households loaded');
     assert.equal(residents.members.filter((p) => p.visit === 'park').length, 2);
     assert.equal(residents.family5.wait, 4.5, 'saved park rest is not clamped to a shop visit');
@@ -464,6 +501,7 @@ async function delivery(browser, mobile) {
       2,
       'leaving the buggy for a trail preserves cargo'
     );
+    await postalState(true);
     await tap('transportButton');
     await closingTransport(() => tap('transportDispatch'));
     await atPickup();
@@ -484,6 +522,7 @@ async function delivery(browser, mobile) {
       'map walking honors the selected block after leaving the buggy'
     );
     assert.equal((await save()).transport.stage, 2);
+    await postalState(true);
     assert.deepEqual((await save()).streetNames, residents.streetNames);
     await p.waitForFunction(
       () => !BABYLON.EngineStore.LastCreatedScene.getMeshByName('Street sign · Cargo Lane')
@@ -507,6 +546,7 @@ async function delivery(browser, mobile) {
     await ready();
     assert.equal((await save()).transport.stage, 2);
     assert.deepEqual((await save()).market, residents.market, 'reload preserves receipts');
+    assert.deepEqual((await save()).post, residents.post, 'cargo reload preserves postal progress');
     assert.deepEqual(
       (await save()).streetNames,
       residents.streetNames,
@@ -572,6 +612,7 @@ async function delivery(browser, mobile) {
       'neighbourhood label returns after exiting the buggy'
     );
     const after = await save();
+    assert.deepEqual(after.post, residents.post, 'crate delivery does not deliver any letters');
     assert.deepEqual(after.blocks, residents.blocks, 'delivery preserves named neighbourhoods');
     assert.equal(after.lighting, 'night');
     assert.deepEqual(
@@ -696,6 +737,16 @@ async function delivery(browser, mobile) {
       'garden meshes are removed outside the city'
     );
     assert.ok(await p.locator('#areaLocation').isHidden());
+    assert.ok(await p.locator('#postHud').isHidden());
+    assert.equal(
+      await p.evaluate(
+        () =>
+          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName(
+            'Post satchel'
+          )?.isEnabled() || false
+      ),
+      false
+    );
     assert.deepEqual(
       await p.evaluate(() =>
         BABYLON.EngineStore.LastCreatedScene.meshes
@@ -710,13 +761,14 @@ async function delivery(browser, mobile) {
     await seatedVisitor();
     assert.equal((await save()).transport.stage, 3);
     assert.equal((await save()).trail.stamps, 2);
+    assert.deepEqual((await save()).post, residents.post);
     assert.deepEqual((await save()).garden, residents.garden);
     assert.deepEqual((await save()).family5, residents.family5);
     assert.deepEqual((await save()).family6, residents.family6);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules including seated and queued park visits, market queue/receipts, night lights tracking the buggy, named neighbourhoods/streets/signs and location transitions, gardens and held bouquets, passport recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules including seated and queued park visits, market queue/receipts, night lights tracking the buggy, named neighbourhoods/streets/signs and location transitions, gardens and held bouquets, passport and postal recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

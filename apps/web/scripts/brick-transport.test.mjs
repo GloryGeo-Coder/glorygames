@@ -1,3 +1,5 @@
+import { namedDoors } from '../public/games/brick-playground-3d/street-directory.mjs';
+import { postVisit, handlePost } from '../public/games/brick-playground-3d/neighbourhood-post.mjs';
 import { transportStreetLabel } from '../public/games/brick-playground-3d/transport-ui.mjs';
 import { previewStreet } from '../public/games/brick-playground-3d/street-builder.mjs';
 import {
@@ -913,4 +915,85 @@ test('transport stop labels use current street names while retaining the grid fa
   town.streetNames = undefined;
   assert.equal(transportStreetLabel(pickup, town), grid);
   assert.equal(transportStreetLabel('missing', town), 'Unavailable street');
+});
+
+test('letters and cargo progress independently through driving, recovery, reload and construction Undo', () => {
+  let town = city();
+  town.streetNames = { [pickup]: 'Delivery Road' };
+  town.pieces = [-21, -15, -9].map((x, i) => ({
+    id: 'postal-door-' + i,
+    type: 'door',
+    color: 'Coral',
+    x,
+    y: 0,
+    z: 5,
+    r: 0
+  }));
+  town.transport = route();
+  const at = (i) => ({ ...namedDoors(town).get('postal-door-' + i).front.inside, y: 0 });
+  const act = (i, action) => {
+    const point = at(i),
+      request = postVisit(town, point, true);
+    assert.equal(request.action, action);
+    assert.ok(handlePost(town, point, true, request));
+  };
+  act(0, 'collect');
+  const collected = structuredClone(town.post),
+    originalPieces = town.pieces;
+  let obstacles = transportObstacles(town.pieces, buggy);
+  let run = transportRun(buggy, town.transport, obstacles, town);
+  assert.ok(serviceTransport(run, town.transport, town, obstacles));
+  assert.equal(town.transport.stage, 2);
+  assert.deepEqual(town.post, collected);
+  const point = at(2),
+    request = postVisit(town, point, true);
+  assert.equal(
+    handlePost(town, point, false, request),
+    false,
+    'stale walking action is rejected while driving'
+  );
+  for (let i = 0; i < 60; i++) tick(run, obstacles);
+  run = transportRun(buggy, town.transport, obstacles, town);
+  assert.equal(run.x, transportPoint(pickup).x);
+  town = loadWorld('city', { getItem: () => citySave(town) });
+  assert.deepEqual(town.post, collected);
+  assert.equal(town.transport.stage, 2);
+  act(2, 'deliver');
+  const partial = structuredClone(town.post);
+  town.pieces = town.pieces.filter((p) => p.id !== 'postal-door-1');
+  assert.match(postVisit(town, point, true).hint, /Restore the named street or entrance/);
+  assert.deepEqual(town.post, partial);
+  town.pieces = originalPieces; // Layout-only Undo, as used by the construction editor.
+  assert.deepEqual(town.post, partial);
+  assert.equal(town.transport.stage, 2);
+  act(1, 'deliver');
+  act(0, 'finish');
+  const completed = structuredClone(town.post);
+  town = loadWorld('city', { getItem: () => citySave(town) });
+  obstacles = transportObstacles(town.pieces, buggy);
+  run = transportRun(buggy, town.transport, obstacles, town);
+  Object.assign(run, transportPoint(dropoff));
+  assert.ok(serviceTransport(run, town.transport, town, obstacles));
+  assert.equal(town.transport.stage, 3);
+  assert.deepEqual(town.post, completed);
+});
+
+test('malformed postal saves do not erase cargo and malformed cargo does not erase a valid postbag', () => {
+  const town = city();
+  town.transport = { ...route(), stage: 2 };
+  town.post = {
+    office: { id: 'office', address: 'Delivery Road office' },
+    stops: [{ id: 'house', address: 'Delivery Road house', delivered: true }],
+    complete: true
+  };
+  const raw = JSON.parse(citySave(town));
+  raw.post.stops = [raw.post.office];
+  let restored = loadWorld('city', { getItem: () => JSON.stringify(raw) });
+  assert.equal(restored.post, undefined);
+  assert.deepEqual(restored.transport, town.transport);
+  raw.post = town.post;
+  raw.transport.stage = 99;
+  restored = loadWorld('city', { getItem: () => JSON.stringify(raw) });
+  assert.equal(restored.transport, undefined);
+  assert.deepEqual(restored.post, town.post);
 });

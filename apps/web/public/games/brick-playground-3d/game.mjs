@@ -21,6 +21,7 @@ import {
   householdsFor,
   neighbouring
 } from './settlement.mjs';
+import { postControls } from './post-ui.mjs';
 import { marketControls } from './market-ui.mjs';
 import { marketCounter, waitingAtTill } from './market-day.mjs';
 import { currentStop, trailEntrance, canStamp, stampTrail } from './town-trail.mjs';
@@ -783,6 +784,15 @@ function start() {
     }
     if (kind === 'city') refreshGarden(now);
   };
+  const updatePost = postControls({
+    city: () => (kind === 'city' ? data : null),
+    player: () => person,
+    playing: () => mode === 'play',
+    save,
+    sound: () => music.snap(),
+    announce,
+    show: s.showPost
+  });
   function rescue() {
     if (kind === 'city') {
       person = { ...avatar(kind), ...spawnAt(blockAt(person.x, person.z)) };
@@ -1943,7 +1953,10 @@ function start() {
       }
       trailStatus();
       const now = Date.now();
-      if (now < gardenUpdated || now - gardenUpdated >= 180) refreshGarden(now);
+      if (now < gardenUpdated || now - gardenUpdated >= 180) {
+        refreshGarden(now);
+        updatePost();
+      }
       residents.refresh();
       updateTransport();
     }

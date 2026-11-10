@@ -1,3 +1,5 @@
+import { namedDoors } from '../public/games/brick-playground-3d/street-directory.mjs';
+import { postVisit, handlePost } from '../public/games/brick-playground-3d/neighbourhood-post.mjs';
 import {
   streetEntries,
   streetLocation
@@ -656,4 +658,109 @@ test('directory lists actual facing doors and arches, updates after edits, and l
   assert.deepEqual(outer.doors, []);
   assert.equal(streetLocation(city, outer.start.curb.x, outer.start.curb.z), 'Outer Road');
   assert.equal(streetEntries(city, 'Protea Road'), null);
+});
+
+function postalTown() {
+  const city = world('city');
+  city.streetNames = { 'h-3-4': 'Protea Road' };
+  city.pieces = [-21, -15, -9].map((x, i) => ({
+    id: 'door-' + i,
+    type: 'door',
+    color: 'Coral',
+    x,
+    y: 0,
+    z: 5,
+    r: 0
+  }));
+  return city;
+}
+test('a postbag is collected on foot and only delivered inside outstanding addresses in any order', () => {
+  const city = postalTown(),
+    doors = namedDoors(city),
+    at = (id) => ({ ...doors.get(id).front.inside, y: 0 });
+  const act = (who, action) => {
+    const request = postVisit(city, who, true);
+    assert.equal(request.action, action);
+    assert.ok(handlePost(city, who, true, request));
+    return request;
+  };
+  const office = at('door-0');
+  assert.equal(postVisit(city, office, false), null);
+  assert.equal(postVisit(city, { ...office, y: 2 }, true), null);
+  assert.equal(postVisit(city, { ...doors.get('door-0').front.curb, y: 0 }, true), null);
+  act(office, 'collect');
+  assert.deepEqual(
+    city.post.stops.map((s) => s.id),
+    ['door-1', 'door-2']
+  );
+  const far = at('door-2'),
+    delivery = act(far, 'deliver');
+  assert.equal(handlePost(city, far, true, delivery), false);
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(reopened.post, city.post);
+  const near = at('door-1'),
+    old = postVisit(reopened, near, true);
+  assert.equal(handlePost(reopened, near, false, old), false);
+  assert.equal(handlePost(reopened, { ...near, y: 2 }, true, old), false);
+  assert.ok(handlePost(reopened, near, true, old));
+  assert.equal(reopened.post.complete, false);
+  assert.equal(postVisit(reopened, far, true).action, undefined);
+  assert.ok(handlePost(reopened, office, true, postVisit(reopened, office, true)));
+  assert.equal(reopened.post.complete, true);
+  assert.deepEqual(loadWorld('city', { getItem: () => citySave(reopened) }).post, reopened.post);
+});
+test('letters follow live frontage, report lost addresses, reject covered handovers and isolate malformed saves', () => {
+  const city = postalTown(),
+    at = (id) => ({ ...namedDoors(city).get(id).front.inside, y: 0 });
+  handlePost(city, at('door-0'), true, postVisit(city, at('door-0'), true));
+  const last = at('door-2'),
+    retained = city.streetNames;
+  delete city.streetNames;
+  assert.match(postVisit(city, last, true).hint, /Restore.*Protea Road/);
+  city.streetNames = { ...retained, 'h-3-4': 'Library Street' };
+  assert.match(postVisit(city, last, true).hint, /Library Street/);
+  city.pieces = city.pieces.map((p) => (p.id === 'door-2' ? { ...p, x: p.x + 3 } : p));
+  assert.equal(postVisit(city, last, true).action, undefined);
+  const moved = at('door-2'),
+    want = postVisit(city, moved, true);
+  city.pieces = [
+    ...city.pieces,
+    {
+      id: 'block',
+      type: 'single',
+      color: 'Plum',
+      x: Math.floor(moved.x),
+      y: 0,
+      z: Math.floor(moved.z),
+      r: 0
+    }
+  ];
+  assert.equal(handlePost(city, moved, true, want), false);
+  const raw = JSON.parse(citySave(city));
+  raw.post.stops = [raw.post.office];
+  const old = loadWorld('city', { getItem: () => JSON.stringify(raw) });
+  assert.equal(old.post, undefined);
+  assert.deepEqual(old.pieces, city.pieces);
+  delete raw.post;
+  assert.equal(loadWorld('city', { getItem: () => JSON.stringify(raw) }).post, undefined);
+});
+
+test('a larger town assigns the three nearest other doors and preserves their identities during edits', () => {
+  const city = postalTown();
+  city.pieces.push(
+    { ...city.pieces[2], id: 'fourth', x: -5 },
+    { ...city.pieces[0], id: 'far', x: -39 }
+  );
+  city.streetNames = { ...city.streetNames, 'h-2-4': 'Station Road' };
+  city.streets = [...city.streets, 'h-2-4'];
+  const point = { ...namedDoors(city).get('door-0').front.inside, y: 0 };
+  assert.ok(handlePost(city, point, true, postVisit(city, point, true)));
+  assert.deepEqual(
+    city.post.stops.map((s) => s.id),
+    ['door-1', 'door-2', 'fourth']
+  );
+  const committed = city.post;
+  city.pieces = city.pieces.map((p) => (p.id === 'door-1' ? { ...p, r: 2 } : p));
+  assert.ok(!namedDoors(city).has('door-1'));
+  assert.deepEqual(city.post, committed);
 });

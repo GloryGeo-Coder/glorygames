@@ -23,29 +23,54 @@ export function streetLocation(city, x, z) {
   }
   return [...names].sort().join(' / ');
 }
+// Frontage changes with the placed brick, the road it faces and the block name.
+const doorCache = new WeakMap();
+export function namedDoors(city) {
+  let cache = doorCache.get(city.pieces);
+  if (
+    cache &&
+    cache.names === city.streetNames &&
+    cache.streets === city.streets &&
+    cache.blocks === city.blocks
+  )
+    return cache.doors;
+  const roads = new Map(namedSegments(city).map((s) => [s.key, s.name])),
+    doors = new Map();
+  if (roads.size)
+    for (const p of city.pieces) {
+      if (!isEntrance(p)) continue;
+      const front = { ...entrance(p), y: p.y },
+        name = roads.get(front.street);
+      if (!name) continue;
+      const coordinates = '(' + p.x + ', ' + p.z + ')';
+      const label = [
+        front.block.code,
+        blockInfo(city, front.block).name,
+        p.type === 'arch' ? 'Arch' : 'Door',
+        coordinates
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      doors.set(p.id, {
+        id: p.id,
+        front,
+        name,
+        label,
+        address: name + ' · ' + front.block.code + ' ' + coordinates
+      });
+    }
+  doorCache.set(city.pieces, {
+    names: city.streetNames,
+    streets: city.streets,
+    blocks: city.blocks,
+    doors
+  });
+  return doors;
+}
 export function streetEntries(city, name) {
   const sections = namedSegments(city).filter((s) => s.name === name);
   if (!sections.length) return null;
-  const keys = new Set(sections.map((s) => s.key)),
-    doors = [];
-  for (const p of city.pieces) {
-    if (!isEntrance(p)) continue;
-    const front = entrance(p);
-    if (!keys.has(front.street)) continue;
-    const blockName = blockInfo(city, front.block).name;
-    doors.push({
-      id: p.id,
-      front,
-      label: [
-        front.block.code,
-        blockName,
-        p.type === 'arch' ? 'Arch' : 'Door',
-        '(' + p.x + ', ' + p.z + ')'
-      ]
-        .filter(Boolean)
-        .join(' · ')
-    });
-  }
+  const doors = [...namedDoors(city).values()].filter((d) => d.name === name);
   doors.sort((a, b) => a.front.block.id - b.front.block.id || a.label.localeCompare(b.label));
   // Even a street with no entrances can be visited from the directory.
   const s = sections[0],
@@ -71,7 +96,30 @@ export function streetDirectoryMap({ city, paint, walk }) {
     if (names.includes(chosen)) list.value = chosen;
     entries = streetEntries(data, list.value);
     destinations.replaceChildren(new Option('Street pavement', ''));
-    for (const d of entries?.doors || []) destinations.add(new Option(d.label, d.id));
+    const round = data.post;
+    const total = namedDoors(data).size;
+    $('postDirectoryTip').textContent =
+      round && !round.complete
+        ? 'Post round · ' +
+          round.stops.filter((s) => s.delivered).length +
+          '/' +
+          round.stops.length +
+          ' delivered. Use the destination list to find your stops.'
+        : total < 2
+          ? 'Place at least two entrances facing named streets to start a post round.'
+          : 'Walk inside a listed entrance to collect a postbag. Deliver up to three letters and return here to finish.';
+    for (const d of entries?.doors || []) {
+      const stop = round && !round.complete && round.stops.find((s) => s.id === d.id);
+      const role =
+        round && !round.complete && d.id === round.office.id
+          ? 'Post office'
+          : stop
+            ? stop.delivered
+              ? 'Delivered'
+              : 'Letter'
+            : '';
+      destinations.add(new Option(role ? role + ' · ' + d.label : d.label, d.id));
+    }
     if (entries?.doors.some((d) => d.id === door)) destinations.value = door;
     const n = entries?.doors.length || 0;
     $('directoryHint').textContent = entries
