@@ -25,13 +25,13 @@ jobs:
       matrix:
         include:
           - group: post
-            suites: settlement-street-names settlement-post
+            suites: resident-park settlement-street-builder settlement-street-names settlement-post
           - group: move-ins
             suites: resident-move-in resident-market settlement-lighting settlement-trail
           - group: construction
             suites: playground vehicle canal blueprint builder
           - group: neighbourhoods
-            suites: district freight upstairs settlement-neighbourhoods settlement-garden resident-park settlement-street-builder
+            suites: district freight upstairs settlement-neighbourhoods settlement-garden
           - group: settlements
             suites: settlement resident
     timeout-minutes: 25
