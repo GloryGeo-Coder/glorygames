@@ -117,13 +117,11 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("[auth/signup] failed", error);
-
-    const message = error instanceof Error ? error.message : String(error);
+    console.error("[auth/signup] failed", { errorClass: error instanceof Error ? error.name : "UnknownError" });
 
     return NextResponse.json(
       {
-        error: `Signup failed: ${message}`,
+        error: "Unable to create your account right now. Please try again.",
       },
       { status: 500 }
     );
