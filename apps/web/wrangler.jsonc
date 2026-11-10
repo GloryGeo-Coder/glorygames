@@ -9,7 +9,9 @@
   "keep_vars": true,
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "html_handling": "none",
+    "run_worker_first": ["/play/brick-playground-3d", "/play/brick-playground-3d.html"]
   },
   "observability": {
     "enabled": true,
