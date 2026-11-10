@@ -8,7 +8,7 @@ function atDoor(city, person, door) {
   if (
     !door ||
     Math.abs(person.y - door.front.y) >= 0.55 ||
-    distance(person, door.front.inside) > 0.85
+    distance(person, door.front.inside) > 1.15
   )
     return false;
   const items = blockIndex(city.pieces)[door.front.block.id],

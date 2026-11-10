@@ -78,12 +78,6 @@ async function round(browser, mobile) {
       try {
         await page.waitForFunction(
           ({ goal, key }) => {
-            if (typeof goal === 'string') {
-              const b = document.querySelector('#postAction');
-              return (
-                !b.hidden && !document.querySelector('#postHud').hidden && b.textContent === goal
-              );
-            }
             const p =
               BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder').position;
             return key === 's'
@@ -106,6 +100,15 @@ async function round(browser, mobile) {
           await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
         else await page.keyboard.up(key);
       }
+    }
+    async function handover(n, label) {
+      // Stop inside the doorway before pressing the button, independently of HUD refresh timing.
+      await move('w', fronts[n].inside.z - 0.35);
+      await page.waitForFunction((text) => {
+        const b = document.querySelector('#postAction');
+        return !b.hidden && !document.querySelector('#postHud').hidden && b.textContent === text;
+      }, label);
+      await press('postAction');
     }
     async function repair() {
       await press('build');
@@ -163,16 +166,14 @@ async function round(browser, mobile) {
     );
     await page.locator('#tray button').first().waitFor();
     await goToCurb(0);
-    await move('w', 'Collect postbag');
-    await press('postAction');
+    await handover(0, 'Collect postbag');
     assert.equal((await saved()).post.office.id, 'address-0');
     await page.waitForFunction(() =>
       BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Post satchel')?.isEnabled()
     );
     await move('s', 1.2);
-    await move('d', fronts[2].center.x);
-    await move('w', 'Deliver letter');
-    await press('postAction');
+    await move('d', fronts[2].center.x - 0.3);
+    await handover(2, 'Deliver letter');
     const partial = (await saved()).post;
     assert.deepEqual(
       partial.stops.filter((s) => s.delivered).map((s) => s.id),
@@ -204,14 +205,12 @@ async function round(browser, mobile) {
     assert.ok(await page.locator('#postAction').isHidden());
     assert.deepEqual((await saved()).post, partial);
     await repair();
-    await move('w', 'Deliver letter');
-    await press('postAction');
+    await handover(1, 'Deliver letter');
     assert.ok((await saved()).post.stops.every((s) => s.delivered));
     assert.equal((await saved()).post.complete, false);
     await move('s', 1.2);
-    await move('a', fronts[0].center.x);
-    await move('w', 'Finish round');
-    await press('postAction');
+    await move('a', fronts[0].center.x + 0.3);
+    await handover(0, 'Finish round');
     assert.equal((await saved()).post.complete, true);
     await page.waitForFunction(
       () =>
