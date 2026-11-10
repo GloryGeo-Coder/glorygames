@@ -1,4 +1,4 @@
-import { BLOCKS, SIDE, householdsFor } from './settlement.mjs';
+import { BLOCKS, SIDE, householdsFor, retainedStreetNames } from './settlement.mjs';
 import { planStreets } from './street-planner.mjs';
 
 export const JUNCTIONS = Array.from({ length: (SIDE + 1) ** 2 }, (_, id) => {
@@ -13,7 +13,7 @@ export const JUNCTIONS = Array.from({ length: (SIDE + 1) ** 2 }, (_, id) => {
   };
 });
 
-export function previewStreet(city, start, end, bend, operation) {
+export function previewStreet(city, start, end, bend, operation, input = '') {
   if (!Number.isInteger(start) || !Number.isInteger(end)) return null;
   const a = JUNCTIONS[start],
     b = JUNCTIONS[end];
@@ -22,10 +22,15 @@ export function previewStreet(city, start, end, bend, operation) {
     !b ||
     a === b ||
     !['horizontal', 'vertical'].includes(bend) ||
-    !['lay', 'remove'].includes(operation)
+    !['lay', 'remove', 'name', 'unname'].includes(operation)
   )
     return null;
   const corner = bend === 'horizontal' ? { col: b.col, row: a.row } : { col: a.col, row: b.row };
+  const naming = operation === 'name' || operation === 'unname';
+  const name = typeof input === 'string' ? input.trim() : '';
+  let issue = '';
+  if (operation === 'name' && (!name || name.length > 32))
+    issue = 'Enter a street name of 1–32 characters.';
   const existing = new Set(city.streets),
     sections = [],
     changed = [];
@@ -40,22 +45,40 @@ export function previewStreet(city, start, end, bend, operation) {
       const nextCol = col + dx,
         nextRow = row + dy;
       const key = [dx ? 'h' : 'v', Math.min(col, nextCol), Math.min(row, nextRow)].join('-');
-      const change = operation === 'lay' ? !existing.has(key) : existing.has(key);
+      const built = existing.has(key),
+        old = city.streetNames?.[key];
+      if (naming && !built) issue = 'Lay the missing sections before changing their names.';
+      const change = naming
+        ? built && (operation === 'name' ? !!name && old !== name : !!old)
+        : operation === 'lay'
+          ? !built
+          : built;
       sections.push({ key, col, row, nextCol, nextRow, change });
       if (change) changed.push(key);
       col = nextCol;
       row = nextRow;
     }
   }
-  let streets = city.streets;
-  if (changed.length) {
+  let streets = city.streets,
+    streetNames = city.streetNames;
+  if (naming) {
+    if (!issue && changed.length) {
+      const names = { ...streetNames };
+      for (const key of changed) {
+        if (operation === 'name') names[key] = name;
+        else delete names[key];
+      }
+      streetNames = Object.keys(names).length ? names : undefined;
+    }
+  } else if (changed.length) {
     if (operation === 'lay') streets = [...streets, ...changed];
     else {
       const removed = new Set(changed);
       streets = streets.filter((key) => !removed.has(key));
+      streetNames = retainedStreetNames(streetNames, streets);
     }
   }
-  return { sections, changed, streets };
+  return { sections, changed, streets, streetNames, issue };
 }
 
 function connectedDistance(city, trip) {

@@ -1,3 +1,7 @@
+import {
+  streetEntries,
+  streetLocation
+} from '../public/games/brick-playground-3d/street-directory.mjs';
 import { SIDE } from '../public/games/brick-playground-3d/settlement.mjs';
 import {
   previewStreet,
@@ -585,4 +589,71 @@ test('street previews predict gaining, losing, and shortening a household connec
     'Lebo’s street route is 48 studs longer.'
   ]);
   assert.deepEqual(streetEffects(shorter, shorter.streets), []);
+});
+
+test('street names follow built sections, can be split or cleared, and never return on a rebuilt road', () => {
+  const city = world('city'),
+    junction = (x, y) => y * (SIDE + 1) + x,
+    start = junction(3, 4),
+    end = junction(5, 4);
+  const apply = (p) => Object.assign(city, { streets: p.streets, streetNames: p.streetNames });
+  assert.match(
+    previewStreet(city, start, end, 'horizontal', 'name', 'Protea Road').issue,
+    /missing/
+  );
+  apply(previewStreet(city, start, end, 'horizontal', 'lay'));
+  assert.ok(previewStreet(city, start, end, 'horizontal', 'name', '   ').issue);
+  assert.ok(previewStreet(city, start, end, 'horizontal', 'name', 'x'.repeat(33)).issue);
+  apply(previewStreet(city, start, end, 'horizontal', 'name', '  Protea Road  '));
+  const before = city.streets;
+  assert.deepEqual(city.streetNames, { 'h-3-4': 'Protea Road', 'h-4-4': 'Protea Road' });
+  assert.equal(
+    previewStreet(city, start, end, 'horizontal', 'name', 'Protea Road').changed.length,
+    0
+  );
+  apply(previewStreet(city, junction(4, 4), end, 'horizontal', 'name', 'Garden Lane'));
+  assert.equal(city.streets, before);
+  assert.deepEqual(city.streetNames, { 'h-3-4': 'Protea Road', 'h-4-4': 'Garden Lane' });
+  const reopened = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(reopened.streetNames, city.streetNames);
+  apply(previewStreet(city, start, junction(4, 4), 'horizontal', 'unname'));
+  assert.deepEqual(city.streetNames, { 'h-4-4': 'Garden Lane' });
+  apply(previewStreet(city, junction(4, 4), end, 'horizontal', 'remove'));
+  assert.equal(city.streetNames, undefined);
+  apply(previewStreet(city, junction(4, 4), end, 'horizontal', 'lay'));
+  assert.equal(city.streetNames, undefined);
+  const edited = layoutEdit(reopened, BLOCKS[27], 'New block', 'mixed', ['north', 'west', 'east']);
+  assert.deepEqual(edited.streetNames, { 'h-4-4': 'Garden Lane' });
+  const raw = JSON.parse(citySave(reopened));
+  raw.streetNames = { 'h-3-4': '  Good  ', 'h-0-0': 'Ghost', 'h-4-4': 3, 'v-4-3': 'x'.repeat(33) };
+  assert.deepEqual(loadWorld('city', { getItem: () => JSON.stringify(raw) }).streetNames, {
+    'h-3-4': 'Good'
+  });
+});
+test('directory lists actual facing doors and arches, updates after edits, and locates the player at junctions', () => {
+  const city = world('city');
+  city.streetNames = { 'h-3-4': 'Protea Road', 'v-3-3': 'Station Lane' };
+  const door = city.pieces.find((p) => p.type === 'door'),
+    arch = { ...door, id: 'arch', type: 'arch', x: door.x + 5 };
+  city.pieces = [...city.pieces, arch, { ...arch, id: 'upper', y: 3 }];
+  const before = streetEntries(city, 'Protea Road');
+  assert.deepEqual(new Set(before.doors.map((d) => d.id)), new Set([door.id, 'arch']));
+  assert.equal(streetLocation(city, -12, 0), 'Protea Road');
+  assert.equal(streetLocation(city, -24, 0), 'Protea Road / Station Lane');
+  assert.equal(streetLocation(city, 12, 12), '');
+  city.pieces = city.pieces.map((p) => (p === door ? { ...p, r: 3 } : p));
+  assert.deepEqual(
+    streetEntries(city, 'Protea Road').doors.map((d) => d.id),
+    ['arch']
+  );
+  assert.deepEqual(
+    streetEntries(city, 'Station Lane').doors.map((d) => d.id),
+    [door.id]
+  );
+  city.streetNames = { 'h-0-0': 'Outer Road' };
+  city.streets = ['h-0-0'];
+  const outer = streetEntries(city, 'Outer Road');
+  assert.deepEqual(outer.doors, []);
+  assert.equal(streetLocation(city, outer.start.curb.x, outer.start.curb.z), 'Outer Road');
+  assert.equal(streetEntries(city, 'Protea Road'), null);
 });

@@ -1017,6 +1017,61 @@ dialog p {
     font-size: 14px;
   }
 }
+#streetNameField {
+  display: block;
+  margin: 6px 0;
+}
+#streetName {
+  width: 100%;
+  min-height: 36px;
+}
+#streetDirectory {
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin: 6px 0;
+}
+#streetDirectory summary {
+  font-weight: 700;
+  cursor: pointer;
+  padding: 5px 0;
+}
+#streetDirectory label {
+  display: block;
+  margin: 6px 0;
+}
+#streetDirectory select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+#directoryHint {
+  font-size: 13px;
+  margin: 6px 0;
+}
+#directoryWalk {
+  min-height: 38px;
+}
+#roadLocation {
+  font-weight: 700;
+  color: #1c4c72;
+  overflow-wrap: anywhere;
+}
+#cityMap:has(#streetDirectory[open])
+  :is(
+    #areaBoard,
+    #trailBoard,
+    #blockRepeat,
+    #streetBuilder,
+    #mapRouteTools,
+    label:has(#townLighting),
+    label:has(#mapBlock),
+    #repeatNotice
+  ),
+#cityMap:has(#streetBuilder[open], #areaBoard[open], #trailBoard[open], #blockRepeat[open])
+  #streetDirectory {
+  display: none;
+}
 #streetBuilder {
   border: 1px solid var(--edge);
   border-radius: 6px;

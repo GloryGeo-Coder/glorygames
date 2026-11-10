@@ -250,6 +250,16 @@ export function restoreMarket(value) {
   }
   return { shop: value.shop, receipts };
 }
+export function retainedStreetNames(names, streets) {
+  if (!names || typeof names !== 'object' || Array.isArray(names)) return undefined;
+  const kept = {};
+  for (const key of streets) {
+    const name = Object.hasOwn(names, key) && names[key];
+    if (typeof name === 'string' && name.trim() && name.trim().length <= 32)
+      kept[key] = name.trim();
+  }
+  return Object.keys(kept).length ? kept : undefined;
+}
 export function cityLayout(v) {
   const blocks = {};
   for (const b of BLOCKS) {
@@ -282,10 +292,12 @@ export function cityLayout(v) {
       moveIn(households, member.name, member.visit, restoreTrip(v[member.key]), member.key);
     }
   }
+  const streetNames = retainedStreetNames(v.streetNames, v.streets);
   const garden = restoreGarden(v.garden, v.pieces);
   const trail = restoreTrail(v.trail);
   const market = restoreMarket(v.market);
   return {
+    ...(streetNames ? { streetNames } : {}),
     ...(garden ? { garden } : {}),
     ...(trail ? { trail } : {}),
     ...(market ? { market } : {}),
@@ -309,7 +321,12 @@ export function layoutEdit(city, b, name, zone, edges) {
     if (edges.includes(dir)) streets.add(key);
     else streets.delete(key);
   }
-  return { blocks, streets: [...streets], focus: b.id };
+  return {
+    blocks,
+    streets: [...streets],
+    ...(city.streetNames ? { streetNames: retainedStreetNames(city.streetNames, streets) } : {}),
+    focus: b.id
+  };
 }
 export function spawnAt(b) {
   return { x: b.x + 0.5, y: 0, z: b.z - LOT / 2 - 1 };

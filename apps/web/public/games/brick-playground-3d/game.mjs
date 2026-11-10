@@ -16,6 +16,7 @@ import { marketControls } from './market-ui.mjs';
 import { marketCounter, waitingAtTill } from './market-day.mjs';
 import { currentStop, trailEntrance, canStamp, stampTrail } from './town-trail.mjs';
 import { FLOWERS, gardenVisit, tendGarden } from './community-garden.mjs';
+import { streetLocation } from './street-directory.mjs';
 import { cityMap } from './city-map.mjs';
 import { atHandover, routeHint, REPAIRS } from './upstairs.mjs';
 import { plansAllowed, placement, bounds } from './blueprint.mjs';
@@ -145,6 +146,7 @@ function start() {
             pieces: data.pieces,
             blocks: data.blocks,
             streets: data.streets,
+            streetNames: data.streetNames,
             ...(trailEdited ? { trail: data.trail } : {}),
             lighting: data.lighting
           }
@@ -557,6 +559,7 @@ function start() {
         lighting: layout.lighting,
         pieces: layout.pieces,
         blocks: layout.blocks,
+        streetNames: layout.streetNames,
         streets: layout.streets
       });
     }
@@ -1770,6 +1773,12 @@ function start() {
         mode === 'build' ? s.orbit.focusZ : s.camera.position.z
       );
       market.update();
+      const street =
+        mode === 'play' && data.streetNames ? streetLocation(data, person.x, person.z) : '';
+      if ($('roadLocation').textContent !== street) {
+        $('roadLocation').textContent = street;
+        $('roadLocation').hidden = !street;
+      }
       trailStatus();
       const now = Date.now();
       if (now < gardenUpdated || now - gardenUpdated >= 180) refreshGarden(now);
