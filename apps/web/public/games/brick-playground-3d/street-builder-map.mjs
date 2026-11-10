@@ -7,6 +7,7 @@ export function streetBuilderMap({ city, stage, paint }) {
     end = $('streetEnd'),
     bend = $('streetBend'),
     mode = $('streetMode'),
+    streetName = $('streetName'),
     board = $('streetBuilder');
   for (const select of [start, end]) {
     select.add(new Option('Choose junction', ''));
@@ -18,6 +19,7 @@ export function streetBuilderMap({ city, stage, paint }) {
     start.value = end.value = '';
     bend.value = 'horizontal';
     mode.value = 'lay';
+    streetName.value = '';
     notice = '';
     preview = null;
   }
@@ -26,17 +28,32 @@ export function streetBuilderMap({ city, stage, paint }) {
     const a = JUNCTIONS[start.value],
       b = JUNCTIONS[end.value],
       cityData = city();
-    preview = previewStreet(cityData, a?.id, b?.id, bend.value, mode.value);
+    preview = previewStreet(cityData, a?.id, b?.id, bend.value, mode.value, streetName.value);
     $('streetBendField').hidden = !(a && b && a.col !== b.col && a.row !== b.row);
     const count = preview?.changed.length || 0;
-    $('stageStreet').disabled = !count;
+    const naming = mode.value === 'name' || mode.value === 'unname';
+    $('streetNameField').hidden = mode.value !== 'name';
+    $('stageStreet').textContent = naming ? 'Stage names' : 'Stage streets';
+    $('stageStreet').disabled = !count || !!preview?.issue;
     $('clearStreet').disabled = !a && !b;
     const verb = mode.value === 'lay' ? 'lay' : 'remove';
     let text;
     if (!a) text = 'Tap a junction to start, or use the Start junction list.';
     else if (!b) text = 'Tap the end junction. Start: ' + a.label + '.';
     else if (a === b) text = 'Choose a different end junction.';
-    else if (!count)
+    else if (preview?.issue) text = preview.issue;
+    else if (naming) {
+      const labels = [
+        ...new Set(preview.changed.map((key) => cityData.streetNames?.[key]).filter(Boolean))
+      ];
+      text = count
+        ? count +
+          ' section' +
+          (count === 1 ? '' : 's') +
+          (mode.value === 'name' ? ' to name “' + streetName.value.trim() + '”.' : ' to clear.') +
+          (labels.length ? ' Current: ' + labels.join(', ') + '.' : '')
+        : 'These sections already have the requested names.';
+    } else if (!count)
       text =
         mode.value === 'lay'
           ? 'All sections along this path are already built.'
@@ -61,6 +78,10 @@ export function streetBuilderMap({ city, stage, paint }) {
       })
     );
   }
+  streetName.oninput = () => {
+    notice = '';
+    paint();
+  };
   for (const select of [start, end, bend, mode])
     select.onchange = () => {
       notice = '';
@@ -72,12 +93,12 @@ export function streetBuilderMap({ city, stage, paint }) {
     paint();
   };
   $('stageStreet').onclick = () => {
-    if (!board.open || !preview?.changed.length) return;
+    if (!board.open || !preview?.changed.length || preview.issue) return;
     const n = preview.changed.length;
     notice = n + ' section' + (n === 1 ? '' : 's') + ' staged. Build here saves the map.';
     start.value = end.value;
     end.value = '';
-    stage(preview.streets);
+    stage(preview.streets, preview.streetNames);
   };
   function pick(col, row) {
     if (!board.open) return false;
@@ -103,7 +124,9 @@ export function streetBuilderMap({ city, stage, paint }) {
     }
     ctx.lineCap = 'round';
     for (const s of preview?.sections || []) {
-      ctx.strokeStyle = s.change ? (mode.value === 'lay' ? '#067057' : '#ac353c') : '#596972';
+      ctx.strokeStyle = s.change
+        ? { lay: '#067057', remove: '#ac353c', name: '#215e9b', unname: '#93652b' }[mode.value]
+        : '#596972';
       ctx.lineWidth = s.change ? 7 : 4;
       ctx.setLineDash(s.change && mode.value === 'remove' ? [8, 5] : []);
       ctx.beginPath();

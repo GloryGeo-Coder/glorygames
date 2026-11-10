@@ -49,6 +49,7 @@
       <div id="gardenHud" hidden><span id="gardenHint"></span>
         <select id="gardenSeed" aria-label="Flower seeds" hidden></select><button id="gardenAction" type="button" hidden></button>
       </div>
+      <span id="roadLocation" hidden></span>
       <span id="areaLocation" hidden></span><span id="resClock"></span>
       <b id="resState" role="status"></b><span id="resHint"></span>
       <span id="resRoutineNote"></span><button id="resSkip" hidden>Skip to next departure</button>
@@ -167,9 +168,10 @@
         <div class="street-options">
           <label>Start junction <select id="streetStart"></select></label>
           <label>End junction <select id="streetEnd"></select></label>
-          <label>Street work <select id="streetMode"><option value="lay">Lay streets</option><option value="remove">Remove streets</option></select></label>
+          <label>Street work <select id="streetMode"><option value="lay">Lay streets</option><option value="remove">Remove streets</option><option value="name">Name streets</option><option value="unname">Clear names</option></select></label>
           <label id="streetBendField" hidden>Bend <select id="streetBend"><option value="horizontal">East/west first</option><option value="vertical">North/south first</option></select></label>
         </div>
+        <label id="streetNameField" hidden>Street name <input id="streetName" maxlength="32" placeholder="e.g. Protea Road"></label>
         <p id="streetHint" role="status"></p><ul id="streetEffects" aria-label="Household route changes"></ul>
         <div class="street-actions"><button type="button" id="clearStreet">New sketch</button><button type="button" id="stageStreet">Stage streets</button></div>
       </details>
@@ -180,6 +182,11 @@
           <label><input type="checkbox" id="road-south"> South</label><label><input type="checkbox" id="road-west"> West</label>
         </fieldset>
       </div>
+      <details id="streetDirectory" hidden><summary>Street directory</summary>
+        <label>Street <select id="directoryStreet"></select></label>
+        <label>Destination <select id="directoryDoor"></select></label>
+        <p id="directoryHint" role="status"></p><button type="button" id="directoryZoom">Whole town</button> <button type="button" id="directoryWalk">Walk to pavement</button>
+      </details>
       <p id="parkMapTip"></p>
       <div class="map-actions"><button id="mapOverview">City view</button><button id="mapWalk">Walk here</button><button class="primary" id="mapBuild">Build here</button></div>
     </dialog>
