@@ -1017,6 +1017,70 @@ dialog p {
     font-size: 14px;
   }
 }
+#streetBuilder {
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  margin: 6px 0;
+  padding: 5px 8px;
+}
+#streetBuilder summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 5px 0;
+}
+.street-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 8px;
+}
+.street-options select {
+  display: block;
+  width: 100%;
+}
+#streetHint,
+#streetEffects {
+  margin: 6px 0;
+  font-size: 13px;
+}
+#streetEffects {
+  padding-left: 18px;
+}
+#streetEffects:empty {
+  display: none;
+}
+.street-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.street-actions button {
+  min-height: 38px;
+}
+#stageStreet {
+  background: #196153;
+  color: #fff;
+}
+#cityMap:has(#streetBuilder[open])
+  :is(
+    #areaBoard,
+    #trailBoard,
+    #blockRepeat,
+    #mapRouteTools,
+    label:has(#townLighting),
+    label:has(#mapBlock),
+    #repeatNotice
+  ),
+#cityMap:has(#blockRepeat[open], #areaBoard[open], #trailBoard[open]) #streetBuilder {
+  display: none;
+}
+@media (max-width: 580px) {
+  #cityMap:has(#streetBuilder[open]) .map-actions button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 7px 4px;
+    font-size: 14px;
+  }
+}
 #mapFields {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

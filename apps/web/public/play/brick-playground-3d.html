@@ -163,6 +163,16 @@
         </div>
         <p id="areaHint" role="status"></p>
       </details>
+      <details id="streetBuilder" hidden><summary>Street Builder</summary>
+        <div class="street-options">
+          <label>Start junction <select id="streetStart"></select></label>
+          <label>End junction <select id="streetEnd"></select></label>
+          <label>Street work <select id="streetMode"><option value="lay">Lay streets</option><option value="remove">Remove streets</option></select></label>
+          <label id="streetBendField" hidden>Bend <select id="streetBend"><option value="horizontal">East/west first</option><option value="vertical">North/south first</option></select></label>
+        </div>
+        <p id="streetHint" role="status"></p><ul id="streetEffects" aria-label="Household route changes"></ul>
+        <div class="street-actions"><button type="button" id="clearStreet">New sketch</button><button type="button" id="stageStreet">Stage streets</button></div>
+      </details>
       <div id="mapFields"><label>Block name <input id="blockName" maxlength="32" placeholder="Name this block"></label>
         <label>Land use <select id="mapZone"></select></label>
         <fieldset><legend>Streets along this block</legend>
