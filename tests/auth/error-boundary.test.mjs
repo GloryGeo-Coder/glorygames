@@ -10,7 +10,7 @@ for (const endpoint of ['login', 'signup']) {
       const sensitive = 'postgresql://test_user:synthetic_private_password@database.example.test/private_table';
       const thrown = kind === 'Error' ? new Error(sensitive) : { message: sensitive };
       const logs = [];
-      const source = await readFile(new URL(`../apps/web/src/app/api/auth/${endpoint}/route.ts`, import.meta.url), 'utf8');
+      const source = await readFile(new URL(`../../apps/web/src/app/api/auth/${endpoint}/route.ts`, import.meta.url), 'utf8');
       const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
       const chain = { email() { return this; }, min() { return this; }, max() { return this; }, optional() { return this; } };
       const dependencies = {
