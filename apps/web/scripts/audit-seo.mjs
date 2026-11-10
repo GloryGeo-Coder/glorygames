@@ -68,7 +68,7 @@ function title(html) {
 }
 function expectedCanonical(path) { return url(path); }
 
-const src = await readFile(new URL("../src/content/gameEditorials.ts", import.meta.url), "utf8");
+const src = (await readFile(new URL("../src/content/gameEditorials.ts", import.meta.url), "utf8")).replace(/\r\n/g, "\n");
 const prefix = "export const GAME_EDITORIALS: Record<string, GameEditorial> = ";
 const start = src.indexOf(prefix);
 const stop = src.indexOf("\n\nexport function getGameEditorial(", start);
@@ -76,13 +76,20 @@ if (start < 0 || stop < 0) {
   console.error("Unable to extract the editorial registry; update the audit script when its format changes.");
   process.exit(2);
 }
-const games = JSON.parse(src.slice(start + prefix.length, stop).trim().replace(/;$/, ""));
-const slugs = Object.keys(games).sort();
+// Only the top-level slug keys are needed. Editorial values are TypeScript
+// object literals (including unquoted fields), so they are not JSON.
+const registry = src.slice(start + prefix.length, stop);
+const slugs = [...registry.matchAll(/^  ["']([^"']+)["']:\s*\{/gm)].map((match) => match[1]).sort();
+if (!slugs.length || new Set(slugs).size !== slugs.length) {
+  console.error("Editorial slug extraction returned an empty or duplicate registry.");
+  process.exit(2);
+}
 const categories = ["educational", "adventure", "racing", "arcade"];
+const gamePaths = slugs.map((slug) => slug === "brick-playground-3d" ? `/games/${slug}` : `/play/${slug}`);
 const sitePages = ["/", "/games", ...categories.map((category) => `/categories/${category}`),
   "/about", "/contact", "/privacy", "/terms", "/cookies",
   "/community-guidelines", "/parents-safety", "/accessibility",
-  ...slugs.map((slug) => `/play/${slug}`)];
+  ...gamePaths];
 console.log(`SEO audit of ${origin} — ${slugs.length} game pages and ${sitePages.length - slugs.length} other pages\n`);
 
 try {
@@ -99,9 +106,9 @@ try {
   const { response, text } = await get("/sitemap.xml");
   if (!response.ok) error("/sitemap.xml", `HTTP ${response.status}`);
   else {
-    const locs = new Set([...text.matchAll(/<loc>([\s\S]*?)<\/loc>/g)].map((m) => m[1].replace(/&amp;/g, "&").trim()));
+    const locs = new Set([...text.matchAll(/<loc>([\s\S]*?)<\/loc>/g)].map((m) => new URL(m[1].replace(/&amp;/g, "&").trim()).href));
     const missing = sitePages.filter((p) => !locs.has(url(p)));
-    const unwanted = [...locs].filter((loc) => /\/games\/[^/?]+(?:[?#]|$)/.test(loc));
+    const unwanted = [...locs].filter((loc) => /\/games\/[^/?]+\/?(?:[?#]|$)/.test(loc) && !gamePaths.some((path) => url(path) === loc));
     if (missing.length) error("/sitemap.xml", `Missing ${missing.length} expected canonical pages: ${missing.slice(0, 7).join(", ")}`);
     else pass("/sitemap.xml", `Includes all ${sitePages.length} expected pages`);
     if (unwanted.length) warn("/sitemap.xml", `Noncanonical game-detail URLs detected: ${unwanted.slice(0, 3).join(", ")}`);

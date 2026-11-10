@@ -5,6 +5,10 @@ import { notFound } from "next/navigation";
 import { GameThumb } from "@/components/GameThumb";
 import { getGameEditorial } from "@/content/gameEditorials";
 
+// The deployed Worker has no persistent incremental-cache binding for SSG
+// parameter routes. Render these small public hubs on request instead.
+export const dynamic = "force-dynamic";
+
 const SITE_URL = "https://webgamearena.com";
 
 type CuratedGame = { slug: string; title: string; whyPlay: string };
@@ -162,10 +166,6 @@ const HUBS: Record<string, Hub> = {
 };
 
 export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return Object.keys(HUBS).map((category) => ({ category }));
-}
 
 export async function generateMetadata({
   params,
