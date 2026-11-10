@@ -3,13 +3,13 @@ on:
   pull_request:
     paths:
       - 'apps/web/src/app/api/auth/**'
-      - 'tests/auth-error-boundary.test.mjs'
+      - 'tests/auth/**'
       - '.github/workflows/auth-error-boundary.yml'
   push:
     branches: [main]
     paths:
       - 'apps/web/src/app/api/auth/**'
-      - 'tests/auth-error-boundary.test.mjs'
+      - 'tests/auth/**'
       - '.github/workflows/auth-error-boundary.yml'
 permissions:
   contents: read
@@ -25,4 +25,4 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: node --experimental-vm-modules --test tests/auth-error-boundary.test.mjs
+      - run: node --experimental-vm-modules --test tests/auth/error-boundary.test.mjs
