@@ -9,7 +9,8 @@
   "keep_vars": true,
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "html_handling": "none"
   },
   "observability": {
     "enabled": true,
