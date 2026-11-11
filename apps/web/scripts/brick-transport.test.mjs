@@ -1,3 +1,8 @@
+import {
+  walkingRoute,
+  directionTracker
+} from '../public/games/brick-playground-3d/walking-directions.mjs';
+import { directionControls } from '../public/games/brick-playground-3d/directions-ui.mjs';
 import { namedDoors } from '../public/games/brick-playground-3d/street-directory.mjs';
 import { postVisit, handlePost } from '../public/games/brick-playground-3d/neighbourhood-post.mjs';
 import { transportStreetLabel } from '../public/games/brick-playground-3d/transport-ui.mjs';
@@ -996,4 +1001,95 @@ test('malformed postal saves do not erase cargo and malformed cargo does not era
   restored = loadWorld('city', { getItem: () => JSON.stringify(raw) });
   assert.equal(restored.transport, undefined);
   assert.deepEqual(restored.post, town.post);
+});
+
+test('walking destinations follow edited entrances without changing cargo or postal saves', () => {
+  let town = city();
+  town.streetNames = { [pickup]: 'Delivery Road' };
+  town.pieces = [-21, -15, -9].map((x, i) => ({
+    id: 'guide-door-' + i,
+    type: 'door',
+    color: 'Coral',
+    x,
+    y: 0,
+    z: 5,
+    r: 0
+  }));
+  const office = { ...namedDoors(town).get('guide-door-0').front.inside, y: 0 };
+  handlePost(town, office, true, postVisit(town, office, true));
+  const destination = namedDoors(town).get('guide-door-1');
+  town.directions = { id: destination.id, address: destination.address };
+  town.transport = { ...route(), stage: 2 };
+  const post = structuredClone(town.post),
+    cargo = structuredClone(town.transport);
+  const at = { x: -20, y: 0, z: 0 },
+    before = { ...at },
+    track = directionTracker();
+  assert.equal(track(town, at).state, 'walking');
+  const pieces = town.pieces;
+  town.pieces = pieces.map((p) => (p.id === destination.id ? { ...p, x: -5 } : p));
+  const moved = track(town, at);
+  assert.ok(moved.points.at(-1).x > -5);
+  town.streetNames = { [pickup]: 'Renamed Road' };
+  assert.match(track(town, at).address, /Renamed Road/);
+  town.pieces = town.pieces.filter((p) => p.id !== destination.id);
+  assert.equal(track(town, at).state, 'missing');
+  town.pieces = pieces; // Construction Undo keeps saved guidance and both delivery states.
+  town = loadWorld('city', { getItem: () => citySave(town) });
+  assert.equal(walkingRoute(town, at).state, 'walking');
+  assert.deepEqual(at, before);
+  assert.deepEqual(town.post, post);
+  assert.deepEqual(town.transport, cargo);
+  assert.equal(town.directions.id, destination.id);
+});
+
+test('guidance UI pauses while driving and cancellation preserves cargo and letters', () => {
+  const town = city();
+  town.streetNames = { [pickup]: 'Delivery Road' };
+  town.pieces = [{ id: 'guide', type: 'door', color: 'Coral', x: -15, y: 0, z: 5, r: 0 }];
+  town.directions = { id: 'guide', address: namedDoors(town).get('guide').address };
+  town.transport = { ...route(), stage: 2 };
+  town.post = {
+    office: { id: 'office', address: 'Office' },
+    stops: [{ id: 'guide', address: 'House', delivered: false }],
+    complete: false
+  };
+  const original = structuredClone(town),
+    elements = new Map();
+  const previousDocument = globalThis.document;
+  globalThis.document = {
+    getElementById(id) {
+      if (!elements.has(id)) elements.set(id, { hidden: false, textContent: '', dataset: {} });
+      return elements.get(id);
+    }
+  };
+  let playing = false,
+    shown,
+    saved = 0;
+  try {
+    const update = directionControls({
+      city: () => town,
+      player: () => ({ x: -20, y: 0, z: 0 }),
+      playing: () => playing,
+      save: () => saved++,
+      show: (r) => (shown = r)
+    });
+    update();
+    assert.equal(elements.get('directionsHud').dataset.state, 'paused');
+    assert.equal(shown, null);
+    assert.deepEqual(town, original);
+    playing = true;
+    update();
+    assert.equal(shown.state, 'walking');
+    playing = false;
+    update();
+    assert.equal(shown, null);
+    elements.get('directionsStop').onclick();
+    assert.equal(town.directions, undefined);
+    assert.equal(saved, 1);
+    assert.deepEqual(town.transport, original.transport);
+    assert.deepEqual(town.post, original.post);
+  } finally {
+    globalThis.document = previousDocument;
+  }
 });

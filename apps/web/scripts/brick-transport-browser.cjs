@@ -285,6 +285,7 @@ async function delivery(browser, mobile) {
       );
       const postalDoors = namedDoors(town);
       const address = (id) => ({ id, address: postalDoors.get(id).address });
+      town.directions = address('postal-door-1');
       town.post = {
         office: address(postOffice.id),
         stops: [-21, -15].map((_, i) => ({ ...address('postal-door-' + i), delivered: i === 0 })),
@@ -309,6 +310,24 @@ async function delivery(browser, mobile) {
     await ready();
     const residents = await save();
     async function postalState(carrying) {
+      assert.deepEqual(
+        (await save()).directions,
+        residents.directions,
+        'buggy actions preserve the walking destination'
+      );
+      if (!carrying) {
+        await p.waitForFunction(
+          () => document.querySelector('#directionsHud').dataset.state === 'paused'
+        );
+        assert.equal(
+          await p.evaluate(() =>
+            BABYLON.EngineStore.LastCreatedScene.meshes.some(
+              (m) => m.name === 'Walking direction marker' && m.isEnabled()
+            )
+          ),
+          false
+        );
+      }
       assert.deepEqual(
         (await save()).post,
         residents.post,
@@ -613,6 +632,11 @@ async function delivery(browser, mobile) {
     );
     const after = await save();
     assert.deepEqual(after.post, residents.post, 'crate delivery does not deliver any letters');
+    assert.deepEqual(
+      after.directions,
+      residents.directions,
+      'crate delivery does not clear walking guidance'
+    );
     assert.deepEqual(after.blocks, residents.blocks, 'delivery preserves named neighbourhoods');
     assert.equal(after.lighting, 'night');
     assert.deepEqual(
@@ -762,13 +786,14 @@ async function delivery(browser, mobile) {
     assert.equal((await save()).transport.stage, 3);
     assert.equal((await save()).trail.stamps, 2);
     assert.deepEqual((await save()).post, residents.post);
+    assert.deepEqual((await save()).directions, residents.directions);
     assert.deepEqual((await save()).garden, residents.garden);
     assert.deepEqual((await save()).family5, residents.family5);
     assert.deepEqual((await save()).family6, residents.family6);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone-sized touch emulation' : 'Desktop keyboard/mouse') +
-        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules including seated and queued park visits, market queue/receipts, night lights tracking the buggy, named neighbourhoods/streets/signs and location transitions, gardens and held bouquets, passport and postal recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
+        ': blocked pickup refusal, fixture repair, saved custom buggy, driving, checkpoint recovery, cargo reload, modal cancel, delivery, all eight household schedules including seated and queued park visits, market queue/receipts, night lights tracking the buggy, named neighbourhoods/streets/signs and location transitions, gardens and held bouquets, passport, postal and walking-direction recovery/reload, driving-to-trail transitions, restored walking stamps/service, world lighting/flower reset and save isolation passed.'
     );
   } catch (error) {
     console.error('Transport failure:', mobile ? 'phone' : 'desktop', errors);

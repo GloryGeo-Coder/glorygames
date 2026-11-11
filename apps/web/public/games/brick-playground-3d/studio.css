@@ -1402,3 +1402,28 @@ dialog p {
     top: 24%;
   }
 }
+
+#directionsHud {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border-left: 3px solid #159c91;
+  padding-left: 6px;
+}
+#directionsHud summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12px;
+}
+#directionsHint {
+  margin: 5px 0;
+  font-size: 12px;
+}
+#directionsHud[data-state='blocked'],
+#directionsHud[data-state='missing'],
+#directionsHud[data-state='disconnected'] {
+  border-color: #cb7a16;
+}
+#directoryDirections {
+  min-height: 38px;
+  background: #d5f2ec;
+}

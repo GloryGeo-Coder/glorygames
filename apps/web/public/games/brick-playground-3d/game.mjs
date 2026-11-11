@@ -21,6 +21,7 @@ import {
   householdsFor,
   neighbouring
 } from './settlement.mjs';
+import { directionControls } from './directions-ui.mjs';
 import { postControls } from './post-ui.mjs';
 import { marketControls } from './market-ui.mjs';
 import { marketCounter, waitingAtTill } from './market-day.mjs';
@@ -661,6 +662,26 @@ function start() {
         streets: layout.streets
       });
     }
+    if (action.kind === 'directions') {
+      data.directions = action.destination;
+      // Choosing a walking destination must not eject the driver or move either actor.
+      // Guidance stays saved and paused until the player chooses to leave the buggy.
+      if (!townVehicle) {
+        focusCity(blockAt(person.x, person.z));
+        switchMode('play');
+      }
+      clearInputs();
+      drawPieces(data.pieces, selected);
+      syncMode();
+      save();
+      updateDirections();
+      announce(
+        townVehicle
+          ? 'Directions saved. Leave the buggy to follow on foot.'
+          : 'Walking directions started'
+      );
+      return;
+    }
     if (!walk && mode !== 'build') switchMode('build');
     if (walk) switchMode('play');
     if (tool !== 'copy') {
@@ -784,6 +805,13 @@ function start() {
     }
     if (kind === 'city') refreshGarden(now);
   };
+  const updateDirections = directionControls({
+    city: () => (kind === 'city' ? data : null),
+    player: () => person,
+    playing: () => mode === 'play',
+    save,
+    show: s.showDirections
+  });
   const updatePost = postControls({
     city: () => (kind === 'city' ? data : null),
     player: () => person,
@@ -1956,6 +1984,7 @@ function start() {
       if (now < gardenUpdated || now - gardenUpdated >= 180) {
         refreshGarden(now);
         updatePost();
+        updateDirections();
       }
       residents.refresh();
       updateTransport();

@@ -330,6 +330,7 @@ export function cityLayout(v) {
   }
   const streetNames = retainedStreetNames(v.streetNames, v.streets);
   const post = restorePost(v.post);
+  const directions = restoreAddress(v.directions);
   const garden = restoreGarden(v.garden, v.pieces);
   const trail = restoreTrail(v.trail);
   const market = restoreMarket(v.market);
@@ -337,6 +338,7 @@ export function cityLayout(v) {
     ...(streetNames ? { streetNames } : {}),
     ...(garden ? { garden } : {}),
     ...(post ? { post } : {}),
+    ...(directions ? { directions } : {}),
     ...(trail ? { trail } : {}),
     ...(market ? { market } : {}),
     ...(['night', 'day'].includes(v.lighting) ? { lighting: v.lighting } : {}),

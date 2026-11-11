@@ -80,7 +80,7 @@ export function streetEntries(city, name) {
   return { sections, doors, start: { curb, center, block: blockAt(curb.x, curb.z) } };
 }
 const $ = (id) => document.getElementById(id);
-export function streetDirectoryMap({ city, paint, walk }) {
+export function streetDirectoryMap({ city, paint, walk, guide }) {
   const list = $('directoryStreet'),
     destinations = $('directoryDoor'),
     board = $('streetDirectory');
@@ -131,13 +131,21 @@ export function streetDirectoryMap({ city, paint, walk }) {
         ' ground-floor entrance' +
         (n === 1 ? '' : 's')
       : '';
+    $('directoryDirections').disabled = !destinations.value;
     previousCity = data;
   }
   list.onchange = () => {
     options();
     paint();
   };
-  destinations.onchange = paint;
+  destinations.onchange = () => {
+    $('directoryDirections').disabled = !destinations.value;
+    paint();
+  };
+  $('directoryDirections').onclick = () => {
+    const door = namedDoors(city()).get(destinations.value);
+    if (door) guide({ id: door.id, address: door.address });
+  };
   $('directoryWalk').onclick = () => {
     const current = streetEntries(city(), list.value);
     if (current)
@@ -194,6 +202,7 @@ export function streetDirectoryMap({ city, paint, walk }) {
     }
     if (door) {
       destinations.value = door.id;
+      $('directoryDirections').disabled = false;
       paint();
     }
     return true;
