@@ -1,3 +1,4 @@
+import { restoreShopStock } from './shop-stock.mjs';
 import { restoreTransport } from './transport.mjs';
 import { CITY_PLANS } from './city-plans.mjs';
 import { restoreGarden } from './community-garden.mjs';
@@ -254,7 +255,11 @@ export function restoreMarket(value) {
     });
     if (receipts.length === 2) break;
   }
-  return { shop: value.shop, receipts };
+  return {
+    shop: value.shop,
+    receipts,
+    ...(value.supplied === true ? { supplied: true } : {})
+  };
 }
 export const MAX_LETTERS = 3;
 function restoreAddress(value) {
@@ -334,6 +339,7 @@ export function cityLayout(v) {
   const garden = restoreGarden(v.garden, v.pieces);
   const trail = restoreTrail(v.trail);
   const market = restoreMarket(v.market);
+  const shopStock = restoreShopStock(v.shopStock);
   return {
     ...(streetNames ? { streetNames } : {}),
     ...(garden ? { garden } : {}),
@@ -341,6 +347,7 @@ export function cityLayout(v) {
     ...(directions ? { directions } : {}),
     ...(trail ? { trail } : {}),
     ...(market ? { market } : {}),
+    ...(shopStock ? { shopStock } : {}),
     ...(['night', 'day'].includes(v.lighting) ? { lighting: v.lighting } : {}),
     ...(Number.isFinite(v.clockMinutes) &&
     v.clockMinutes >= 0 &&

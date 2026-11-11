@@ -281,8 +281,8 @@ export function studio(canvas) {
     residentModels.get(key)?.dispose();
     residentModels.delete(key);
   }
-  let stallSign;
-  function showMarket(counter) {
+  let stallSign, stockSign, shownStock;
+  function showMarket(counter, stock = null) {
     if (counter && !stallSign) {
       stallSign = new B.TransformNode('Market day storefront', scene);
       for (let i = 0; i < 6; i++) {
@@ -304,6 +304,18 @@ export function studio(canvas) {
     }
     if (!stallSign) return;
     stallSign.setEnabled(!!counter);
+    if (counter && stock !== null && (!stockSign || shownStock !== stock)) {
+      stockSign?.dispose(false, true);
+      stockSign = label(
+        stock ? 'STOCK: ' + stock : 'RESTOCK', 0, 1.12, 0, 2.4, true,
+        stock ? '#19695d' : '#8b4c24'
+      );
+      stockSign.name = 'Shop stock sign';
+      stockSign.metadata = { stock };
+      stockSign.parent = stallSign;
+      shownStock = stock;
+    }
+    stockSign?.setEnabled(!!counter && stock !== null);
     if (counter) {
       stallSign.position.set(counter.center.x, counter.y + 3.28, counter.center.z);
       stallSign.rotation.y = (-counter.r * Math.PI) / 2;

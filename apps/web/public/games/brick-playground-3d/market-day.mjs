@@ -1,3 +1,4 @@
+import { useShopStock } from './shop-stock.mjs';
 import { blockAt, householdsFor } from './settlement.mjs';
 import { advanceTrip, entrance, isEntrance } from './resident-trip.mjs';
 const counters = new WeakMap();
@@ -11,9 +12,9 @@ export function marketCounter(city) {
   counters.set(city.pieces, { id, counter });
   return counter;
 }
-export function openMarket(city, id) {
+export function openMarket(city, id, supplied = false) {
   if (city.market || !city.pieces.some((p) => p.id === id && isEntrance(p))) return false;
-  city.market = { shop: id, receipts: [] };
+  city.market = { shop: id, receipts: [], ...(supplied ? { supplied: true } : {}) };
   return true;
 }
 function eligible(city, p, t) {
@@ -67,7 +68,7 @@ export function canServe(city, player, playing) {
 export function serveCustomer(city, player, playing) {
   if (!canServe(city, player, playing)) return null;
   const p = nextCustomer(city);
-  if (!p) return null;
+  if (!p || !useShopStock(city)) return null;
   const t = city[p.key];
   const home = city.pieces.find((b) => b.id === t.home);
   city.market.receipts.push({

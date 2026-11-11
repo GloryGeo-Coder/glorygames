@@ -1,3 +1,4 @@
+import { shopStock } from './shop-stock.mjs';
 import { transportControls } from './transport-ui.mjs';
 import {
   newTransport,
@@ -640,11 +641,13 @@ function start() {
       updateTransport();
     },
     service: () => {
+      const before = shopStock(data);
       if (!townVehicle || !serviceTransport(run, data.transport, data, townVehicle.obstacles))
         return;
       clearInputs();
       save();
       s.showTransport(data.transport);
+      if (shopStock(data) > before) announce('Shop restocked · 2 household supplies added');
       music.snap();
       updateTransport();
     }
@@ -873,6 +876,8 @@ function start() {
     clearInputs();
   }
   const market = marketControls({
+    canPlan: () => !townVehicle,
+    planDelivery: (street) => transport.planStockDelivery(street),
     city: () => (kind === 'city' ? data : null),
     player: () => person,
     playing: () => mode === 'play',
@@ -1977,7 +1982,12 @@ function start() {
           visible ? restingSeat(data, occupant) : null
         );
       }
-      s.showMarket(data.market?.receipts.length < 2 ? marketCounter(data) : null);
+      s.showMarket(
+        data.market && (data.market.supplied || data.market.receipts.length < 2)
+          ? marketCounter(data)
+          : null,
+        data.market?.supplied ? shopStock(data) : null
+      );
       s.townLighting(
         data,
         townVehicle ? run.x : mode === 'build' ? s.orbit.focusX : s.camera.position.x,

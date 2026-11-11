@@ -1,3 +1,4 @@
+import { stockTarget, SUPPLIES_PER_CRATE } from './shop-stock.mjs';
 import { BLOCKS, streetKeys } from './settlement.mjs';
 import { transportPoint, transportCargo, transportStops } from './transport.mjs';
 
@@ -70,7 +71,19 @@ export function transportControls({
     setupState();
   }
   function setupState() {
-    const trip = city()?.transport;
+    const data = city(),
+      trip = data?.transport,
+      target = data && stockTarget(data);
+    $('transportStockHint').hidden = !target;
+    if (target)
+      text(
+        'transportStockHint',
+        'Stocked spaza: each crate delivered to ' +
+          transportStreetLabel(target.street, data) +
+          ' adds ' +
+          SUPPLIES_PER_CRATE +
+          ' household supplies.'
+      );
     $('transportNew').disabled =
       driving() ||
       !$('transportPickup').value ||
@@ -165,6 +178,11 @@ export function transportControls({
       run = state.run;
     if (!trip || !run) return;
     const complete = trip.stage === 3;
+    const target = stockTarget(data);
+    const suppliesShop = trip.stage === 2 && target?.street === trip.dropoff;
+    $('transportStock').hidden = !suppliesShop;
+    if (suppliesShop)
+      text('transportStock', 'This drop-off adds 2 supplies to your stocked spaza.');
     const key = trip.stage === 1 ? trip.pickup : trip.dropoff;
     const point = transportPoint(key);
     const distance = Math.round(Math.hypot(point.x - run.x, point.z - run.z));
@@ -236,5 +254,22 @@ export function transportControls({
     document.body.classList.remove('town-driving');
     $('transportPanel').hidden = true;
   }
-  return { refresh, reset };
+  function planStockDelivery(dropoff) {
+    const data = city();
+    if (!data || driving() || !data.streets.includes(dropoff)) return false;
+    clearInputs();
+    options();
+    $('transportDropoff').value = dropoff;
+    $('transportSecond').value = '';
+    if ($('transportPickup').value === dropoff)
+      $('transportPickup').value = data.streets.find((street) => street !== dropoff) || '';
+    setupState();
+    text(
+      'transportSetupHint',
+      'Choose a pickup and save a new delivery to supply this shop. Your current delivery stays unchanged until you save.'
+    );
+    $('transportSetup').showModal();
+    return true;
+  }
+  return { refresh, reset, planStockDelivery };
 }

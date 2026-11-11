@@ -1,3 +1,4 @@
+import { restockShop } from './shop-stock.mjs';
 // Optional deliveries in the player's settlement. The workshop remains the source of the buggy.
 import { HALF, streetSegment } from './settlement.mjs';
 import { parts, partFootprint, size } from './model.mjs';
@@ -180,6 +181,7 @@ export function canServiceTransport(run, trip, city, obstacles) {
 export function serviceTransport(run, trip, city, obstacles) {
   if (!canServiceTransport(run, trip, city, obstacles)) return false;
   const before = transportCargo(trip);
+  if (trip.stage === 2) restockShop(city, trip.dropoff);
   if (trip.stage === 1) trip.stage = 2;
   else if (trip.stops) {
     trip.stops.find((stop) => stop.street === trip.dropoff).delivered = true;
