@@ -1,3 +1,4 @@
+import { shopStock, stockTarget } from './shop-stock.mjs';
 import { blockAt, householdsFor } from './settlement.mjs';
 import { isEntrance, entrance } from './resident-trip.mjs';
 import {
@@ -14,7 +15,16 @@ const $ = (id) => document.getElementById(id);
 function label(id, value) {
   if ($(id).textContent !== value) $(id).textContent = value;
 }
-export function marketControls({ city, player, playing, save, walkFrom, ring }) {
+export function marketControls({
+  city,
+  player,
+  playing,
+  save,
+  walkFrom,
+  ring,
+  planDelivery,
+  canPlan = () => true
+}) {
   const till = $('marketTill'),
     board = $('marketBoard');
   function report() {
@@ -24,6 +34,32 @@ export function marketControls({ city, player, playing, save, walkFrom, ring }) 
     const counter = market && marketCounter(data),
       done = market?.receipts.length === 2;
     $('marketDoor').disabled = !!market;
+    $('marketSupplied').disabled = !!market;
+    if (market) $('marketSupplied').checked = !!market.supplied;
+    const supplied = market ? market.supplied : $('marketSupplied').checked;
+    const target = stockTarget(data);
+    $('marketStock').hidden = !supplied;
+    $('marketRestock').hidden = !market?.supplied;
+    $('marketRestock').disabled =
+      !canPlan() || !target || !data.streets.includes(target.street) || data.streets.length < 2;
+    if (supplied)
+      label(
+        'marketStock',
+        shopStock(data, market?.shop || $('marketDoor').value) +
+          ' household supplies in stock. ' +
+          (!market
+            ? 'Open this market to accept deliveries.'
+            : !target
+              ? 'Restore the shop doorway to accept deliveries.'
+              : !data.streets.includes(target.street)
+                ? 'Restore the frontage street in City map to accept deliveries.'
+                : !canPlan()
+                  ? 'Use Build or Play to leave the buggy before planning another delivery.'
+                  : data.streets.length < 2
+                    ? 'Lay a second street for the pickup before planning a delivery.'
+                    : 'One delivered crate adds 2; each purchase uses 1.')
+      );
+
     $('marketOpen').hidden = !!market;
     $('marketOpen').disabled = !$('marketDoor').value;
     $('marketCall').hidden = $('marketWork').hidden = !market || done;
@@ -132,7 +168,13 @@ export function marketControls({ city, player, playing, save, walkFrom, ring }) 
       Math.ceil(Math.hypot(player().x - counter.inside.x, player().z - counter.inside.z));
     let hint = 'Market Day · ' + n + '/2';
     if (n === 2) hint = 'Market Day complete · 2/2';
-    else if (guest && canServe(data, player(), playing())) hint = 'Serve ' + guest.name;
+    else if (guest && canServe(data, player(), playing()))
+      hint =
+        market.supplied && !shopStock(data)
+          ? 'Out of stock · plan a delivery'
+          : 'Serve ' +
+            guest.name +
+            (market.supplied ? ' · ' + shopStock(data) + ' in stock' : '');
     else if (!counter) hint += ' · missing shop';
     else if (playing())
       hint +=
@@ -143,15 +185,28 @@ export function marketControls({ city, player, playing, save, walkFrom, ring }) 
         ' studs' +
         (guest ? ' · customer waiting' : '');
     else hint += guest ? ' · ' + guest.name + ' waiting' : ' · ' + counter.block.code;
+    if (
+      market.supplied &&
+      n < 2 &&
+      !hint.startsWith('Serve') &&
+      !hint.startsWith('Out of stock')
+    )
+      hint += ' · Stock ' + shopStock(data);
     label('marketTill', hint);
   }
   $('resSettings').addEventListener('click', populate);
   board.ontoggle = () => {
     if (board.open && $('residentSetup').open) populate();
   };
-  $('marketDoor').onchange = report;
+  $('marketDoor').onchange = $('marketSupplied').onchange = report;
+  $('marketRestock').onclick = () => {
+    const target = stockTarget(city());
+    if (!target || $('marketRestock').disabled) return;
+    $('residentSetup').close();
+    planDelivery(target.street);
+  };
   $('marketOpen').onclick = () => {
-    if (openMarket(city(), $('marketDoor').value)) {
+    if (openMarket(city(), $('marketDoor').value, $('marketSupplied').checked)) {
       save();
       populate();
       update();
