@@ -20,10 +20,77 @@ export function restoreTransport(value) {
     ![1, 2, 3].includes(value.stage)
   )
     return null;
-  return { pickup: value.pickup, dropoff: value.dropoff, stage: value.stage };
+  const trip = {
+    pickup: value.pickup,
+    dropoff: value.dropoff,
+    stage: value.stage
+  };
+  // Legacy single-stop saves keep their original shape. Rounds carry explicit receipts.
+  if (!Object.hasOwn(value, 'stops')) return trip;
+  if (
+    !Array.isArray(value.stops) ||
+    value.stops.length !== 2 ||
+    value.stops.some(
+      (stop) =>
+        !stop ||
+        !validStreet(stop.street) ||
+        stop.street === trip.pickup ||
+        typeof stop.delivered !== 'boolean'
+    ) ||
+    value.stops[0].street === value.stops[1].street
+  )
+    return null;
+  const stops = value.stops.map(({ street, delivered }) => ({
+    street,
+    delivered
+  }));
+  const delivered = stops.filter((stop) => stop.delivered);
+  const selected = stops.find((stop) => stop.street === trip.dropoff);
+  if (
+    !selected ||
+    (trip.stage === 1 && delivered.length !== 0) ||
+    (trip.stage === 2 && (delivered.length === 2 || selected.delivered)) ||
+    (trip.stage === 3 && delivered.length !== 2) ||
+    (delivered.length === 0
+      ? value.checkpoint !== trip.pickup
+      : !delivered.some((stop) => stop.street === value.checkpoint)) ||
+    (trip.stage === 3 && value.checkpoint !== trip.dropoff)
+  )
+    return null;
+  return { ...trip, stops, checkpoint: value.checkpoint };
 }
-export function newTransport(pickup, dropoff) {
-  return restoreTransport({ pickup, dropoff, stage: 1 });
+export function newTransport(pickup, dropoff, second = '') {
+  return restoreTransport({
+    pickup,
+    dropoff,
+    stage: 1,
+    ...(second
+      ? {
+          stops: [dropoff, second].map((street) => ({
+            street,
+            delivered: false
+          })),
+          checkpoint: pickup
+        }
+      : {})
+  });
+}
+export function transportStops(trip) {
+  return trip.stops || [{ street: trip.dropoff, delivered: trip.stage === 3 }];
+}
+export function transportCargo(trip) {
+  return trip?.stage === 2 ? transportStops(trip).filter((stop) => !stop.delivered).length : 0;
+}
+export function chooseTransportStop(trip, key) {
+  if (
+    !restoreTransport(trip) ||
+    !trip.stops ||
+    trip.stage === 3 ||
+    !trip.stops.some((stop) => stop.street === key && !stop.delivered)
+  )
+    return false;
+  trip.dropoff = key;
+  return true;
 }
 export function transportPoint(key) {
   if (!validStreet(key)) return null;
@@ -84,12 +151,12 @@ export function transportClear(position, obstacles) {
 }
 export function transportRun(buggy, trip, obstacles, city) {
   if (!restoreTransport(trip)) return null;
-  const key = trip.stage === 3 ? trip.dropoff : trip.pickup;
+  const key = trip.stops ? trip.checkpoint : trip.stage === 3 ? trip.dropoff : trip.pickup;
   if (city && !city.streets.includes(key)) return null;
   const point = transportPoint(key);
   if (!transportClear(point, obstacles)) return null;
   return {
-    ...newRun(bodyLoad(buggy) + (trip.stage === 2 ? 5 : 0)),
+    ...newRun(bodyLoad(buggy) + transportCargo(trip) * 5),
     ...point,
     blocked: false
   };
@@ -112,8 +179,16 @@ export function canServiceTransport(run, trip, city, obstacles) {
 }
 export function serviceTransport(run, trip, city, obstacles) {
   if (!canServiceTransport(run, trip, city, obstacles)) return false;
-  trip.stage++;
-  run.load += trip.stage === 2 ? 5 : -5;
+  const before = transportCargo(trip);
+  if (trip.stage === 1) trip.stage = 2;
+  else if (trip.stops) {
+    trip.stops.find((stop) => stop.street === trip.dropoff).delivered = true;
+    trip.checkpoint = trip.dropoff;
+    const next = trip.stops.find((stop) => !stop.delivered);
+    if (next) trip.dropoff = next.street;
+    else trip.stage = 3;
+  } else trip.stage = 3;
+  run.load += (transportCargo(trip) - before) * 5;
   run.speed = 0;
   return true;
 }

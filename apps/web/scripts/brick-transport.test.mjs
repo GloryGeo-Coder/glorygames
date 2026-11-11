@@ -62,6 +62,8 @@ import {
 } from '../public/games/brick-playground-3d/resident-routines.mjs';
 import {
   newTransport,
+  transportCargo,
+  chooseTransportStop,
   transportParking,
   restoreTransport,
   transportPoint,
@@ -1121,4 +1123,138 @@ test('parking guidance explains the exact unmet handover requirement in either d
   trip.stage = 3;
   assert.equal(transportParking(run, trip, town, []), 'complete');
   assert.equal(canServiceTransport(run, trip, town, []), false);
+});
+
+const secondDropoff = 'h-5-4';
+const roundTown = () => ({
+  ...city(),
+  streets: [pickup, dropoff, secondDropoff]
+});
+const round = () => newTransport(pickup, dropoff, secondDropoff);
+test('two-stop rounds complete in either order, with one physical crate unloaded at a time', () => {
+  for (const order of [
+    [dropoff, secondDropoff],
+    [secondDropoff, dropoff]
+  ]) {
+    const town = roundTown(),
+      trip = round(),
+      run = transportRun(buggy, trip, [], town);
+    const empty = run.load;
+    assert.equal(transportCargo(trip), 0);
+    assert.ok(serviceTransport(run, trip, town, []));
+    assert.equal(run.load, empty + 10);
+    assert.equal(transportCargo(trip), 2);
+    assert.ok(chooseTransportStop(trip, order[0]));
+    for (const [index, key] of order.entries()) {
+      assert.equal(trip.dropoff, key);
+      Object.assign(run, transportPoint(key));
+      assert.ok(serviceTransport(run, trip, town, []));
+      assert.equal(run.load, empty + (1 - index) * 5);
+      assert.equal(transportCargo(trip), 1 - index);
+      assert.equal(trip.checkpoint, key);
+      assert.ok(!serviceTransport(run, trip, town, []), 'cannot unload twice at the same stop');
+      assert.ok(!chooseTransportStop(trip, key), 'delivered receipts cannot be replayed');
+    }
+    assert.equal(trip.stage, 3);
+    assert.deepEqual(restoreTransport(trip), trip);
+  }
+});
+test('choosing another stop preserves the buggy pose, two crates and receipts', () => {
+  const trip = round(),
+    town = roundTown(),
+    run = transportRun(buggy, trip, [], town);
+  assert.ok(chooseTransportStop(trip, secondDropoff), 'order may be chosen before loading');
+  serviceTransport(run, trip, town, []);
+  for (let i = 0; i < 60; i++) tick(run, []);
+  const before = { ...run };
+  assert.ok(chooseTransportStop(trip, dropoff));
+  assert.deepEqual(run, before);
+  assert.equal(transportCargo(trip), 2);
+  for (const invalid of [pickup, 'h-7-7', '', null])
+    assert.ok(!chooseTransportStop(trip, invalid));
+  assert.equal(trip.dropoff, dropoff);
+});
+test('partial rounds reload at the serviced stop, retain one crate and finish without reloading cargo', () => {
+  const town = roundTown();
+  town.transport = round();
+  let trip = town.transport;
+  const run = transportRun(buggy, trip, [], town),
+    empty = run.load;
+  serviceTransport(run, trip, town, []);
+  chooseTransportStop(trip, secondDropoff);
+  Object.assign(run, transportPoint(secondDropoff));
+  serviceTransport(run, trip, town, []);
+  const storage = {
+    getItem: (key) => (key === saveKey('city') ? citySave(town) : null)
+  };
+  const reloaded = loadWorld('city', storage);
+  trip = reloaded.transport;
+  assert.deepEqual(trip, town.transport);
+  assert.deepEqual(reloaded.pieces, town.pieces);
+  const resumed = transportRun(buggy, trip, [], reloaded);
+  assert.equal(resumed.x, transportPoint(secondDropoff).x);
+  assert.equal(resumed.load, empty + 5);
+  assert.equal(resumed.speed, 0);
+  assert.equal(trip.dropoff, dropoff);
+  Object.assign(resumed, transportPoint(dropoff));
+  assert.ok(serviceTransport(resumed, trip, reloaded, []));
+  assert.equal(resumed.load, empty);
+  assert.equal(trip.stage, 3);
+});
+test('removed or blocked checkpoint fails safely until repaired, without erasing partial receipts', () => {
+  const town = roundTown(),
+    trip = round(),
+    run = transportRun(buggy, trip, [], town);
+  serviceTransport(run, trip, town, []);
+  Object.assign(run, transportPoint(dropoff));
+  serviceTransport(run, trip, town, []);
+  const before = structuredClone(trip);
+  town.streets = [pickup, secondDropoff];
+  assert.equal(transportRun(buggy, trip, [], town), null);
+  town.streets.push(dropoff);
+  assert.equal(
+    transportRun(buggy, trip, [{ ...transportPoint(dropoff), w: 1, d: 1 }], town),
+    null
+  );
+  assert.deepEqual(trip, before);
+  const resumed = transportRun(buggy, trip, [], town);
+  Object.assign(resumed, transportPoint(secondDropoff));
+  town.streets = [pickup, dropoff];
+  assert.equal(transportParking(resumed, trip, town, []), 'missing');
+  assert.ok(!serviceTransport(resumed, trip, town, []));
+  assert.deepEqual(trip, before);
+  town.streets.push(secondDropoff);
+  assert.ok(serviceTransport(resumed, trip, town, []));
+});
+test('malformed rounds cannot create duplicate cargo, forged checkpoints or contradictory receipts', () => {
+  const initial = round();
+  for (const patch of [
+    { stops: null },
+    { stops: [] },
+    { stops: [initial.stops[0]] },
+    { stops: [initial.stops[0], initial.stops[0]] },
+    { stops: [{ street: pickup, delivered: false }, initial.stops[1]] },
+    { stops: [{ street: dropoff, delivered: 'false' }, initial.stops[1]] },
+    { checkpoint: secondDropoff },
+    { checkpoint: 'h-8-8' },
+    { dropoff: 'h-7-7' },
+    { stage: 3 },
+    { stops: initial.stops.map((stop) => ({ ...stop, delivered: true })) },
+    {
+      stage: 2,
+      stops: initial.stops.map((stop) => ({ ...stop, delivered: true }))
+    },
+    {
+      stage: 2,
+      checkpoint: dropoff,
+      stops: [{ street: dropoff, delivered: true }, initial.stops[1]]
+    }
+  ])
+    assert.equal(restoreTransport({ ...initial, ...patch }), null, JSON.stringify(patch));
+  assert.equal(newTransport(pickup, dropoff, pickup), null);
+  assert.equal(newTransport(pickup, dropoff, dropoff), null);
+  assert.deepEqual(restoreTransport(route()), route(), 'legacy save shape stays unchanged');
+  const restored = restoreTransport(initial);
+  restored.stops[0].delivered = true;
+  assert.equal(initial.stops[0].delivered, false, 'validated saves own their receipt objects');
 });

@@ -1,6 +1,7 @@
 import { transportControls } from './transport-ui.mjs';
 import {
   newTransport,
+  chooseTransportStop,
   transportRun,
   transportObstacles,
   transportParking,
@@ -595,9 +596,9 @@ function start() {
     clearInputs,
     city: () => (kind === 'city' ? data : null),
     driving: () => !!townVehicle,
-    saveRoute: (pickup, dropoff) => {
-      const trip = newTransport(pickup, dropoff);
-      if (!trip) return 'Choose two different laid streets.';
+    saveRoute: (pickup, dropoff, second) => {
+      const trip = newTransport(pickup, dropoff, second);
+      if (!trip) return 'Choose different laid streets for every stop.';
       if (townVehicle) switchMode('build');
       data.transport = trip;
       save();
@@ -630,6 +631,13 @@ function start() {
       drawPieces(data.pieces, null);
       updateTransport();
       return true;
+    },
+    chooseStop: (key) => {
+      if (!townVehicle || !chooseTransportStop(data.transport, key)) return;
+      clearInputs();
+      save();
+      s.showTransport(data.transport);
+      updateTransport();
     },
     service: () => {
       if (!townVehicle || !serviceTransport(run, data.transport, data, townVehicle.obstacles))

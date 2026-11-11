@@ -1,4 +1,4 @@
-import { transportPoint } from './transport.mjs';
+import { transportPoint, transportCargo, transportStops } from './transport.mjs';
 import { residentFigure } from './resident-figure.mjs';
 import { townLighting } from './town-lighting.mjs';
 import { directionsScene } from './directions-scene.mjs';
@@ -772,15 +772,17 @@ export function studio(canvas) {
   function showTransport(trip) {
     townMarkers.forEach((m) => m.dispose());
     townMarkers = [];
-    crates.forEach((crate, i) => crate.setEnabled(trip?.stage === 2 && i === 0));
+    crates.forEach((crate, i) => crate.setEnabled(i < transportCargo(trip)));
     if (!trip) return;
-    for (const [index, key] of [trip.pickup, trip.dropoff].entries()) {
+    for (const [index, key] of [trip.pickup, ...transportStops(trip).map((stop) => stop.street)].entries()) {
       const point = transportPoint(key);
       if (!point) continue;
       const root = new B.TransformNode(index ? 'Town drop-off' : 'Town pickup', scene);
       root.position.set(point.x, 0.04, point.z);
       root.rotation.y = point.yaw;
-      const color = index ? '#edb741' : '#35ad9a';
+      const delivered = index ? transportStops(trip)[index - 1].delivered : trip.stage > 1;
+      const active = trip.stage !== 3 && key === (trip.stage === 1 ? trip.pickup : trip.dropoff);
+      const color = delivered ? '#5fb699' : active ? '#edb741' : '#aab9ca';
       for (const x of [-2.7, 2.7]) box('Delivery bay edge', x, 0, 0, 0.1, 0.04, 6, color, root);
       for (const z of [-3, 3]) box('Delivery bay end', 0, 0, z, 5.5, 0.04, 0.1, color, root);
       townMarkers.push(root);
