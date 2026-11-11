@@ -1,3 +1,4 @@
+import { transportParkingHint } from '../public/games/brick-playground-3d/transport-ui.mjs';
 import {
   walkingRoute,
   directionTracker
@@ -61,6 +62,7 @@ import {
 } from '../public/games/brick-playground-3d/resident-routines.mjs';
 import {
   newTransport,
+  transportParking,
   restoreTransport,
   transportPoint,
   transportObstacles,
@@ -1092,4 +1094,31 @@ test('guidance UI pauses while driving and cancellation preserves cargo and lett
   } finally {
     globalThis.document = previousDocument;
   }
+});
+
+
+test('parking guidance explains the exact unmet handover requirement in either direction', () => {
+  const trip = route(), town = city(), run = transportRun(buggy, trip, [], town);
+  const cases = [
+    [{ ...run, x: run.x + 3 }, [], town, 'approach', /marker/],
+    [{ ...run, speed: 1 }, [], town, 'brake', /Hold Brake/],
+    [{ ...run, speed: -1 }, [], town, 'brake', /Hold Brake/],
+    [{ ...run, x: NaN }, [], town, 'recover', /Last stop/],
+    [{ ...run, speed: Infinity }, [], town, 'recover', /Last stop/],
+    [{ ...run, yaw: run.yaw + 0.5 }, [], town, 'align', /Line up/],
+    [run, [{ x: run.x, z: run.z, w: 1, d: 1 }], town, 'blocked', /clearance/],
+    [run, [], { ...town, streets: [] }, 'missing', /street is missing/],
+    [run, [], town, 'ready', /Parked/],
+    [{ ...run, yaw: run.yaw + Math.PI }, [], town, 'ready', /Parked/]
+  ];
+  for (const [position, obstacles, layout, expected, message] of cases) {
+    const state = transportParking(position, trip, layout, obstacles);
+    assert.equal(state, expected);
+    assert.equal(canServiceTransport(position, trip, layout, obstacles), state === 'ready');
+    assert.match(transportParkingHint(state), message);
+  }
+  assert.match(transportParkingHint('approach', true), /Path blocked/);
+  trip.stage = 3;
+  assert.equal(transportParking(run, trip, town, []), 'complete');
+  assert.equal(canServiceTransport(run, trip, town, []), false);
 });

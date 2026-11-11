@@ -3,7 +3,7 @@ import {
   newTransport,
   transportRun,
   transportObstacles,
-  canServiceTransport,
+  transportParking,
   serviceTransport,
   advanceTransport
 } from './transport.mjs';
@@ -642,11 +642,14 @@ function start() {
     }
   });
   function updateTransport() {
+    const parking = townVehicle
+      ? transportParking(run, data.transport, data, townVehicle.obstacles)
+      : null;
     transport.refresh({
       trip: kind === 'city' ? data.transport : null,
       run: townVehicle ? run : null,
-      canService:
-        !!townVehicle && canServiceTransport(run, data.transport, data, townVehicle.obstacles)
+      parking,
+      canService: parking === 'ready'
     });
   }
   const openCityMap = cityMap((layout, b, action, changed) => {

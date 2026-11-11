@@ -1,6 +1,21 @@
 import { BLOCKS, streetKeys } from './settlement.mjs';
 import { transportPoint } from './transport.mjs';
 
+const PARKING_HINTS = {
+  recover: 'Use Last stop to return the buggy to its checkpoint.',
+  missing: 'The stop street is missing. Restore it in City map to continue.',
+  blocked: 'The stop needs more clearance. Use Build to move nearby bricks.',
+  approach: 'Follow the marker and brake beside the stop.',
+  brake: 'Hold Brake until the buggy stops.',
+  align: 'Line up with the street. Use a little forward or reverse and steer, then brake.',
+  ready: 'Parked at the stop.',
+  complete: 'Use Build or Play to leave the buggy.'
+};
+export function transportParkingHint(state, blocked = false) {
+  return state === 'approach' && blocked
+    ? 'Path blocked. Reverse, or use Build to clear space.'
+    : PARKING_HINTS[state] || PARKING_HINTS.approach;
+}
 const $ = (id) => document.getElementById(id);
 const text = (id, value) => {
   if ($(id).textContent !== value) $(id).textContent = value;
@@ -133,13 +148,10 @@ export function transportControls({
     text(
       'transportHint',
       state.issue ||
-        (complete
-          ? 'Use Build or Play to leave the buggy.'
-          : run.blocked
-            ? 'Path blocked. Reverse, or use Build to clear space.'
-            : state.canService
-              ? 'Parked at the stop.'
-              : 'Follow the marker and brake beside the stop.')
+        transportParkingHint(
+          state.parking || (complete ? 'complete' : state.canService ? 'ready' : 'approach'),
+          run.blocked
+        )
     );
     $('transportAction').hidden = complete;
     $('transportAction').disabled = !state.canService;

@@ -424,6 +424,7 @@ async function delivery(browser, mobile) {
       'walking stamps are not offered while driving'
     );
     await p.waitForFunction(() => !document.getElementById('transportAction').disabled);
+    assert.equal(await p.locator('#transportHint').innerText(), 'Parked at the stop.');
     assert.ok(await p.locator('#brake').isVisible());
     await atPickup();
     assert.equal(await x(), -12);
@@ -608,6 +609,7 @@ async function delivery(browser, mobile) {
     await districtLocation('Eastern Market Neighbourhood');
     await tap('transportAction');
     assert.equal((await save()).transport.stage, 3);
+    assert.equal(await p.locator('#transportHint').innerText(), 'Use Build or Play to leave the buggy.');
     if (process.env.BRICK_SCREENSHOTS) {
       fs.mkdirSync(process.env.BRICK_SCREENSHOTS, { recursive: true });
       await p.screenshot({

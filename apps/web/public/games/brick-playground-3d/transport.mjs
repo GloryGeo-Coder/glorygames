@@ -94,18 +94,21 @@ export function transportRun(buggy, trip, obstacles, city) {
     blocked: false
   };
 }
-export function canServiceTransport(run, trip, city, obstacles) {
-  if (!restoreTransport(trip) || trip.stage === 3) return false;
+export function transportParking(run, trip, city, obstacles) {
+  if (!restoreTransport(trip)) return 'missing';
+  if (trip.stage === 3) return 'complete';
+  if (![run?.x, run?.z, run?.yaw, run?.speed].every(Number.isFinite)) return 'recover';
   const key = trip.stage === 1 ? trip.pickup : trip.dropoff;
-  if (!city.streets.includes(key)) return false;
+  if (!city.streets.includes(key)) return 'missing';
   const point = transportPoint(key);
-  return (
-    Math.abs(run.speed) <= 0.22 &&
-    Math.hypot(run.x - point.x, run.z - point.z) <= 1.2 &&
-    Math.abs(Math.sin(run.yaw - point.yaw)) <= 0.23 &&
-    transportClear(run, obstacles) &&
-    transportClear(point, obstacles)
-  );
+  if (Math.hypot(run.x - point.x, run.z - point.z) > 1.2) return 'approach';
+  if (Math.abs(run.speed) > 0.22) return 'brake';
+  if (Math.abs(Math.sin(run.yaw - point.yaw)) > 0.23) return 'align';
+  if (!transportClear(run, obstacles) || !transportClear(point, obstacles)) return 'blocked';
+  return 'ready';
+}
+export function canServiceTransport(run, trip, city, obstacles) {
+  return transportParking(run, trip, city, obstacles) === 'ready';
 }
 export function serviceTransport(run, trip, city, obstacles) {
   if (!canServiceTransport(run, trip, city, obstacles)) return false;
