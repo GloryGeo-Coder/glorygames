@@ -12,6 +12,7 @@ async function park(browser, mobile) {
     spot = visitFront(city, bench, true).seat;
   city.pieces.push({ id: 'footpath-wall', type: 'wall', color: 'Plum', r: 0, x: 9, z: 9, y: 0 });
   city.garden = { plants: [], bouquet: null, displays: [{ id: bench.id, flower: 'marigold' }] };
+  city.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
   const ctx = await browser.newContext({
     viewport: mobile ? { width: 393, height: 820 } : { width: 1100, height: 750 },
     isMobile: mobile,
@@ -31,6 +32,12 @@ async function park(browser, mobile) {
     const tap = (id) => (mobile ? page.locator('#' + id).tap() : page.locator('#' + id).click());
     const saved = () =>
       page.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const cargo = async () =>
+      assert.deepEqual(
+        (await saved()).transport,
+        city.transport,
+        'park visits and their edits preserve loaded transport cargo'
+      );
     const status = (text) =>
       page.waitForFunction(
         (text) => document.querySelector('#resState').textContent.includes(text),
@@ -56,6 +63,7 @@ async function park(browser, mobile) {
       (process.env.GAME_ORIGIN || 'http://127.0.0.1:3000') + '/play/brick-playground-3d'
     );
     await page.locator('#tray button').first().waitFor();
+    await cargo();
     await tap('resSettings');
     await page.locator('#resHousehold').selectOption('new');
     await page.locator('#resName').fill('Thandi');
@@ -77,11 +85,13 @@ async function park(browser, mobile) {
     await tap('mapConnect');
     await page.getByRole('button', { name: 'Close settlement map' }).click();
     assert.deepEqual((await saved()).streets, initial.streets);
+    await cargo();
     await tap('cityMapButton');
     await page.locator('#mapRoute').selectOption('family1');
     await tap('mapConnect');
     await page.locator('#townLighting').selectOption('day');
     await tap('mapBuild');
+    await cargo();
     await tap('resFollow');
     await page.waitForFunction(
       () => document.querySelector('#resHint').textContent.includes('Path blocked in E4'),
@@ -97,6 +107,7 @@ async function park(browser, mobile) {
     await tap('resSettings');
     await tap('resPause');
     const paused = (await saved()).family1;
+    await cargo();
     assert.ok(paused.paused && paused.park && paused.wait > 0 && paused.phase === 'shopping');
     if (process.env.BRICK_SCREENSHOTS) {
       fs.mkdirSync(process.env.BRICK_SCREENSHOTS, { recursive: true });
@@ -112,12 +123,14 @@ async function park(browser, mobile) {
     await status('Thandi · Paused');
     await seated();
     assert.deepEqual((await saved()).family1, paused);
+    await cargo();
     await tap('resSettings');
     await tap('resPause');
     await status('Walking home');
     await status('Thandi · At home');
     const done = await saved();
     assert.equal(done.family1.routine.visits, 1);
+    await cargo();
     assert.deepEqual(done.garden, initial.garden);
     assert.deepEqual(
       done.pieces,
@@ -126,7 +139,7 @@ async function park(browser, mobile) {
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Touch' : 'Desktop') +
-        ' assigned the park bench, repaired a missing street and a blocked footpath, reopened the seated visitor and completed the scheduled walk home.'
+        ' assigned the park bench, repaired a missing street and a blocked footpath, reopened the seated visitor and completed the scheduled walk home while preserving loaded transport cargo.'
     );
   } finally {
     await ctx.close();

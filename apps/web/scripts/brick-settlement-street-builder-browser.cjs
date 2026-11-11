@@ -6,6 +6,7 @@ const assert = require('node:assert/strict'),
 async function testTown(browser, mobile) {
   const dir = '../public/games/brick-playground-3d/';
   const { world } = await import(dir + 'model.mjs');
+  const { starterBuggy } = await import(dir + 'freight.mjs');
   const { citySave, moveIn, SIDE } = await import(dir + 'settlement.mjs');
   const { isEntrance, newTrip } = await import(dir + 'resident-trip.mjs');
   const city = world('city'),
@@ -14,19 +15,27 @@ async function testTown(browser, mobile) {
   const trip = newTrip(home, bench, city);
   trip.paused = true;
   moveIn(city, 'Thandi', 'park', trip);
+  city.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
+  const garage = world('garage');
+  garage.pieces = starterBuggy();
+  const garageSave = JSON.stringify(garage);
   const ctx = await browser.newContext({
     viewport: mobile ? { width: 393, height: 820 } : { width: 1100, height: 750 },
     isMobile: mobile,
     hasTouch: mobile
   });
   try {
-    await ctx.addInitScript((raw) => {
-      const key = 'wga.brick-playground.v1.city';
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem('wga.brick.active', 'city');
-        localStorage.setItem(key, raw);
-      }
-    }, citySave(city));
+    await ctx.addInitScript(
+      ({ raw, garage }) => {
+        const key = 'wga.brick-playground.v1.city';
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem('wga.brick.active', 'city');
+          localStorage.setItem(key, raw);
+          localStorage.setItem('wga.brick-playground.v1.garage', garage);
+        }
+      },
+      { raw: citySave(city), garage: garageSave }
+    );
     const page = await ctx.newPage(),
       errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
@@ -34,6 +43,12 @@ async function testTown(browser, mobile) {
       press = (id) => tap(page.locator('#' + id));
     const saved = () =>
       page.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const cargo = async () =>
+      assert.deepEqual(
+        (await saved()).transport,
+        city.transport,
+        'street editing preserves the loaded delivery'
+      );
     const junction = (col, row) => String(row * (SIDE + 1) + col);
     const panel = async () => {
       await press('cityMapButton');
@@ -82,20 +97,26 @@ async function testTown(browser, mobile) {
     );
     await page.locator('#tray button').first().waitFor();
     const initial = await saved();
+    await cargo();
     await stageRoad(true);
     assert.deepEqual((await saved()).streets, initial.streets);
+    await cargo();
     await close();
+    await cargo();
     await stageRoad(false);
     await press('mapBuild');
     const paved = [...initial.streets, 'h-4-4', 'h-5-4', 'v-6-4', 'h-6-5', 'h-7-5'];
     assert.deepEqual((await saved()).streets, paved);
+    await cargo();
     await press('undo');
     assert.deepEqual((await saved()).streets, initial.streets);
+    await cargo();
     await stageRoad(false);
     await press('mapBuild');
     await page.reload();
     await page.locator('#tray button').first().waitFor();
     assert.deepEqual((await saved()).streets, paved);
+    await cargo();
     await panel();
     await page.locator('#streetStart').selectOption(junction(4, 4));
     await page.locator('#streetEnd').selectOption(junction(5, 4));
@@ -105,8 +126,41 @@ async function testTown(browser, mobile) {
     await press('stageStreet');
     await press('mapBuild');
     assert.ok(!(await saved()).streets.includes('h-4-4'));
+    await cargo();
+    await press('transportButton');
+    assert.equal(await page.locator('#transportDropoff option[value="h-4-4"]').count(), 0);
+    await tap(page.getByRole('button', { name: 'Close transport settings' }));
+    await cargo();
     await press('undo');
     assert.deepEqual((await saved()).streets, paved);
+    await cargo();
+    // Removing the last serviced pickup must refuse resume without discarding its crate.
+    await panel();
+    await page.locator('#streetStart').selectOption(junction(3, 4));
+    await page.locator('#streetEnd').selectOption(junction(4, 4));
+    await page.locator('#streetMode').selectOption('remove');
+    await press('stageStreet');
+    await press('mapBuild');
+    assert.ok(!(await saved()).streets.includes('h-3-4'));
+    await cargo();
+    await press('transportButton');
+    await press('transportDispatch');
+    assert.match(await page.locator('#transportSetupHint').innerText(), /street was removed/);
+    await tap(page.getByRole('button', { name: 'Close transport settings' }));
+    await cargo();
+    await press('undo');
+    assert.deepEqual((await saved()).streets, paved);
+    await press('transportButton');
+    await press('transportDispatch');
+    await page.locator('#transportPanel').waitFor();
+    assert.equal(await page.locator('#transportState').innerText(), 'Deliver one crate');
+    await press('home');
+    await cargo();
+    await press('cityMapButton');
+    assert.ok(await page.locator('#streetBuilder').isHidden());
+    await close();
+    await press('build');
+    await cargo();
     await press('resSettings');
     await press('resPause');
     await page.waitForFunction(
@@ -124,12 +178,17 @@ async function testTown(browser, mobile) {
     assert.ok(await page.locator('#streetBuilder').isHidden());
     await close();
     const done = await saved();
+    await cargo();
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem('wga.brick-playground.v1.garage')),
+      garageSave
+    );
     assert.deepEqual(done.pieces, initial.pieces);
     assert.deepEqual(done.blocks, initial.blocks);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Touch' : 'Desktop') +
-        ' drew both bends, extended a road, cancelled, saved, removed and undid roadworks, then watched Thandi reach her bench and return home.'
+        ' drew both bends, extended a road, cancelled, saved, removed and undid roadworks, resumed the same loaded crate after restoring its pickup, then watched Thandi reach her bench and return home without changing the buggy save.'
     );
   } finally {
     await ctx.close();

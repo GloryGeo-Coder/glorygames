@@ -252,6 +252,7 @@ async function streetConnection(browser, mobile) {
   city.resident.paused = true;
   city.neighbour = newTrip(...hall.filter(isEntrance));
   city.streets = city.streets.filter((k) => k !== 'v-3-3');
+  city.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
   const ctx = await browser.newContext({
     viewport: mobile ? { width: 393, height: 820 } : { width: 1100, height: 750 },
     isMobile: mobile,
@@ -336,6 +337,7 @@ async function streetConnection(browser, mobile) {
       });
     }
     const before = await saved();
+    assert.deepEqual(before.transport, city.transport, 'loaded delivery survives the initial load');
     await tap('mapConnect');
     assert.match(await summary(), /New connection in this preview/);
     assert.ok(await page.locator('#road-east').isChecked());
@@ -346,8 +348,10 @@ async function streetConnection(browser, mobile) {
     await tap('mapConnect');
     await tap('mapBuild');
     assert.ok((await saved()).streets.includes('v-3-3'));
+    assert.deepEqual((await saved()).transport, before.transport, 'street repair preserves cargo');
     await tap('undo');
     assert.deepEqual((await saved()).streets, before.streets);
+    assert.deepEqual((await saved()).transport, before.transport, 'undo preserves cargo');
     await openRoute();
     await tap('mapConnect');
     await tap('mapBuild');
@@ -364,10 +368,47 @@ async function streetConnection(browser, mobile) {
     assert.deepEqual(finished.resident, before.resident);
     assert.deepEqual(finished.pieces, before.pieces);
     assert.equal(finished.neighbour.shop, before.neighbour.shop);
+    assert.deepEqual(finished.transport, before.transport, 'reloaded repair preserves cargo');
+    await tap('build');
+    const stageRow = async () => {
+      await tap('cityMapButton');
+      await page.locator('#mapBlock').selectOption('0');
+      const toggle = page.locator('#blockRepeat summary');
+      if (mobile) await toggle.tap();
+      else await toggle.click();
+      await page.locator('#repeatSource').selectOption('26');
+      await page.locator('#repeatCount').selectOption('2');
+      await page.locator('#repeatDir').selectOption('east');
+      await page.locator('#repeatTurns').selectOption('1');
+      assert.ok(await page.locator('#repeatStage').isEnabled());
+      await tap('repeatStage');
+    };
+    await stageRow();
+    await close();
+    assert.deepEqual((await saved()).pieces, finished.pieces, 'cancel discards the block row');
+    assert.deepEqual((await saved()).transport, before.transport, 'cancel preserves cargo');
+    await stageRow();
+    await tap('mapBuild');
+    const expanded = await saved();
+    assert.ok(expanded.pieces.length > finished.pieces.length);
+    assert.deepEqual(expanded.transport, before.transport, 'block expansion preserves cargo');
+    await tap('undo');
+    assert.deepEqual((await saved()).pieces, finished.pieces);
+    assert.deepEqual((await saved()).transport, before.transport, 'block undo preserves cargo');
+    await stageRow();
+    await tap('mapBuild');
+    const rebuilt = await saved();
+    await page.reload();
+    await page.locator('#tray button').first().waitFor();
+    const reopened = await saved();
+    assert.deepEqual(reopened.pieces, rebuilt.pieces);
+    assert.deepEqual(reopened.transport, before.transport, 'expanded town reload preserves cargo');
+    assert.deepEqual(reopened.resident, finished.resident);
+    assert.deepEqual(reopened.neighbour, finished.neighbour);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone' : 'Desktop') +
-        ' street planner: inspected both routes, selected C4 in close-up, cancelled a repair, applied and undid it, then reopened the repaired town and watched Naledi finish.'
+        ' street planner: inspected both routes, selected C4 in close-up, cancelled a repair, applied and undid it, then reopened the repaired town and watched Naledi finish; loaded delivery and both households survived block expansion, cancellation, undo and reload.'
     );
   } finally {
     await ctx.close();

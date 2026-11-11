@@ -24,6 +24,7 @@ async function fixture() {
   data.resident = newTrip(home, door);
   moveIn(data, 'Ayanda', 'spaza', newTrip(blockIndex(data.pieces)[36].find(isEntrance), door));
   for (const t of [data.resident, data.family1]) t.phase = 'done';
+  data.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
   return { raw: citySave(data), shop: door.id, blocker: shop.at(-1).id };
 }
 async function marketDay(browser, mobile) {
@@ -143,6 +144,7 @@ async function marketDay(browser, mobile) {
     }
     await tap('marketTill');
     const half = await saved();
+    assert.equal(half.transport.stage, 2, 'serving the first household preserves loaded cargo');
     assert.deepEqual(
       half.market.receipts.map((r) => r.name),
       ['Lebo']
@@ -150,6 +152,7 @@ async function marketDay(browser, mobile) {
     await p.reload();
     await p.locator('#tray button').first().waitFor();
     assert.deepEqual((await saved()).market.receipts, half.market.receipts);
+    assert.deepEqual((await saved()).transport, half.transport, 'market reload preserves cargo');
     await walkToTill();
     assert.equal(await p.locator('#marketTill').innerText(), 'Serve Ayanda');
     await tap('marketTill');
@@ -159,6 +162,7 @@ async function marketDay(browser, mobile) {
       ['Lebo', 'Ayanda']
     );
     assert.deepEqual(finished.pieces, repaired.pieces);
+    assert.deepEqual(finished.transport, half.transport, 'completed market preserves cargo');
     await p.reload();
     await p.locator('#tray button').first().waitFor();
     assert.match(await p.locator('#marketTill').innerText(), /complete/);
@@ -166,11 +170,12 @@ async function marketDay(browser, mobile) {
     assert.match(await p.locator('#marketReceipts').innerText(), /Ayanda/);
     await tap('marketEnd');
     assert.equal((await saved()).market, undefined);
+    assert.deepEqual((await saved()).transport, half.transport, 'clearing the market keeps cargo');
     assert.deepEqual((await saved()).pieces, repaired.pieces);
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop keyboard/mouse') +
-        ' opened a market, repaired the doorway, served two real arrivals from the till and reopened the saved result.'
+        ' opened a market, repaired the doorway, served two real arrivals from the till and reopened the saved result while loaded cargo stayed intact.'
     );
   } finally {
     await ctx.close();

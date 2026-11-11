@@ -1,3 +1,12 @@
+import { transportControls } from './transport-ui.mjs';
+import {
+  newTransport,
+  transportRun,
+  transportObstacles,
+  transportParking,
+  serviceTransport,
+  advanceTransport
+} from './transport.mjs';
 import { HOUSEHOLDS } from './settlement.mjs';
 import { restingSeat } from './resident-trip.mjs';
 import { residentControls } from './resident-ui.mjs';
@@ -98,6 +107,7 @@ function start() {
     run = newRun(),
     driverSeat = null,
     freight = null,
+    townVehicle = null,
     canal = canalState(),
     braking = false;
   let elapsed = 0,
@@ -128,7 +138,10 @@ function start() {
   }
   function drawPieces(items, id) {
     if (kind === 'city') {
-      const b = mode === 'build' ? BLOCKS[data.focus] : blockAt(person.x, person.z);
+      const b =
+        mode === 'build'
+          ? BLOCKS[data.focus]
+          : blockAt(townVehicle ? run.x : person.x, townVehicle ? run.z : person.z);
       renderedBlock = b;
       $('cityMapButton').textContent = 'Map · ' + b.code;
       const info = blockInfo(data, b);
@@ -167,6 +180,9 @@ function start() {
   function openWorld(next) {
     if (kind === 'city' && householdsFor(data).some(({ key }) => data?.[key])) save();
     residents.reset();
+    transport.reset();
+    townVehicle = null;
+    s.showTransport(null);
     for (const profile of HOUSEHOLDS) s.showResident(profile, null, false, 0);
     clearTimeout(noticeTimer);
     $('notice').textContent = '';
@@ -214,8 +230,20 @@ function start() {
       r: 0
     };
     if (kind === 'canal')
-      Object.assign(draft, { type: 'deck', mount: 'east', color: 'Sun', x: 0, z: -1 });
-    Object.assign(s.orbit, { pitch: 0.91, yaw: -0.63, zoom: 1, focusX: 0, focusZ: 0 });
+      Object.assign(draft, {
+        type: 'deck',
+        mount: 'east',
+        color: 'Sun',
+        x: 0,
+        z: -1
+      });
+    Object.assign(s.orbit, {
+      pitch: 0.91,
+      yaw: -0.63,
+      zoom: 1,
+      focusX: 0,
+      focusZ: 0
+    });
     if (kind === 'district') {
       Object.assign(draft, { type: 'step', color: 'Sun', r: 1 });
       focusLot(data.stage > 0 && data.stage < 4 ? data.stage - 1 : 1);
@@ -496,17 +524,24 @@ function start() {
   function syncMode() {
     const edit = mode === 'build';
     pressed('build', edit);
-    pressed('play', !edit && !freight);
+    pressed('play', !edit && !freight && !townVehicle);
     $('bench').hidden = !editorAvailable();
     $('walk').hidden = edit;
     for (const id of ['view', 'closer', 'farther', 'center']) $(id).hidden = !edit || cityOverview;
     $('home').hidden = edit;
-    $('home').textContent = freight ? 'Last bay' : kind === 'garage' ? 'Restart' : 'Return';
+    $('home').textContent = townVehicle
+      ? 'Last stop'
+      : freight
+        ? 'Last bay'
+        : kind === 'garage'
+          ? 'Restart'
+          : 'Return';
     $('routeMap').hidden = mode !== 'drive' || kind !== 'garage';
     $('jump').hidden = mode === 'drive' || onDelivery() || carryingParcel();
     if (kind === 'upstairs') shopPanel();
     if (kind === 'district') districtPanel();
     $('brake').hidden = mode !== 'drive';
+    updateTransport();
     $('stick').setAttribute(
       'aria-label',
       mode === 'drive' ? 'Driving joystick' : 'Movement joystick'
@@ -543,7 +578,11 @@ function start() {
       if (mode !== 'build') switchMode('build');
       const b = blockAt(t.x, t.z);
       focusCity(b);
-      Object.assign(s.orbit, { focusX: t.x, focusZ: t.z, zoom: follow ? 0.56 : 0.63 });
+      Object.assign(s.orbit, {
+        focusX: t.x,
+        focusZ: t.z,
+        zoom: follow ? 0.56 : 0.63
+      });
       if (!follow) {
         copy = null;
         select(blocker || null);
@@ -552,6 +591,67 @@ function start() {
       syncMode();
     }
   });
+  const transport = transportControls({
+    clearInputs,
+    city: () => (kind === 'city' ? data : null),
+    driving: () => !!townVehicle,
+    saveRoute: (pickup, dropoff) => {
+      const trip = newTransport(pickup, dropoff);
+      if (!trip) return 'Choose two different laid streets.';
+      if (townVehicle) switchMode('build');
+      data.transport = trip;
+      save();
+      return true;
+    },
+    dispatch: () => {
+      let garage;
+      try {
+        garage = volatile.get('garage') || loadWorld('garage', localStorage);
+      } catch {
+        return 'Open and save a usable Vehicle Workshop buggy first.';
+      }
+      const issue = freightProblem(garage.pieces);
+      if (issue) return issue + ' Open Vehicle Workshop from Worlds.';
+      if (!data.transport) return 'Save a delivery route first.';
+      const obstacles = transportObstacles(data.pieces, garage.pieces);
+      const checkpoint = transportRun(garage.pieces, data.transport, obstacles, data);
+      if (!checkpoint)
+        return 'Last stop is blocked or its street was removed. Clear room beside the bay or restore the street.';
+      townVehicle = {
+        pieces: garage.pieces,
+        tyres: Object.hasOwn(TYRES, garage.tyres) ? garage.tyres : 'road',
+        obstacles
+      };
+      run = checkpoint;
+      driverSeat = drivingSeat(garage.pieces);
+      s.freightBodywork(garage.pieces);
+      s.showTransport(data.transport);
+      switchMode('drive');
+      drawPieces(data.pieces, null);
+      updateTransport();
+      return true;
+    },
+    service: () => {
+      if (!townVehicle || !serviceTransport(run, data.transport, data, townVehicle.obstacles))
+        return;
+      clearInputs();
+      save();
+      s.showTransport(data.transport);
+      music.snap();
+      updateTransport();
+    }
+  });
+  function updateTransport() {
+    const parking = townVehicle
+      ? transportParking(run, data.transport, data, townVehicle.obstacles)
+      : null;
+    transport.refresh({
+      trip: kind === 'city' ? data.transport : null,
+      run: townVehicle ? run : null,
+      parking,
+      canService: parking === 'ready'
+    });
+  }
   const openCityMap = cityMap((layout, b, action, changed) => {
     const walk = action.kind === 'walk' || action.kind === 'trail';
     if (changed) {
@@ -567,17 +667,26 @@ function start() {
     }
     if (action.kind === 'directions') {
       data.directions = action.destination;
-      focusCity(blockAt(person.x, person.z));
-      switchMode('play');
+      // Choosing a walking destination must not eject the driver or move either actor.
+      // Guidance stays saved and paused until the player chooses to leave the buggy.
+      if (!townVehicle) {
+        focusCity(blockAt(person.x, person.z));
+        switchMode('play');
+      }
       clearInputs();
       drawPieces(data.pieces, selected);
       syncMode();
       save();
       updateDirections();
-      announce('Walking directions started');
+      announce(
+        townVehicle
+          ? 'Directions saved. Leave the buggy to follow on foot.'
+          : 'Walking directions started'
+      );
       return;
     }
     if (!walk && mode !== 'build') switchMode('build');
+    if (walk) switchMode('play');
     if (tool !== 'copy') {
       selected = null;
       tool = 'add';
@@ -585,7 +694,6 @@ function start() {
     focusCity(b);
     adjustHeight();
     if (walk || blockAt(person.x, person.z) !== b) Object.assign(person, avatar(kind), spawnAt(b));
-    if (walk) switchMode('play');
     if (action.kind === 'trail') {
       Object.assign(person, avatar('city'), action.front.curb, { y: 0 });
       s.chase.yaw = Math.atan2(
@@ -595,7 +703,13 @@ function start() {
     }
     if (action.kind === 'overview') {
       cityOverview = true;
-      Object.assign(s.orbit, { focusX: 0, focusZ: 0, yaw: 0, pitch: 1.25, zoom: 11 });
+      Object.assign(s.orbit, {
+        focusX: 0,
+        focusZ: 0,
+        yaw: 0,
+        pitch: 1.25,
+        zoom: 11
+      });
       top = false;
       pressed('view', false);
       announce('Tap a block to open its editor');
@@ -619,7 +733,9 @@ function start() {
     clearInputs();
     openCityMap(
       data,
-      mode === 'build' ? BLOCKS[data.focus] : blockAt(person.x, person.z),
+      mode === 'build'
+        ? BLOCKS[data.focus]
+        : blockAt(townVehicle ? run.x : person.x, townVehicle ? run.z : person.z),
       mode === 'build'
     );
   };
@@ -783,6 +899,15 @@ function start() {
       driverSeat = drivingSeat(data.pieces);
       run = newRun(bodyLoad(data.pieces));
       s.chase.yaw = 0;
+    }
+    if (townVehicle && to !== 'drive') {
+      Object.assign(person, avatar('city'), { x: run.x, z: run.z });
+      data.focus = blockAt(run.x, run.z).id;
+      townVehicle = null;
+      s.freightBodywork(null);
+      s.showTransport(null);
+      driverSeat = null;
+      s.workshop(false, run);
     }
     if (freight && to !== 'drive') {
       s.freightBodywork(null);
@@ -1048,6 +1173,23 @@ function start() {
     updateTest();
   };
   $('home').onclick = () => {
+    if (townVehicle) {
+      const checkpoint = transportRun(
+        townVehicle.pieces,
+        data.transport,
+        townVehicle.obstacles,
+        data
+      );
+      if (!checkpoint) {
+        announce('Last stop blocked. Return to Build and clear the bay.');
+        return;
+      }
+      run = checkpoint;
+      clearInputs();
+      s.chase.yaw = 0;
+      announce('Returned to the last delivery stop. Cargo is kept.');
+      return;
+    }
     if (freight) {
       resetFreightRun();
       announce('Returned to the last serviced bay');
@@ -1207,7 +1349,13 @@ function start() {
     const lot = LOTS[index];
     $('lot').value = String(index);
     if (!lot) {
-      Object.assign(s.orbit, { focusX: 0, focusZ: 0, yaw: 0, pitch: 1.02, zoom: 2.25 });
+      Object.assign(s.orbit, {
+        focusX: 0,
+        focusZ: 0,
+        yaw: 0,
+        pitch: 1.02,
+        zoom: 2.25
+      });
       top = false;
       pressed('view', false);
       return;
@@ -1474,12 +1622,21 @@ function start() {
     previousPinch;
   const pinch = () => {
     const [a, b] = touches.values();
-    return { d: Math.hypot(a.x - b.x, a.y - b.y), x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    return {
+      d: Math.hypot(a.x - b.x, a.y - b.y),
+      x: (a.x + b.x) / 2,
+      y: (a.y + b.y) / 2
+    };
   };
   canvas.onpointerdown = (e) => {
     if (kind === 'city') residents.stopFollowing();
     canvas.setPointerCapture(e.pointerId);
-    touches.set(e.pointerId, { x: e.clientX, y: e.clientY, startX: e.clientX, startY: e.clientY });
+    touches.set(e.pointerId, {
+      x: e.clientX,
+      y: e.clientY,
+      startX: e.clientX,
+      startY: e.clientY
+    });
     if (touches.size === 1) gesture = false;
     if (touches.size === 2) {
       gesture = true;
@@ -1602,6 +1759,7 @@ function start() {
       $('cityMap').open ||
       $('planBook').open ||
       $('residentSetup').open ||
+      $('transportSetup').open ||
       ['INPUT', 'SELECT'].includes(e.target.tagName)
     )
       return;
@@ -1671,7 +1829,13 @@ function start() {
     const dt = Math.min(0.1, s.engine.getDeltaTime() / 1000);
     elapsed += dt;
     let walking = false;
-    if (!menu.open && !$('cityMap').open && !$('residentSetup').open && !$('planBook').open) {
+    if (
+      !menu.open &&
+      !$('cityMap').open &&
+      !$('residentSetup').open &&
+      !$('transportSetup').open &&
+      !$('planBook').open
+    ) {
       const count = Math.max(1, Math.ceil(dt / 0.0167)),
         delta = dt / count;
       for (let i = 0; i < count; i++) {
@@ -1714,7 +1878,9 @@ function start() {
             braking || keys.has(' '),
             delta
           ];
-          if (freight) {
+          if (townVehicle) {
+            advanceTransport(run, townVehicle.tyres, ...controls, townVehicle.obstacles);
+          } else if (freight) {
             if (data.freightStop < 4)
               advanceFreight(run, freight.tyres, ...controls, freight.obstacles);
           } else {
@@ -1756,7 +1922,10 @@ function start() {
       );
     } else music.tick(elapsed, false);
     if (kind === 'garage') s.workshop(mode === 'drive', run, data.tyres);
-    if (freight) {
+    if (townVehicle) {
+      s.workshop(true, run, townVehicle.tyres);
+      updateTransport();
+    } else if (freight) {
       s.workshop(true, run, freight.tyres);
       updateBay();
     } else if (mode === 'drive') drawMap();
@@ -1767,7 +1936,11 @@ function start() {
     }
     if (kind === 'district' && mode === 'play') districtDirection();
     if (kind === 'upstairs' && mode === 'play') updateHandover();
-    if (kind === 'city' && mode === 'play' && renderedBlock !== blockAt(person.x, person.z))
+    if (
+      kind === 'city' &&
+      ((mode === 'play' && renderedBlock !== blockAt(person.x, person.z)) ||
+        (townVehicle && renderedBlock !== blockAt(run.x, run.z)))
+    )
       drawPieces(data.pieces, null);
     if (kind === 'city') {
       const trip = residents.selectedTrip;
@@ -1799,8 +1972,8 @@ function start() {
       s.showMarket(data.market?.receipts.length < 2 ? marketCounter(data) : null);
       s.townLighting(
         data,
-        mode === 'build' ? s.orbit.focusX : s.camera.position.x,
-        mode === 'build' ? s.orbit.focusZ : s.camera.position.z
+        townVehicle ? run.x : mode === 'build' ? s.orbit.focusX : s.camera.position.x,
+        townVehicle ? run.z : mode === 'build' ? s.orbit.focusZ : s.camera.position.z
       );
       market.update();
       const street =
@@ -1817,6 +1990,7 @@ function start() {
         updateDirections();
       }
       residents.refresh();
+      updateTransport();
     }
     s.actors(
       mode,

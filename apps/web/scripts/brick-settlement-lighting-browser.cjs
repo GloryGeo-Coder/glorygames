@@ -22,6 +22,11 @@ async function fixture() {
   city.resident = newTrip(homes[0].find(isEntrance), homes[1].find(isEntrance));
   city.resident.phase = 'done';
   city.clockMinutes = 800;
+  city.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
+  city.market = {
+    shop: city.resident.shop,
+    receipts: [{ name: 'Lebo', home: city.resident.home, block: 'D4' }]
+  };
   return citySave(city);
 }
 async function lighting(browser, mobile) {
@@ -46,6 +51,19 @@ async function lighting(browser, mobile) {
     const tap = (id) => (mobile ? p.locator('#' + id).tap() : p.locator('#' + id).click());
     const saved = () =>
       p.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const progress = (raw) => ({
+      transport: raw.transport,
+      resident: raw.resident,
+      market: raw.market
+    });
+    const original = progress(JSON.parse(await fixture()));
+    async function preserved() {
+      assert.deepEqual(
+        progress(await saved()),
+        original,
+        'lighting edits preserve cargo and market progress'
+      );
+    }
     const scene = () =>
       p.evaluate(() => {
         const s = BABYLON.EngineStore.LastCreatedScene;
@@ -116,10 +134,21 @@ async function lighting(browser, mobile) {
     await p.locator('#townLighting').selectOption('night');
     await close();
     assert.equal((await saved()).lighting, undefined);
+    await preserved();
     await tap('cityMapButton');
     await p.locator('#townLighting').selectOption('night');
     await tap('mapBuild');
     assert.equal((await saved()).clockMinutes, 800);
+    await p.waitForFunction(
+      () => BABYLON.EngineStore.LastCreatedScene.getLightByName('Sky').intensity < 0.45
+    );
+    await preserved();
+    await tap('undo');
+    assert.equal((await saved()).lighting, undefined, 'undo restores the clock lighting mode');
+    await preserved();
+    await tap('cityMapButton');
+    await p.locator('#townLighting').selectOption('night');
+    await tap('mapBuild');
     await p.waitForFunction(
       () => BABYLON.EngineStore.LastCreatedScene.getLightByName('Sky').intensity < 0.45
     );
@@ -133,8 +162,10 @@ async function lighting(browser, mobile) {
     await shot('lit-route');
     await close();
     await tap('undo');
+    await preserved();
     assert.match(await survey(), /^0% lit/);
     await tap('mapAimLamp');
+    await preserved();
     assert.equal(
       (await saved()).pieces.filter((row) => row[1] === 'streetlamp').length,
       0,
@@ -146,6 +177,7 @@ async function lighting(browser, mobile) {
     await p.reload();
     await p.locator('#tray button').first().waitFor();
     assert.equal((await saved()).lighting, 'night');
+    await preserved();
     await shot('night-town');
     assert.match(await survey(), /Fully lit/);
     await p.locator('#mapBlock').selectOption('27');
@@ -195,10 +227,11 @@ async function lighting(browser, mobile) {
       () => BABYLON.EngineStore.LastCreatedScene.getLightByName('Sky').intensity > 0.65
     );
     assert.equal((await scene()).lit, 0);
+    await preserved();
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop mouse') +
-        ' placed a working streetlamp, repaired and undid a dark route, reopened the saved night preview, walked under the light and restored daylight outside the city.'
+        ' placed a working streetlamp, repaired and undid a dark route, reopened the saved night preview, walked under the light and restored daylight outside the city, preserving loaded cargo and market receipts throughout.'
     );
   } finally {
     await ctx.close();

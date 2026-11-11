@@ -1,3 +1,4 @@
+import { transportPoint } from './transport.mjs';
 import { residentFigure } from './resident-figure.mjs';
 import { townLighting } from './town-lighting.mjs';
 import { directionsScene } from './directions-scene.mjs';
@@ -13,7 +14,10 @@ import { TYPES, PALETTE, parts, size, hasChannel } from './model.mjs';
 const B = window.BABYLON,
   V = (x, y, z) => new B.Vector3(x, y, z);
 export function studio(canvas) {
-  const engine = new B.Engine(canvas, true, { stencil: true, preserveDrawingBuffer: false });
+  const engine = new B.Engine(canvas, true, {
+    stencil: true,
+    preserveDrawingBuffer: false
+  });
   engine.setHardwareScalingLevel(Math.max(0.85, Math.min(1.6, window.devicePixelRatio / 1.6)));
   const scene = new B.Scene(engine),
     mats = new Map(),
@@ -71,7 +75,12 @@ export function studio(canvas) {
   function cyl(name, x, y, z, r, h, color, parent = null, segments = 10, top = r) {
     const m = B.MeshBuilder.CreateCylinder(
       name,
-      { diameterBottom: 2 * r, diameterTop: 2 * top, height: h, tessellation: segments },
+      {
+        diameterBottom: 2 * r,
+        diameterTop: 2 * top,
+        height: h,
+        tessellation: segments
+      },
       scene
     );
     m.position.set(x, y, z);
@@ -245,7 +254,11 @@ export function studio(canvas) {
     tex.drawText(words, null, 83, font, '#fff1bc', background, true);
     const plane = B.MeshBuilder.CreatePlane(
       words,
-      { width, height: (width * 120) / 512, sideOrientation: B.Mesh.DOUBLESIDE },
+      {
+        width,
+        height: (width * 120) / 512,
+        sideOrientation: B.Mesh.DOUBLESIDE
+      },
       scene
     );
     const m = new B.StandardMaterial(words, scene);
@@ -720,7 +733,7 @@ export function studio(canvas) {
     freightBody?.dispose();
     freightBody = null;
     crates = [];
-    for (const bay of bays) bay.root.setEnabled(!!items);
+    for (const bay of bays) bay.root.setEnabled(!!items && kind === 'district');
     if (!items) return;
     freightBody = new B.TransformNode('Dispatched buggy', scene);
     freightBody.parent = chassis;
@@ -755,10 +768,28 @@ export function studio(canvas) {
       for (const mesh of bay.paint) mesh.material = paint;
     });
   }
+  let townMarkers = [];
+  function showTransport(trip) {
+    townMarkers.forEach((m) => m.dispose());
+    townMarkers = [];
+    crates.forEach((crate, i) => crate.setEnabled(trip?.stage === 2 && i === 0));
+    if (!trip) return;
+    for (const [index, key] of [trip.pickup, trip.dropoff].entries()) {
+      const point = transportPoint(key);
+      if (!point) continue;
+      const root = new B.TransformNode(index ? 'Town drop-off' : 'Town pickup', scene);
+      root.position.set(point.x, 0.04, point.z);
+      root.rotation.y = point.yaw;
+      const color = index ? '#edb741' : '#35ad9a';
+      for (const x of [-2.7, 2.7]) box('Delivery bay edge', x, 0, 0, 0.1, 0.04, 6, color, root);
+      for (const z of [-3, 3]) box('Delivery bay end', 0, 0, z, 5.5, 0.04, 0.1, color, root);
+      townMarkers.push(root);
+    }
+  }
   let lastGate = -1;
   function workshop(driving, run, tyres) {
     const garage = kind === 'garage';
-    const freight = kind === 'district' && driving;
+    const freight = (kind === 'district' || kind === 'city') && driving;
     chassis.setEnabled(garage || freight);
     for (const gate of gateNodes) gate.root.setEnabled(garage && driving);
     if (!garage && !freight) return;
@@ -824,7 +855,11 @@ export function studio(canvas) {
       (m) => m.isEnabled() && m.isVisible && m.isPickable && (m.metadata?.ground || m.metadata?.id)
     );
     if (!hit?.hit) return null;
-    return { x: hit.pickedPoint.x, z: hit.pickedPoint.z, id: hit.pickedMesh.metadata.id };
+    return {
+      x: hit.pickedPoint.x,
+      z: hit.pickedPoint.z,
+      id: hit.pickedMesh.metadata.id
+    };
   }
   function actors(mode, a, c, walk, t, seat, deliveryStage = 0) {
     const shop = kind === 'upstairs';
@@ -900,6 +935,7 @@ export function studio(canvas) {
     workshop,
     canalMechanism,
     freightBodywork,
-    showFreightStop
+    showFreightStop,
+    showTransport
   };
 }

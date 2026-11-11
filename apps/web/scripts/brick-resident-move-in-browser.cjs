@@ -32,6 +32,7 @@ async function town() {
     turns: 2
   });
   const door = blockIndex(full.pieces)[36].find(isEntrance);
+  full.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
   return { save: citySave(full), door: door.id, dest: dest.id };
 }
 async function moveIn(browser, mobile) {
@@ -70,6 +71,7 @@ async function moveIn(browser, mobile) {
     );
     await p.locator('#tray button').first().waitFor();
     const before = await saved();
+    assert.equal(before.transport.stage, 2, 'fixture loaded with cargo already collected');
     await settings('new');
     const homes = await p
       .locator('#resHome option')
@@ -113,6 +115,11 @@ async function moveIn(browser, mobile) {
     await p.reload();
     await p.locator('#tray button').first().waitFor();
     assert.deepEqual((await saved()).family1, paused);
+    assert.deepEqual(
+      (await saved()).transport,
+      before.transport,
+      'paused household reload preserves cargo'
+    );
     await settings('family1');
     await tap('resPause');
     await tap('resFollow');
@@ -142,10 +149,12 @@ async function moveIn(browser, mobile) {
     assert.equal(complete.family1.routine.visits, 1);
     assert.deepEqual(complete.neighbour, before.neighbour);
     assert.deepEqual(complete.resident, before.resident);
+    assert.deepEqual(complete.transport, before.transport, 'new household routine preserves cargo');
     await tap('resSettings');
     assert.equal(await p.locator('#resEnd').innerText(), 'Move out');
     await tap('resEnd');
     assert.equal((await saved()).family1, undefined);
+    assert.deepEqual((await saved()).transport, before.transport, 'move out preserves cargo');
     assert.equal(
       await p.evaluate(
         () => !!BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Resident Ayanda')
@@ -160,10 +169,11 @@ async function moveIn(browser, mobile) {
     await state('Thabo · Walking to the spaza');
     assert.deepEqual((await saved()).pieces, before.pieces);
     assert.deepEqual((await saved()).members, [{ key: 'family1', name: 'Thabo', visit: 'spaza' }]);
+    assert.deepEqual((await saved()).transport, before.transport, 'slot reuse preserves cargo');
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop mouse') +
-        ' moved Ayanda into a copied house, followed her saved hall routine, then moved Thabo into the released home.'
+        ' moved Ayanda into a copied house, followed her saved hall routine, then moved Thabo into the released home; loaded cargo stayed intact throughout.'
     );
   } finally {
     await ctx.close();

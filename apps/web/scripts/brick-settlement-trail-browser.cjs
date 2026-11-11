@@ -27,6 +27,7 @@ async function fixture() {
     ...b,
     { id: 'blocking-beam', type: 'beam', color: 'Plum', x: -13, y: 0, z: 3, r: 0 }
   ];
+  city.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
   return {
     raw: citySave(city),
     first: a.find((p) => p.type === 'door').id,
@@ -58,6 +59,10 @@ async function walk(browser, mobile) {
     };
     const saved = () =>
       page.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const cargo = JSON.parse(seed.raw).transport;
+    async function preserved() {
+      assert.deepEqual((await saved()).transport, cargo, 'trail actions preserve loaded cargo');
+    }
     async function board() {
       await tap('cityMapButton');
       const el = page.locator('#trailBoard > summary');
@@ -105,6 +110,7 @@ async function walk(browser, mobile) {
     await design();
     await page.getByRole('button', { name: 'Close settlement map' }).click();
     assert.equal((await saved()).trail, undefined);
+    await preserved();
     await design();
     await tap('trailWalk');
     await move(
@@ -163,6 +169,16 @@ async function walk(browser, mobile) {
     await move('w', () => document.querySelector('#trailHud').textContent === 'Stamp Corner spaza');
     await tap('trailHud');
     assert.equal((await saved()).trail.stamps, 1);
+    await preserved();
+    await tap('build');
+    await tap('undo');
+    assert.ok((await saved()).pieces.some((p) => p[0] === 'blocking-beam'));
+    assert.equal(
+      (await saved()).trail.stamps,
+      1,
+      'undoing construction does not erase a later stamp'
+    );
+    await preserved();
     await page.reload();
     await page.locator('#tray button').first().waitFor();
     await tap('trailHud');
@@ -187,6 +203,7 @@ async function walk(browser, mobile) {
     await move('s', () => document.querySelector('#trailHud').textContent === 'Stamp Reading room');
     await tap('trailHud');
     assert.equal((await saved()).trail.stamps, 2);
+    await preserved();
     await page.reload();
     await page.locator('#tray button').first().waitFor();
     assert.match(await page.locator('#trailHud').innerText(), /Complete/);
@@ -198,12 +215,18 @@ async function walk(browser, mobile) {
     await tap('trailRemove');
     await tap('mapBuild');
     assert.equal((await saved()).trail, undefined);
+    await preserved();
     await tap('undo');
     assert.equal((await saved()).trail.stamps, 2, 'undo restores the removed trail and passport');
+    await preserved();
+    await page.reload();
+    await page.locator('#tray button').first().waitFor();
+    assert.equal((await saved()).trail.stamps, 2);
+    await preserved();
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop keyboard/mouse') +
-        ' staged and cancelled a trail, repaired a blocked entrance, collected both stamps in order and reopened the completed passport.'
+        ' staged and cancelled a trail, repaired a blocked entrance, collected both stamps in order and reopened the completed passport while preserving loaded cargo through map edits, undo and reload.'
     );
   } finally {
     await ctx.close();

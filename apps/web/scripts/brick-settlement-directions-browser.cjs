@@ -7,6 +7,7 @@ async function round(browser, mobile) {
   const g = '../public/games/brick-playground-3d/';
   const { world, validPiece } = await import(g + 'model.mjs'),
     { citySave } = await import(g + 'settlement.mjs'),
+    { starterBuggy } = await import(g + 'freight.mjs'),
     { CITY_PLANS } = await import(g + 'city-plans.mjs'),
     { entrance } = await import(g + 'resident-trip.mjs');
   const city = world('city'),
@@ -33,19 +34,27 @@ async function round(browser, mobile) {
   assert.ok(validPiece(beam, city.pieces, null, 'city'));
   city.pieces.push(beam);
   const fronts = city.pieces.filter((p) => p.type === 'door').map(entrance);
+  city.transport = { pickup: 'h-3-3', dropoff: 'h-3-4', stage: 2 };
+  const garage = world('garage');
+  garage.pieces = starterBuggy();
+  const garageSave = JSON.stringify(garage);
   const ctx = await browser.newContext({
     viewport: mobile ? { width: 393, height: 820 } : { width: 1100, height: 750 },
     isMobile: mobile,
     hasTouch: mobile
   });
   try {
-    await ctx.addInitScript((raw) => {
-      const key = 'wga.brick-playground.v1.city';
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem('wga.brick.active', 'city');
-        localStorage.setItem(key, raw);
-      }
-    }, citySave(city));
+    await ctx.addInitScript(
+      ({ raw, garage }) => {
+        const key = 'wga.brick-playground.v1.city';
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem('wga.brick.active', 'city');
+          localStorage.setItem(key, raw);
+          localStorage.setItem('wga.brick-playground.v1.garage', garage);
+        }
+      },
+      { raw: citySave(city), garage: garageSave }
+    );
     const page = await ctx.newPage(),
       touch = mobile && (await ctx.newCDPSession(page)),
       errors = [];
@@ -56,7 +65,8 @@ async function round(browser, mobile) {
       page.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
     async function goToCurb(n) {
       await press('cityMapButton');
-      await tap(page.locator('#streetDirectory > summary'));
+      if (!(await page.locator('#streetDirectory').evaluate((el) => el.open)))
+        await tap(page.locator('#streetDirectory > summary'));
       await page.locator('#directoryDoor').selectOption('address-' + n);
       await press('directoryWalk');
       await page.waitForFunction((c) => {
@@ -220,10 +230,83 @@ async function round(browser, mobile) {
       for (let i = 0; i < 3; i++) await new Promise(requestAnimationFrame);
     });
     await photo('directions-street');
+    const cargo = async () => assert.deepEqual((await saved()).transport, city.transport);
+    async function paused() {
+      await page.waitForFunction(
+        () => document.querySelector('#directionsHud').dataset.state === 'paused'
+      );
+      assert.ok(await page.locator('#transportPanel').isVisible());
+      assert.ok(await page.locator('#directionsHud').isHidden());
+      assert.ok(await page.locator('#postHud').isHidden());
+      assert.equal(
+        await page.evaluate(() =>
+          BABYLON.EngineStore.LastCreatedScene.meshes.some(
+            (m) => m.name === 'Walking direction marker' && m.isEnabled()
+          )
+        ),
+        false
+      );
+      assert.deepEqual((await saved()).post, bag);
+      await cargo();
+    }
+    async function dispatch() {
+      await press('transportButton');
+      await press('transportDispatch');
+      await page.waitForFunction(() => {
+        const rig = BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis');
+        return (
+          rig?.isEnabled() &&
+          Math.abs(rig.position.x + 12) < 0.05 &&
+          Math.abs(rig.position.z - 24) < 0.05
+        );
+      });
+      await paused();
+    }
+    const vehiclePosition = () =>
+      page.evaluate(() => {
+        const p =
+          BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Workshop chassis').position;
+        return { x: p.x, y: p.y, z: p.z };
+      });
+    await dispatch();
+    const parked = await vehiclePosition(),
+      walker = await position();
+    for (const destination of ['address-2', 'address-1']) {
+      await press('cityMapButton');
+      if (!(await page.locator('#streetDirectory').evaluate((el) => el.open)))
+        await tap(page.locator('#streetDirectory > summary'));
+      await page.locator('#directoryDoor').selectOption(destination);
+      await press('directoryDirections');
+      await paused();
+      assert.deepEqual(await vehiclePosition(), parked, 'directions never move the loaded buggy');
+      assert.deepEqual(await position(), walker, 'directions do not eject or teleport its driver');
+      assert.equal((await saved()).directions.id, destination);
+    }
+    await photo('directions-driving-paused');
+    await press('home');
+    await paused();
+    assert.equal((await saved()).directions.id, 'address-1');
+    await press('play');
+    await page.waitForFunction(() => {
+      const p = BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder');
+      return (
+        p?.isEnabled() && Math.abs(p.position.x + 12) < 0.05 && Math.abs(p.position.z - 24) < 0.05
+      );
+    });
+    await page.waitForFunction(
+      () => document.querySelector('#directionsHud').dataset.state !== 'paused'
+    );
+    await cargo();
+    await goToCurb(0);
+    await page.waitForFunction(
+      () => document.querySelector('#directionsHud').dataset.state === 'blocked'
+    );
+    await dispatch();
     await page.reload();
     await page.locator('#tray button').first().waitFor();
     assert.equal((await saved()).directions.id, 'address-1');
     assert.deepEqual((await saved()).post, bag);
+    await cargo();
     await press('worlds');
     await press('freeWorld');
     assert.ok(await page.locator('#directionsHud').isHidden());
@@ -270,10 +353,15 @@ async function round(browser, mobile) {
     await page.locator('#tray button').first().waitFor();
     assert.equal((await saved()).directions, undefined);
     assert.deepEqual((await saved()).post, bag);
+    await cargo();
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem('wga.brick-playground.v1.garage')),
+      garageSave
+    );
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop') +
-        ' followed directions without teleporting, reloaded the destination, switched worlds, repaired a blocked approach, arrived on foot and cancelled the guide while preserving the postbag.'
+        ' saved directions without moving or ejecting a loaded buggy, paused markers while driving, recovered and exited on foot, reloaded and switched worlds, repaired a blocked approach, arrived and cancelled guidance while preserving cargo, postbag and workshop saves.'
     );
   } finally {
     await ctx.close();

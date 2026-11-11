@@ -10,6 +10,14 @@ async function visit(browser, mobile) {
     hasTouch: mobile
   });
   try {
+    const { world } = await import('../public/games/brick-playground-3d/model.mjs');
+    const { citySave } = await import('../public/games/brick-playground-3d/settlement.mjs');
+    const city = world('city');
+    city.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
+    await ctx.addInitScript((raw) => {
+      if (!localStorage.getItem('wga.brick-playground.v1.city'))
+        localStorage.setItem('wga.brick-playground.v1.city', raw);
+    }, citySave(city));
     const page = await ctx.newPage(),
       errors = [];
     const touch = mobile && (await ctx.newCDPSession(page));
@@ -33,6 +41,14 @@ async function visit(browser, mobile) {
     await page.locator('#name').fill('Sisonke');
     await click(page.getByRole('button', { name: 'Close menu' }));
     const before = await saved();
+    assert.equal(before.transport.stage, 2, 'fixture loads carried cargo');
+    async function preserved() {
+      assert.deepEqual(
+        (await saved()).transport,
+        before.transport,
+        'boundary edits preserve loaded cargo'
+      );
+    }
     async function shape() {
       await board();
       await page.locator('#areaName').fill('Market Quarter');
@@ -63,12 +79,14 @@ async function visit(browser, mobile) {
     await shape();
     await click(page.getByRole('button', { name: 'Close settlement map' }));
     assert.deepEqual((await saved()).blocks, before.blocks);
+    await preserved();
     await shape();
     await tap('mapBuild');
     assert.equal((await saved()).blocks[35].neighbourhood, 'Station Side');
     await page.reload();
     await page.locator('#tray button').first().waitFor();
     assert.equal(await page.locator('#areaLocation').innerText(), 'Market Quarter');
+    await preserved();
     const signs = () =>
       page.evaluate(() =>
         BABYLON.EngineStore.LastCreatedScene.meshes
@@ -82,8 +100,10 @@ async function visit(browser, mobile) {
     await tap('areaRename');
     await tap('mapBuild');
     assert.equal((await saved()).blocks[28].neighbourhood, 'Market Square');
+    await preserved();
     await tap('undo');
     assert.equal((await saved()).blocks[27].neighbourhood, 'Market Quarter');
+    await preserved();
     await board();
     if (process.env.BRICK_SCREENSHOTS) {
       fs.mkdirSync(process.env.BRICK_SCREENSHOTS, { recursive: true });
@@ -122,14 +142,20 @@ async function visit(browser, mobile) {
     await tap('areaDissolve');
     await tap('mapBuild');
     assert.equal((await saved()).blocks[35]?.neighbourhood, undefined);
+    await preserved();
     assert.ok(!(await signs()).includes('Station Side'));
     await tap('undo');
     assert.equal((await saved()).blocks[35].neighbourhood, 'Station Side');
     assert.deepEqual((await saved()).pieces, before.pieces);
+    await preserved();
+    await page.reload();
+    await page.locator('#tray button').first().waitFor();
+    assert.equal((await saved()).blocks[35].neighbourhood, 'Station Side');
+    await preserved();
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Touch' : 'Desktop') +
-        ' created, cancelled, saved, renamed and restored adjoining neighbourhoods; crossed their shared street and saw the location change.'
+        ' created, cancelled, saved, renamed and restored adjoining neighbourhoods; crossed their shared street and saw the location change, preserving loaded cargo through boundary edits, undo and reload.'
     );
   } finally {
     await ctx.close();

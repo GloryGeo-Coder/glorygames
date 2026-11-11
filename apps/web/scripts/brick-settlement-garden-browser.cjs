@@ -8,6 +8,7 @@ async function visit(browser, mobile) {
     { citySave } = await import('../public/games/brick-playground-3d/settlement.mjs');
   const city = world('city');
   city.focus = 28;
+  city.transport = { pickup: 'h-3-4', dropoff: 'h-4-4', stage: 2 };
   city.pieces = [
     { id: 'bed', type: 'pot', color: 'Coral', r: 0, x: 12, z: 5, y: 0 },
     { id: 'seat', type: 'bench', color: 'Sun', r: 0, x: 12, z: -6, y: 0 }
@@ -31,6 +32,12 @@ async function visit(browser, mobile) {
     const tap = (id) => (mobile ? page.locator('#' + id).tap() : page.locator('#' + id).click());
     const saved = () =>
       page.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const cargo = async () =>
+      assert.deepEqual(
+        (await saved()).transport,
+        city.transport,
+        'garden actions, map changes and reload preserve loaded cargo'
+      );
     const action = (label) =>
       page.waitForFunction(
         (label) =>
@@ -70,12 +77,14 @@ async function visit(browser, mobile) {
       (process.env.GAME_ORIGIN || 'http://127.0.0.1:3000') + '/play/brick-playground-3d'
     );
     await page.locator('#tray button').first().waitFor();
+    await cargo();
     await tap('cityMapButton');
     await page.locator('#mapBlock').selectOption('36');
     await page.locator('#mapZone').selectOption('park');
     assert.match(await page.locator('#parkMapTip').innerText(), /Benches 1/);
     await page.locator('#mapBlock').selectOption('28');
     await tap('mapWalk');
+    await cargo();
     await move('w', 'Plant seeds');
     const flower = mobile ? 'marigold' : 'daisy';
     await page.locator('#gardenSeed').selectOption(flower);
@@ -85,9 +94,28 @@ async function visit(browser, mobile) {
     const wet = (await saved()).garden.plants[0];
     assert.equal(wet.flower, flower);
     assert.ok(Number.isSafeInteger(wet.watered));
+    await cargo();
     await page.reload();
     await page.locator('#tray button').first().waitFor();
     assert.deepEqual((await saved()).garden.plants[0], wet);
+    await cargo();
+    const parks = (await saved()).blocks;
+    await tap('cityMapButton');
+    await page.locator('#mapBlock').selectOption('28');
+    await page.locator('#mapZone').selectOption('homes');
+    await page.locator('[aria-label="Close settlement map"]').click();
+    assert.deepEqual((await saved()).blocks, parks, 'cancelling zoning keeps the planted park');
+    await tap('cityMapButton');
+    await page.locator('#mapBlock').selectOption('28');
+    await page.locator('#mapZone').selectOption('homes');
+    await tap('mapBuild');
+    assert.equal((await saved()).blocks[28].zone, 'homes');
+    assert.deepEqual((await saved()).garden.plants[0], wet);
+    await cargo();
+    await tap('undo');
+    assert.deepEqual((await saved()).blocks, parks, 'undo restores park zoning');
+    assert.deepEqual((await saved()).garden.plants[0], wet, 'undo preserves growth time');
+    await cargo();
     await page.waitForFunction(
       () => !!BABYLON.EngineStore.LastCreatedScene.getMeshByName('Garden bloom bed'),
       null,
@@ -98,6 +126,7 @@ async function visit(browser, mobile) {
     await photo('bloom');
     await tap('gardenAction');
     assert.equal((await saved()).garden.bouquet, flower);
+    await cargo();
     await page.waitForFunction(
       () =>
         BABYLON.EngineStore.LastCreatedScene.getMeshByName('Carried garden bouquet')?.parent
@@ -113,6 +142,7 @@ async function visit(browser, mobile) {
     const done = await saved();
     assert.equal(done.garden.bouquet, null);
     assert.deepEqual(done.garden.displays, [{ id: 'seat', flower }]);
+    await cargo();
     await page.waitForFunction(
       () => !!BABYLON.EngineStore.LastCreatedScene.getMeshByName('Garden display seat')
     );
@@ -137,6 +167,7 @@ async function visit(browser, mobile) {
     await page.locator('#mapBlock').selectOption('36');
     await tap('mapBuild');
     assert.deepEqual((await saved()).garden, done.garden);
+    await cargo();
     await page.waitForFunction(
       () => !!BABYLON.EngineStore.LastCreatedScene.getMeshByName('Garden display seat')
     );
@@ -145,7 +176,7 @@ async function visit(browser, mobile) {
       (mobile ? 'Touch' : 'Desktop') +
         ' zoned a second park, grew a ' +
         flower +
-        ', refreshed the watered planter and carried bouquet, and reopened the decorated bench.'
+        ', refreshed the watered planter and carried bouquet, and reopened the decorated bench, preserving loaded transport cargo throughout.'
     );
   } finally {
     await ctx.close();

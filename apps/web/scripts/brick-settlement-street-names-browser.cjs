@@ -6,15 +6,36 @@ const assert = require('node:assert/strict'),
 async function visit(browser, mobile) {
   const dir = '../public/games/brick-playground-3d/',
     { world } = await import(dir + 'model.mjs'),
+    { citySave } = await import(dir + 'settlement.mjs'),
+    { starterBuggy } = await import(dir + 'freight.mjs'),
+    { streetEntries } = await import(dir + 'street-directory.mjs'),
     { entrance } = await import(dir + 'resident-trip.mjs');
-  const house = world('city').pieces.find((p) => p.type === 'door'),
+  const city = world('city'),
+    house = city.pieces.find((p) => p.type === 'door'),
     front = entrance(house);
+  city.transport = { pickup: 'h-3-3', dropoff: front.street, stage: 2 };
+  const pavement = streetEntries(
+    { ...city, streetNames: { [front.street]: 'Protea Road' } },
+    'Protea Road'
+  ).start.curb;
+  const garage = world('garage');
+  garage.pieces = starterBuggy();
+  const garageSave = JSON.stringify(garage);
   const ctx = await browser.newContext({
     viewport: mobile ? { width: 393, height: 820 } : { width: 1100, height: 750 },
     isMobile: mobile,
     hasTouch: mobile
   });
   try {
+    await ctx.addInitScript(
+      ({ city, garage }) => {
+        if (!localStorage.getItem('wga.brick-playground.v1.city')) {
+          localStorage.setItem('wga.brick-playground.v1.city', city);
+          localStorage.setItem('wga.brick-playground.v1.garage', garage);
+        }
+      },
+      { city: citySave(city), garage: garageSave }
+    );
     const page = await ctx.newPage(),
       errors = [],
       touch = mobile && (await ctx.newCDPSession(page));
@@ -23,6 +44,12 @@ async function visit(browser, mobile) {
       press = (id) => tap(page.locator('#' + id));
     const saved = () =>
       page.evaluate(() => JSON.parse(localStorage.getItem('wga.brick-playground.v1.city')));
+    const cargo = async () =>
+      assert.deepEqual(
+        (await saved()).transport,
+        city.transport,
+        'street naming and walking preserve loaded cargo'
+      );
     const directory = async () => {
       await press('cityMapButton');
       await tap(page.locator('#streetDirectory > summary'));
@@ -59,13 +86,16 @@ async function visit(browser, mobile) {
     await page.locator('#tray button').first().waitFor();
     await press('worlds');
     await press('cityWorld');
+    await cargo();
     await stage('name', 'Protea Road');
     await tap(page.getByRole('button', { name: 'Close settlement map' }));
     assert.equal((await saved())?.streetNames, undefined);
+    await cargo();
     await stage('name', 'Protea Road');
     await press('mapBuild');
     await sign('Protea Road');
     const original = await saved();
+    await cargo();
     assert.deepEqual(original.streetNames, { [front.street]: 'Protea Road' });
     await page.reload();
     await page.locator('#tray button').first().waitFor();
@@ -77,13 +107,24 @@ async function visit(browser, mobile) {
     await press('undo');
     await sign('Protea Road');
     await sign('Station Lane', false);
+    await cargo();
     await stage('remove');
     await press('mapBuild');
     await sign('Protea Road', false);
     assert.equal((await saved()).streetNames, undefined);
+    await cargo();
     await press('undo');
     await sign('Protea Road');
     assert.deepEqual((await saved()).streetNames, original.streetNames);
+    await cargo();
+    await press('transportButton');
+    await press('transportDispatch');
+    await page.locator('#transportPanel').waitFor();
+    assert.equal(await page.locator('#transportState').innerText(), 'Deliver one crate');
+    assert.match(await page.locator('#transportTarget').innerText(), /^Protea Road · /);
+    assert.ok(await page.locator('#roadLocation').isHidden());
+    await sign('Protea Road');
+    await cargo();
     await directory();
     assert.equal(await page.locator('#directoryStreet').inputValue(), 'Protea Road');
     assert.match(await page.locator('#directoryHint').innerText(), /1 ground-floor entrance/);
@@ -98,6 +139,12 @@ async function visit(browser, mobile) {
       return a?.isEnabled() && Math.hypot(a.position.x - c.x, a.position.z - c.z) < 0.05;
     }, front.curb);
     assert.equal(await page.locator('#roadLocation').innerText(), 'Protea Road');
+    assert.ok(await page.locator('#transportPanel').isHidden());
+    if (mobile) {
+      assert.ok(await page.locator('#brake').isHidden());
+      assert.ok(await page.locator('#jump').isVisible());
+    }
+    await cargo();
     await photo('pavement');
     if (mobile) {
       const r = await page.locator('#stick').boundingBox();
@@ -119,23 +166,40 @@ async function visit(browser, mobile) {
       else await page.keyboard.up('w');
     }
     assert.ok(await page.locator('#roadLocation').isHidden());
+    await press('transportButton');
+    await press('transportDispatch');
+    await page.locator('#transportPanel').waitFor();
     await directory();
+    await page.locator('#directoryDoor').selectOption('');
     await press('directoryWalk');
+    await page.waitForFunction((c) => {
+      const a = BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder');
+      return a?.isEnabled() && Math.hypot(a.position.x - c.x, a.position.z - c.z) < 0.05;
+    }, pavement);
+    assert.ok(await page.locator('#transportPanel').isHidden());
+    assert.equal(await page.locator('#roadLocation').innerText(), 'Protea Road');
+    await cargo();
     await press('build');
     await stage('unname');
     await press('mapBuild');
     await sign('Protea Road', false);
     const cleared = await saved();
+    await cargo();
     assert.deepEqual(cleared.streets, original.streets);
     assert.deepEqual(cleared.pieces, original.pieces);
     await page.reload();
     await page.locator('#tray button').first().waitFor();
     await press('cityMapButton');
     assert.ok(await page.locator('#streetDirectory').isHidden());
+    await cargo();
+    assert.equal(
+      await page.evaluate(() => localStorage.getItem('wga.brick-playground.v1.garage')),
+      garageSave
+    );
     assert.deepEqual(errors, []);
     console.log(
       (mobile ? 'Phone touch' : 'Desktop') +
-        ' named and renamed a road, removed and restored it, reopened the directory, walked from the named pavement into the listed house and cleared its sign.'
+        ' named and renamed a road, removed and restored it, reopened the directory, left the loaded buggy at both the listed doorway and street pavement, walked into the house and cleared its sign without changing cargo or the workshop save.'
     );
   } finally {
     await ctx.close();

@@ -1,3 +1,4 @@
+import { restoreTransport } from './transport.mjs';
 import { CITY_PLANS } from './city-plans.mjs';
 import { restoreGarden } from './community-garden.mjs';
 // Each block has a 20-stud building area and a shared four-stud street corridor.
@@ -91,7 +92,12 @@ export function cityWorld() {
 // Keep the original resident slot readable by settlements saved before the second household.
 export const HOUSEHOLDS = [
   { key: 'resident', name: 'Lebo', destination: 'Spaza', activity: 'Shopping' },
-  { key: 'neighbour', name: 'Naledi', destination: 'Community hall', activity: 'Visiting the hall' }
+  {
+    key: 'neighbour',
+    name: 'Naledi',
+    destination: 'Community hall',
+    activity: 'Visiting the hall'
+  }
 ];
 // Stable slots keep earlier saves readable and bound the number of simultaneous walkers on phones.
 export const MOVE_IN_SLOTS = Array.from({ length: 6 }, (_, i) => 'family' + (i + 1));
@@ -343,6 +349,7 @@ export function cityLayout(v) {
       : {}),
     blocks,
     ...households,
+    ...(restoreTransport(v.transport) ? { transport: restoreTransport(v.transport) } : {}),
     focus: Number.isInteger(v.focus) && BLOCKS[v.focus] ? v.focus : CENTRE,
     streets: [...new Set(v.streets)]
   };
