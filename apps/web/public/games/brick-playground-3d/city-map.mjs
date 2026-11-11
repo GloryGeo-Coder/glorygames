@@ -100,7 +100,15 @@ export function cityMap(commit) {
     commit(working, front.block, { kind: 'trail', front }, working !== original);
   }
   let directoryClose = true;
-  const directory = streetDirectoryMap({ city: () => working, paint, walk: walkFromCurb });
+  const directory = streetDirectoryMap({
+    city: () => working,
+    paint,
+    walk: walkFromCurb,
+    guide: (destination) => {
+      dialog.close();
+      commit(working, block, { kind: 'directions', destination }, working !== original);
+    }
+  });
   $('directoryZoom').onclick = () => {
     directoryClose = !directoryClose;
     paint();

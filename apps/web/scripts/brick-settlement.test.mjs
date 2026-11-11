@@ -1,3 +1,8 @@
+import {
+  walkingRoute,
+  directionTracker,
+  checkWalk
+} from '../public/games/brick-playground-3d/walking-directions.mjs';
 import { namedDoors } from '../public/games/brick-playground-3d/street-directory.mjs';
 import { postVisit, handlePost } from '../public/games/brick-playground-3d/neighbourhood-post.mjs';
 import {
@@ -763,4 +768,109 @@ test('a larger town assigns the three nearest other doors and preserves their id
   city.pieces = city.pieces.map((p) => (p.id === 'door-1' ? { ...p, r: 2 } : p));
   assert.ok(!namedDoors(city).has('door-1'));
   assert.deepEqual(city.post, committed);
+});
+
+function directionTown() {
+  const city = world('city'),
+    layout = CITY_PLANS[0].pieces,
+    ref = layout.find((p) => p.type === 'door');
+  city.streetNames = { 'h-3-4': 'Protea Road' };
+  city.pieces = [-21, -15, -9].flatMap((x, n) =>
+    layout.map((p, i) => ({
+      ...p,
+      id: p.type === 'door' ? 'address-' + n : 'house-' + n + '-' + i,
+      x: x + p.x - ref.x,
+      z: 5 + p.z - ref.z
+    }))
+  );
+  const d = namedDoors(city).get('address-1');
+  city.directions = { id: d.id, address: d.address };
+  return city;
+}
+test('walking directions trace actual streets, pass door openings and arrive on foot', () => {
+  const city = directionTown(),
+    before = structuredClone(city),
+    from = { ...namedDoors(city).get('address-0').front.inside, y: 0 },
+    route = walkingRoute(city, from);
+  assert.equal(route.state, 'walking');
+  assert.ok(
+    route.points.some((p) => Math.abs(p.z) < 0.01),
+    'walk goes out onto the street'
+  );
+  const walk = checkWalk(city, from, route.points);
+  assert.equal(walk.clear, true);
+  assert.equal(walkingRoute(city, walk.points.at(-1)).state, 'arrived');
+  assert.deepEqual(city, before, 'planning never mutates world or walking progress');
+});
+test('directions stop at a blocking brick and recover after repair or Undo without losing the destination', () => {
+  const city = directionTown(),
+    start = { x: -20, z: 0, y: 0 },
+    track = directionTracker(),
+    barrier = {
+      id: 'barrier',
+      type: 'beam',
+      color: 'Plum',
+      x: -15,
+      z: 3,
+      y: 0,
+      r: 0
+    },
+    original = city.pieces;
+  assert.ok(validPiece(barrier, city.pieces, null, 'city'));
+  assert.equal(track(city, start).state, 'walking');
+  city.pieces = [...city.pieces, barrier];
+  const blocked = track(city, start);
+  assert.equal(blocked.state, 'blocked');
+  assert.ok(blocked.points.at(-1).z < 3);
+  assert.equal(walkingRoute(city, blocked.points.at(-1)).state, 'blocked', 'guide stays active at the obstruction');
+  const save = loadWorld('city', { getItem: () => citySave(city) });
+  assert.deepEqual(save.directions, city.directions);
+  assert.equal(walkingRoute(save, start).state, 'blocked');
+  city.pieces = original;
+  assert.equal(track(city, start).state, 'walking');
+  city.pieces = [...original, barrier];
+  assert.equal(track(city, start).state, 'blocked');
+});
+test('named destination identity follows moves and renames and survives missing entrances', () => {
+  const city = directionTown(),
+    from = { x: -20, z: 0, y: 0 },
+    track = directionTracker(),
+    original = city.pieces;
+  assert.equal(track(city, from).state, 'walking');
+  city.pieces = original.filter((p) => p.id !== city.directions.id);
+  assert.equal(track(city, from).state, 'missing');
+  city.pieces = original;
+  city.streetNames = { 'h-3-4': 'Library Street' };
+  assert.match(track(city, from).address, /Library Street/);
+  city.pieces = [{ ...original.find((p) => p.id === city.directions.id), x: -5, z: 8, r: 0 }];
+  const route = track(city, from);
+  assert.equal(route.state, 'walking');
+  assert.ok(route.points.at(-1).x > -5);
+  city.streetNames = {};
+  assert.equal(track(city, from).state, 'missing');
+});
+test('directions report disconnected roads and reject arrival above the doorway', () => {
+  const city = directionTown(),
+    start = { x: -20, z: 0, y: 0 };
+  city.pieces = [{ ...city.pieces.find((p) => p.id === city.directions.id), x: 30 }];
+  city.streets = ['h-3-4', 'h-5-4'];
+  city.streetNames = { 'h-5-4': 'Market Road' };
+  assert.equal(walkingRoute(city, start).state, 'disconnected');
+  city.streets = [...city.streets, 'h-4-4'];
+  const route = walkingRoute(city, start);
+  assert.equal(route.state, 'walking');
+  assert.ok(route.points.some((p) => p.x === 0));
+  assert.equal(walkingRoute(city, { ...route.points.at(-1), y: 3 }).state, 'start');
+});
+test('old and malformed saves keep buildings and post independent of directions', () => {
+  const city = directionTown(),
+    raw = JSON.parse(citySave(city));
+  for (const directions of [null, 42, {}, { id: '', address: 'x' }, { id: 'x', address: [] }]) {
+    raw.directions = directions;
+    const saved = loadWorld('city', { getItem: () => JSON.stringify(raw) });
+    assert.equal(saved.directions, undefined);
+    assert.equal(saved.pieces.length, city.pieces.length);
+  }
+  delete raw.directions;
+  assert.equal(loadWorld('city', { getItem: () => JSON.stringify(raw) }).directions, undefined);
 });

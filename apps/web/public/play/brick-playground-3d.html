@@ -44,6 +44,9 @@
     </section>
     <section id="residentPanel" hidden aria-label="Living Settlements">
       <div class="resident-switch"><button id="resSettings" aria-haspopup="dialog">Residents</button><button id="resOther" hidden></button></div>
+      <details id="directionsHud" hidden><summary id="directionsAddress">Walking directions</summary>
+        <p id="directionsHint" role="status"></p><button id="directionsStop" type="button">Stop directions</button>
+      </details>
       <div id="postHud" hidden>
         <span id="postHint"></span><button id="postAction" type="button" hidden>Collect postbag</button>
         <details id="postSheet" hidden><summary id="postProgress">Post round</summary>
@@ -192,7 +195,7 @@
         <label>Street <select id="directoryStreet"></select></label>
         <label>Destination <select id="directoryDoor"></select></label>
         <p id="postDirectoryTip"></p>
-        <p id="directoryHint" role="status"></p><button type="button" id="directoryZoom">Whole town</button> <button type="button" id="directoryWalk">Walk to pavement</button>
+        <p id="directoryHint" role="status"></p><button type="button" id="directoryZoom">Whole town</button> <button type="button" id="directoryWalk">Walk to pavement</button> <button type="button" id="directoryDirections" disabled>Directions from here</button><p>Directions keep you where you are. Follow the teal ground markers in Play.</p>
       </details>
       <p id="parkMapTip"></p>
       <div class="map-actions"><button id="mapOverview">City view</button><button id="mapWalk">Walk here</button><button class="primary" id="mapBuild">Build here</button></div>
