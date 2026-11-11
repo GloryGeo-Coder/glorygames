@@ -1,5 +1,5 @@
 import { BLOCKS, streetKeys } from './settlement.mjs';
-import { transportPoint } from './transport.mjs';
+import { transportPoint, transportCargo, transportStops } from './transport.mjs';
 
 const PARKING_HINTS = {
   recover: 'Use Last stop to return the buggy to its checkpoint.',
@@ -37,18 +37,22 @@ export function transportControls({
   saveRoute,
   dispatch,
   service,
+  chooseStop,
   clearInputs = () => {}
 }) {
-  let latest = {};
+  let latest = {},
+    manifestKey = '';
   function options() {
     const data = city();
     if (!data) return;
     const trip = data.transport;
     for (const [id, key, fallback] of [
       ['transportPickup', trip?.pickup, 0],
-      ['transportDropoff', trip?.dropoff, 1]
+      ['transportDropoff', trip?.stops?.[0].street || trip?.dropoff, 1],
+      ['transportSecond', trip?.stops?.[1].street, -1]
     ]) {
       $(id).replaceChildren();
+      if (id === 'transportSecond') $(id).append(new Option('None — one delivery', ''));
       for (const street of data.streets) {
         const option = document.createElement('option');
         option.value = street;
@@ -71,17 +75,37 @@ export function transportControls({
       driving() ||
       !$('transportPickup').value ||
       !$('transportDropoff').value ||
-      $('transportPickup').value === $('transportDropoff').value;
+      $('transportPickup').value === $('transportDropoff').value ||
+      (!!$('transportSecond').value &&
+        [$('transportPickup').value, $('transportDropoff').value].includes(
+          $('transportSecond').value
+        ));
     $('transportDispatch').disabled = driving() || !trip || trip.stage === 3;
-    $('transportPickup').disabled = $('transportDropoff').disabled = driving();
-    text('transportDispatch', trip?.stage === 2 ? 'Resume with crate' : 'Drive workshop buggy');
+    $('transportPickup').disabled =
+      $('transportDropoff').disabled =
+      $('transportSecond').disabled =
+        driving();
+    text(
+      'transportDispatch',
+      trip?.stage === 2
+        ? trip.stops
+          ? 'Resume delivery round'
+          : 'Resume with crate'
+        : 'Drive workshop buggy'
+    );
     text(
       'transportSaved',
       trip
         ? (trip.stage === 3 ? 'Completed: ' : 'Saved delivery: ') +
             transportStreetLabel(trip.pickup, city()) +
             ' → ' +
-            transportStreetLabel(trip.dropoff, city())
+            transportStops(trip)
+              .map(
+                (stop) =>
+                  transportStreetLabel(stop.street, city()) +
+                  (stop.delivered ? ' (delivered)' : '')
+              )
+              .join(' / ')
         : 'No delivery assigned.'
     );
   }
@@ -93,10 +117,17 @@ export function transportControls({
   };
   $('transportSetup').addEventListener('close', clearInputs);
   $('transportSetup').addEventListener('cancel', clearInputs);
-  $('transportPickup').onchange = $('transportDropoff').onchange = setupState;
+  $('transportPickup').onchange =
+    $('transportDropoff').onchange =
+    $('transportSecond').onchange =
+      setupState;
   $('transportNew').onclick = () => {
     if ($('transportNew').disabled) return;
-    const result = saveRoute($('transportPickup').value, $('transportDropoff').value);
+    const result = saveRoute(
+      $('transportPickup').value,
+      $('transportDropoff').value,
+      $('transportSecond').value
+    );
     if (result === false || typeof result === 'string') {
       text(
         'transportSetupHint',
@@ -139,7 +170,18 @@ export function transportControls({
     const distance = Math.round(Math.hypot(point.x - run.x, point.z - run.z));
     text(
       'transportState',
-      complete ? 'Delivery complete' : trip.stage === 1 ? 'Collect one crate' : 'Deliver one crate'
+      trip.stops
+        ? complete
+          ? 'Delivery round complete'
+          : trip.stage === 1
+            ? 'Collect two crates'
+            : transportCargo(trip) +
+              (transportCargo(trip) === 1 ? ' crate on board' : ' crates on board')
+        : complete
+          ? 'Delivery complete'
+          : trip.stage === 1
+            ? 'Collect one crate'
+            : 'Deliver one crate'
     );
     text(
       'transportTarget',
@@ -155,10 +197,41 @@ export function transportControls({
     );
     $('transportAction').hidden = complete;
     $('transportAction').disabled = !state.canService;
-    text('transportAction', trip.stage === 1 ? 'Collect crate' : 'Deliver crate');
+    text(
+      'transportAction',
+      trip.stage === 1 ? (trip.stops ? 'Collect two crates' : 'Collect crate') : 'Deliver crate'
+    );
+    $('transportManifest').hidden = !trip.stops;
+    const nextKey = JSON.stringify([trip, data.streetNames]);
+    if (trip.stops && manifestKey !== nextKey) {
+      manifestKey = nextKey;
+      text(
+        'transportManifestSummary',
+        'Delivery round · ' +
+          trip.stops.filter((stop) => stop.delivered).length +
+          '/2 delivered'
+      );
+      $('transportStops').replaceChildren();
+      for (const stop of trip.stops) {
+        const button = document.createElement('button');
+        const selected = stop.street === trip.dropoff && !stop.delivered;
+        button.textContent =
+          (stop.delivered ? 'Delivered: ' : selected ? 'Next: ' : 'Go next: ') +
+          transportStreetLabel(stop.street, data);
+        button.disabled = stop.delivered;
+        button.setAttribute('aria-pressed', String(selected));
+        button.dataset.street = stop.street;
+        button.onclick = () => {
+          if (driving()) chooseStop(stop.street);
+        };
+        $('transportStops').append(button);
+      }
+    }
   }
   function reset() {
     latest = {};
+    manifestKey = '';
+    $('transportManifest').open = false;
     if ($('transportSetup').open) $('transportSetup').close();
     document.body.classList.remove('town-driving');
     $('transportPanel').hidden = true;
