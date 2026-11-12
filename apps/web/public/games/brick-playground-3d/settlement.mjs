@@ -1,3 +1,4 @@
+import { restoreShopkeeper } from './shopkeeper-save.mjs';
 import { restoreShopStock } from './shop-stock.mjs';
 import { restoreTransport } from './transport.mjs';
 import { CITY_PLANS } from './city-plans.mjs';
@@ -255,10 +256,12 @@ export function restoreMarket(value) {
     });
     if (receipts.length === 2) break;
   }
+  const keeper = value.supplied === true && restoreShopkeeper(value.keeper);
   return {
     shop: value.shop,
     receipts,
-    ...(value.supplied === true ? { supplied: true } : {})
+    ...(value.supplied === true ? { supplied: true } : {}),
+    ...(keeper ? { keeper } : {})
   };
 }
 export const MAX_LETTERS = 3;

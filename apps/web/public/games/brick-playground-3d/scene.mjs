@@ -321,6 +321,23 @@ export function studio(canvas) {
       stallSign.rotation.y = (-counter.r * Math.PI) / 2;
     }
   }
+  let shopkeeper, keeperName, keeperTag;
+  function showShopkeeper(keeper, station = null, working = false, t = 0) {
+    if (keeper && keeperName !== keeper.name) {
+      keeperTag?.dispose(false, true);
+      shopkeeper?.dispose();
+      shopkeeper = residentFigure(B, scene, mat('#ffffff'), { key: 'shopkeeper', name: keeper.name, keeper: true });
+      shopkeeper.root.name = 'Shopkeeper';
+      keeperTag = label(keeper.name, 0, 1.9, 0, 1.7, true);
+      keeperTag.name = 'Shopkeeper name';
+      keeperTag.parent = shopkeeper.root;
+      keeperTag.billboardMode = B.Mesh.BILLBOARDMODE_Y;
+      keeperName = keeper.name;
+    }
+    if (!shopkeeper) return;
+    shopkeeper.root.metadata = { name: keeperName, working };
+    shopkeeper.show(keeper && station ? station : null, false, t, true, null, working);
+  }
   let trailMarker;
   function showTrail(front) {
     if (front && !trailMarker) {
@@ -932,6 +949,7 @@ export function studio(canvas) {
     neighbourhood,
     showResident,
     showMarket,
+    showShopkeeper,
     showTrail,
     showPost,
     showDirections,

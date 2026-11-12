@@ -1,3 +1,4 @@
+import { restoreShopkeeper } from './shopkeeper-save.mjs';
 import { useShopStock } from './shop-stock.mjs';
 import { blockAt, householdsFor } from './settlement.mjs';
 import { advanceTrip, entrance, isEntrance } from './resident-trip.mjs';
@@ -12,9 +13,15 @@ export function marketCounter(city) {
   counters.set(city.pieces, { id, counter });
   return counter;
 }
-export function openMarket(city, id, supplied = false) {
+export function openMarket(city, id, supplied = false, keeperName = '') {
   if (city.market || !city.pieces.some((p) => p.id === id && isEntrance(p))) return false;
-  city.market = { shop: id, receipts: [], ...(supplied ? { supplied: true } : {}) };
+  const keeper = supplied && restoreShopkeeper({ name: keeperName });
+  city.market = {
+    shop: id,
+    receipts: [],
+    ...(supplied ? { supplied: true } : {}),
+    ...(keeper ? { keeper } : {})
+  };
   return true;
 }
 function eligible(city, p, t) {
@@ -25,7 +32,9 @@ function eligible(city, p, t) {
     t &&
     p.destination === 'Spaza' &&
     t.shop === market.shop &&
-    !market.receipts.some((r) => r.home === t.home || r.name.toLowerCase() === p.name.toLowerCase())
+    !market.receipts.some(
+      (r) => r.home === t.home || r.name.toLowerCase() === p.name.toLowerCase()
+    )
   );
 }
 function inReach(counter, actor, radius) {
@@ -36,7 +45,9 @@ function inReach(counter, actor, radius) {
   );
 }
 export function waitingAtTill(city, p, t) {
-  return t?.phase === 'shopping' && eligible(city, p, t) && inReach(marketCounter(city), t, 0.12);
+  return (
+    t?.phase === 'shopping' && eligible(city, p, t) && inReach(marketCounter(city), t, 0.12)
+  );
 }
 export function stepHousehold(city, p, t, runtime, dt) {
   if (waitingAtTill(city, p, t)) {
@@ -67,8 +78,18 @@ export function canServe(city, player, playing) {
 }
 export function serveCustomer(city, player, playing) {
   if (!canServe(city, player, playing)) return null;
-  const p = nextCustomer(city);
-  if (!p || !useShopStock(city)) return null;
+  return completePurchase(city, nextCustomer(city));
+}
+// Shared by the player and shopkeeper; a receipt and supply are committed together.
+export function completePurchase(city, p) {
+  if (
+    !p ||
+    !city[p.key] ||
+    city[p.key].paused ||
+    !waitingAtTill(city, p, city[p.key]) ||
+    !useShopStock(city)
+  )
+    return null;
   const t = city[p.key];
   const home = city.pieces.find((b) => b.id === t.home);
   city.market.receipts.push({
@@ -77,5 +98,6 @@ export function serveCustomer(city, player, playing) {
     block: home ? blockAt(home.x, home.z).code : ''
   });
   t.wait = 0;
+  if (city.market.keeper) Object.assign(city.market.keeper, { customer: '', wait: 0 });
   return p;
 }
