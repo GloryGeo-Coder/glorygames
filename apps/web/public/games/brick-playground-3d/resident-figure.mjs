@@ -15,9 +15,9 @@ export function residentFigure(B, scene, material, profile) {
   const colours = extraPalettes[MOVE_IN_SLOTS.indexOf(profile.key)];
   const root = new B.TransformNode('Resident ' + profile.name, scene),
     body = surface(B, scene);
-  const jacket = colours?.[0] ?? (hallVisitor ? '#227e82' : '#814f85'),
+  const jacket = profile.keeper ? '#19695d' : colours?.[0] ?? (hallVisitor ? '#227e82' : '#814f85'),
     skin = '#995b3a',
-    cap = colours?.[1] ?? (hallVisitor ? '#efce5a' : '#d88037'),
+    cap = profile.keeper ? '#f1c65b' : colours?.[1] ?? (hallVisitor ? '#efce5a' : '#d88037'),
     navy = '#385263';
   body.profile(
     0,
@@ -89,10 +89,14 @@ export function residentFigure(B, scene, material, profile) {
     0.017,
     '#efcb7d'
   );
+  if (profile.keeper) {
+    body.profile(0, .158, [[.57, .17, .012], [.8, .16, .012], [.97, .12, .012]], '#f8e6ba');
+    body.oval(0, .76, .179, .07, .05, .009, '#dfad47');
+  }
   body.mesh(profile.name + ' coat and cap', root, material);
   const bag = surface(B, scene);
   bag.oval(0.194, 0.57, 0.057, 0.093, 0.1, 0.067, '#e2b771');
-  bag.mesh('Shopping bag', root, material);
+  if (!profile.keeper) bag.mesh('Shopping bag', root, material);
   const groceries = surface(B, scene);
   if (hallVisitor) {
     // A blue library book peeks out of the satchel on the way home.
@@ -110,7 +114,7 @@ export function residentFigure(B, scene, material, profile) {
     groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
   }
   const contents =
-    profile.visit === 'park'
+    profile.visit === 'park' || profile.keeper
       ? null
       : groceries.mesh(
           hallVisitor
@@ -180,7 +184,7 @@ export function residentFigure(B, scene, material, profile) {
     return { leg, knee, arm, side };
   });
   root.setEnabled(false);
-  function show(trip, moving, t, waiting, seat) {
+  function show(trip, moving, t, waiting, seat, working = false) {
     root.setEnabled(!!trip);
     if (!trip) return;
     const position = seat || trip;
@@ -191,8 +195,8 @@ export function residentFigure(B, scene, material, profile) {
       const swing = moving ? side * Math.sin(t * 9) * 0.38 : 0;
       leg.rotation.x = seat ? -1.42 : swing;
       if (knee) knee.rotation.x = seat ? 1.48 : Math.max(0, -swing * 0.6);
-      arm.rotation.x = seat ? -0.48 : -swing - 0.09;
+      arm.rotation.x = working ? -.8 + Math.sin(t * 5 + side) * .18 : seat ? -0.48 : -swing - 0.09;
     }
   }
-  return { show, dispose: () => root.dispose() };
+  return { root, show, dispose: () => root.dispose() };
 }

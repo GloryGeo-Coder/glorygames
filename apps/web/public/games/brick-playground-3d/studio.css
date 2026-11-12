@@ -1440,3 +1440,8 @@ dialog p {
 #marketSupplied { width: 22px; height: 22px; }
 #marketStock, #transportStock, #transportStockHint { color: #176456; }
 #marketRestock { min-height: 44px; }
+
+#marketStaffed { width: 22px; height: 22px; }
+#marketKeeperName, #marketKeeperPause { min-height: 44px; }
+#marketKeeperName { width: 100%; box-sizing: border-box; font: inherit; }
+#marketKeeperReport { color: #176456; }

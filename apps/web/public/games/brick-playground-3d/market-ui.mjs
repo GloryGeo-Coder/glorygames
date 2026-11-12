@@ -1,3 +1,4 @@
+import { advanceShopkeeper, keeperStatus } from './shopkeeper.mjs';
 import { shopStock, stockTarget } from './shop-stock.mjs';
 import { blockAt, householdsFor } from './settlement.mjs';
 import { isEntrance, entrance } from './resident-trip.mjs';
@@ -27,6 +28,31 @@ export function marketControls({
 }) {
   const till = $('marketTill'),
     board = $('marketBoard');
+  let keeperSaveClock = 0;
+  const keeperHints = {
+    complete: 'Shift complete · 2 households served.',
+    paused: 'Shift paused.',
+    missing: 'Restore the shop doorway to resume the shift.',
+    blocked: 'Clear standing space beside the till to resume the shift.',
+    stock: 'Waiting for a stock delivery.',
+    waiting: 'Waiting for customers to arrive.',
+    serving: 'Serving the customer at the till.'
+  };
+  function keeperReport(data) {
+    const keeper = data?.market?.keeper;
+    $('marketKeeperReport').hidden = $('marketKeeperPause').hidden = !keeper;
+    if (!keeper) return;
+    const status = keeperStatus(data);
+    label(
+      'marketKeeperReport',
+      keeper.name +
+        ' · ' +
+        keeperHints[status] +
+        (status === 'serving' && $('residentSetup').open ? ' Close menus to continue.' : '')
+    );
+    label('marketKeeperPause', keeper.paused ? 'Resume shopkeeper' : 'Pause shopkeeper');
+    $('marketKeeperPause').disabled = data.market.receipts.length >= 2;
+  }
   function report() {
     const data = city(),
       market = data?.market;
@@ -35,7 +61,16 @@ export function marketControls({
       done = market?.receipts.length === 2;
     $('marketDoor').disabled = !!market;
     $('marketSupplied').disabled = !!market;
-    if (market) $('marketSupplied').checked = !!market.supplied;
+    if (market) {
+      $('marketSupplied').checked = !!market.supplied;
+      $('marketStaffed').checked = !!market.keeper;
+      if (market.keeper) $('marketKeeperName').value = market.keeper.name;
+    }
+    if (!$('marketSupplied').checked) $('marketStaffed').checked = false;
+    $('marketStaffed').disabled = !!market || !$('marketSupplied').checked;
+    $('marketKeeperFields').hidden = !$('marketStaffed').checked;
+    $('marketKeeperName').disabled = !!market;
+    keeperReport(data);
     const supplied = market ? market.supplied : $('marketSupplied').checked;
     const target = stockTarget(data);
     $('marketStock').hidden = !supplied;
@@ -61,7 +96,9 @@ export function marketControls({
       );
 
     $('marketOpen').hidden = !!market;
-    $('marketOpen').disabled = !$('marketDoor').value;
+    $('marketOpen').disabled =
+      !$('marketDoor').value ||
+      ($('marketStaffed').checked && !$('marketKeeperName').value.trim());
     $('marketCall').hidden = $('marketWork').hidden = !market || done;
     $('marketEnd').hidden = !market;
     label('marketEnd', done ? 'Clear result' : 'End market');
@@ -159,6 +196,7 @@ export function marketControls({
     const data = city(),
       market = data?.market;
     if (till.hidden !== !market) till.hidden = !market;
+    keeperReport(data);
     if (!market) return;
     const counter = marketCounter(data),
       guest = nextCustomer(data),
@@ -192,13 +230,27 @@ export function marketControls({
       !hint.startsWith('Out of stock')
     )
       hint += ' · Stock ' + shopStock(data);
+    if (market.keeper && !playing() && n < 2)
+      hint = market.keeper.name + ' · ' + keeperHints[keeperStatus(data)];
     label('marketTill', hint);
   }
   $('resSettings').addEventListener('click', populate);
   board.ontoggle = () => {
     if (board.open && $('residentSetup').open) populate();
   };
-  $('marketDoor').onchange = $('marketSupplied').onchange = report;
+  $('marketDoor').onchange =
+    $('marketSupplied').onchange =
+    $('marketStaffed').onchange =
+      report;
+  $('marketKeeperName').oninput = report;
+  $('marketKeeperPause').onclick = () => {
+    const keeper = city()?.market?.keeper;
+    if (!keeper || $('marketKeeperPause').disabled) return;
+    keeper.paused = !keeper.paused;
+    save();
+    keeperReport(city());
+    update();
+  };
   $('marketRestock').onclick = () => {
     const target = stockTarget(city());
     if (!target || $('marketRestock').disabled) return;
@@ -206,7 +258,14 @@ export function marketControls({
     planDelivery(target.street);
   };
   $('marketOpen').onclick = () => {
-    if (openMarket(city(), $('marketDoor').value, $('marketSupplied').checked)) {
+    if (
+      openMarket(
+        city(),
+        $('marketDoor').value,
+        $('marketSupplied').checked,
+        $('marketStaffed').checked ? $('marketKeeperName').value : ''
+      )
+    ) {
       save();
       populate();
       update();
@@ -245,5 +304,22 @@ export function marketControls({
       board.scrollIntoView({ block: 'nearest' });
     }
   };
-  return { update };
+  function step(dt) {
+    const data = city(),
+      keeper = data?.market?.keeper;
+    if (!keeper) {
+      keeperSaveClock = 0;
+      return;
+    }
+    const before = keeper.customer,
+      wait = keeper.wait;
+    const served = advanceShopkeeper(data, dt);
+    if (keeper.wait !== wait) keeperSaveClock += dt;
+    if (served || before !== keeper.customer || keeperSaveClock >= 1) {
+      keeperSaveClock = 0;
+      save();
+    }
+    if (served) ring(served.name, data.market.receipts.length);
+  }
+  return { update, step };
 }

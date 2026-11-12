@@ -1,3 +1,4 @@
+import { keeperStation, keeperStatus } from './shopkeeper.mjs';
 import { shopStock } from './shop-stock.mjs';
 import { transportControls } from './transport-ui.mjs';
 import {
@@ -185,6 +186,7 @@ function start() {
     transport.reset();
     townVehicle = null;
     s.showTransport(null);
+    s.showShopkeeper(null);
     for (const profile of HOUSEHOLDS) s.showResident(profile, null, false, 0);
     clearTimeout(noticeTimer);
     $('notice').textContent = '';
@@ -1852,7 +1854,10 @@ function start() {
       const count = Math.max(1, Math.ceil(dt / 0.0167)),
         delta = dt / count;
       for (let i = 0; i < count; i++) {
-        if (kind === 'city') residents.step(delta);
+        if (kind === 'city') {
+          residents.step(delta);
+          market.step(delta);
+        }
         if (mode === 'play') {
           const x =
             vec.x +
@@ -1988,6 +1993,7 @@ function start() {
           : null,
         data.market?.supplied ? shopStock(data) : null
       );
+      s.showShopkeeper(data.market?.keeper, keeperStation(data), keeperStatus(data) === 'serving', elapsed);
       s.townLighting(
         data,
         townVehicle ? run.x : mode === 'build' ? s.orbit.focusX : s.camera.position.x,
