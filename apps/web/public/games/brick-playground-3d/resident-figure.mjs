@@ -1,24 +1,15 @@
-import { MOVE_IN_SLOTS } from './settlement.mjs';
+import { citizenAppearance, companionTrail } from './citizen-appearance.mjs';
 import { surface } from './builder-geometry.mjs';
 
 // A distinct shopper with a knitted cap, plum jacket and a reusable market bag.
 export function residentFigure(B, scene, material, profile) {
   const hallVisitor = profile.destination === 'Community hall';
-  const extraPalettes = [
-    ['#c25e34', '#f4d780'],
-    ['#367e9b', '#e38852'],
-    ['#956899', '#d9c7a1'],
-    ['#42825b', '#f1b45a'],
-    ['#a24a59', '#a4cece'],
-    ['#6265a6', '#d8cd72']
-  ];
-  const colours = extraPalettes[MOVE_IN_SLOTS.indexOf(profile.key)];
+  const appearance = citizenAppearance(profile.key, profile.keeper);
   const root = new B.TransformNode('Resident ' + profile.name, scene),
     body = surface(B, scene);
-  const jacket = profile.keeper ? '#19695d' : colours?.[0] ?? (hallVisitor ? '#227e82' : '#814f85'),
-    skin = '#995b3a',
-    cap = profile.keeper ? '#f1c65b' : colours?.[1] ?? (hallVisitor ? '#efce5a' : '#d88037'),
-    navy = '#385263';
+  const { jacket, skin, cap } = appearance, navy = '#385263';
+  const child = !!profile.child;
+  if (child) root.scaling.setAll(0.66);
   body.profile(
     0,
     0,
@@ -63,11 +54,11 @@ export function residentFigure(B, scene, material, profile) {
     [
       [1.346, 0.202, 0.172],
       [1.374, 0.215, 0.181],
-      [1.46, 0.193, 0.161],
-      [1.515, 0.122, 0.1],
-      [1.54, 0.03, 0.025]
+      [appearance.style === 1 ? 1.41 : 1.46, 0.193, 0.161],
+      [appearance.style === 1 ? 1.445 : 1.515, 0.122, 0.1],
+      [appearance.style === 1 ? 1.46 : 1.54, 0.03, 0.025]
     ],
-    cap
+    appearance.style === 2 ? '#302622' : cap
   );
   body.profile(
     0,
@@ -77,9 +68,9 @@ export function residentFigure(B, scene, material, profile) {
       [1.36, 0.218, 0.184],
       [1.394, 0.214, 0.181]
     ],
-    hallVisitor ? '#317b75' : '#ac622e'
+    appearance.style === 2 ? '#302622' : cap
   );
-  body.cord(
+  if (!child) body.cord(
     [
       [-0.147, 1.0, 0.08],
       [-0.06, 0.85, 0.156],
@@ -96,7 +87,7 @@ export function residentFigure(B, scene, material, profile) {
   body.mesh(profile.name + ' coat and cap', root, material);
   const bag = surface(B, scene);
   bag.oval(0.194, 0.57, 0.057, 0.093, 0.1, 0.067, '#e2b771');
-  if (!profile.keeper) bag.mesh('Shopping bag', root, material);
+  if (!profile.keeper && !child) bag.mesh('Shopping bag', root, material);
   const groceries = surface(B, scene);
   if (hallVisitor) {
     // A blue library book peeks out of the satchel on the way home.
@@ -114,7 +105,7 @@ export function residentFigure(B, scene, material, profile) {
     groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
   }
   const contents =
-    profile.visit === 'park' || profile.keeper
+    profile.visit === 'park' || profile.keeper || child
       ? null
       : groceries.mesh(
           hallVisitor
@@ -184,19 +175,47 @@ export function residentFigure(B, scene, material, profile) {
     return { leg, knee, arm, side };
   });
   root.setEnabled(false);
+  const companion = profile.family && profile.visit === 'park' && !child
+    ? residentFigure(B, scene, material, { ...profile, family: false, child: true,
+        name: (profile.childName || profile.name) + ' · child' }) : null;
+  const trail = companion ? companionTrail() : null;
+  let previousPhase = null, greetingUntil = 0, animationTime = 0;
   function show(trip, moving, t, waiting, seat, working = false) {
     root.setEnabled(!!trip);
-    if (!trip) return;
+    if (!trip) {
+      trail?.reset();
+      companion?.show(null, false, t, false, null);
+      previousPhase = null;
+      return;
+    }
+    if (!trip.paused) animationTime = t;
+    if (trip.phase !== previousPhase) {
+      if (trip.phase === 'shopping') greetingUntil = animationTime + 0.9;
+      previousPhase = trip.phase;
+    }
     const position = seat || trip;
     root.position.set(position.x, position.y, position.z);
     root.rotation.y = position.heading;
     contents?.setEnabled(!waiting && (trip.returning || trip.phase === 'shopping'));
     for (const { leg, knee, arm, side } of limbs) {
-      const swing = moving ? side * Math.sin(t * 9) * 0.38 : 0;
+      const swing = moving ? side * Math.sin(animationTime * (child ? 11 : 9)) * 0.38 : 0;
       leg.rotation.x = seat ? -1.42 : swing;
       if (knee) knee.rotation.x = seat ? 1.48 : Math.max(0, -swing * 0.6);
-      arm.rotation.x = working ? -.8 + Math.sin(t * 5 + side) * .18 : seat ? -0.48 : -swing - 0.09;
+      arm.rotation.z = 0;
+      arm.rotation.x = working ? -.8 + Math.sin(animationTime * 5 + side) * .18
+        : seat ? -0.48 : -swing - 0.09;
+      if (!working && !moving && !seat && animationTime < greetingUntil && side === 1) {
+        arm.rotation.x = -1.9;
+        arm.rotation.z = 0.2 + Math.sin(animationTime * 14) * 0.13;
+      } else if (!working && !moving && !seat) {
+        arm.rotation.x += Math.sin(animationTime * 1.8 + side) * 0.035;
+      }
+    }
+    if (companion) {
+      const behind = trail.follow(trip);
+      companion.show(behind && { ...trip, ...behind }, moving && !trip.paused,
+        animationTime, false, null);
     }
   }
-  return { root, show, dispose: () => root.dispose() };
+  return { root, show, dispose: () => { companion?.dispose(); root.dispose(); } };
 }

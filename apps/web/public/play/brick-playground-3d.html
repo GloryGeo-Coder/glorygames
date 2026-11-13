@@ -61,6 +61,7 @@
       <span id="roadLocation" hidden></span>
       <span id="areaLocation" hidden></span><span id="resClock"></span>
       <b id="resState" role="status"></b><span id="resHint"></span>
+      <details id="resJourney" hidden><summary>Citizen journey</summary><p id="resJourneyText"></p></details>
       <span id="resRoutineNote"></span><button id="resSkip" hidden>Skip to next departure</button>
       <div id="resTools"><button id="resFollow">Follow Lebo</button><button id="resEdit">Edit here</button></div>
     </section>
@@ -133,6 +134,7 @@
       <div id="resMoveFields" hidden>
         <label>Resident name <input id="resName" maxlength="28" autocomplete="off"></label>
         <label>Visit <select id="resVisit"><option value="spaza">Spaza</option><option value="hall">Community hall</option><option value="park">Park bench</option></select></label>
+        <div id="resFamilyFields" hidden><label class="stock-option"><input id="resFamily" type="checkbox"> Family park visit with an accompanied child</label><label>Child name <input id="resChildName" maxlength="28" value="Mpho" autocomplete="off"></label><p>The child stays with this adult on the same journey. Families share one household slot and never create extra shop purchases.</p></div>
       </div>
       <p id="resDescription"></p>
       <label>Home <select id="resHome"></select></label>

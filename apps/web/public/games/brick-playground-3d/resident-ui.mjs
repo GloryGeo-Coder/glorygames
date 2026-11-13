@@ -1,3 +1,5 @@
+import { updateCompanionPath } from './citizen-appearance.mjs';
+import { journeySummary } from './citizen-journey.mjs';
 import {
   blockAt,
   HOUSEHOLDS,
@@ -127,6 +129,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
               : 'Block ' + blockAt(trip.x, trip.z).code)
         : ''
     );
+    $('resJourney').hidden = !trip;
+    label('resJourneyText', journeySummary(data, p, trip, rt));
     const routine = trip?.routine;
     label(
       'resRoutineNote',
@@ -154,6 +158,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
         phase = trip.phase,
         issue = runtime.issue;
       stepHousehold(data, profile, trip, runtime, dt);
+      if (profile.family) updateCompanionPath(trip);
       walking ||= runtime.moving;
       changed ||= trip.phase !== phase || runtime.issue !== issue;
     }
@@ -223,6 +228,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
             ' and back. Choose two street-facing entrances.'
     );
     $('resMoveFields').hidden = !joining;
+    $('resFamilyFields').hidden = !joining || p.visit !== 'park';
     $('resPractice').hidden =
       !HOUSEHOLDS.some((h) => h.key === p.key) || !editing() || !practice(p, data);
     label(
@@ -318,6 +324,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     joining = $('resHousehold').value === 'new';
     if (joining) {
       $('resName').value = '';
+      $('resFamily').checked = false;
+      $('resChildName').value = 'Mpho';
       $('resVisit').value = 'spaza';
     } else choose(roster().find((p) => p.key === $('resHousehold').value));
     options();
@@ -372,7 +380,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     )
       return;
     const trip = newTrip(home, shop, data);
-    const profile = joining ? moveIn(data, $('resName').value, $('resVisit').value, trip) : p;
+    const profile = joining ? moveIn(data, $('resName').value, $('resVisit').value, trip, undefined, {family: $('resFamily').checked, childName: $('resChildName').value}) : p;
     if (!profile) return;
     data[profile.key] = trip;
     if ($('resSchedule').value) {
