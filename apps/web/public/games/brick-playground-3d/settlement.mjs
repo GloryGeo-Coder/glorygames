@@ -1,3 +1,4 @@
+import { restoreDailyMarket } from './daily-market-save.mjs';
 import { restoreShopkeeper } from './shopkeeper-save.mjs';
 import { restoreShopStock } from './shop-stock.mjs';
 import { restoreTransport } from './transport.mjs';
@@ -257,11 +258,14 @@ export function restoreMarket(value) {
     if (receipts.length === 2) break;
   }
   const keeper = value.supplied === true && restoreShopkeeper(value.keeper);
+  const daily = value.supplied === true && restoreDailyMarket(value.daily);
+  if (daily) daily.served = Math.max(daily.served, receipts.length);
   return {
     shop: value.shop,
     receipts,
     ...(value.supplied === true ? { supplied: true } : {}),
-    ...(keeper ? { keeper } : {})
+    ...(keeper ? { keeper } : {}),
+    ...(daily ? { daily } : {})
   };
 }
 export const MAX_LETTERS = 3;

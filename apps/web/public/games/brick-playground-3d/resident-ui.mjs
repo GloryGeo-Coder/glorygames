@@ -105,7 +105,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     label('resClock', scheduled ? 'Settlement time · ' + clockLabel(now) : '');
     const next = scheduled ? nextIdleDeparture(data) : null;
     const canSkip = next !== null;
-    if (canSkip) label('resSkip', 'Skip to next departure · ' + clockLabel(next).split(' · ')[1]);
+    if (canSkip) label('resSkip', (next === data.market?.daily?.next ? 'Skip to next opening · ' : 'Skip to next departure · ') + clockLabel(next).split(' · ')[1]);
     if ($('resSkip').hidden === canSkip) $('resSkip').hidden = !canSkip;
     if ($('resTools').hidden !== !trip) $('resTools').hidden = !trip;
     if ($('resOther').hidden !== !second) $('resOther').hidden = !second;

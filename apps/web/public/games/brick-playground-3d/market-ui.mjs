@@ -1,3 +1,5 @@
+import { advanceDailyMarket, dailyMarketStatus } from './daily-market.mjs';
+import { clockLabel } from './resident-routines.mjs';
 import { advanceShopkeeper, keeperStatus } from './shopkeeper.mjs';
 import { shopStock, stockTarget } from './shop-stock.mjs';
 import { blockAt, householdsFor } from './settlement.mjs';
@@ -53,6 +55,56 @@ export function marketControls({
     label('marketKeeperPause', keeper.paused ? 'Resume shopkeeper' : 'Pause shopkeeper');
     $('marketKeeperPause').disabled = data.market.receipts.length >= 2;
   }
+  let historyKey = '';
+  function dailyReport(data) {
+    const daily = data?.market?.daily;
+    $('marketDailyReport').hidden =
+      $('marketDailyPause').hidden =
+      $('marketHistory').hidden =
+        !daily;
+    if (!daily) {
+      historyKey = '';
+      return;
+    }
+    const state = dailyMarketStatus(data);
+    const hints = {
+      paused:
+        'Automatic reopening and invitations paused. Current customers can still be served.',
+      missing: 'Restore the shop doorway to resume daily trading.',
+      trading:
+        'Serve this round’s two households. Unfinished purchases carry over to the next day.',
+      overnight: 'Next opening · ' + clockLabel(daily.next) + '.',
+      leaving: 'Waiting for served customers to leave the till.',
+      ready: 'Ready to reopen when you close menus.'
+    };
+    label(
+      'marketDailyReport',
+      'Trading round ' +
+        daily.round +
+        ' · ' +
+        daily.served +
+        ' purchases total. ' +
+        hints[state]
+    );
+    label(
+      'marketDailyPause',
+      daily.paused ? 'Resume daily reopening' : 'Pause daily reopening'
+    );
+    const key = JSON.stringify(daily.recent);
+    if (key !== historyKey) {
+      historyKey = key;
+      $('marketHistory').replaceChildren(
+        ...daily.recent
+          .slice()
+          .reverse()
+          .map((r) => {
+            const li = document.createElement('li');
+            li.textContent = 'Round ' + r.round + ' · ' + r.names.join(' and ');
+            return li;
+          })
+      );
+    }
+  }
   function report() {
     const data = city(),
       market = data?.market;
@@ -65,8 +117,15 @@ export function marketControls({
       $('marketSupplied').checked = !!market.supplied;
       $('marketStaffed').checked = !!market.keeper;
       if (market.keeper) $('marketKeeperName').value = market.keeper.name;
+      $('marketDaily').checked = !!market.daily;
+      if (market.daily) $('marketOpening').value = market.daily.hour;
     }
-    if (!$('marketSupplied').checked) $('marketStaffed').checked = false;
+    if (!$('marketSupplied').checked)
+      $('marketStaffed').checked = $('marketDaily').checked = false;
+    $('marketDaily').disabled = !!market || !$('marketSupplied').checked;
+    $('marketOpening').disabled = !!market;
+    $('marketDailyFields').hidden = !$('marketDaily').checked;
+    dailyReport(data);
     $('marketStaffed').disabled = !!market || !$('marketSupplied').checked;
     $('marketKeeperFields').hidden = !$('marketStaffed').checked;
     $('marketKeeperName').disabled = !!market;
@@ -101,7 +160,14 @@ export function marketControls({
       ($('marketStaffed').checked && !$('marketKeeperName').value.trim());
     $('marketCall').hidden = $('marketWork').hidden = !market || done;
     $('marketEnd').hidden = !market;
-    label('marketEnd', done ? 'Clear result' : 'End market');
+    label(
+      'marketEnd',
+      market?.daily
+        ? 'End daily market and clear history'
+        : done
+          ? 'Clear result'
+          : 'End market'
+    );
     const entries = market?.receipts || [];
     $('marketReceipts').replaceChildren(
       ...entries.map((r) => {
@@ -197,6 +263,7 @@ export function marketControls({
       market = data?.market;
     if (till.hidden !== !market) till.hidden = !market;
     keeperReport(data);
+    dailyReport(data);
     if (!market) return;
     const counter = marketCounter(data),
       guest = nextCustomer(data),
@@ -205,7 +272,13 @@ export function marketControls({
       counter &&
       Math.ceil(Math.hypot(player().x - counter.inside.x, player().z - counter.inside.z));
     let hint = 'Market Day · ' + n + '/2';
-    if (n === 2) hint = 'Market Day complete · 2/2';
+    if (n === 2)
+      hint = market.daily
+        ? 'Round ' +
+          market.daily.round +
+          ' complete · ' +
+          (market.daily.paused ? 'reopening paused' : 'next ' + clockLabel(market.daily.next))
+        : 'Market Day complete · 2/2';
     else if (guest && canServe(data, player(), playing()))
       hint =
         market.supplied && !shopStock(data)
@@ -241,8 +314,18 @@ export function marketControls({
   $('marketDoor').onchange =
     $('marketSupplied').onchange =
     $('marketStaffed').onchange =
+    $('marketDaily').onchange =
+    $('marketOpening').onchange =
       report;
   $('marketKeeperName').oninput = report;
+  $('marketDailyPause').onclick = () => {
+    const daily = city()?.market?.daily;
+    if (!daily) return;
+    daily.paused = !daily.paused;
+    save();
+    report();
+    update();
+  };
   $('marketKeeperPause').onclick = () => {
     const keeper = city()?.market?.keeper;
     if (!keeper || $('marketKeeperPause').disabled) return;
@@ -263,7 +346,8 @@ export function marketControls({
         city(),
         $('marketDoor').value,
         $('marketSupplied').checked,
-        $('marketStaffed').checked ? $('marketKeeperName').value : ''
+        $('marketStaffed').checked ? $('marketKeeperName').value : '',
+        $('marketDaily').checked ? Number($('marketOpening').value) : null
       )
     ) {
       save();
@@ -307,6 +391,7 @@ export function marketControls({
   function step(dt) {
     const data = city(),
       keeper = data?.market?.keeper;
+    if (advanceDailyMarket(data)) save();
     if (!keeper) {
       keeperSaveClock = 0;
       return;

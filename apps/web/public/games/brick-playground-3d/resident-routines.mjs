@@ -26,7 +26,10 @@ export function clockLabel(now) {
   );
 }
 export function hasRoutines(city) {
-  return householdsFor(city).some(({ key }) => city[key]?.routine);
+  return (
+    !!(city.market?.daily && !city.market.daily.paused) ||
+    householdsFor(city).some(({ key }) => city[key]?.routine)
+  );
 }
 function advanceTo(city, time) {
   const previous = city.clockMinutes ?? START_TIME;
@@ -54,7 +57,12 @@ export function tickRoutines(city, dt) {
   return advanceTo(city, (city.clockMinutes ?? START_TIME) + dt * 15);
 }
 export function nextIdleDeparture(city) {
-  let next = Infinity;
+  const daily = city.market?.daily,
+    now = city.clockMinutes ?? START_TIME;
+  let next =
+    daily && !daily.paused && city.market.receipts.length === 2 && daily.next > now
+      ? daily.next
+      : Infinity;
   for (const { key } of householdsFor(city)) {
     const trip = city[key];
     if (!trip) continue;
@@ -66,5 +74,7 @@ export function nextIdleDeparture(city) {
 }
 export function skipToDeparture(city) {
   const next = nextIdleDeparture(city);
-  return next !== null && advanceTo(city, next);
+  if (next === null) return false;
+  advanceTo(city, next);
+  return true;
 }
