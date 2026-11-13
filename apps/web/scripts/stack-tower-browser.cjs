@@ -85,6 +85,68 @@ assert.equal(await p.evaluate(() => stackQA.state.gameOver), true);
 assert.match(await p.locator('#panelText').textContent(), /too narrow/);
 console.log('Stack Tower: active/paused narrow-tower rotation, continued placement, scaled loss and restart regression passed.');
 
+// A fresh portrait run expanded to a 4K display must not hit a fixed 300px cap.
+await rotate({width:390,height:844});
+await p.locator('#btnRestart').click();
+const portraitWidth = await p.evaluate(() => stackQA.state.stack.at(-1).w);
+await rotate({width:3840,height:2160});
+assert.ok(await p.evaluate(() => stackQA.state.minWidth > 300));
+for (let i = 0; i < 10; i++) {
+  await p.evaluate(() => { const q = stackQA; q.state.current.x = q.state.stack.at(-1).x; q.dropBlock(); });
+  assert.equal(await p.evaluate(() => stackQA.state.gameOver), false, '4K enlargement must not invalidate perfect placements');
+}
+near(await p.evaluate(() => stackQA.state.current.w), portraitWidth * 3840 / 390 + 20);
+assert.equal(await p.evaluate(() => stackQA.state.progress.stage), 1);
+await p.locator('#btnPause').click();
+for (const width of [844, 390, 3840]) {
+  await rotate({width,height:900});
+  near(await p.evaluate(() => stackQA.state.minWidth), 34 * width / 390);
+  near(await p.evaluate(() => stackQA.state.maxWidth), 300 * width / 390);
+  assert.equal(await p.evaluate(() => stackQA.state.paused), true);
+  await p.evaluate(() => stackQA.dropBlock());
+  assert.equal(await p.evaluate(() => stackQA.state.height), 10);
+}
+await p.locator('#btnStart').click();
+await p.evaluate(() => { const q = stackQA; q.state.current.x = q.state.stack.at(-1).x; q.state.current.vx = 0; });
+await p.locator('#btnDrop').click();
+assert.equal(await p.evaluate(() => stackQA.state.height), 11);
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), false);
+const beforeWideRepair = await p.evaluate(() => ({width: stackQA.state.current.w, repairs: stackQA.state.progress.repairs}));
+await p.locator('#btnRepair').click();
+assert.ok(await p.evaluate(() => stackQA.state.current.w) > beforeWideRepair.width);
+assert.equal(await p.evaluate(() => stackQA.state.progress.repairs), beforeWideRepair.repairs - 1);
+near(await p.evaluate(() => stackQA.state.current.w), 3840 * 0.62);
+await p.locator('#btnRepair').click();
+assert.equal(await p.evaluate(() => stackQA.state.progress.repairs), beforeWideRepair.repairs - 1);
+await p.evaluate(() => {
+  const q = stackQA, top = q.state.stack.at(-1);
+  q.state.current.x = top.x + top.w - q.state.minWidth / 2;
+  q.dropBlock();
+});
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), true);
+assert.match(await p.locator('#panelText').textContent(), /too narrow/);
+await p.locator('#btnRestart').click();
+near(await p.evaluate(() => stackQA.state.minWidth), 34);
+near(await p.evaluate(() => stackQA.state.maxWidth), 300);
+await p.evaluate(() => {
+  const q = stackQA;
+  q.state.stack.at(-1).w = q.state.current.w = 36;
+  q.state.current.x = q.state.stack.at(-1).x;
+  q.state.current.vx = 0;
+});
+await rotate({width:390,height:844});
+assert.ok(await p.evaluate(() => stackQA.state.current.w < 4 && stackQA.state.current.w > stackQA.state.minWidth));
+await p.locator('#btnDrop').click();
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), false, 'wide-to-mobile must not make a playable narrow tower miss');
+await p.evaluate(() => {
+  const q = stackQA, top = q.state.stack.at(-1);
+  q.state.current.x = top.x + top.w + 1;
+  q.dropBlock();
+});
+assert.equal(await p.evaluate(() => stackQA.state.gameOver), true);
+assert.match(await p.locator('#panelText').textContent(), /missed/);
+console.log('Stack Tower: portrait-to-4K perfect placements, paused round trip, scaled repairs, real loss and both reset limits passed.');
+
 // New modes: daily completion persists, repeated wins count once, timer pauses and unlocks a distinct style.
 await p.reload();await p.selectOption('#modeSelect','daily');assert.match(await p.locator('#modeDetails').textContent(),/UTC/);await p.locator('#btnStart').click();
 const dailyGoal=await p.evaluate(()=>({...stackQA.state.goal}));
