@@ -15,7 +15,7 @@ export function marketCounter(city) {
   return counter;
 }
 export function openMarket(city, id, supplied = false, keeperName = '', dailyHour = null) {
-  if (city.market || !city.pieces.some((p) => p.id === id && isEntrance(p))) return false;
+  if (city.market || householdsFor(city).some(p => city[p.key]?.work && city[p.key].shop === id) || !city.pieces.some((p) => p.id === id && isEntrance(p))) return false;
   const keeper = supplied && restoreShopkeeper({ name: keeperName });
   const daily = supplied && newDailyMarket(dailyHour, city.clockMinutes ?? 450);
   if (daily) city.clockMinutes ??= 450;
@@ -34,6 +34,7 @@ function eligible(city, p, t) {
     market &&
     market.receipts.length < 2 &&
     t &&
+    !t.work &&
     p.destination === 'Spaza' &&
     t.shop === market.shop &&
     !market.receipts.some(

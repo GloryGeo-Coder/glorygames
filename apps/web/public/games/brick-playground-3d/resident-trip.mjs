@@ -1,3 +1,4 @@
+import { workSpaceBlocker, finishWorkShift } from './work-shift.mjs';
 import { pedestrianPath, pavementCurb } from './pedestrian-route.mjs';
 import { queuePosition, queueCanEnter } from './entrance-queue.mjs';
 import { advanceAvatar, blockingBrick, intervals, size, validPiece } from './model.mjs';
@@ -282,9 +283,30 @@ export function advanceTrip(city, t, rt, dt) {
       return;
     }
   }
+  if (t.work && !t.returning && (t.phase === 'shopping' || (t.phase === 'enter' && separation(t, to.inside) <= 0.012))) {
+    const door = stops.get(t.shop);
+    if (separation(t, destination.inside) > 0.025) {
+      t.phase = 'door';
+      return;
+    }
+    const blocker = workSpaceBlocker(city, destination, t.y);
+    if (blocker || Math.abs(t.y - door.y) > 0.65) {
+      rt.blocker = blocker;
+      rt.issue = 'Workplace standing space is blocked or uneven. Clear the interior beside the entrance.';
+      return;
+    }
+    if (t.work.endsAt !== undefined && (city.clockMinutes ?? 450) < t.work.endsAt) t.work.worked = true;
+  }
   if (t.phase === 'shopping') {
     if (t.park && separation(t, destination.inside) > 0.025) {
       t.phase = 'door';
+      return;
+    }
+    if (t.work) {
+      if (t.work.endsAt === undefined || (city.clockMinutes ?? 450) >= t.work.endsAt) {
+        t.returning = true;
+        t.phase = 'leave';
+      }
       return;
     }
     t.wait = Math.max(0, t.wait - dt);
@@ -368,6 +390,7 @@ export function advanceTrip(city, t, rt, dt) {
       }
       t.phase = t.returning ? 'done' : 'shopping';
       if (t.returning && t.routine) t.routine.visits++;
+      if (t.returning && t.work) finishWorkShift(t);
       t.wait = t.returning ? 0 : t.park ? PARK_REST_SECONDS : 1.5;
     }
     return;
