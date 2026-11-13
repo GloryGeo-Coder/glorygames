@@ -1,3 +1,5 @@
+import { pedestrianPath, pavementCurb } from './pedestrian-route.mjs';
+import { queuePosition, queueCanEnter } from './entrance-queue.mjs';
 import { advanceAvatar, blockingBrick, intervals, size, validPiece } from './model.mjs';
 import {
   BLOCKS,
@@ -230,6 +232,8 @@ export function tripRuntime() {
 export function advanceTrip(city, t, rt, dt) {
   rt.moving = false;
   rt.waitingForSeat = false;
+  rt.waitingForQueue = false;
+  rt.waitingForCrossing = false;
   if (t.paused || t.phase === 'done') return;
   const edited =
     rt.items !== city.pieces ||
@@ -246,8 +250,10 @@ export function advanceTrip(city, t, rt, dt) {
     rt.observedBlocks = city.blocks;
   }
   const stops = fixtures(city);
-  const home = visitFront(city, stops.get(t.home)),
+  let home = visitFront(city, stops.get(t.home)),
     destination = visitFront(city, stops.get(t.shop), t.park);
+  if (home) home = { ...home, curb: pavementCurb(home) };
+  if (destination) destination = { ...destination, curb: pavementCurb(destination) };
   if (!home || !destination) {
     rt.issue =
       home && t.park
@@ -294,7 +300,7 @@ export function advanceTrip(city, t, rt, dt) {
     if (rt.routeKey !== key || rt.streets !== city.streets) {
       rt.routeKey = key;
       rt.streets = city.streets;
-      rt.path = city.streets.includes(to.street) ? streetPath(city.streets, t, to.curb) : null;
+      rt.path = city.streets.includes(to.street) ? pedestrianPath(city.streets, t, to.curb) : null;
     }
     if (!rt.path) {
       rt.issue = city.streets.includes(to.street)
@@ -304,23 +310,39 @@ export function advanceTrip(city, t, rt, dt) {
       return;
     }
     if (!rt.path.length) {
-      t.phase = 'door';
+      t.phase = !t.returning && !t.park ? 'queue' : 'door';
       rt.issue = '';
       rt.routeKey = '';
       return;
     }
     target = rt.path[0];
-  } else if (t.phase === 'leave') target = from.center;
+  } else if (t.phase === 'queue') {
+    target = queuePosition(city, t, to);
+    rt.waitingForQueue = true;
+  } else if (t.phase === 'queue-return') target = to.curb;
+  else if (t.phase === 'leave') target = from.center;
   else if (t.phase === 'approach') target = from.curb;
   else if (t.phase === 'door') target = to.center;
   else target = to.inside;
+  if (target.crossing) {
+    const crossingKey = `${target.x},${target.z}`;
+    if (rt.crossingKey !== crossingKey) { rt.crossingKey = crossingKey; rt.crossingWait = 0.4; }
+    if (rt.crossingWait > 0) {
+      rt.crossingWait = Math.max(0, rt.crossingWait - dt);
+      rt.waitingForCrossing = true;
+      return;
+    }
+  } else rt.crossingKey = '';
   const d = separation(t, target);
   if (d <= 0.012) {
     // The move to the next waypoint always goes through the same collision step as the player.
     rt.issue = '';
     rt.blocker = null;
     rt.stalled = 0;
-    if (t.phase === 'leave') t.phase = 'approach';
+    if (t.phase === 'queue') {
+      if (queueCanEnter(city, t, to)) { t.phase = 'queue-return'; rt.waitingForQueue = false; }
+    } else if (t.phase === 'queue-return') t.phase = 'door';
+    else if (t.phase === 'leave') t.phase = 'approach';
     else if (t.phase === 'approach') {
       if (!city.streets.includes(from.street)) {
         rt.issue =

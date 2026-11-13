@@ -12,6 +12,8 @@ export function journeySummary(city, profile, trip, runtime = {}) {
   const state = trip.paused ? 'Paused. Resume this household in Residents.'
     : runtime.issue ? `Stopped: ${runtime.issue}`
     : trip.phase === 'done' ? 'At home. Journey complete.'
+    : runtime.waitingForCrossing ? 'Looking before using the marked crossing.'
+    : trip.phase === 'queue' ? 'Waiting beside the entrance. Keep the doorway and queue clear.'
     : runtime.waitingForSeat ? 'Waiting for the park bench to become free.'
     : trip.phase === 'shopping' ? (profile.activity || 'Visiting') + '.'
     : `Travelling to ${target}${where}.`;

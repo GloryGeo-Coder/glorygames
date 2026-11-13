@@ -255,7 +255,7 @@ async function delivery(browser, mobile) {
     await p.waitForFunction(
       () => {
         const city = JSON.parse(localStorage.getItem('wga.brick-playground.v1.city'));
-        return city.resident.phase === 'shopping' && city.family1.phase === 'shopping';
+        return city.resident.phase === 'shopping' && city.family1.phase === 'queue';
       },
       null,
       { timeout: 150000 }

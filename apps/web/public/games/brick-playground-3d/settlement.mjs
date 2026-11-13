@@ -171,7 +171,7 @@ export function endHousehold(city, key) {
 export function restoreTrip(v) {
   if (
     !v ||
-    !['leave', 'approach', 'street', 'door', 'enter', 'shopping', 'done'].includes(v.phase) ||
+    !['leave', 'approach', 'street', 'queue', 'queue-return', 'door', 'enter', 'shopping', 'done'].includes(v.phase) ||
     typeof v.home !== 'string' ||
     typeof v.shop !== 'string' ||
     v.home === v.shop ||

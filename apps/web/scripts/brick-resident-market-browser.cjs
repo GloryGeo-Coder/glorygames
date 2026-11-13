@@ -114,7 +114,7 @@ async function marketDay(browser, mobile) {
     await p.waitForFunction(
       () => {
         const w = JSON.parse(localStorage.getItem('wga.brick-playground.v1.city'));
-        return w.resident.phase === 'shopping' && w.family1.phase === 'shopping';
+        return w.resident.phase === 'shopping' && w.family1.phase === 'queue';
       },
       null,
       { timeout: 150000 }

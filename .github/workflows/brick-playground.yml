@@ -56,6 +56,8 @@ jobs:
             suites: settlement-street-builder settlement-street-names
           - group: settlements
             suites: settlement transport
+          - group: pedestrians
+            suites: resident-pavements
           - group: residents
             suites: resident
           - group: directions
@@ -68,7 +70,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
-      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs apps/web/scripts/brick-canal.test.mjs apps/web/scripts/brick-district.test.mjs apps/web/scripts/brick-freight.test.mjs apps/web/scripts/brick-blueprint.test.mjs apps/web/scripts/brick-upstairs.test.mjs apps/web/scripts/brick-settlement.test.mjs apps/web/scripts/brick-resident.test.mjs apps/web/scripts/brick-transport.test.mjs apps/web/scripts/brick-transport-stock.test.mjs apps/web/scripts/brick-resident-keeper.test.mjs apps/web/scripts/brick-resident-daily-market.test.mjs apps/web/scripts/brick-resident-citizens.test.mjs
+      - run: node --test apps/web/scripts/brick-playground.test.mjs apps/web/scripts/brick-vehicle.test.mjs apps/web/scripts/brick-canal.test.mjs apps/web/scripts/brick-district.test.mjs apps/web/scripts/brick-freight.test.mjs apps/web/scripts/brick-blueprint.test.mjs apps/web/scripts/brick-upstairs.test.mjs apps/web/scripts/brick-settlement.test.mjs apps/web/scripts/brick-resident.test.mjs apps/web/scripts/brick-transport.test.mjs apps/web/scripts/brick-transport-stock.test.mjs apps/web/scripts/brick-resident-keeper.test.mjs apps/web/scripts/brick-resident-daily-market.test.mjs apps/web/scripts/brick-resident-citizens.test.mjs apps/web/scripts/brick-resident-pavements.test.mjs
       - run: npm ci --prefix apps/web --ignore-scripts --no-audit --no-fund
       - run: npm run build --prefix apps/web
       - name: Prepare Chromium

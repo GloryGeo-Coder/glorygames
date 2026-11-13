@@ -161,7 +161,7 @@ async function trading(browser, mobile) {
         return (
           c.market.daily.round === 3 &&
           c.resident.phase === 'shopping' &&
-          c.family1.phase === 'shopping'
+          c.family1.phase === 'queue'
         );
       },
       null,
