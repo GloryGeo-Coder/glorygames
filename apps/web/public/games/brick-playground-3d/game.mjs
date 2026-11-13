@@ -181,7 +181,7 @@ function start() {
     refresh();
   }
   function openWorld(next) {
-    if (kind === 'city' && householdsFor(data).some(({ key }) => data?.[key])) save();
+    if (kind === 'city' && (data.market?.daily || householdsFor(data).some(({ key }) => data?.[key]))) save();
     residents.reset();
     transport.reset();
     townVehicle = null;
@@ -1818,13 +1818,13 @@ function start() {
     clearInputs();
     if (document.hidden) {
       music.quiet();
-      if (kind === 'city' && householdsFor(data).some(({ key }) => data?.[key])) save();
+      if (kind === 'city' && (data.market?.daily || householdsFor(data).some(({ key }) => data?.[key]))) save();
     }
   });
   document.addEventListener('pointerdown', () => music.unlock());
   document.addEventListener('keydown', () => music.unlock());
   window.addEventListener('pagehide', () => {
-    if (kind === 'city' && householdsFor(data).some(({ key }) => data?.[key])) save();
+    if (kind === 'city' && (data.market?.daily || householdsFor(data).some(({ key }) => data?.[key]))) save();
   });
   let first = 'free';
   try {

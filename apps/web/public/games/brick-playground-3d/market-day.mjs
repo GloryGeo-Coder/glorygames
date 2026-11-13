@@ -1,3 +1,4 @@
+import { newDailyMarket } from './daily-market-save.mjs';
 import { restoreShopkeeper } from './shopkeeper-save.mjs';
 import { useShopStock } from './shop-stock.mjs';
 import { blockAt, householdsFor } from './settlement.mjs';
@@ -13,14 +14,17 @@ export function marketCounter(city) {
   counters.set(city.pieces, { id, counter });
   return counter;
 }
-export function openMarket(city, id, supplied = false, keeperName = '') {
+export function openMarket(city, id, supplied = false, keeperName = '', dailyHour = null) {
   if (city.market || !city.pieces.some((p) => p.id === id && isEntrance(p))) return false;
   const keeper = supplied && restoreShopkeeper({ name: keeperName });
+  const daily = supplied && newDailyMarket(dailyHour, city.clockMinutes ?? 450);
+  if (daily) city.clockMinutes ??= 450;
   city.market = {
     shop: id,
     receipts: [],
     ...(supplied ? { supplied: true } : {}),
-    ...(keeper ? { keeper } : {})
+    ...(keeper ? { keeper } : {}),
+    ...(daily ? { daily } : {})
   };
   return true;
 }
@@ -98,6 +102,8 @@ export function completePurchase(city, p) {
     block: home ? blockAt(home.x, home.z).code : ''
   });
   t.wait = 0;
+  if (city.market.daily)
+    city.market.daily.served = Math.min(Number.MAX_SAFE_INTEGER, city.market.daily.served + 1);
   if (city.market.keeper) Object.assign(city.market.keeper, { customer: '', wait: 0 });
   return p;
 }

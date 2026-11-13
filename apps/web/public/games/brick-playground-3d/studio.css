@@ -1445,3 +1445,8 @@ dialog p {
 #marketKeeperName, #marketKeeperPause { min-height: 44px; }
 #marketKeeperName { width: 100%; box-sizing: border-box; font: inherit; }
 #marketKeeperReport { color: #176456; }
+
+#marketDaily { width:22px; height:22px; }
+#marketOpening, #marketDailyPause { min-height:44px; }
+#marketDailyReport { color:#176456; }
+#marketHistory { padding-left:20px; }
