@@ -1,3 +1,4 @@
+import { restoreCompanionPath } from './citizen-appearance.mjs';
 import { restoreDailyMarket } from './daily-market-save.mjs';
 import { restoreShopkeeper } from './shopkeeper-save.mjs';
 import { restoreShopStock } from './shop-stock.mjs';
@@ -138,7 +139,7 @@ export function moveInProblem(city, name) {
     return 'Choose a different resident name.';
   return '';
 }
-export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => !city[k])) {
+export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => !city[k]), appearance = {}) {
   if (
     moveInProblem(city, name) ||
     !MOVE_IN_SLOTS.includes(key) ||
@@ -151,7 +152,11 @@ export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => 
     homeClaimed(city, trip.home, key)
   )
     return null;
-  city.members = [...(city.members || []), { key, name: name.trim(), visit }];
+  const family = visit === 'park' && appearance?.family === true;
+  const childName = typeof appearance?.childName === 'string' && appearance.childName.trim().length > 0 && appearance.childName.trim().length <= 28
+    ? appearance.childName.trim() : 'Mpho';
+  city.members = [...(city.members || []), { key, name: name.trim(), visit,
+    ...(family ? { family: true, childName } : {}) }];
   city[key] = trip;
   return householdsFor(city).find((p) => p.key === key);
 }
@@ -187,6 +192,8 @@ export function restoreTrip(v) {
     heading,
     vy,
     ...(v.park === true ? { park: true } : {}),
+    ...(v.park === true && restoreCompanionPath(v.companionPath, v)
+      ? { companionPath: restoreCompanionPath(v.companionPath, v) } : {}),
     wait: Math.max(0, Math.min(v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
     ...(routine ? { routine } : {}),
     grounded: v.grounded === true,
@@ -337,7 +344,7 @@ export function cityLayout(v) {
   if (Array.isArray(v.members)) {
     for (const member of v.members) {
       if (!MOVE_IN_SLOTS.includes(member?.key)) continue;
-      moveIn(households, member.name, member.visit, restoreTrip(v[member.key]), member.key);
+      moveIn(households, member.name, member.visit, restoreTrip(v[member.key]), member.key, member);
     }
   }
   const streetNames = retainedStreetNames(v.streetNames, v.streets);
