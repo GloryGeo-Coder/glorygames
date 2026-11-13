@@ -73,7 +73,10 @@ async function marketDay(browser, mobile) {
       } else await p.keyboard.down('w');
       try {
         await p.waitForFunction(
-          () => document.querySelector('#marketTill').textContent.startsWith('Serve '),
+          () => {
+            const hint = document.querySelector('#marketTill').textContent;
+            return hint.startsWith('Serve ') || / · Till [A-H][1-8] · [01] studs/.test(hint);
+          },
           null,
           { timeout: 75000 }
         );
@@ -82,6 +85,12 @@ async function marketDay(browser, mobile) {
           await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
         else await p.keyboard.up('w');
       }
+      // Wait at the till while the next customer physically leaves the queue.
+      await p.waitForFunction(
+        () => document.querySelector('#marketTill').textContent.startsWith('Serve '),
+        null,
+        { timeout: 150000 }
+      );
     }
     await p.goto(
       (process.env.GAME_ORIGIN || 'http://127.0.0.1:3000') + '/play/brick-playground-3d'
