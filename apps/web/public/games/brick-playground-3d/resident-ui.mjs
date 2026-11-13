@@ -40,6 +40,8 @@ function status(trip, runtime, profile, data) {
   if (!trip) return 'No trip';
   if (trip.paused) return 'Paused';
   if (runtime.issue) return 'Stopped';
+  if (runtime.waitingForCrossing) return 'Looking before the crossing';
+  if (trip.phase === 'queue') return 'Waiting in the entrance queue';
   if (runtime.waitingForSeat) return 'Waiting for the park bench';
   if (trip.phase === 'done') return trip.routine ? 'At home' : 'Home again';
   if (trip.park && trip.phase === 'shopping') {

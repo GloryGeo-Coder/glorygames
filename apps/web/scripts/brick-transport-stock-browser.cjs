@@ -184,14 +184,24 @@ async function delivery(browser, mobile) {
       }
       try {
         await p.waitForFunction(
-          (prefix) => document.getElementById('marketTill').textContent.startsWith(prefix),
-          prefix,
+          () => {
+            const hint = document.getElementById('marketTill').textContent;
+            return /^(Serve |Out of stock)/.test(hint) || / · Till [A-H][1-8] · [01] studs/.test(hint);
+          },
+          null,
           { timeout: 60000 }
         );
       } finally {
         if (mobile) await release();
         else await p.keyboard.up('w');
       }
+      // Stop at the counter before waiting for the next queued customer. Holding
+      // forward until service is available walks past the till while they enter.
+      await p.waitForFunction(
+        (prefix) => document.getElementById('marketTill').textContent.startsWith(prefix),
+        prefix,
+        { timeout: 150000 }
+      );
     }
     async function stockSign(units) {
       await p.waitForFunction((units) => {
@@ -255,7 +265,7 @@ async function delivery(browser, mobile) {
     await p.waitForFunction(
       () => {
         const city = JSON.parse(localStorage.getItem('wga.brick-playground.v1.city'));
-        return city.resident.phase === 'shopping' && city.family1.phase === 'shopping';
+        return city.resident.phase === 'shopping' && city.family1.phase === 'queue';
       },
       null,
       { timeout: 150000 }

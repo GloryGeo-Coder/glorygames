@@ -141,7 +141,7 @@ test('a second household can share a street, finish its own visit and keep walki
     ]) {
       const t = city[key];
       advanceTrip(city, t, rt, 1 / 60);
-      if (t.phase === 'street' && Math.abs(t.z) < 0.035 && t.x >= -7.5 && t.x <= -6.5)
+      if (t.phase === 'street' && Math.abs(Math.abs(t.z) - 1.5) < 0.035 && t.x >= -7.5 && t.x <= -6.5)
         onSharedStreet.add(key);
     }
   }
@@ -380,7 +380,8 @@ test('Market Day counts actual purchases from two different homes and resumes an
   city.pieces = city.pieces.filter((p) => p.id !== barrier.id);
   tick(city, 6000);
   const [lebo, , ayanda] = householdsFor(city);
-  assert.ok(waitingAtTill(city, lebo, city.resident) && waitingAtTill(city, ayanda, city.family1));
+  assert.equal([lebo, ayanda].filter(p => waitingAtTill(city, p, city[p.key])).length, 1);
+  assert.equal([city.resident, city.family1].filter(t => t.phase === 'queue').length, 1);
   assert.equal(serveCustomer(city, position, false), null, 'the editor cannot make a sale');
   assert.equal(
     serveCustomer(city, { ...door, y: door.y }, true),

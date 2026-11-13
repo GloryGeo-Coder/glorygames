@@ -161,7 +161,7 @@ test('actual walks, two trading rounds and a stock shortage share the settlement
     !(
       city.market.daily.round === 3 &&
       city.resident.phase === 'shopping' &&
-      city.family1.phase === 'shopping'
+      city.family1.phase === 'queue'
     );
     i++
   )
@@ -171,9 +171,9 @@ test('actual walks, two trading rounds and a stock shortage share the settlement
   assert.equal(shopStock(city), 0);
   assert.equal(city.market.receipts.length, 0);
   assert.equal(city.resident.phase, 'shopping');
-  assert.equal(city.family1.phase, 'shopping');
+  assert.equal(city.family1.phase, 'queue');
   restockShop(city, 'h-4-4');
-  for (let i = 0; i < 130; i++) tick();
+  for (let i = 0; i < 1000 && city.market.daily.served < 6; i++) tick();
   assert.equal(city.market.daily.served, 6);
   assert.equal(city.market.receipts.length, 2);
 });

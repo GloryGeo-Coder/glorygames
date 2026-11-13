@@ -1,3 +1,4 @@
+import { pavementMarkings } from './pavement-markings.mjs';
 import { namedSegments } from './street-directory.mjs';
 import { gardenFlowers } from './garden-flowers.mjs';
 import {
@@ -125,9 +126,16 @@ export function cityScene(B, scene, box, mat, label) {
     }
     for (const [x, z] of ends.values())
       asphalt.push(box('Junction', x, -0.014, z, 4, 0.028, 4, '#54676a'));
-    for (const group of [asphalt, paint])
+    const markings = pavementMarkings(keys);
+    const pavement = markings.pavements.map(({ x, z, w, d }) =>
+      box('Pavement', x, 0.012, z, w, 0.012, d, '#c7bfa6'));
+    const crossing = markings.crossings.map(({ x, z, w, d }) =>
+      box('Zebra crossing', x, 0.014, z, w, 0.012, d, '#f5f0d8'));
+    for (const [name, group] of [['Built streets', asphalt], ['Lane markings', paint],
+      ['Pedestrian pavements', pavement], ['Pedestrian crossings', crossing]])
       if (group.length) {
         const mesh = B.Mesh.MergeMeshes(group, true, true);
+        mesh.name = name;
         mesh.isPickable = false;
         roads.push(mesh);
       }
