@@ -1,3 +1,4 @@
+import { restoreWorkShift } from './work-shift.mjs';
 import { restoreCompanionPath } from './citizen-appearance.mjs';
 import { restoreDailyMarket } from './daily-market-save.mjs';
 import { restoreShopkeeper } from './shopkeeper-save.mjs';
@@ -108,7 +109,8 @@ export const MOVE_IN_SLOTS = Array.from({ length: 6 }, (_, i) => 'family' + (i +
 export const VISITS = {
   spaza: { destination: 'Spaza', activity: 'Shopping' },
   hall: { destination: 'Community hall', activity: 'Visiting the hall' },
-  park: { destination: 'Park bench', activity: 'Resting in the park' }
+  park: { destination: 'Park bench', activity: 'Resting in the park' },
+  work: { destination: 'Workplace', activity: 'Working at workplace' }
 };
 export const PARK_REST_SECONDS = 6;
 const directoryCache = new WeakMap();
@@ -146,6 +148,8 @@ export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => 
     city[key] ||
     !Object.hasOwn(VISITS, visit) ||
     (visit === 'park') !== (trip?.park === true) ||
+    (visit === 'work') !== !!trip?.work ||
+    (visit === 'work' && city.market?.shop === trip?.shop) ||
     !trip?.home ||
     !trip.shop ||
     trip.home === trip.shop ||
@@ -182,6 +186,7 @@ export function restoreTrip(v) {
     return null;
   const { home, shop, phase, x, y, z, heading, vy } = v;
   const routine = restoreRoutine(v.routine);
+  const work = restoreWorkShift(v.work);
   return {
     home,
     shop,
@@ -195,7 +200,7 @@ export function restoreTrip(v) {
     ...(v.park === true && restoreCompanionPath(v.companionPath, v)
       ? { companionPath: restoreCompanionPath(v.companionPath, v) } : {}),
     wait: Math.max(0, Math.min(v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
-    ...(routine ? { routine } : {}),
+    ...(work ? { work, routine: { hour: work.startHour, visits: routine?.visits ?? 0 } } : routine ? { routine } : {}),
     grounded: v.grounded === true,
     paused: v.paused === true,
     returning: v.returning === true

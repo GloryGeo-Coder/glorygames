@@ -234,7 +234,7 @@ export function marketControls({
         .map((p) => data[p.key].shop)
     );
     const doors = data.pieces
-      .filter(isEntrance)
+      .filter(p => isEntrance(p) && !householdsFor(data).some(h => data[h.key]?.work && data[h.key].shop === p.id))
       .sort((a, b) => Number(destinations.has(b.id)) - Number(destinations.has(a.id)));
     select.replaceChildren(
       ...doors.map(

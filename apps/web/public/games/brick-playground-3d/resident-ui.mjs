@@ -1,3 +1,4 @@
+import { setWorkShift } from './work-shift.mjs';
 import { updateCompanionPath } from './citizen-appearance.mjs';
 import { journeySummary } from './citizen-journey.mjs';
 import {
@@ -48,6 +49,7 @@ function status(trip, runtime, profile, data) {
     const flower = data.garden?.displays.find((p) => p.id === trip.shop)?.flower;
     if (flower) return flower === 'daisy' ? 'Resting by African daisies' : 'Resting by marigolds';
   }
+  if (trip.work && trip.phase === 'shopping' && !trip.returning) return 'Working at workplace';
   if (waitingAtTill(data, profile, trip)) return 'At the till';
   if (trip.phase === 'shopping') return profile.activity;
   return trip.returning ? 'Walking home' : 'Walking to the ' + profile.destination.toLowerCase();
@@ -109,7 +111,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     label('resClock', scheduled ? 'Settlement time · ' + clockLabel(now) : '');
     const next = scheduled ? nextIdleDeparture(data) : null;
     const canSkip = next !== null;
-    if (canSkip) label('resSkip', (next === data.market?.daily?.next ? 'Skip to next opening · ' : 'Skip to next departure · ') + clockLabel(next).split(' · ')[1]);
+    const shiftEnd = canSkip && roster().some(({ key }) => data[key]?.work?.endsAt === next && data[key].phase === 'shopping');
+    if (canSkip) label('resSkip', (shiftEnd ? 'Skip to shift end · ' : next === data.market?.daily?.next ? 'Skip to next opening · ' : 'Skip to next departure · ') + clockLabel(next).split(' · ')[1]);
     if ($('resSkip').hidden === canSkip) $('resSkip').hidden = !canSkip;
     if ($('resTools').hidden !== !trip) $('resTools').hidden = !trip;
     if ($('resOther').hidden !== !second) $('resOther').hidden = !second;
@@ -136,7 +139,11 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     const routine = trip?.routine;
     label(
       'resRoutineNote',
-      routine
+      trip?.work
+        ? 'Shift ' + String(trip.work.startHour).padStart(2, '0') + ':00–' +
+          String(trip.work.endHour).padStart(2, '0') + ':00 · ' + trip.work.completed +
+          ' completed shift' + (trip.work.completed === 1 ? '' : 's')
+        : routine
         ? (trip.phase === 'done' && !trip.paused
             ? 'Next departure · ' + clockLabel(nextDeparture(now, routine.hour))
             : 'Daily at ' + String(routine.hour).padStart(2, '0') + ':00') +
@@ -188,7 +195,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       trip = data[p.key],
       doors = data.pieces.filter(isEntrance);
     const destinations =
-      p.visit === 'park' ? data.pieces.filter((piece) => isParkBench(data, piece)) : doors;
+      p.visit === 'park' ? data.pieces.filter((piece) => isParkBench(data, piece))
+        : p.visit === 'work' ? doors.filter(d => d.id !== data.market?.shop) : doors;
     const homes = doors.filter((d) => !homeClaimed(data, d.id, p.key));
     for (const [id, list] of [
       ['resHome', homes],
@@ -220,7 +228,9 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     label('resDestination', p.destination);
     label(
       'resDescription',
-      p.visit === 'park'
+      p.visit === 'work'
+        ? 'Choose a home and a different workplace entrance. Use a dedicated entrance, not an active market counter. Keep the route, doorway and indoor standing space clear. The resident walks to work, stays until shift end and returns home.'
+        : p.visit === 'park'
         ? 'Choose a home and a ground-floor bench on a park block. The bench faces its approach street.'
         : joining
           ? 'Choose a street-facing home and destination for the new household.'
@@ -251,14 +261,19 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     label('resEnd', MOVE_IN_SLOTS.includes(p.key) ? 'Move out' : 'End trip');
     $('resPause').textContent = trip?.paused ? 'Resume' : 'Pause';
     $('resPause').disabled = trip?.phase === 'done' && !trip?.routine;
-    $('resSchedule').value = String(trip?.routine?.hour ?? '');
+    $('resSchedule').value = String(trip?.routine?.hour ?? (p.visit === 'work' ? 8 : ''));
+    $('resWorkEnd').value = String(trip?.work?.endHour ?? 17);
     scheduleControls();
     canStart();
   }
   function scheduleControls() {
-    const trip = city()[configProfile().key];
+    const p = configProfile(), trip = city()[p.key], work = p.visit === 'work';
+    $('resWorkFields').hidden = !work;
+    $('resSchedule').options[0].disabled = work;
+    if (work && !$('resSchedule').value) $('resSchedule').value = '8';
     const hour = $('resSchedule').value;
-    $('resApplySchedule').hidden = !trip || String(trip.routine?.hour ?? '') === hour;
+    $('resApplySchedule').hidden = !trip || (String(trip.routine?.hour ?? '') === hour &&
+      (!work || String(trip.work?.endHour) === $('resWorkEnd').value));
     label(
       'resStart',
       joining
@@ -271,16 +286,24 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
             ? 'Start new trip'
             : 'Start trip'
     );
+    canStart();
   }
   for (const hour of DEPARTURES)
     $('resSchedule').add(
       new Option('Daily at ' + String(hour).padStart(2, '0') + ':00', String(hour))
     );
+  for (let hour = 9; hour <= 23; hour++) $('resWorkEnd').add(new Option(String(hour).padStart(2, '0') + ':00', String(hour)));
+  $('resWorkEnd').value = '17';
+  $('resWorkEnd').onchange = scheduleControls;
   $('resSchedule').onchange = scheduleControls;
   $('resApplySchedule').onclick = () => {
     const data = city(),
       trip = data[active().key];
-    setRoutine(trip, Number($('resSchedule').value));
+    if (!trip || $('resApplySchedule').disabled) return;
+    if (configProfile().visit === 'work') {
+      if (trip.phase !== 'done' || workProblem()) { canStart(); return; }
+      if (!setWorkShift(trip, Number($('resSchedule').value), Number($('resWorkEnd').value))) return;
+    } else setRoutine(trip, Number($('resSchedule').value));
     if (trip.routine) data.clockMinutes ??= START_TIME;
     save();
     $('residentSetup').close();
@@ -292,10 +315,24 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       refresh();
     }
   };
+  function workProblem() {
+    if (configProfile().visit !== 'work') return '';
+    const start = Number($('resSchedule').value), end = Number($('resWorkEnd').value);
+    return !DEPARTURES.includes(start) || !Number.isInteger(end) || end <= start || end > 23
+      ? 'Choose a shift end after departure, no later than 23:00. Overnight shifts are not available.' : '';
+  }
   function canStart() {
     const home = $('resHome').value,
       destination = $('resShop').value;
-    const problem = joining ? moveInProblem(city(), $('resName').value) : '';
+    const problem = workProblem() ||
+      (configProfile().visit === 'work' && destination === city().market?.shop
+        ? 'Choose a dedicated workplace entrance, not the active market counter.' : '') ||
+      (joining ? moveInProblem(city(), $('resName').value) : '');
+    const work = configProfile().visit === 'work', trip = city()[configProfile().key];
+    $('resApplySchedule').disabled = work && (!!problem || trip?.phase !== 'done');
+    if (work && !joining) label('resSetupHint', problem || (trip?.phase !== 'done'
+      ? 'Apply schedule is available when this resident is home. Restart routine deliberately starts a new trip from the selected home.'
+      : 'Apply schedule keeps this home, workplace and completed shifts.'));
     if (joining)
       label(
         'resSetupHint',
@@ -306,6 +343,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
               ? $('resVisit').value === 'park'
                 ? 'Build a ground-floor bench in a block with Park land use.'
                 : 'Choose a different entrance for the destination.'
+              : work ? 'This resident departs daily, works until the selected end time and walks home. No wages or off-screen shift completions are generated.'
               : 'This household will use its own home and can share a destination.')
       );
     $('resStart').disabled = !!problem || !home || !destination || home === destination;
@@ -336,7 +374,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
   $('resVisit').onchange = () => {
     const schedule = $('resSchedule').value;
     options($('resShop').value, $('resHome').value);
-    $('resSchedule').value = schedule;
+    $('resSchedule').value = configProfile().visit === 'work' ? schedule || '8' : schedule;
     scheduleControls();
   };
   $('resOther').onclick = () => {
@@ -381,12 +419,15 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       homeClaimed(data, home.id, p.key)
     )
       return;
+    if (workProblem() || (p.visit === 'work' && shop.id === data.market?.shop)) return;
     const trip = newTrip(home, shop, data);
+    if (p.visit === 'work' && data[p.key]?.work) trip.work = { ...data[p.key].work };
+    if (p.visit === 'work' && !setWorkShift(trip, Number($('resSchedule').value), Number($('resWorkEnd').value))) return;
     const profile = joining ? moveIn(data, $('resName').value, $('resVisit').value, trip, undefined, {family: $('resFamily').checked, childName: $('resChildName').value}) : p;
     if (!profile) return;
     data[profile.key] = trip;
     if ($('resSchedule').value) {
-      setRoutine(trip, Number($('resSchedule').value));
+      if (p.visit !== 'work') setRoutine(trip, Number($('resSchedule').value));
       trip.phase = 'done';
       data.clockMinutes ??= START_TIME;
     }
