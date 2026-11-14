@@ -8,6 +8,7 @@ import {
   MOVE_IN_SLOTS,
   VISITS,
   householdsFor,
+  entranceAvailable,
   homeClaimed,
   moveInProblem,
   moveIn,
@@ -17,6 +18,7 @@ import {
   entrance,
   isEntrance,
   isParkBench,
+  isSchoolEntrance,
   visitFront,
   newTrip,
   practiceHallTrip,
@@ -137,9 +139,11 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     $('resJourney').hidden = !trip;
     label('resJourneyText', journeySummary(data, p, trip, rt));
     const routine = trip?.routine;
+    const lessonNote = trip?.school && (p.childName + ' · ' + trip.school.lessons + ' completed lesson' +
+      (trip.school.lessons === 1 ? '' : 's') + (routine ? ' · Daily at ' + String(routine.hour).padStart(2, '0') + ':00' : ''));
     label(
       'resRoutineNote',
-      trip?.work
+      lessonNote || (trip?.work
         ? 'Shift ' + String(trip.work.startHour).padStart(2, '0') + ':00–' +
           String(trip.work.endHour).padStart(2, '0') + ':00 · ' + trip.work.completed +
           ' completed shift' + (trip.work.completed === 1 ? '' : 's')
@@ -151,7 +155,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
             routine.visits +
             ' round trip' +
             (routine.visits === 1 ? '' : 's')
-        : ''
+        : '')
     );
     label('resFollow', watching ? 'Stop following' : 'Follow ' + p.name);
   }
@@ -196,7 +200,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       doors = data.pieces.filter(isEntrance);
     const destinations =
       p.visit === 'park' ? data.pieces.filter((piece) => isParkBench(data, piece))
-        : p.visit === 'work' ? doors.filter(d => d.id !== data.market?.shop) : doors;
+        : p.visit === 'school' ? doors.filter(d => isSchoolEntrance(data, d))
+        : p.visit === 'work' ? doors.filter(d => entranceAvailable(data, d.id, 'work')) : doors;
     const homes = doors.filter((d) => !homeClaimed(data, d.id, p.key));
     for (const [id, list] of [
       ['resHome', homes],
@@ -228,7 +233,9 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     label('resDestination', p.destination);
     label(
       'resDescription',
-      p.visit === 'work'
+      p.visit === 'school'
+        ? 'Mark the destination block as School on the settlement map. Choose a ground-floor entrance with clear space inside for a lesson.'
+        : p.visit === 'work'
         ? 'Choose a home and a different workplace entrance. Use a dedicated entrance, not an active market counter. Keep the route, doorway and indoor standing space clear. The resident walks to work, stays until shift end and returns home.'
         : p.visit === 'park'
         ? 'Choose a home and a ground-floor bench on a park block. The bench faces its approach street.'
@@ -240,7 +247,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
             ' and back. Choose two street-facing entrances.'
     );
     $('resMoveFields').hidden = !joining;
-    $('resFamilyFields').hidden = !joining || p.visit !== 'park';
+    $('resFamilyFields').hidden = !joining || !['school', 'park'].includes(p.visit);
+    $('resParkFamilyOption').hidden = $('resParkFamilyHint').hidden = p.visit === 'school';
     $('resPractice').hidden =
       !HOUSEHOLDS.some((h) => h.key === p.key) || !editing() || !practice(p, data);
     label(
@@ -342,7 +350,9 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
             : !destination || home === destination
               ? $('resVisit').value === 'park'
                 ? 'Build a ground-floor bench in a block with Park land use.'
-                : 'Choose a different entrance for the destination.'
+                : configProfile().visit === 'school'
+                  ? 'Set a block’s land use to School and give it a ground-floor entrance.'
+                  : 'Choose a different entrance for the destination.'
               : work ? 'This resident departs daily, works until the selected end time and walks home. No wages or off-screen shift completions are generated.'
               : 'This household will use its own home and can share a destination.')
       );
@@ -419,8 +429,10 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       homeClaimed(data, home.id, p.key)
     )
       return;
-    if (workProblem() || (p.visit === 'work' && shop.id === data.market?.shop)) return;
+    if (workProblem() || (p.visit === 'work' && !entranceAvailable(data, shop.id, 'work'))) return;
+    if (p.visit === 'school' && !isSchoolEntrance(data, shop)) return;
     const trip = newTrip(home, shop, data);
+    if (p.visit === 'school') trip.school = { lessons: data[p.key]?.school?.lessons ?? 0 };
     if (p.visit === 'work' && data[p.key]?.work) trip.work = { ...data[p.key].work };
     if (p.visit === 'work' && !setWorkShift(trip, Number($('resSchedule').value), Number($('resWorkEnd').value))) return;
     const profile = joining ? moveIn(data, $('resName').value, $('resVisit').value, trip, undefined, {family: $('resFamily').checked, childName: $('resChildName').value}) : p;

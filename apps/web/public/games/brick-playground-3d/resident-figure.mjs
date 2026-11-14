@@ -84,6 +84,12 @@ export function residentFigure(B, scene, material, profile) {
     body.profile(0, .158, [[.57, .17, .012], [.8, .16, .012], [.97, .12, .012]], '#f8e6ba');
     body.oval(0, .76, .179, .07, .05, .009, '#dfad47');
   }
+  if (child && profile.visit === 'school') {
+    body.oval(0, .77, -.15, .16, .19, .09, '#edaa36');
+    for (const side of [-1, 1]) {
+      body.cord([[side * .1, .96, -.13], [side * .12, 1, .04], [side * .12, .72, .14]], .018, '#ffd272');
+    }
+  }
   body.mesh(profile.name + ' coat and cap', root, material);
   const bag = surface(B, scene);
   bag.oval(0.194, 0.57, 0.057, 0.093, 0.1, 0.067, '#e2b771');
@@ -105,7 +111,7 @@ export function residentFigure(B, scene, material, profile) {
     groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
   }
   const contents =
-    profile.visit === 'park' || profile.keeper || child
+    profile.visit === 'park' || profile.visit === 'school' || profile.keeper || child
       ? null
       : groceries.mesh(
           hallVisitor
@@ -175,7 +181,7 @@ export function residentFigure(B, scene, material, profile) {
     return { leg, knee, arm, side };
   });
   root.setEnabled(false);
-  const companion = profile.family && profile.visit === 'park' && !child
+  const companion = profile.family && !child
     ? residentFigure(B, scene, material, { ...profile, family: false, child: true,
         name: (profile.childName || profile.name) + ' · child' }) : null;
   const trail = companion ? companionTrail() : null;

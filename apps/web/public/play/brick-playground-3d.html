@@ -133,8 +133,8 @@
       <span id="resOccupied"></span>
       <div id="resMoveFields" hidden>
         <label>Resident name <input id="resName" maxlength="28" autocomplete="off"></label>
-        <label>Visit <select id="resVisit"><option value="spaza">Spaza</option><option value="hall">Community hall</option><option value="park">Park bench</option><option value="work">Workplace shift</option></select></label>
-        <div id="resFamilyFields" hidden><label class="stock-option"><input id="resFamily" type="checkbox"> Family park visit with an accompanied child</label><label>Child name <input id="resChildName" maxlength="28" value="Mpho" autocomplete="off"></label><p>The child stays with this adult on the same journey. Families share one household slot and never create extra shop purchases.</p></div>
+        <label>Visit <select id="resVisit"><option value="spaza">Spaza</option><option value="hall">Community hall</option><option value="park">Park bench</option><option value="school">Accompanied school visit</option><option value="work">Workplace shift</option></select></label>
+        <div id="resFamilyFields" hidden><label id="resParkFamilyOption" class="stock-option"><input id="resFamily" type="checkbox"> Family park visit with an accompanied child</label><label>Child name <input id="resChildName" maxlength="28" value="Mpho" autocomplete="off"></label><p id="resParkFamilyHint">The child stays with this adult on the same journey. Families share one household slot and never create extra shop purchases.</p></div>
       </div>
       <p id="resDescription"></p>
       <label>Home <select id="resHome"></select></label>

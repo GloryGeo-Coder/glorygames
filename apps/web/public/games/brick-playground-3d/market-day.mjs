@@ -1,7 +1,7 @@
 import { newDailyMarket } from './daily-market-save.mjs';
 import { restoreShopkeeper } from './shopkeeper-save.mjs';
 import { useShopStock } from './shop-stock.mjs';
-import { blockAt, householdsFor } from './settlement.mjs';
+import { blockAt, entranceAvailable, householdsFor } from './settlement.mjs';
 import { advanceTrip, entrance, isEntrance } from './resident-trip.mjs';
 const counters = new WeakMap();
 export function marketCounter(city) {
@@ -15,7 +15,7 @@ export function marketCounter(city) {
   return counter;
 }
 export function openMarket(city, id, supplied = false, keeperName = '', dailyHour = null) {
-  if (city.market || householdsFor(city).some(p => city[p.key]?.work && city[p.key].shop === id) || !city.pieces.some((p) => p.id === id && isEntrance(p))) return false;
+  if (city.market || !entranceAvailable(city, id, 'market') || !city.pieces.some((p) => p.id === id && isEntrance(p))) return false;
   const keeper = supplied && restoreShopkeeper({ name: keeperName });
   const daily = supplied && newDailyMarket(dailyHour, city.clockMinutes ?? 450);
   if (daily) city.clockMinutes ??= 450;

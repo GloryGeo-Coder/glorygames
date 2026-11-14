@@ -11,7 +11,9 @@ import {
   blockIndex,
   blockInfo,
   householdsFor,
+  entranceAvailable,
   PARK_REST_SECONDS,
+  LESSON_SECONDS,
   streetKeys,
   streetSegment
 } from './settlement.mjs';
@@ -45,6 +47,10 @@ export function entrance(p) {
     direction: DIRECTIONS[p.r],
     curb: { x: nx ? laneCoord(s.x) : x, z: nz ? laneCoord(s.z) : z }
   };
+}
+export function isSchoolEntrance(city, piece) {
+  return isEntrance(piece) && blockInfo(city, blockAt(piece.x, piece.z)).zone === 'school' &&
+    entranceAvailable(city, piece.id, 'school');
 }
 export function isParkBench(city, p) {
   return p?.type === 'bench' && p.y <= 0.365 && blockInfo(city, blockAt(p.x, p.z)).zone === 'park';
@@ -239,7 +245,7 @@ export function advanceTrip(city, t, rt, dt) {
   const edited =
     rt.items !== city.pieces ||
     rt.observedStreets !== city.streets ||
-    (t.park && rt.observedBlocks !== city.blocks);
+    ((t.park || t.school) && rt.observedBlocks !== city.blocks);
   if (rt.issue && !edited) return;
   if (edited) {
     rt.issue = '';
@@ -264,6 +270,10 @@ export function advanceTrip(city, t, rt, dt) {
     rt.blocker = null;
     return;
   }
+  if (t.school && !t.returning && !isSchoolEntrance(city, stops.get(t.shop))) {
+    rt.issue = 'School unavailable. Restore School land use and a dedicated entrance, or choose another school.';
+    return;
+  }
   const from = t.returning ? destination : home,
     to = t.returning ? home : destination;
   if (
@@ -283,7 +293,7 @@ export function advanceTrip(city, t, rt, dt) {
       return;
     }
   }
-  if (t.work && !t.returning && (t.phase === 'shopping' || (t.phase === 'enter' && separation(t, to.inside) <= 0.012))) {
+  if ((t.school || t.work) && !t.returning && (t.phase === 'shopping' || (t.phase === 'enter' && separation(t, to.inside) <= 0.012))) {
     const door = stops.get(t.shop);
     if (separation(t, destination.inside) > 0.025) {
       t.phase = 'door';
@@ -292,10 +302,10 @@ export function advanceTrip(city, t, rt, dt) {
     const blocker = workSpaceBlocker(city, destination, t.y);
     if (blocker || Math.abs(t.y - door.y) > 0.65) {
       rt.blocker = blocker;
-      rt.issue = 'Workplace standing space is blocked or uneven. Clear the interior beside the entrance.';
+      rt.issue = t.school ? 'Classroom space is blocked or uneven. Clear the floor inside the entrance.' : 'Workplace standing space is blocked or uneven. Clear the interior beside the entrance.';
       return;
     }
-    if (t.work.endsAt !== undefined && (city.clockMinutes ?? 450) < t.work.endsAt) t.work.worked = true;
+    if (t.work?.endsAt !== undefined && (city.clockMinutes ?? 450) < t.work.endsAt) t.work.worked = true;
   }
   if (t.phase === 'shopping') {
     if (t.park && separation(t, destination.inside) > 0.025) {
@@ -311,6 +321,7 @@ export function advanceTrip(city, t, rt, dt) {
     }
     t.wait = Math.max(0, t.wait - dt);
     if (t.wait === 0) {
+      if (t.school) t.school.lessons = Math.min(Number.MAX_SAFE_INTEGER, t.school.lessons + 1);
       t.returning = true;
       t.phase = 'leave';
     }
@@ -391,7 +402,7 @@ export function advanceTrip(city, t, rt, dt) {
       t.phase = t.returning ? 'done' : 'shopping';
       if (t.returning && t.routine) t.routine.visits++;
       if (t.returning && t.work) finishWorkShift(t);
-      t.wait = t.returning ? 0 : t.park ? PARK_REST_SECONDS : 1.5;
+      t.wait = t.returning ? 0 : t.school ? LESSON_SECONDS : t.park ? PARK_REST_SECONDS : 1.5;
     }
     return;
   }
