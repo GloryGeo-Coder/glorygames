@@ -168,7 +168,12 @@ export function cityScene(B, scene, box, mat, label) {
       sign.post.position.set(x, height / 2, z);
     }
     for (const b of BLOCKS) {
-      const name = blockInfo(city, b).neighbourhood;
+      const info = blockInfo(city, b);
+      if (info.zone === 'school' && neighbouring(focus, b)) {
+        const school = info.name || 'School';
+        place('school/' + b.id + '/' + school, school, b.x + 7, b.z - LOT / 2 - .55, 3.8, 1.9, false);
+      }
+      const name = info.neighbourhood;
       if (!name || seen.has(name)) continue;
       seen.add(name);
       if (neighbouring(focus, b))

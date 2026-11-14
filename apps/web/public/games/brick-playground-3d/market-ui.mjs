@@ -2,7 +2,7 @@ import { advanceDailyMarket, dailyMarketStatus } from './daily-market.mjs';
 import { clockLabel } from './resident-routines.mjs';
 import { advanceShopkeeper, keeperStatus } from './shopkeeper.mjs';
 import { shopStock, stockTarget } from './shop-stock.mjs';
-import { blockAt, householdsFor } from './settlement.mjs';
+import { blockAt, entranceAvailable, householdsFor } from './settlement.mjs';
 import { isEntrance, entrance } from './resident-trip.mjs';
 import {
   marketCounter,
@@ -234,7 +234,7 @@ export function marketControls({
         .map((p) => data[p.key].shop)
     );
     const doors = data.pieces
-      .filter(p => isEntrance(p) && !householdsFor(data).some(h => data[h.key]?.work && data[h.key].shop === p.id))
+      .filter(p => isEntrance(p) && entranceAvailable(data, p.id, 'market'))
       .sort((a, b) => Number(destinations.has(b.id)) - Number(destinations.has(a.id)));
     select.replaceChildren(
       ...doors.map(

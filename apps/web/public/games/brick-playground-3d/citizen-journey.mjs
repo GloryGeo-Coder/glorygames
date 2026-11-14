@@ -3,8 +3,8 @@ import { blockAt } from './settlement.mjs';
 // Presentation only: inspecting a citizen must never advance a trip or create a sale.
 export function journeySummary(city, profile, trip, runtime = {}) {
   if (!trip) return 'No trip assigned.';
-  const family = profile.family && profile.visit === 'park';
-  const role = family ? 'Family park visit' : trip.work ? 'Adult commuter' : 'Adult resident';
+  const family = profile.family;
+  const role = profile.visit === 'school' ? 'School visit' : family ? 'Family park visit' : trip.work ? 'Adult commuter' : 'Adult resident';
   const companion = family ? ` · ${profile.childName}, child accompanied by ${profile.name}` : '';
   const destination = city?.pieces?.find(p => p.id === (trip.returning ? trip.home : trip.shop));
   const target = trip.returning ? 'home' : (profile.destination || 'destination').toLowerCase();

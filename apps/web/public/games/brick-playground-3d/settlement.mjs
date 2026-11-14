@@ -15,6 +15,7 @@ export const ZONES = {
   mixed: { name: 'Mixed use', color: '#e4c995' },
   homes: { name: 'Residential', color: '#e7bfa3' },
   shops: { name: 'Commercial', color: '#e7cf88' },
+  school: { name: 'School', color: '#aac8e4' },
   civic: { name: 'Civic', color: '#afd0cb' },
   park: { name: 'Park', color: '#a5c68c' }
 };
@@ -108,10 +109,12 @@ export const HOUSEHOLDS = [
 export const MOVE_IN_SLOTS = Array.from({ length: 6 }, (_, i) => 'family' + (i + 1));
 export const VISITS = {
   spaza: { destination: 'Spaza', activity: 'Shopping' },
+  school: { destination: 'School', activity: 'In class' },
   hall: { destination: 'Community hall', activity: 'Visiting the hall' },
   park: { destination: 'Park bench', activity: 'Resting in the park' },
   work: { destination: 'Workplace', activity: 'Working at workplace' }
 };
+export const LESSON_SECONDS = 8;
 export const PARK_REST_SECONDS = 6;
 const directoryCache = new WeakMap();
 export function householdsFor(city) {
@@ -128,6 +131,14 @@ export function householdsFor(city) {
     directoryCache.set(city.members, roster);
   }
   return roster;
+}
+// A school and a workplace may each serve multiple households of the same kind.
+export function entranceAvailable(city, id, visit) {
+  if (visit !== 'market' && id === city.market?.shop) return false;
+  return !householdsFor(city).some(({ key }) => {
+    const trip = city[key];
+    return trip?.shop === id && ((trip.school && visit !== 'school') || (trip.work && visit !== 'work'));
+  });
 }
 export function homeClaimed(city, home, except) {
   return householdsFor(city).some((p) => p.key !== except && city[p.key]?.home === home);
@@ -148,15 +159,16 @@ export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => 
     city[key] ||
     !Object.hasOwn(VISITS, visit) ||
     (visit === 'park') !== (trip?.park === true) ||
+    (visit === 'school') !== !!trip?.school ||
     (visit === 'work') !== !!trip?.work ||
-    (visit === 'work' && city.market?.shop === trip?.shop) ||
+    ((visit === 'work' || visit === 'school') && !entranceAvailable(city, trip?.shop, visit)) ||
     !trip?.home ||
     !trip.shop ||
     trip.home === trip.shop ||
     homeClaimed(city, trip.home, key)
   )
     return null;
-  const family = visit === 'park' && appearance?.family === true;
+  const family = visit === 'school' || (visit === 'park' && appearance?.family === true);
   const childName = typeof appearance?.childName === 'string' && appearance.childName.trim().length > 0 && appearance.childName.trim().length <= 28
     ? appearance.childName.trim() : 'Mpho';
   city.members = [...(city.members || []), { key, name: name.trim(), visit,
@@ -187,6 +199,8 @@ export function restoreTrip(v) {
   const { home, shop, phase, x, y, z, heading, vy } = v;
   const routine = restoreRoutine(v.routine);
   const work = restoreWorkShift(v.work);
+  const lessons = v.school?.lessons;
+  const school = !work && !v.park && Number.isSafeInteger(lessons) && lessons >= 0;
   return {
     home,
     shop,
@@ -197,9 +211,10 @@ export function restoreTrip(v) {
     heading,
     vy,
     ...(v.park === true ? { park: true } : {}),
-    ...(v.park === true && restoreCompanionPath(v.companionPath, v)
+    ...(school ? { school: { lessons } } : {}),
+    ...((v.park === true || school) && restoreCompanionPath(v.companionPath, v)
       ? { companionPath: restoreCompanionPath(v.companionPath, v) } : {}),
-    wait: Math.max(0, Math.min(v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
+    wait: Math.max(0, Math.min(school ? LESSON_SECONDS : v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
     ...(work ? { work, routine: { hour: work.startHour, visits: routine?.visits ?? 0 } } : routine ? { routine } : {}),
     grounded: v.grounded === true,
     paused: v.paused === true,

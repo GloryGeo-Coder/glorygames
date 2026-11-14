@@ -52,3 +52,10 @@ CITY_PLANS.push({
     }))
   )
 });
+
+const classroom = building('Neighbourhood classroom', 1, 2, 'Sky');
+classroom.pieces.push(
+  brick('bench', 'Sun', 5, 2, 1 / 3),
+  brick('bench', 'Lagoon', 5, 4, 1 / 3)
+);
+CITY_PLANS.push(classroom);
