@@ -59,3 +59,11 @@ classroom.pieces.push(
   brick('bench', 'Lagoon', 5, 4, 1 / 3)
 );
 CITY_PLANS.push(classroom);
+
+// Original small clinic: a clear entrance bay and furnished waiting area.
+const clinic = building('Neighbourhood clinic', 1, 2, 'Lagoon');
+clinic.pieces.push(
+  brick('bench', 'Chalk', 5, 2, 1 / 3),
+  brick('bench', 'Sky', 5, 4, 1 / 3)
+);
+CITY_PLANS.push(clinic);
