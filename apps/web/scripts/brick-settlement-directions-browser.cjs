@@ -116,6 +116,63 @@ async function round(browser, mobile) {
         else await page.keyboard.up(key);
       }
     }
+    async function arriveInside(front) {
+      const target = front.inside;
+      const observation = () => page.evaluate((target) => {
+        const p = BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('Builder').position;
+        return { x: p.x, y: p.y, z: p.z, target,
+          distance: Math.hypot(p.x - target.x, p.z - target.z),
+          state: document.querySelector('#directionsHud').dataset.state,
+          hint: document.querySelector('#directionsHint').textContent };
+      }, target);
+      try {
+        // The long approach still uses real held input. A threshold crossing alone is not
+        // arrival: release latency can overshoot it, or leave a small sideways error.
+        await move('w', target.z - 0.35);
+        for (let attempt = 0; attempt < 24; attempt++) {
+          const at = await observation();
+          if (at.distance <= 0.45) break;
+          const dx = target.x - at.x, dz = target.z - at.z;
+          const horizontal = Math.abs(dx) > Math.abs(dz);
+          const error = horizontal ? dx : dz;
+          const key = horizontal ? (error > 0 ? 'd' : 'a') : (error > 0 ? 'w' : 's');
+          // Short, feedback-controlled pulses correct the actual pose without assigning it.
+          // Small joystick deflections avoid overshooting the 0.65-stud arrival circle.
+          if (mobile) {
+            const r = await page.locator('#stick').boundingBox();
+            const offset = Math.abs(error) < 1 ? 9 : 20;
+            await touch.send('Input.dispatchTouchEvent', {
+              type: 'touchStart', touchPoints: [{
+                x: r.x + r.width / 2 + (key === 'a' ? -offset : key === 'd' ? offset : 0),
+                y: r.y + r.height / 2 + (key === 'w' ? -offset : key === 's' ? offset : 0)
+              }]
+            });
+          } else await page.keyboard.down(key);
+          try {
+            await page.evaluate(async (frames) => {
+              for (let i = 0; i < frames; i++) await new Promise(requestAnimationFrame);
+            }, Math.max(1, Math.min(4, Math.ceil(Math.abs(error) / 0.12))));
+          } finally {
+            if (mobile) await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+            else await page.keyboard.up(key);
+          }
+          await page.evaluate(async () => {
+            await new Promise(requestAnimationFrame);
+            await new Promise(requestAnimationFrame);
+          });
+        }
+        const at = await observation();
+        console.log('Directions arrival pose', mobile ? 'phone' : 'desktop', at);
+        assert.ok(at.distance <= 0.65, 'physical walking reaches the original arrival radius');
+        await page.waitForFunction(
+          () => document.querySelector('#directionsHud').dataset.state === 'arrived'
+        );
+      } catch (error) {
+        console.error('Directions arrival failure', mobile ? 'phone' : 'desktop', await observation());
+        await photo('directions-arrival-failed').catch(() => {});
+        throw error;
+      }
+    }
     async function handover(n, label) {
       // Stop inside the doorway before pressing the button, independently of HUD refresh timing.
       await move('w', fronts[n].inside.z - 0.35);
@@ -332,10 +389,7 @@ async function round(browser, mobile) {
       () => document.querySelector('#directionsHud').dataset.state === 'walking'
     );
     await photo('directions-repaired');
-    await move('w', fronts[1].inside.z - 0.2);
-    await page.waitForFunction(
-      () => document.querySelector('#directionsHud').dataset.state === 'arrived'
-    );
+    await arriveInside(fronts[1]);
     assert.match(await page.locator('#directionsAddress').innerText(), /Arrived.*Protea Road/);
     assert.deepEqual((await saved()).post, bag, 'arriving never hands over a letter automatically');
     if (!(await page.locator('#directionsHud').evaluate((el) => el.open)))
