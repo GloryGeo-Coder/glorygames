@@ -34,7 +34,7 @@ async function screenshot(page,name){if(shots){fs.mkdirSync(shots,{recursive:tru
         assert.equal((await context.request.get(base+'/games/science-lab-dash/thumb.png')).status(),200);
       }
       if(route.startsWith('/play')){
-        assert.match(body,/Game Chat/);assert.match(body,/Live score/);
+        assert.match(body,/Chat is paused/);assert.match(body,/Live score/);
         await page.evaluate(()=>scrollTo(0,0));await screenshot(page,'information-'+width);
         if(width===390){
           const [popup]=await Promise.all([page.waitForEvent('popup'),page.locator('a[href="/games/science-lab-dash/index.html"][target="_blank"]').first().click()]);

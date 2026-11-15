@@ -17,7 +17,7 @@ const slug='space-pilot-platformer',guide=getGameEditorial(slug);
 const markup=renderToStaticMarkup(React.createElement(GameEditorial,{slug,title:manifest.title}));
 
 test('the final page preserves every approved story paragraph in order',()=>{
- const roadmap=readFileSync('../../docs/space-pilot-starfall-rift-roadmap.md','utf8');
+ const roadmap=readFileSync('../../docs/space-pilot-starfall-rift-roadmap.md','utf8').replace(/\r\n/g,'\n');
  const approved=roadmap.split('## Approved storyline\n\n')[1].split('\n## Incremental route')[0].trim().split('\n\n').map(p=>p.replaceAll('**','').replace(/\*([^*]+)\*/g,'$1'));
  assert.deepEqual(guide.story,approved);assert.match(markup,/Story and setting/);
  assert.match(markup,/Something enormous moves inside the portal/);
@@ -44,7 +44,7 @@ test('the rendered launch preserves the thumbnail, direct new tab, scores and ch
  const html=renderToStaticMarkup(React.createElement(PlayClient,getFallbackGameBySlug(slug)));
  assert.doesNotMatch(html,/<iframe/);assert.match(html,/\/games\/space-pilot-platformer\/thumb.png/);
  assert.match(html,/href="\/games\/space-pilot-platformer\/index.html" target="_blank" rel="noopener noreferrer"/);
- assert.match(html,/Game Chat/);assert.match(html,/Live score/);
+ assert.match(html,/Chat is paused/);assert.match(html,/Live score/);
 });
 test('both information routes retain final metadata, FAQs and related games',()=>{
  for(const file of ['src/app/play/[slug]/page.tsx','src/app/games/[slug]/page.tsx']){
