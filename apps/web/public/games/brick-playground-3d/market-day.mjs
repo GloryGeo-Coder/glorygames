@@ -34,7 +34,7 @@ function eligible(city, p, t) {
     market &&
     market.receipts.length < 2 &&
     t &&
-    !t.work && !t.clinic &&
+    !t.work && !t.clinic && !t.service &&
     p.destination === 'Spaza' &&
     t.shop === market.shop &&
     !market.receipts.some(

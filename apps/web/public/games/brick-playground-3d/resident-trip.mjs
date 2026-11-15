@@ -15,6 +15,7 @@ import {
   PARK_REST_SECONDS,
   LESSON_SECONDS,
   CLINIC_SECONDS,
+  SERVICE_SECONDS,
   streetKeys,
   streetSegment
 } from './settlement.mjs';
@@ -56,6 +57,10 @@ export function isSchoolEntrance(city, piece) {
 export function isClinicEntrance(city, piece) {
   return isEntrance(piece) && blockInfo(city, blockAt(piece.x, piece.z)).zone === 'clinic' &&
     entranceAvailable(city, piece.id, 'clinic');
+}
+export function isServiceEntrance(city, piece) {
+  return isEntrance(piece) && blockInfo(city, blockAt(piece.x, piece.z)).zone === 'civic' &&
+    entranceAvailable(city, piece.id, 'service');
 }
 export function isParkBench(city, p) {
   return p?.type === 'bench' && p.y <= 0.365 && blockInfo(city, blockAt(p.x, p.z)).zone === 'park';
@@ -250,7 +255,7 @@ export function advanceTrip(city, t, rt, dt) {
   const edited =
     rt.items !== city.pieces ||
     rt.observedStreets !== city.streets ||
-    ((t.park || t.school || t.clinic) && rt.observedBlocks !== city.blocks);
+    ((t.park || t.school || t.clinic || t.service) && rt.observedBlocks !== city.blocks);
   if (rt.issue && !edited) return;
   if (edited) {
     rt.issue = '';
@@ -283,6 +288,10 @@ export function advanceTrip(city, t, rt, dt) {
     rt.issue = 'Clinic unavailable. Restore Clinic land use and a dedicated entrance, or choose another clinic.';
     return;
   }
+  if (t.service && !t.returning && !isServiceEntrance(city, stops.get(t.shop))) {
+    rt.issue = 'Community service unavailable. Restore Civic land use and a dedicated entrance, or choose another community facility.';
+    return;
+  }
   const from = t.returning ? destination : home,
     to = t.returning ? home : destination;
   if (
@@ -302,7 +311,7 @@ export function advanceTrip(city, t, rt, dt) {
       return;
     }
   }
-  if ((t.school || t.clinic || t.work) && !t.returning && (t.phase === 'shopping' || (t.phase === 'enter' && separation(t, to.inside) <= 0.012))) {
+  if ((t.school || t.clinic || t.service || t.work) && !t.returning && (t.phase === 'shopping' || (t.phase === 'enter' && separation(t, to.inside) <= 0.012))) {
     const door = stops.get(t.shop);
     if (separation(t, destination.inside) > 0.025) {
       t.phase = 'door';
@@ -311,7 +320,7 @@ export function advanceTrip(city, t, rt, dt) {
     const blocker = workSpaceBlocker(city, destination, t.y);
     if (blocker || Math.abs(t.y - door.y) > 0.65) {
       rt.blocker = blocker;
-      rt.issue = t.clinic ? 'Clinic waiting space is blocked or uneven. Clear the floor inside the entrance.' : t.school ? 'Classroom space is blocked or uneven. Clear the floor inside the entrance.' : 'Workplace standing space is blocked or uneven. Clear the interior beside the entrance.';
+      rt.issue = t.service ? 'Community service space is blocked or uneven. Clear the floor inside the entrance.' : t.clinic ? 'Clinic waiting space is blocked or uneven. Clear the floor inside the entrance.' : t.school ? 'Classroom space is blocked or uneven. Clear the floor inside the entrance.' : 'Workplace standing space is blocked or uneven. Clear the interior beside the entrance.';
       return;
     }
     if (t.work?.endsAt !== undefined && (city.clockMinutes ?? 450) < t.work.endsAt) t.work.worked = true;
@@ -328,8 +337,9 @@ export function advanceTrip(city, t, rt, dt) {
       }
       return;
     }
-    t.wait = Math.max(0, t.wait - (t.clinic ? Math.max(0, Math.min(Number.isFinite(dt) ? dt : 0, 0.1)) : dt));
+    t.wait = Math.max(0, t.wait - ((t.clinic || t.service) ? Math.max(0, Math.min(Number.isFinite(dt) ? dt : 0, 0.1)) : dt));
     if (t.wait === 0) {
+      if (t.service) t.service.visits = Math.min(Number.MAX_SAFE_INTEGER, t.service.visits + 1);
       if (t.clinic) t.clinic.appointments = Math.min(Number.MAX_SAFE_INTEGER, t.clinic.appointments + 1);
       if (t.school) t.school.lessons = Math.min(Number.MAX_SAFE_INTEGER, t.school.lessons + 1);
       t.returning = true;
@@ -412,7 +422,7 @@ export function advanceTrip(city, t, rt, dt) {
       t.phase = t.returning ? 'done' : 'shopping';
       if (t.returning && t.routine) t.routine.visits++;
       if (t.returning && t.work) finishWorkShift(t);
-      t.wait = t.returning ? 0 : t.clinic ? CLINIC_SECONDS : t.school ? LESSON_SECONDS : t.park ? PARK_REST_SECONDS : 1.5;
+      t.wait = t.returning ? 0 : t.service ? SERVICE_SECONDS : t.clinic ? CLINIC_SECONDS : t.school ? LESSON_SECONDS : t.park ? PARK_REST_SECONDS : 1.5;
     }
     return;
   }
