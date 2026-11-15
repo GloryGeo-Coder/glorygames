@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { PUBLIC_SCORE_SUBMISSIONS_ENABLED } from "@/lib/launchPolicy";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 type Row = { name: string; score: number };
@@ -28,7 +29,7 @@ function normalizeRows(data: any): Row[] {
     .filter((entry: Row) => Number.isFinite(entry.score));
 }
 
-export function DailyChallengeWidget({
+function ActiveDailyChallengeWidget({
   gameSlug,
   title,
 }: {
@@ -214,4 +215,8 @@ export function DailyChallengeWidget({
       ) : null}
     </div>
   );
+}
+
+export function DailyChallengeWidget(props: { gameSlug: string; title: string }) {
+  return PUBLIC_SCORE_SUBMISSIONS_ENABLED ? <ActiveDailyChallengeWidget {...props} /> : <div className="heroCard" style={{padding:18}}><strong>Play today’s featured game</strong><p>Online score submissions are paused. Play for fun and keep progress on this device.</p><Link className="cta" href={`/play/${props.gameSlug}`}>Play {props.title}</Link></div>;
 }

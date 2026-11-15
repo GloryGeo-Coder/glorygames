@@ -1,3 +1,4 @@
+import { PUBLIC_SIGNUP_ENABLED } from "@/lib/launchPolicy";
 // apps/web/src/app/api/auth/signup/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
@@ -24,6 +25,7 @@ function unavailable(message: string, status = 503) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!PUBLIC_SIGNUP_ENABLED) return NextResponse.json({ ok: false, error: "Account registration is paused. You can play without an account." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return unavailable(

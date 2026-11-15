@@ -1,0 +1,5 @@
+// Protective launch scope. Reopening any feature requires its acceptance review.
+// These are shared code constants, not client-controlled or divergent build/runtime flags.
+export const PUBLIC_SIGNUP_ENABLED: boolean = false;
+export const PUBLIC_CHAT_ENABLED: boolean = false;
+export const PUBLIC_SCORE_SUBMISSIONS_ENABLED: boolean = false;

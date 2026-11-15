@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import DailyChallengeBridge from "@/components/DailyChallengeBridge";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { PUBLIC_SCORE_SUBMISSIONS_ENABLED } from "@/lib/launchPolicy";
 
 const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "";
 // Optional Search Console HTML-tag verification, configured in Cloudflare Builds.
@@ -24,7 +23,6 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -35,19 +33,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SiteFooter />
         </div>
 
-        <DailyChallengeBridge />
-
-        {adsenseClientId ? (
-          <Script
-            id="google-adsense"
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        ) : null}
-
-        {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
+        {PUBLIC_SCORE_SUBMISSIONS_ENABLED ? <DailyChallengeBridge /> : null}
+        {/* Optional advertising/analytics held pending consent and age-treatment review. */}
       </body>
     </html>
   );

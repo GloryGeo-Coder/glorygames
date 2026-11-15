@@ -83,6 +83,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
+        <p className="mutedTiny">Optional advertising and analytics are paused. Games may save progress and preferences on this device; existing sign-in uses an essential session cookie. <Link href="/cookies">Cookie information</Link></p>
         <div className="footerBottom">
           <div>
             © {year} WebGameArena.com All rights reserved.

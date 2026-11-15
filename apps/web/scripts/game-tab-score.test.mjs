@@ -14,7 +14,7 @@ test('legacy flat/nested SDK payloads and the Space Dodger alias map to their ca
 
 test('guests submit once to daily challenge; duplicate event variants and lower rounds do not duplicate writes', async () => {
   const calls = [], timers = clock();
-  const bridge = createStandaloneScoreBridge({ slug: 'brick-blaster', origin: 'https://example.test', timers,
+  const bridge = createStandaloneScoreBridge({ networkEnabled: true, slug: 'brick-blaster', origin: 'https://example.test', timers,
     fetcher: async (url, options) => { calls.push({ path: url.pathname, options }); return response(); } });
   await bridge.connect(); assert.equal(calls.length, 1);
   bridge.report(event(0)); assert.equal(timers.tasks.size, 0);
@@ -31,7 +31,7 @@ test('guests submit once to daily challenge; duplicate event variants and lower 
 
 test('signed-in games retain both endpoints and retry only a failed board', async () => {
   const calls = [], timers = clock(); let dailyFails = true;
-  const bridge = createStandaloneScoreBridge({ slug: 'brick-blaster', origin: 'https://example.test', timers,
+  const bridge = createStandaloneScoreBridge({ networkEnabled: true, slug: 'brick-blaster', origin: 'https://example.test', timers,
     fetcher: async (url, options) => {
       calls.push({ path: url.pathname, options });
       return response(options.method === 'GET' || !url.pathname.includes('daily-challenge') || !dailyFails, { id: 'player-1', displayName: 'Player One' });
@@ -47,7 +47,7 @@ test('signed-in games retain both endpoints and retry only a failed board', asyn
 
 test('an identity response arriving after a final score still schedules the authenticated board', async () => {
   const timers = clock(); let resolveUser; const posts = [];
-  const bridge = createStandaloneScoreBridge({ slug: 'brick-blaster', origin: 'https://example.test', timers,
+  const bridge = createStandaloneScoreBridge({ networkEnabled: true, slug: 'brick-blaster', origin: 'https://example.test', timers,
     fetcher: (url, options) => options.method === 'GET' ? new Promise(resolve => { resolveUser = resolve; }) : (posts.push(url.pathname), Promise.resolve(response())) });
   const connecting = bridge.connect(); await Promise.resolve();
   bridge.report(event(22, true)); await bridge.flush();
@@ -59,7 +59,7 @@ test('an identity response arriving after a final score still schedules the auth
 
 test('in-flight flush coalesces newer scores; request failures and unavailable storage never break gameplay', async () => {
   let release; const timers = clock(), updates = [], scores = [];
-  const bridge = createStandaloneScoreBridge({ slug: 'brick-blaster', origin: 'https://example.test', timers,
+  const bridge = createStandaloneScoreBridge({ networkEnabled: true, slug: 'brick-blaster', origin: 'https://example.test', timers,
     storage: { getItem() { throw Error('blocked'); } }, onScore: s => updates.push(s),
     fetcher: async (_url, options) => {
       if (options.method === 'GET') return response();
@@ -70,13 +70,13 @@ test('in-flight flush coalesces newer scores; request failures and unavailable s
   await bridge.connect(); bridge.report(event(10)); const first = bridge.flush(); await Promise.resolve();
   bridge.report(event(25)); release(); await first; await bridge.flush();
   assert.deepEqual(scores, [10, 25]); assert.deepEqual(updates, [10, 25]); bridge.dispose();
-  const offline = createStandaloneScoreBridge({ slug: 'brick-blaster', origin: 'https://example.test', timers: clock(), fetcher: async () => { throw Error('offline'); } });
+  const offline = createStandaloneScoreBridge({ networkEnabled: true, slug: 'brick-blaster', origin: 'https://example.test', timers: clock(), fetcher: async () => { throw Error('offline'); } });
   await offline.connect(); offline.report(event(3)); await offline.flush(); assert.equal(offline.state().best, 3); offline.dispose();
 });
 
 test('practice/unsupported protocols produce no API calls, and disposal blocks later scores', async () => {
   let calls = 0;
-  const bridge = createStandaloneScoreBridge({ slug: 'brick-blaster', origin: 'file://', timers: clock(), fetcher: async () => { calls++; } });
+  const bridge = createStandaloneScoreBridge({ networkEnabled: true, slug: 'brick-blaster', origin: 'file://', timers: clock(), fetcher: async () => { calls++; } });
   await bridge.connect(); bridge.report(event(10)); await bridge.flush(); bridge.dispose();
   assert.equal(bridge.report(event(20)), false); assert.equal(calls, 0);
 });

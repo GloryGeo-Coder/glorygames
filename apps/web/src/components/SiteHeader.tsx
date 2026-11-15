@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PUBLIC_SIGNUP_ENABLED } from "@/lib/launchPolicy";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -109,9 +110,7 @@ export default function SiteHeader() {
         {loading ? "Checking…" : "Sign in"}
       </Link>
 
-      <Link className="cta smallCta" href="/signup">
-        Create account
-      </Link>
+      {PUBLIC_SIGNUP_ENABLED ? <Link className="cta smallCta" href="/signup">Create account</Link> : <Link className="cta smallCta" href="/games">Play as guest</Link>}
     </>
   );
 
