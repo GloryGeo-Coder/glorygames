@@ -99,12 +99,15 @@ async function sessionPayload(token: string) {
         payload.exp - payload.iat > SESSION_SECONDS ||
         typeof payload.jti !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.jti) ||
         typeof payload.accountProof !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(payload.accountProof)) return null;
-    return { sub: payload.sub, exp: payload.exp, accountProof: payload.accountProof };
+    return { sub: payload.sub, jti: payload.jti, exp: payload.exp, accountProof: payload.accountProof };
   } catch { return null; }
 }
 
-async function tokenFingerprint(token: string) {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+async function tokenFingerprint(session: { sub: string; jti: string }) {
+  // A JWT signature can have equivalent base64url encodings. Bind revocation
+  // to the verified account/session identity, never its serialized token bytes.
+  const identity = JSON.stringify(["wga-session-revocation-v2", session.sub, session.jti]);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(identity));
   return Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
 }
 
@@ -137,7 +140,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       accountProofInput(account.id, account.passwordHash)
     );
     if (!matches) return null;
-    const fingerprint = await tokenFingerprint(token);
+    const fingerprint = await tokenFingerprint(payload);
     const status = await sql`SELECT wga_session_private.is_revoked(${fingerprint}) AS revoked`;
     // Missing or unavailable revocation state must never authenticate a token.
     if (status[0]?.revoked !== false) return null;
@@ -158,7 +161,7 @@ export async function destroySession() {
   const payload = token ? await sessionPayload(token) : null;
   if (payload && token) {
     if (!hasUsableNeonDatabaseUrl()) throw new Error("Session revocation unavailable");
-    const fingerprint = await tokenFingerprint(token);
+    const fingerprint = await tokenFingerprint(payload);
     const sql = getNeonSql();
     // The role keeps its read-only default and no business-table write grants.
     // Explicitly open just this transaction for the narrow revocation function.
