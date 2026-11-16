@@ -18,6 +18,25 @@ async function load(route, dependencies) {
   });
   await module.evaluate(); return {GET:module.namespace.GET,logs};
 }
+
+test('catalogue API uses the shared HTTP reader and returns its public games without caching',async()=>{
+  const games=[{id:'public-game',slug:'recycle-rush',title:'Recycle Rush',description:null,category:'EDUCATIONAL',tags:[]}];
+  let calls=0;
+  const {GET}=await load('games',{'@/lib/gamesDb':{getGamesFromDatabase:async()=>{calls++;return games;}}});
+  const response=await GET();
+  assert.equal(response.status,200);
+  assert.deepEqual(JSON.parse(JSON.stringify(response.body)),{games});
+  assert.equal(response.headers['Cache-Control'],'no-store');
+  assert.equal(calls,1);
+});
+for(const kind of ['Error','non-Error']) test(`catalogue ${kind} failure is unavailable and never reveals database diagnostics`,async()=>{
+  const {GET,logs}=await load('games',{'@/lib/gamesDb':{getGamesFromDatabase:async()=>{throw kind==='Error'?new Error(sensitive):{message:sensitive};}}});
+  const response=await GET();
+  assert.equal(response.status,503);
+  assert.deepEqual(JSON.parse(JSON.stringify(response.body)),{games:[],error:'Catalogue unavailable'});
+  assert.equal(response.headers['Cache-Control'],'no-store');
+  assert.ok(!JSON.stringify({response,logs}).includes(sensitive));
+});
 test('public health checks connectivity without querying visitor tables or disclosing configuration',async()=>{
   const queries=[];
   const {GET}=await load('health/db',{'@/lib/neon':{hasUsableNeonDatabaseUrl:()=>true,getNeonSql:()=>async strings=>{queries.push(strings.join(''));return[{ready:1}];}}});
