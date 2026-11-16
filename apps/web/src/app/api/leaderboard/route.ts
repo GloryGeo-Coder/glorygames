@@ -1,6 +1,7 @@
 // apps/web/src/app/api/leaderboard/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 import {
   getGlobalLeaderboardFromDatabase,
   getLeaderboardForGameFromDatabase,
@@ -10,6 +11,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) {
+    return NextResponse.json(
+      { ok: true, paused: true, entries: [], rows: [], topScore: null },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
+    );
+  }
   try {
     const { searchParams } = new URL(req.url);
 
