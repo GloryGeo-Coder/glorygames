@@ -224,7 +224,7 @@ export default async function GamesPage({
       allGames = normalizeGameRows(dbGames);
     }
   } catch (error) {
-    console.warn("[games] Falling back to static game list", error);
+    console.warn("[games] Falling back to static game list");
     allGames = fallbackGameList();
   }
 
