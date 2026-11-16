@@ -31,7 +31,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
-        entries,
+        entries: entries.map(({ rank, displayName, score, gameSlug, gameTitle }) => ({
+          rank, displayName, score, gameSlug, gameTitle,
+        })),
         rows: entries.map((entry) => ({
           name: entry.displayName,
           score: entry.score,
@@ -47,7 +49,9 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("[api/leaderboard] failed", error);
+    console.error("[api/leaderboard] failed", {
+      errorClass: error instanceof Error ? error.name : "UnknownError",
+    });
 
     return NextResponse.json(
       {

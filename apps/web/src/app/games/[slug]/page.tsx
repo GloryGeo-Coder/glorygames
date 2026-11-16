@@ -92,7 +92,7 @@ async function getGame(slug: string): Promise<GameForPage | null> {
       return normalizeGame(dbGame);
     }
   } catch (error) {
-    console.warn("[game-detail] Database game lookup failed", error);
+    console.warn("[game-detail] Database game lookup failed");
   }
 
   return normalizeGame(getFallbackGameBySlug(slug));
@@ -110,7 +110,7 @@ async function getRelatedGames(game: GameForPage): Promise<RelatedGame[]> {
       return dbRelated.map(normalizeGame).filter(Boolean) as RelatedGame[];
     }
   } catch (error) {
-    console.warn("[game-detail] Related games lookup failed", error);
+    console.warn("[game-detail] Related games lookup failed");
   }
 
   return getRelatedFallbackGames(game.slug, game.category)
@@ -206,7 +206,7 @@ export default async function GameDetailsPage({
       limit: 10,
     });
   } catch (error) {
-    console.warn("[game-detail] Leaderboard unavailable", error);
+    console.warn("[game-detail] Leaderboard unavailable");
     leaderboard = [];
   }
 

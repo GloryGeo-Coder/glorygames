@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Global Leaderboard | WebGameArena",
   description:
-    "View top WebGameArena scores across free browser games and compete for the highest ranking.",
+    "View historical WebGameArena scores. New public score submissions are paused.",
   alternates: {
     canonical: "/leaderboard",
   },
@@ -25,7 +25,9 @@ export default async function LeaderboardPage() {
   try {
     rows = await getGlobalLeaderboardFromDatabase(50);
   } catch (error) {
-    console.warn("[leaderboard] failed", error);
+    console.warn("[leaderboard] failed", {
+      errorClass: error instanceof Error ? error.name : "UnknownError",
+    });
     rows = [];
   }
 
@@ -41,8 +43,8 @@ export default async function LeaderboardPage() {
             <h1>Top WebGameArena Players</h1>
 
             <p>
-              Compete across the game library, save your best scores and climb
-              the global leaderboard.
+              View historical scores across the game library. New public score
+              submissions are paused; available games remain playable as guests.
             </p>
           </div>
 
@@ -56,7 +58,7 @@ export default async function LeaderboardPage() {
             <div style={{ display: "grid", gap: 8 }}>
               {rows.map((row) => (
                 <div
-                  key={`${row.rank}-${row.userId}-${row.gameSlug}`}
+                  key={`${row.rank}-${row.gameSlug}`}
                   className="gameDetailScoreRow"
                   style={{
                     display: "grid",
@@ -84,8 +86,8 @@ export default async function LeaderboardPage() {
             <div style={{ color: "rgba(255,255,255,.72)", lineHeight: 1.65 }}>
               <b>No leaderboard scores yet.</b>
               <p>
-                Play a game, save a score and return here to see the global
-                rankings.
+                New public score submissions are paused. You can still browse
+                and play available games without submitting a score.
               </p>
 
               <Link className="cta" href="/games">
