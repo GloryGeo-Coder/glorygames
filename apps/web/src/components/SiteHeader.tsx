@@ -21,6 +21,8 @@ export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
 
   const isPlayRoute = pathname?.startsWith("/play");
 
@@ -82,14 +84,20 @@ export default function SiteHeader() {
   }, [menuOpen]);
 
   async function signOut() {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-      cache: "no-store",
-    });
-
-    window.dispatchEvent(new Event("wga:user-changed"));
-    window.location.href = "/";
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError("");
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST", credentials: "include", cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Sign-out unconfirmed");
+      window.dispatchEvent(new Event("wga:user-changed"));
+      window.location.href = "/";
+    } catch {
+      setSignOutError("Sign-out could not be confirmed. Please retry.");
+      setSigningOut(false);
+    }
   }
 
   const activePath = pathname || "/";
@@ -100,9 +108,10 @@ export default function SiteHeader() {
         👤 {user.displayName}
       </span>
 
-      <button type="button" className="wgaLogoutButton" onClick={signOut}>
-        Sign out
+      <button type="button" className="wgaLogoutButton" onClick={signOut} disabled={signingOut}>
+        {signingOut ? "Signing out…" : "Sign out"}
       </button>
+      {signOutError ? <span role="alert">{signOutError}</span> : null}
     </>
   ) : (
     <>
