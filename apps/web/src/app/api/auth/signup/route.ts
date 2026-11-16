@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       displayName: string;
     };
 
-    const token = await signSession(user);
+    const token = await signSession(user, passwordHash);
 
     const response = NextResponse.json({
       ok: true,
