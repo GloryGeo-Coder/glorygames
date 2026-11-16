@@ -3,3 +3,4 @@
 export const PUBLIC_SIGNUP_ENABLED: boolean = false;
 export const PUBLIC_CHAT_ENABLED: boolean = false;
 export const PUBLIC_SCORE_SUBMISSIONS_ENABLED: boolean = false;
+export const PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED: boolean = false;

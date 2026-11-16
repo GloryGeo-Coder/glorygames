@@ -1,6 +1,7 @@
 // apps/web/src/app/games/[slug]/page.tsx
 
 import { gamePagePath } from "@/lib/gamePaths";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 import type { Metadata } from "next";
 import PlayPage from "@/app/play/[slug]/page";
 import Link from "next/link";
@@ -304,7 +305,7 @@ export default async function GameDetailsPage({
 
                 {leaderboard.length === 0 ? (
                   <p className="muted">
-                    No scores yet. Play now and be the first on the leaderboard.
+                    {PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? "No scores yet." : "Historical leaderboard display is paused. You can still play this game."}
                   </p>
                 ) : (
                   <div className="gameDetailScores">

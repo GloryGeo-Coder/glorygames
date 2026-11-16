@@ -5,19 +5,39 @@ import vm from 'node:vm';
 import { createRequire } from 'node:module';
 const ts = createRequire(new URL('../../apps/web/package.json',import.meta.url))('typescript');
 const sensitive = 'postgresql://synthetic:synthetic-secret@private.example.test/private_table';
-async function load(route, dependencies) {
+async function load(route, dependencies, sourcePath=`../../apps/web/src/app/api/${route}/route.ts`) {
   const logs=[];
   const context=vm.createContext({Error,console:{error:(...args)=>logs.push(args)}, URL});
-  const source=await readFile(new URL(`../../apps/web/src/app/api/${route}/route.ts`,import.meta.url),'utf8');
+  const source=await readFile(new URL(sourcePath,import.meta.url),'utf8');
   const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
   const module=new vm.SourceTextModule(compiled,{context});
   await module.link(name=>{
-    const values=name==='next/server'?{NextResponse:{json:(body,options={})=>({body,status:options.status??200,headers:options.headers})}}:dependencies[name];
+    const values=name==='next/server'?{NextResponse:{json:(body,options={})=>({body,status:options.status??200,headers:options.headers})}}:dependencies[name]??(name==='@/lib/launchPolicy'?{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED:true}:undefined);
     assert.ok(values,`Unexpected dependency ${name}`);
     return new vm.SyntheticModule(Object.keys(values),function(){for(const[k,v]of Object.entries(values))this.setExport(k,v);},{context});
   });
-  await module.evaluate(); return {GET:module.namespace.GET,logs};
+  await module.evaluate(); return {GET:module.namespace.GET,namespace:module.namespace,logs};
 }
+
+test('historical API hold returns empty no-store data before request or database access',async()=>{
+  const forbidden=()=>{throw new Error('Paused path accessed private data');};
+  const {GET}=await load('leaderboard',{'@/lib/launchPolicy':{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED:false},'@/lib/gamesDb':{isPublicGameSlug:forbidden,getGlobalLeaderboardFromDatabase:forbidden,getLeaderboardForGameFromDatabase:forbidden}});
+  const response=await GET(new Proxy({},{get:forbidden}));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.body)),{ok:true,paused:true,entries:[],rows:[],topScore:null});
+  assert.match(response.headers['Cache-Control'],/no-store/);
+});
+for(const library of ['gamesDb','leaderboard','leaderboardPreview'])test(`historical hold prevents ${library} readers from reaching either database client`,async()=>{
+  const forbidden=()=>{throw new Error('Paused library accessed private data');};
+  const {namespace}=await load('',{'@/lib/launchPolicy':{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED:false},'@/lib/prisma':{prisma:new Proxy({},{get:forbidden})},'@/lib/neon':{getNeonSql:forbidden,hasUsableNeonDatabaseUrl:forbidden},'@/lib/gameCatalog':{catalogGame:forbidden}},`../../apps/web/src/lib/${library}.ts`);
+  if(library==='gamesDb'){
+    assert.equal((await namespace.getGlobalLeaderboardFromDatabase()).length,0);
+    assert.equal((await namespace.getLeaderboardForGameFromDatabase({slug:'fixture'})).length,0);
+  }else if(library==='leaderboard')assert.equal((await namespace.getLeaderboard('fixture')).length,0);
+  else{
+    assert.equal(await namespace.getTopScoreForGame('fixture'),null);
+    assert.deepEqual(JSON.parse(JSON.stringify(await namespace.getLeaderboardPreview(['fixture']))),{fixture:null});
+  }
+});
 
 test('catalogue API uses the shared HTTP reader and returns its public games without caching',async()=>{
   const games=[{id:'public-game',slug:'recycle-rush',title:'Recycle Rush',description:null,category:'EDUCATIONAL',tags:[]}];
