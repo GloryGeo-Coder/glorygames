@@ -29,8 +29,10 @@ export default function PrivacyPage() {
       eyebrow="Privacy Policy"
       title="Your privacy matters when you play."
       description="This Privacy Policy explains how WebGameArena may collect, use and protect information when players visit the website, create an account, play games, use chat features, interact with leaderboards, or view advertising."
-      updated="15 June 2026"
+      updated="16 November 2026"
       sections={[
+{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "New registration, public chat, reviews, score submissions and daily-challenge submissions are paused. Historical leaderboards may still be visible. Existing account sign-in remains available.", "Advertising and optional analytics are paused. Google advertising, Google Analytics and Cloudflare browser analytics scripts are not loaded by the current site layout. Hosting and security services still process the requests needed to deliver and protect the website."]},
+{"title": "Current service providers and local saves", "body": ["Cloudflare hosts and protects the website and receives technical request information such as IP addresses and browser/request details. Neon provides the database for existing account and historical platform records.", "Game progress and settings may be stored locally in your browser. These local saves are not an account backup and may be lost if browser data is cleared. The current shared score bridge does not send new scores to the platform.", "Messages sent to support@, privacy@, games@ or ads@webgamearena.com pass through Cloudflare Email Routing to the operator’s monitored Gmail inbox. Do not send passwords, identity documents, payment details or unnecessary information about children.", "Some games offer educational source links. Following a link opens a separate website whose privacy practices apply. Those links are different from advertising or analytics integrations."]},
         {
           title: "1. Information we may collect",
           body: [
@@ -84,7 +86,7 @@ export default function PrivacyPage() {
         },
         {
           title: "8. Children and younger players",
-          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, especially when creating accounts, using chat or sharing public scores.",
+          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, when choosing games and learning safe online habits. New registration, public chat and score submissions remain paused.",
         },
         {
           title: "9. Data protection and security",
