@@ -1,11 +1,23 @@
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { catalogGame } from "@/lib/gameCatalog";
-import { isPublicGameSlug } from "@/lib/gamesDb";
+import { getGamesFromDatabase } from "@/lib/gamesDb";
+
+export const dynamic = "force-dynamic";
+const headers = { "Cache-Control": "no-store" };
 
 export async function GET() {
-  const games = await prisma.game.findMany({ orderBy: { title: "asc" } });
-  return NextResponse.json({ games: games.filter((game) => isPublicGameSlug(game.slug)).map(catalogGame) });
+  try {
+    // Use the same restricted Neon HTTP reader as the hosted catalogue pages.
+    const games = await getGamesFromDatabase();
+    return NextResponse.json({ games }, { headers });
+  } catch (error) {
+    console.error("[api/games] failed", {
+      errorClass: error instanceof Error ? error.name : "UnknownError",
+    });
+    return NextResponse.json(
+      { games: [], error: "Catalogue unavailable" },
+      { status: 503, headers }
+    );
+  }
 }
