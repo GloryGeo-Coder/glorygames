@@ -29,11 +29,13 @@ export default function ParentsSafetyPage() {
       eyebrow="Parents & Safety"
       title="Helping families understand safe play on WebGameArena."
       description="WebGameArena is designed as a mobile-first browser gaming platform. This page explains how the platform approaches player safety, younger users, privacy, chat, advertising, leaderboards and responsible play."
-      updated="15 June 2026"
+      updated="16 November 2026"
       sections={[
+{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "New registration, public chat, reviews, score submissions and daily-challenge submissions are paused. Historical leaderboards may still be visible. Existing account sign-in remains available.", "Advertising and optional analytics are paused. Google advertising, Google Analytics and Cloudflare browser analytics scripts are not loaded by the current site layout. Hosting and security services still process the requests needed to deliver and protect the website."]},
+{"title": "Family audience and privacy boundaries", "body": ["Including children in our audience is not a declaration that every game has the same age rating. Review each game’s description and content with your child. Recycle Rush’s separate portal submission does not establish a rating for the whole catalogue.", "Public chat and new public player submissions are paused. Please do not put a child’s real name, school, address, telephone number or other private details into local player-name fields or support messages.", "Contact support@webgamearena.com for safety concerns, privacy@webgamearena.com for privacy requests and games@webgamearena.com for game-content concerns. Describe the issue and page address without sending sensitive attachments."]},
         {
           title: "1. What is WebGameArena?",
-          body: "WebGameArena is a browser-based gaming platform where players can play free games instantly without downloads. The platform includes game categories, leaderboards, daily challenges, game detail pages and selected social features such as game chat.",
+          body: "WebGameArena is a browser-based gaming platform where players can play free games instantly without downloads. The current launch includes game categories, game detail pages, guest play and historical leaderboard viewing. Daily-challenge submissions and social features such as public chat are paused.",
         },
         {
           title: "2. Guidance for younger players",
@@ -64,11 +66,11 @@ export default function ParentsSafetyPage() {
         {
           title: "5. Chat and community safety",
           body: [
-            "Game chat is intended for short, friendly messages related to play.",
+            "Public game chat is paused and does not accept new messages.",
             "Players should not share private information in chat.",
-            "Chat may include filters, message reporting, hiding or moderation.",
+            "Chat moderation and reporting controls must be reviewed and tested before public chat can reopen.",
             "Parents should remind younger players not to click links from strangers or continue conversations that feel uncomfortable.",
-            "Players can report problem messages and contact support@webgamearena.com for help.",
+            "Contact support@webgamearena.com about safety concerns or historical content.",
           ],
         },
         {
