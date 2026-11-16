@@ -2,6 +2,7 @@
 
 import { getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
 import { catalogGame } from "@/lib/gameCatalog";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 
 export type DbGameListItem = {
   id: string;
@@ -205,6 +206,7 @@ export async function getLeaderboardForGameFromDatabase({
   mode?: string;
   limit?: number;
 }): Promise<DbLeaderboardEntry[]> {
+  if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) return [];
   if (!hasUsableNeonDatabaseUrl() || !isPublicGameSlug(slug)) {
     return [];
   }
@@ -284,6 +286,7 @@ export async function getLeaderboardForGameFromDatabase({
 export async function getGlobalLeaderboardFromDatabase(
   limit = 50
 ): Promise<DbLeaderboardEntry[]> {
+  if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) return [];
   if (!hasUsableNeonDatabaseUrl()) {
     return [];
   }
