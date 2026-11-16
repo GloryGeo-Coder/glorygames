@@ -21,7 +21,7 @@ async function run() {
     });
     const listing = await ctx.newPage();
     await listing.goto(origin + '/games/brick-playground-3d/');
-    await listing.getByText('Game Chat', { exact: true }).first().waitFor();
+    await listing.getByText('Chat is paused', { exact: true }).first().waitFor();
     const launch = listing.getByRole('link', { name: /Play Game/ }).first();
     assert.equal(await launch.getAttribute('href'), '/play/brick-playground-3d');
     const [p] = await Promise.all([ctx.waitForEvent('page'), launch.click()]);

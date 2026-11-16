@@ -1,3 +1,4 @@
+import { PUBLIC_SCORE_SUBMISSIONS_ENABLED } from "@/lib/launchPolicy";
 // apps/web/src/app/api/games/[slug]/score/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
@@ -15,6 +16,7 @@ export async function POST(
   req: NextRequest,
   context: { params: Promise<{ slug: string }> }
 ) {
+  if (!PUBLIC_SCORE_SUBMISSIONS_ENABLED) return NextResponse.json({ ok: false, error: "Public score submissions are paused. Your game can still save locally." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json({ ok: false, error: "Database unavailable" }, { status: 503 });

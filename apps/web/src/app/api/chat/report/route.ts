@@ -1,3 +1,4 @@
+import { PUBLIC_CHAT_ENABLED } from "@/lib/launchPolicy";
 // apps/web/src/app/api/chat/report/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
@@ -7,6 +8,7 @@ import { getSessionUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  if (!PUBLIC_CHAT_ENABLED) return NextResponse.json({ ok: false, error: "Chat is paused." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json({ ok: false, error: "Database unavailable" }, { status: 503 });

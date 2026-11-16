@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import ts from 'typescript';
+import { createRequire } from 'node:module';
+const ts = createRequire(new URL('../../apps/web/package.json', import.meta.url))('typescript');
 
 for (const endpoint of ['login', 'signup']) {
   for (const kind of ['Error', 'non-Error']) {
@@ -17,6 +18,7 @@ for (const endpoint of ['login', 'signup']) {
         'next/server': { NextResponse: { json: (body, options = {}) => ({ body, status: options.status ?? 200 }) } },
         bcryptjs: { default: { hash: async () => 'synthetic-hash' } },
         zod: { z: { string: () => chain, object: () => ({ safeParse: () => ({ success: true, data: { email: 'qa@example.test', password: 'synthetic-test-password' } }) }) } },
+        '@/lib/launchPolicy': { PUBLIC_SIGNUP_ENABLED: true },
         '@/lib/neon': { createId: () => 'synthetic-id', hasUsableNeonDatabaseUrl: () => true, getNeonSql: () => async () => { throw thrown; } },
         '@/lib/auth': { getSessionCookieName: () => 'test-cookie', getSessionCookieOptions: () => ({}), isAuthConfigured: () => true, signSession: async () => 'synthetic-token' },
       };

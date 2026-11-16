@@ -1,3 +1,4 @@
+import { PUBLIC_CHAT_ENABLED } from "@/lib/launchPolicy";
 // apps/web/src/app/api/chat/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
@@ -79,6 +80,7 @@ async function getGameBySlug(sql: ReturnType<typeof getNeonSql>, gameSlug: strin
 }
 
 export async function GET(req: NextRequest) {
+  if (!PUBLIC_CHAT_ENABLED) return NextResponse.json({ ok: true, messages: [], status: "paused" }, { headers: { "Cache-Control": "no-store" } });
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json({ ok: true, messages: [] });
@@ -160,6 +162,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!PUBLIC_CHAT_ENABLED) return NextResponse.json({ ok: false, error: "Chat is paused while safety controls are reviewed." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json(

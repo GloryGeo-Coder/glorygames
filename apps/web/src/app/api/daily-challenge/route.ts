@@ -1,3 +1,4 @@
+import { PUBLIC_SCORE_SUBMISSIONS_ENABLED } from "@/lib/launchPolicy";
 // apps/web/src/app/api/daily-challenge/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
@@ -38,6 +39,7 @@ async function getOrCreateChallenge(sql: ReturnType<typeof getNeonSql>, gameId: 
 }
 
 export async function GET(req: NextRequest) {
+  if (!PUBLIC_SCORE_SUBMISSIONS_ENABLED) return NextResponse.json({ ok: true, rows: [], status: "paused" }, { headers: { "Cache-Control": "no-store" } });
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json({ ok: true, rows: [], entries: [], me: null });
