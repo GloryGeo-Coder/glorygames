@@ -10,16 +10,34 @@ const sessionSecret='SYNTHETIC-SESSION-KEY-ONLY-'.repeat(3);
 const sessionAccount={id:'synthetic-account-a',email:'a@example.test',displayName:'Synthetic A',passwordHash:'synthetic-password-hash-a'};
 
 async function sessionHarness(){
-  const state={token:null,rows:[{...sessionAccount}],database:true,fail:false};
+  const state={token:null,rows:[{...sessionAccount}],database:true,fail:false,failRevocation:false,revoked:new Map()};
   const calls=[]; const writes=[];
   const env={JWT_SECRET:sessionSecret,NODE_ENV:'production'};
   const source=await readFile(new URL('../../apps/web/src/lib/auth.ts',import.meta.url),'utf8');
   const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
   const context=vm.createContext({process:{env},crypto:globalThis.crypto,TextEncoder,Uint8Array,Error});
+  const runQuery=async(strings,params)=>{
+    const query=strings.join('?'); calls.push({sql:query,params});
+    if(state.fail)throw new Error('SYNTHETIC-PRIVATE-DATABASE-DETAIL');
+    if(query.includes('wga_session_private')){
+      if(state.failRevocation)throw new Error('SYNTHETIC-PRIVATE-REVOCATION-DETAIL');
+      if(state.missingRevocation)return [];
+      if(state.unconfirmedRevocation)return [{revoked:false}];
+      if(query.includes('.is_revoked('))return [{revoked:state.revoked.has(params[0])}];
+      state.revoked.set(params[0],params[1]);return [{revoked:true}];
+    }
+    if(query.startsWith('SET TRANSACTION'))return [];
+    return state.rows;
+  };
+  const sql=(strings,...params)=>({strings,params,then:(resolve,reject)=>runQuery(strings,params).then(resolve,reject)});
+  sql.transaction=async(queries,options)=>{
+    assert.equal(options.readOnly,false); assert.equal(queries[0].strings.join(''),'SET TRANSACTION READ WRITE');
+    const result=[];for(const q of queries)result.push(await runQuery(q.strings,q.params));return result;
+  };
   const dependencies={
     jose:{SignJWT:jose.SignJWT,jwtVerify:jose.jwtVerify,base64url:jose.base64url},
     'next/headers':{cookies:async()=>({get:()=>state.token?{value:state.token}:undefined,set:(name,value,options)=>{state.token=value;writes.push({name,value,options});}})},
-    '@/lib/neon':{hasUsableNeonDatabaseUrl:()=>state.database,getNeonSql:()=>async(strings,...params)=>{calls.push({sql:strings.join('?'),params});if(state.fail)throw new Error('SYNTHETIC-PRIVATE-DATABASE-DETAIL');return state.rows;}}
+    '@/lib/neon':{hasUsableNeonDatabaseUrl:()=>state.database,getNeonSql:()=>sql}
   };
   const module=new vm.SourceTextModule(compiled,{context});
   await module.link(name=>{const values=dependencies[name];assert.ok(values,`Unexpected dependency ${name}`);return new vm.SyntheticModule(Object.keys(values),function(){for(const[k,v]of Object.entries(values))this.setExport(k,v);},{context});});
@@ -29,6 +47,14 @@ async function sessionHarness(){
 
 async function forgedSession(payload,algorithm='HS256'){
   return new jose.SignJWT(payload).setProtectedHeader({alg:algorithm,typ:'JWT'}).sign(new TextEncoder().encode(sessionSecret));
+}
+
+function equivalentSignatureToken(token){
+  const parts=token.split('.');const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const signature=parts[2];const index=alphabet.indexOf(signature.at(-1));
+  parts[2]=signature.slice(0,-1)+alphabet[(index&~3)+1];
+  assert.deepEqual(jose.base64url.decode(parts[2]),jose.base64url.decode(signature));
+  return parts.join('.');
 }
 
 test('real session signature, one-hour cookie and current account read expose no password hash or stale profile',async()=>{
@@ -55,11 +81,13 @@ for(const change of ['deleted','password changed','wrong account'])test(`signed 
   assert.equal(await auth.getSessionUser(),null);
 });
 
-for(const defect of ['legacy','expired','future issued','long lifetime','wrong issuer','wrong audience','wrong algorithm','bad signature','bad proof','cross-account proof'])test(`session rejects ${defect} token`,async()=>{
+for(const defect of ['legacy','version one','missing nonce','expired','future issued','long lifetime','wrong issuer','wrong audience','wrong algorithm','bad signature','bad proof','cross-account proof'])test(`session rejects ${defect} token`,async()=>{
   const {auth,state,calls}=await sessionHarness();
   const valid=await auth.signSession(sessionAccount,sessionAccount.passwordHash);
   const claims=jose.decodeJwt(valid);const now=Math.floor(Date.now()/1000);
   if(defect==='legacy'){delete claims.ver;delete claims.accountProof;}
+  if(defect==='version one')claims.ver=1;
+  if(defect==='missing nonce')delete claims.jti;
   if(defect==='expired'){claims.iat=now-3700;claims.exp=now-100;}
   if(defect==='future issued'){claims.iat=now+60;claims.exp=now+120;}
   if(defect==='long lifetime')claims.exp=claims.iat+86400;
@@ -73,7 +101,7 @@ for(const defect of ['legacy','expired','future issued','long lifetime','wrong i
   if(!['bad proof','cross-account proof'].includes(defect))assert.equal(calls.length,0);
 });
 
-test('absent/oversized cookies and unavailable database fail closed; logout clears only this browser cookie',async()=>{
+test('absent/oversized cookies and unavailable database fail closed; logout acknowledges revocation before clearing the cookie',async()=>{
   const {auth,state,calls,writes,env}=await sessionHarness();
   assert.equal(await auth.getSessionUser(),null);
   state.token='x'.repeat(4097);assert.equal(await auth.getSessionUser(),null);assert.equal(calls.length,0);
@@ -135,3 +163,64 @@ for (const endpoint of ['login', 'signup']) {
     });
   }
 }
+
+
+test('copied signed token is rejected after logout while independent same-second login survives',async()=>{
+  const {auth,state,writes}=await sessionHarness();
+  const copied=await auth.signSession(sessionAccount,sessionAccount.passwordHash);
+  const independent=await auth.signSession(sessionAccount,sessionAccount.passwordHash);
+  assert.notEqual(copied,independent);
+  state.token=copied;assert.ok(await auth.getSessionUser());
+  await auth.destroySession();assert.equal(state.token,'');assert.equal(writes.at(-1).options.maxAge,0);
+  assert.equal(state.revoked.size,1);
+  assert.match([...state.revoked.keys()][0],/^[0-9a-f]{64}$/);
+  assert.ok(!JSON.stringify([...state.revoked]).includes(copied));
+  state.token=copied;assert.equal(await auth.getSessionUser(),null);
+  await auth.destroySession();assert.equal(state.revoked.size,1);
+  state.token=independent;assert.ok(await auth.getSessionUser());
+});
+
+for(const logoutEncoding of ['canonical','equivalent signature'])test(`logout using ${logoutEncoding} invalidates both equivalent token encodings`,async()=>{
+  const {auth,state}=await sessionHarness();
+  const canonical=await auth.signSession(sessionAccount,sessionAccount.passwordHash);
+  const alternate=equivalentSignatureToken(canonical);assert.notEqual(canonical,alternate);
+  state.token=alternate;assert.ok(await auth.getSessionUser());
+  state.token=logoutEncoding==='canonical'?canonical:alternate;await auth.destroySession();
+  state.token=canonical;assert.equal(await auth.getSessionUser(),null);
+  state.token=alternate;assert.equal(await auth.getSessionUser(),null);
+  assert.equal(state.revoked.size,1);
+});
+
+test('revocation outage fails authentication closed and failed logout preserves cookie for retry',async()=>{
+  const {auth,state,writes}=await sessionHarness();
+  state.token=await auth.signSession(sessionAccount,sessionAccount.passwordHash);
+  const original=state.token;state.failRevocation=true;
+  assert.equal(await auth.getSessionUser(),null);
+  await assert.rejects(auth.destroySession());assert.equal(state.token,original);assert.equal(writes.length,0);
+  state.failRevocation=false;await auth.destroySession();state.token=original;
+  assert.equal(await auth.getSessionUser(),null);
+});
+
+for(const method of ['GET','POST'])test(`logout ${method} failure cannot claim success or leak private diagnostics`,async()=>{
+  const source=await readFile(new URL('../../apps/web/src/app/api/auth/logout/route.ts',import.meta.url),'utf8');
+  const context=vm.createContext({process:{env:{}},URL});
+  const values={
+    'next/server':{NextResponse:{json:(body,options)=>({body,...options}),redirect:()=>{throw Error('Unexpected redirect');}}},
+    '@/lib/auth':{destroySession:async()=>{throw Error('SYNTHETIC-PRIVATE-REVOCATION-DETAIL');}}
+  };
+  const module=new vm.SourceTextModule(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText,{context});
+  await module.link(name=>new vm.SyntheticModule(Object.keys(values[name]),function(){for(const[k,v]of Object.entries(values[name]))this.setExport(k,v);},{context}));
+  await module.evaluate();const response=await module.namespace[method]();
+  assert.equal(response.status,503);assert.equal(response.body.ok,false);assert.match(response.headers['Cache-Control'],/no-store/);
+  assert.ok(!JSON.stringify(response).includes('SYNTHETIC-PRIVATE-REVOCATION-DETAIL'));
+});
+
+
+test('missing revocation state rejects identity and unconfirmed acknowledgement preserves logout cookie',async()=>{
+  const {auth,state,writes}=await sessionHarness();
+  state.token=await auth.signSession(sessionAccount,sessionAccount.passwordHash);const original=state.token;
+  state.missingRevocation=true;assert.equal(await auth.getSessionUser(),null);
+  await assert.rejects(auth.destroySession());assert.equal(state.token,original);assert.equal(writes.length,0);
+  state.missingRevocation=false;state.unconfirmedRevocation=true;
+  await assert.rejects(auth.destroySession());assert.equal(state.token,original);assert.equal(writes.length,0);
+});
