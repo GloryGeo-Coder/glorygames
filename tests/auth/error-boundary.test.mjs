@@ -49,6 +49,14 @@ async function forgedSession(payload,algorithm='HS256'){
   return new jose.SignJWT(payload).setProtectedHeader({alg:algorithm,typ:'JWT'}).sign(new TextEncoder().encode(sessionSecret));
 }
 
+function equivalentSignatureToken(token){
+  const parts=token.split('.');const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const signature=parts[2];const index=alphabet.indexOf(signature.at(-1));
+  parts[2]=signature.slice(0,-1)+alphabet[(index&~3)+1];
+  assert.deepEqual(jose.base64url.decode(parts[2]),jose.base64url.decode(signature));
+  return parts.join('.');
+}
+
 test('real session signature, one-hour cookie and current account read expose no password hash or stale profile',async()=>{
   const {auth,state,calls,writes}=await sessionHarness();
   await auth.createSession(sessionAccount,sessionAccount.passwordHash);
@@ -170,6 +178,17 @@ test('copied signed token is rejected after logout while independent same-second
   state.token=copied;assert.equal(await auth.getSessionUser(),null);
   await auth.destroySession();assert.equal(state.revoked.size,1);
   state.token=independent;assert.ok(await auth.getSessionUser());
+});
+
+for(const logoutEncoding of ['canonical','equivalent signature'])test(`logout using ${logoutEncoding} invalidates both equivalent token encodings`,async()=>{
+  const {auth,state}=await sessionHarness();
+  const canonical=await auth.signSession(sessionAccount,sessionAccount.passwordHash);
+  const alternate=equivalentSignatureToken(canonical);assert.notEqual(canonical,alternate);
+  state.token=alternate;assert.ok(await auth.getSessionUser());
+  state.token=logoutEncoding==='canonical'?canonical:alternate;await auth.destroySession();
+  state.token=canonical;assert.equal(await auth.getSessionUser(),null);
+  state.token=alternate;assert.equal(await auth.getSessionUser(),null);
+  assert.equal(state.revoked.size,1);
 });
 
 test('revocation outage fails authentication closed and failed logout preserves cookie for retry',async()=>{
