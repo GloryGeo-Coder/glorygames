@@ -65,11 +65,12 @@ export async function signSession(user: SessionUser, passwordHash: string) {
   );
 
   return new SignJWT({
-    ver: 1,
+    ver: 2,
     accountProof: base64url.encode(new Uint8Array(proof)),
   })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setSubject(user.id)
+    .setJti(crypto.randomUUID())
     .setIssuer(SESSION_ISSUER)
     .setAudience(SESSION_AUDIENCE)
     .setIssuedAt()
@@ -84,6 +85,29 @@ export async function createSession(user: SessionUser, passwordHash: string) {
   cookieStore.set(getSessionCookieName(), token, getSessionCookieOptions());
 }
 
+async function sessionPayload(token: string) {
+  const key = getSecret();
+  if (!key || !token || token.length > 4096) return null;
+  try {
+    const { payload } = await jwtVerify(token, key, {
+      algorithms: ["HS256"], typ: "JWT", issuer: SESSION_ISSUER,
+      audience: SESSION_AUDIENCE, maxTokenAge: SESSION_SECONDS,
+      requiredClaims: ["sub", "iat", "exp", "jti"],
+    });
+    if (payload.ver !== 2 || typeof payload.sub !== "string" || !payload.sub ||
+        typeof payload.iat !== "number" || typeof payload.exp !== "number" ||
+        payload.exp - payload.iat > SESSION_SECONDS ||
+        typeof payload.jti !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.jti) ||
+        typeof payload.accountProof !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(payload.accountProof)) return null;
+    return { sub: payload.sub, exp: payload.exp, accountProof: payload.accountProof };
+  } catch { return null; }
+}
+
+async function tokenFingerprint(token: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
+}
+
 export async function getSessionUser(): Promise<SessionUser | null> {
   const key = getSecret();
 
@@ -94,19 +118,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(getSessionCookieName())?.value;
-    if (!token || token.length > 4096) return null;
-    const { payload } = await jwtVerify(token, key, {
-      algorithms: ["HS256"], typ: "JWT", issuer: SESSION_ISSUER,
-      audience: SESSION_AUDIENCE, maxTokenAge: SESSION_SECONDS,
-      requiredClaims: ["sub", "iat", "exp"],
-    });
-    if (payload.ver !== 1 || typeof payload.sub !== "string" || !payload.sub ||
-        typeof payload.iat !== "number" || typeof payload.exp !== "number" ||
-        payload.exp - payload.iat > SESSION_SECONDS ||
-        typeof payload.accountProof !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(payload.accountProof) ||
-        !hasUsableNeonDatabaseUrl()) {
-      return null;
-    }
+    const payload = token ? await sessionPayload(token) : null;
+    if (!payload || !token || !hasUsableNeonDatabaseUrl()) return null;
 
     // Use only the existing four granted fields. Never trust cached profile
     // claims or accept a deleted account / changed password from an old token.
@@ -124,6 +137,10 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       accountProofInput(account.id, account.passwordHash)
     );
     if (!matches) return null;
+    const fingerprint = await tokenFingerprint(token);
+    const status = await sql`SELECT wga_session_private.is_revoked(${fingerprint}) AS revoked`;
+    // Missing or unavailable revocation state must never authenticate a token.
+    if (status[0]?.revoked !== false) return null;
     return {
       id: account.id,
       email: account.email,
@@ -136,6 +153,21 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
 export async function destroySession() {
   const cookieStore = await cookies();
+  const token = cookieStore.get(getSessionCookieName())?.value;
+  if (token && !getSecret()) throw new Error("Session revocation unavailable");
+  const payload = token ? await sessionPayload(token) : null;
+  if (payload && token) {
+    if (!hasUsableNeonDatabaseUrl()) throw new Error("Session revocation unavailable");
+    const fingerprint = await tokenFingerprint(token);
+    const sql = getNeonSql();
+    // The role keeps its read-only default and no business-table write grants.
+    // Explicitly open just this transaction for the narrow revocation function.
+    const results = await sql.transaction([
+      sql`SET TRANSACTION READ WRITE`,
+      sql`SELECT wga_session_private.revoke(${fingerprint}, ${payload.exp}::bigint) AS revoked`,
+    ], { readOnly: false });
+    if (results[1]?.[0]?.revoked !== true) throw new Error("Session revocation not confirmed");
+  }
 
   cookieStore.set(getSessionCookieName(), "", {
     httpOnly: true,
