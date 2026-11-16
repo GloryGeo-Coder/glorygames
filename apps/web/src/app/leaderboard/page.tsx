@@ -3,13 +3,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getGlobalLeaderboardFromDatabase } from "@/lib/gamesDb";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Global Leaderboard | WebGameArena",
   description:
-    "View historical WebGameArena scores. New public score submissions are paused.",
+    "Online leaderboard display is paused. Available games remain free to play.",
   alternates: {
     canonical: "/leaderboard",
   },
@@ -43,8 +44,8 @@ export default async function LeaderboardPage() {
             <h1>Top WebGameArena Players</h1>
 
             <p>
-              View historical scores across the game library. New public score
-              submissions are paused; available games remain playable as guests.
+              Historical leaderboard display and new public score submissions are
+              paused. Available games remain playable as guests.
             </p>
           </div>
 
@@ -84,7 +85,7 @@ export default async function LeaderboardPage() {
             </div>
           ) : (
             <div style={{ color: "rgba(255,255,255,.72)", lineHeight: 1.65 }}>
-              <b>No leaderboard scores yet.</b>
+              <b>{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? "No leaderboard scores yet." : "Historical leaderboard display is paused."}</b>
               <p>
                 New public score submissions are paused. You can still browse
                 and play available games without submitting a score.
