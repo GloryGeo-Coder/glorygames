@@ -1,10 +1,10 @@
 name: Guest launch boundaries
 on:
   pull_request:
-    paths: ['apps/web/src/**', 'apps/web/public/games/_shared/**', 'apps/web/scripts/**', 'tests/launch/**', 'tests/auth/**', '.github/workflows/guest-launch.yml']
+    paths: ['apps/web/src/**', 'apps/web/public/games/_shared/**', 'apps/web/scripts/**', 'tests/launch/**', 'tests/auth/**', 'ops/security/**', '.github/workflows/guest-launch.yml']
   push:
     branches: [main]
-    paths: ['apps/web/src/**', 'apps/web/public/games/_shared/**', 'apps/web/scripts/**', 'tests/launch/**', 'tests/auth/**', '.github/workflows/guest-launch.yml']
+    paths: ['apps/web/src/**', 'apps/web/public/games/_shared/**', 'apps/web/scripts/**', 'tests/launch/**', 'tests/auth/**', 'ops/security/**', '.github/workflows/guest-launch.yml']
 permissions:
   contents: read
 jobs:
@@ -20,7 +20,7 @@ jobs:
           node-version: '24'
       - run: npm ci --workspaces=false --ignore-scripts --no-audit --no-fund
         working-directory: apps/web
-      - run: node --experimental-vm-modules --test tests/launch/guest-launch.test.mjs tests/launch/public-data-minimisation.test.mjs tests/auth/error-boundary.test.mjs apps/web/scripts/game-tab-score.test.mjs apps/web/scripts/recycle-rush.test.cjs
+      - run: node --experimental-vm-modules --test tests/launch/guest-launch.test.mjs tests/launch/public-data-minimisation.test.mjs tests/launch/runtime-role.test.mjs tests/auth/error-boundary.test.mjs apps/web/scripts/game-tab-score.test.mjs apps/web/scripts/recycle-rush.test.cjs
       - run: node node_modules/prisma/build/index.js generate
         working-directory: apps/web
       - run: node node_modules/next/dist/bin/next build --webpack
