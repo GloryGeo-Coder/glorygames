@@ -1,6 +1,7 @@
 // apps/web/src/lib/leaderboard.ts
 
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 
 export type LeaderboardEntry = {
   rank: number;
@@ -14,6 +15,7 @@ export async function getLeaderboard(
   _mode = "global",
   limit = 10
 ): Promise<LeaderboardEntry[]> {
+  if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) return [];
   const game = await prisma.game.findUnique({
     where: { slug },
     select: { id: true },
