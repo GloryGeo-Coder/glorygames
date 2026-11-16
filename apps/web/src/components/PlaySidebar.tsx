@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { PUBLIC_CHAT_ENABLED, PUBLIC_SCORE_SUBMISSIONS_ENABLED } from "@/lib/launchPolicy";
+import { PUBLIC_CHAT_ENABLED, PUBLIC_SCORE_SUBMISSIONS_ENABLED, PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 type LeaderboardEntry = {
@@ -78,6 +78,12 @@ export default function PlaySidebar({
   }, []);
 
   useEffect(() => {
+    if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) {
+      setLeaderboard([]);
+      setTopScore(null);
+      setLoading(false);
+      return;
+    }
     if (!safeSlug) return;
 
     let cancelled = false;
@@ -239,7 +245,7 @@ export default function PlaySidebar({
         {loading && <p className="muted">Loading…</p>}
 
         {!loading && leaderboard.length === 0 && (
-          <p className="muted">No scores yet</p>
+          <p className="muted">{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? "No scores yet" : "Historical leaderboard display is paused."}</p>
         )}
 
         {leaderboard.map((row, i) => {
