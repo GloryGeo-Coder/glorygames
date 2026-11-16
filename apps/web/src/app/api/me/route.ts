@@ -27,7 +27,7 @@ export async function GET() {
       }
     );
   } catch (error) {
-    console.error("[api/me] failed", error);
+    console.error("[api/me] failed", { errorClass: error instanceof Error ? error.name : "UnknownError" });
 
     return NextResponse.json(
       {
