@@ -7,18 +7,18 @@ const footerGroups = [
     title: "Play",
     links: [
       { label: "All Games", href: "/games" },
-      { label: "Arcade Games", href: "/games?category=arcade" },
-      { label: "Adventure Games", href: "/games?category=adventure" },
-      { label: "Educational Games", href: "/games?category=educational" },
-      { label: "Kasi Quest", href: "/games/kasi-quest" },
+      { label: "Arcade Games", href: "/categories/arcade" },
+      { label: "Adventure Games", href: "/categories/adventure" },
+      { label: "Educational Games", href: "/categories/educational" },
+      { label: "Kasi Quest", href: "/play/kasi-quest" },
     ],
   },
   {
-    title: "Platform",
+    title: "Playing here",
     links: [
-      { label: "Daily Challenge", href: "/games" },
-      { label: "Popular Games", href: "/games" },
-      { label: "Mobile Browser Games", href: "/games" },
+      { label: "Game guides", href: "/games" },
+      { label: "Parents & Safety", href: "/parents-safety" },
+      { label: "Help & Contact", href: "/contact" },
       { label: "Word & Trivia", href: "/games?category=word-trivia" },
     ],
   },
@@ -55,8 +55,8 @@ export default function SiteFooter() {
             </Link>
 
             <p>
-              Free mobile-first browser games built for instant play, high
-              scores, daily challenges and friendly competition.
+              Free browser games with guides for controls, objectives and
+              local progress. Play as a guest on desktop or mobile.
             </p>
 
             <div className="footerBadges">

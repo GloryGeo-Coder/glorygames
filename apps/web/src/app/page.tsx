@@ -32,7 +32,6 @@ export const metadata: Metadata = {
     "games",
     "online games",
     "free games",
-    "multiplayer games",
   ],
   alternates: {
     canonical: "/",
@@ -258,8 +257,8 @@ export default async function HomePage() {
                 >
                   WebGameArena is a mobile-first gaming hub where you can jump
                   straight into arcade, action, adventure, puzzle, racing and
-                  learning games — built for quick sessions, high scores and
-                  friendly competition. Explore our growing library to find the right game for your next challenge.
+                  learning games — from quick arcade sessions to longer story
+                  campaigns. Play as a guest and read each game’s guide for controls, objectives and saved progress.
                 </p>
 
                 <div
@@ -282,7 +281,7 @@ export default async function HomePage() {
                     Browse All Games
                   </Link>
 
-                  <Link className="pill" href="/games?category=adventure">
+                  <Link className="pill" href="/categories/adventure">
                     Explore Adventures
                   </Link>
                 </div>
@@ -379,7 +378,7 @@ export default async function HomePage() {
                         }}
                       >
                         {featuredGame?.description ||
-                          "Start playing instantly. Chase your best score and climb the leaderboard."}
+                          "Start playing as a guest and follow the game guide for controls and objectives."}
                       </div>
                     </div>
                   </div>
@@ -457,6 +456,29 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="section" aria-labelledby="choose-collection">
+        <div className="container">
+          <div className="sectionTitle"><div>
+            <h2 id="choose-collection">Find a game that fits your session</h2>
+            <p>These collection guides explain what to try and how the games differ.</p>
+          </div></div>
+          <div className="playerValueGrid">
+            <article className="playerValueCard"><div>
+              <h3><Link href="/categories/educational">Explore a learning topic</Link></h3>
+              <p>Compare maths, geography, science and environmental games. Read each guide for its activities and controls before choosing.</p>
+            </div></article>
+            <article className="playerValueCard"><div>
+              <h3><Link href="/categories/adventure">Follow a story</Link></h3>
+              <p>Choose township, city, jungle or temple adventures. Compare exploration, platforming and mission progression in the collection guide.</p>
+            </div></article>
+            <article className="playerValueCard"><div>
+              <h3><Link href="/categories/arcade">Try a short challenge</Link></h3>
+              <p>Practise timing and control in fruit slicing, brick breaking and other arcade games. Check individual guides for modes and local saves.</p>
+            </div></article>
+          </div>
+        </div>
+      </section>
+
       {/* PLAYER VALUE STRIP */}
       <section className="section playerValueSection">
         <div className="container">
@@ -476,11 +498,11 @@ export default async function HomePage() {
             <div className="playerValueCard featuredValueCard">
               <div className="playerValueIcon">🏆</div>
               <div>
-                <div className="playerValueLabel">Compete daily</div>
-                <h3>Chase high scores.</h3>
+                <div className="playerValueLabel">Your own progress</div>
+                <h3>Play at your own pace.</h3>
                 <p>
-                  Leaderboards, daily challenges and score tracking make every
-                  run feel worth improving.
+                  Games with local saves keep progress on this device. Online
+                  leaderboards and score submissions are currently paused.
                 </p>
               </div>
             </div>
@@ -505,19 +527,19 @@ export default async function HomePage() {
         <div className="container">
           <div className="dailyChallengeShell">
             <div className="dailyChallengeIntro">
-              <div className="badge dailyBadge">🔥 Today’s Challenge</div>
+              <div className="badge dailyBadge">🎮 Today’s pick</div>
 
-              <h2>One featured game. One score to beat.</h2>
+              <h2>Try {featuredTitle}.</h2>
 
               <p>
-                Take on the daily challenge, post your best score and come back
-                tomorrow for a fresh run. It is quick, competitive and built for
-                players who love improving every day.
+                Open the featured game as a guest. Its guide explains the
+                controls, objectives and available ways to play. No account or
+                public score submission is needed.
               </p>
 
               <div className="dailyChallengeActions">
                 <Link className="cta" href={`/play/${featuredSlug}`}>
-                  Play Today’s Challenge →
+                  Play featured game →
                 </Link>
 
                 <Link className="pill" href="/games">
@@ -529,7 +551,7 @@ export default async function HomePage() {
             <div className="dailyChallengeWidgetWrap">
               <DailyChallengeWidget
                 gameSlug={featuredSlug}
-                title={`Daily Challenge • ${featuredTitle}`}
+                title={featuredTitle}
               />
             </div>
           </div>
@@ -544,9 +566,9 @@ export default async function HomePage() {
               <div className="badge popularBadge">🎯 Game Arena</div>
               <h2>Jump into a game</h2>
               <p>
-                Quick-play browser games built for short breaks, high scores and
-                mobile-friendly fun. Choose a title, launch instantly and start
-                climbing the leaderboard.
+                Choose a quick arcade challenge, a story adventure or a learning
+                mission. Read the game’s guide for its controls, progress system
+                and topic before playing.
               </p>
             </div>
 
