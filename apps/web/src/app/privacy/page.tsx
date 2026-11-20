@@ -2,6 +2,7 @@
 
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
+import { ANALYTICS_ENABLED, ANALYTICS_NOTICE } from "@/lib/publicAnalytics";
 
 export const dynamic = "force-static";
 
@@ -25,13 +26,21 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
+    <>
     <InfoPage
       eyebrow="Privacy Policy"
       title="Your privacy matters when you play."
       description="This Privacy Policy explains how WebGameArena may collect, use and protect information when players visit the website, create an account, play games, use chat features, interact with leaderboards, or view advertising."
-      updated="16 November 2026"
+      updated="20 November 2026"
       sections={[
-{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "New registration, public chat, reviews, score submissions and daily-challenge submissions are paused. Historical leaderboard display is also paused while we review older records. This display hold does not delete stored records. Existing account sign-in remains available.", "Advertising and optional analytics are paused. Google advertising, Google Analytics and Cloudflare browser analytics scripts are not loaded by the current site layout. Hosting and security services still process the requests needed to deliver and protect the website."]},
+        ...(ANALYTICS_ENABLED ? [{ title: "Optional adult analytics", body: [
+          "Google Analytics 4 is provided by Google under its standard service and data-processing terms. When you explicitly allow it, requests disclose your IP address and browser/device information to Google, and first-party cookies identify the browsing session. We send page views using fixed public-page titles and coarse game/collection paths. Query strings, fragments, referring URLs, account routes, chat text, scores, emails, account identifiers and form entries are excluded from our analytics events. This does not make analytics anonymous.",
+          "Google may process information outside South Africa, including in the United States and other countries where Google and its subprocessors operate. Google signals, advertising personalization, enhanced measurement and Google Ads links are disabled for this setup. No optional analytics is required for play or sign-in.",
+          "The choice is for adults using the browser themselves; it is a self-declaration, not identity or age verification and not parental permission to track a child. If you are under 18, unsure, or sharing with a child, continue without analytics. Before handing the browser to someone else, withdraw in Analytics settings. A reload or new document requires another opt-in; consent is not taken from your account.",
+          "User/event retention is set to two months without resetting on new activity. This setting does not delete standard aggregated reports. Analytics settings lets you withdraw; withdrawal stops further collection, clears this property's browser cookies and reloads the page to remove the loaded tag. It does not recall data already received by Google. Contact privacy@webgamearena.com for privacy requests; do not send passwords or unnecessary child information."
+        ] }] : []),
+
+{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "New registration, public chat, reviews, score submissions and daily-challenge submissions are paused. Historical leaderboard display is also paused while we review older records. This display hold does not delete stored records. Existing account sign-in remains available.", ANALYTICS_NOTICE]},
 {"title": "Current service providers and local saves", "body": ["Cloudflare hosts and protects the website and receives technical request information such as IP addresses and browser/request details. Neon provides the database for existing account and historical platform records.", "Game progress and settings may be stored locally in your browser. These local saves are not an account backup and may be lost if browser data is cleared. The current shared score bridge does not send new scores to the platform.", "Messages sent to support@, privacy@, games@ or ads@webgamearena.com pass through Cloudflare Email Routing to the operator’s monitored Gmail inbox. Do not send passwords, identity documents, payment details or unnecessary information about children.", "Some games offer educational source links. Following a link opens a separate website whose privacy practices apply. Those links are different from advertising or analytics integrations."]},
         {
           title: "1. Information we may collect",
@@ -120,5 +129,7 @@ export default function PrivacyPage() {
         },
       ]}
     />
+    {ANALYTICS_ENABLED ? <p className="container"><a href="https://policies.google.com/technologies/partner-sites" rel="noreferrer">How Google uses information from sites or apps that use its services</a> · <a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></p> : null}
+    </>
   );
 }
