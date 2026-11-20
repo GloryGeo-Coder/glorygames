@@ -127,7 +127,9 @@ export default function PlayClient({ slug, title }: Props) {
 
       const incoming = normalizeMessages(data);
 
-      setMessages((current) => mergeMessages(current, incoming));
+      // A successful poll is the current visible snapshot. Keeping older rows
+      // would leave reported/hidden messages visible in other players' tabs.
+      setMessages(mergeMessages([], incoming));
       setChatStatus("connected");
     } catch (error) {
       console.warn("[PlayClient] chat fetch failed", error);

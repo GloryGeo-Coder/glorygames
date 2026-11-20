@@ -1,4 +1,4 @@
-import { PUBLIC_CHAT_ENABLED } from "@/lib/launchPolicy";
+import { PUBLIC_REVIEWS_ENABLED } from "@/lib/launchPolicy";
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/auth";
 
 export async function POST(req: Request, ctx: { params: Promise<{ slug: string }> }) {
-  if (!PUBLIC_CHAT_ENABLED) return NextResponse.json({ ok: false, error: "This online feature is paused. Guest gameplay remains available." }, { status: 403, headers: { "Cache-Control": "no-store" } });
+  if (!PUBLIC_REVIEWS_ENABLED) return NextResponse.json({ ok: false, error: "This online feature is paused. Guest gameplay remains available." }, { status: 403, headers: { "Cache-Control": "no-store" } });
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
 

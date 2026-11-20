@@ -23,6 +23,7 @@ for (const [route, method] of [
       zod: { z }, bcryptjs: { default: { hash: forbidden } },
       '@/lib/neon': { createId: forbidden, getNeonSql: forbidden, hasUsableNeonDatabaseUrl: forbidden },
       '@/lib/prisma': { prisma: new Proxy({}, { get: forbidden }) },
+      '@/lib/communityHttp': Object.fromEntries(['communityBody','communityName','communityText','communityScore','communityRateKey','communityWrite','communityError','CommunityInputError'].map(name=>[name,forbidden])),
       '@/lib/auth': Object.fromEntries(['getSessionUser', 'getSessionCookieName', 'getSessionCookieOptions', 'isAuthConfigured', 'signSession'].map(name => [name, forbidden])),
       '@/lib/gamesDb': { isPublicGameSlug: forbidden },
     };
