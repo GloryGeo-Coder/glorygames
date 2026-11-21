@@ -111,6 +111,7 @@ export const MOVE_IN_SLOTS = Array.from({ length: 6 }, (_, i) => 'family' + (i +
 export const VISITS = {
   spaza: { destination: 'Spaza', activity: 'Shopping' },
   school: { destination: 'School', activity: 'In class' },
+  service: { destination: 'Community service', activity: 'At community service' },
   clinic: { destination: 'Clinic', activity: 'At clinic appointment' },
   hall: { destination: 'Community hall', activity: 'Visiting the hall' },
   park: { destination: 'Park bench', activity: 'Resting in the park' },
@@ -118,6 +119,7 @@ export const VISITS = {
 };
 export const LESSON_SECONDS = 8;
 export const CLINIC_SECONDS = 8;
+export const SERVICE_SECONDS = 8;
 export const PARK_REST_SECONDS = 6;
 const directoryCache = new WeakMap();
 export function householdsFor(city) {
@@ -140,7 +142,7 @@ export function entranceAvailable(city, id, visit) {
   if (visit !== 'market' && id === city.market?.shop) return false;
   return !householdsFor(city).some(({ key }) => {
     const trip = city[key];
-    return trip?.shop === id && ((trip.school && visit !== 'school') || (trip.clinic && visit !== 'clinic') || (trip.work && visit !== 'work'));
+    return trip?.shop === id && ((trip.school && visit !== 'school') || (trip.clinic && visit !== 'clinic') || (trip.service && visit !== 'service') || (trip.work && visit !== 'work'));
   });
 }
 export function homeClaimed(city, home, except) {
@@ -164,8 +166,9 @@ export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => 
     (visit === 'park') !== (trip?.park === true) ||
     (visit === 'school') !== !!trip?.school ||
     (visit === 'clinic') !== !!trip?.clinic ||
+    (visit === 'service') !== !!trip?.service ||
     (visit === 'work') !== !!trip?.work ||
-    ((visit === 'work' || visit === 'school' || visit === 'clinic') && !entranceAvailable(city, trip?.shop, visit)) ||
+    ((visit === 'work' || visit === 'school' || visit === 'clinic' || visit === 'service') && !entranceAvailable(city, trip?.shop, visit)) ||
     !trip?.home ||
     !trip.shop ||
     trip.home === trip.shop ||
@@ -207,6 +210,8 @@ export function restoreTrip(v) {
   const school = !work && !v.park && Number.isSafeInteger(lessons) && lessons >= 0;
   const appointments = v.clinic?.appointments;
   const clinic = !work && !v.park && !school && Number.isSafeInteger(appointments) && appointments >= 0;
+  const visits = v.service?.visits;
+  const service = !work && !v.park && !school && !clinic && Number.isSafeInteger(visits) && visits >= 0;
   return {
     home,
     shop,
@@ -219,9 +224,10 @@ export function restoreTrip(v) {
     ...(v.park === true ? { park: true } : {}),
     ...(school ? { school: { lessons } } : {}),
     ...(clinic ? { clinic: { appointments } } : {}),
+    ...(service ? { service: { visits } } : {}),
     ...((v.park === true || school) && restoreCompanionPath(v.companionPath, v)
       ? { companionPath: restoreCompanionPath(v.companionPath, v) } : {}),
-    wait: Math.max(0, Math.min(clinic ? CLINIC_SECONDS : school ? LESSON_SECONDS : v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
+    wait: Math.max(0, Math.min(service ? SERVICE_SECONDS : clinic ? CLINIC_SECONDS : school ? LESSON_SECONDS : v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
     ...(work ? { work, routine: { hour: work.startHour, visits: routine?.visits ?? 0 } } : routine ? { routine } : {}),
     grounded: v.grounded === true,
     paused: v.paused === true,
