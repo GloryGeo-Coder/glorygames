@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: '24'
       - run: node --check apps/web/public/games/neon-hover-runner/game.js && node --check apps/web/scripts/neon-hover-browser.cjs
+      - run: node --test apps/web/scripts/neon-hover-input.test.cjs
       - run: npm install --prefix "$RUNNER_TEMP/hover-browser" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.64.0
       - name: Mobile and story regression
         env:
