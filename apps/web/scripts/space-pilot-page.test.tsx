@@ -44,7 +44,7 @@ test('the rendered launch preserves the thumbnail, direct new tab, scores and ch
  const html=renderToStaticMarkup(React.createElement(PlayClient,getFallbackGameBySlug(slug)));
  assert.doesNotMatch(html,/<iframe/);assert.match(html,/\/games\/space-pilot-platformer\/thumb.png/);
  assert.match(html,/href="\/games\/space-pilot-platformer\/index.html" target="_blank" rel="noopener noreferrer"/);
- assert.match(html,/Chat is paused/);assert.match(html,/Live score/);
+ assert.match(html,/Game Chat/);assert.match(html,/ggChatInput/);assert.doesNotMatch(html,/Chat is paused/);assert.match(html,/Live score/);
 });
 test('both information routes retain final metadata, FAQs and related games',()=>{
  for(const file of ['src/app/play/[slug]/page.tsx','src/app/games/[slug]/page.tsx']){
