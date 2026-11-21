@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Global Leaderboard | WebGameArena",
   description:
-    "Online leaderboard display is paused. Available games remain free to play.",
+    "View recorded WebGameArena scores, player nicknames and games on the global leaderboard.",
   alternates: {
     canonical: "/leaderboard",
   },
@@ -44,8 +44,8 @@ export default async function LeaderboardPage() {
             <h1>Top WebGameArena Players</h1>
 
             <p>
-              Historical leaderboard display and new public score submissions are
-              paused. Available games remain playable as guests.
+              Recorded scores from across WebGameArena. Scoring rules vary by game.
+              Player nicknames and scores are visible to other visitors.
             </p>
           </div>
 
@@ -87,8 +87,8 @@ export default async function LeaderboardPage() {
             <div style={{ color: "rgba(255,255,255,.72)", lineHeight: 1.65 }}>
               <b>{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? "No leaderboard scores yet." : "Historical leaderboard display is paused."}</b>
               <p>
-                New public score submissions are paused. You can still browse
-                and play available games without submitting a score.
+                Play a game and sign in with an existing account to submit a global
+                score. Daily challenges also accept guest nicknames.
               </p>
 
               <Link className="cta" href="/games">
