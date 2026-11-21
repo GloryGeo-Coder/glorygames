@@ -31,11 +31,12 @@ export default function PrivacyPage() {
       eyebrow="Privacy Policy"
       title="Your privacy matters when you play."
       description="This Privacy Policy explains how WebGameArena may collect, use and protect information when players visit the website, create an account, play games, use chat features, interact with leaderboards, or view advertising."
-      updated="20 November 2026"
+      updated="21 November 2026"
       sections={[
         ...(ANALYTICS_ENABLED ? [{ title: "Optional adult analytics", body: [
           "Google Analytics 4 is provided by Google under its standard service and data-processing terms. When you explicitly allow it, requests disclose your IP address and browser/device information to Google, and first-party cookies identify the browsing session. We send page views using fixed public-page titles and coarse game/collection paths. Query strings, fragments, referring URLs, account routes, chat text, scores, emails, account identifiers and form entries are excluded from our analytics events. This does not make analytics anonymous.",
           "Google may process information outside South Africa, including in the United States and other countries where Google and its subprocessors operate. Google signals, advertising personalization, enhanced measurement and Google Ads links are disabled for this setup. No optional analytics is required for play or sign-in.",
+          "The Analytics account permits Google support staff to access Analytics data for troubleshooting, contributions to aggregated industry insights, and business recommendations using the Google Analytics administrative account information. The broader Google products & services sharing option is off. These account choices do not enable advertisements or Google signals.",
           "The choice is for adults using the browser themselves; it is a self-declaration, not identity or age verification and not parental permission to track a child. If you are under 18, unsure, or sharing with a child, continue without analytics. Before handing the browser to someone else, withdraw in Analytics settings. A reload or new document requires another opt-in; consent is not taken from your account.",
           "User/event retention is set to two months without resetting on new activity. This setting does not delete standard aggregated reports. Analytics settings lets you withdraw; withdrawal stops further collection, clears this property's browser cookies and reloads the page to remove the loaded tag. It does not recall data already received by Google. Contact privacy@webgamearena.com for privacy requests; do not send passwords or unnecessary child information."
         ] }] : []),

@@ -51,7 +51,8 @@ export default function AnalyticsChoices({ enabled }: { enabled: boolean }) {
       </button>
       {open ? <div id="analytics-choice-panel" className="analyticsChoicePanel">
         <h2>Optional analytics</h2>
-        <p>Adults can help us understand which pages are used. If you allow Google Analytics, Google receives cookie identifiers, page-view and browser/device information, and your IP address with requests. Processing may take place outside South Africa. We do not send chat messages, scores, account details or form entries.</p>
+        <p>Adults can help us understand which pages are used. If you allow Google Analytics, Google receives cookie identifiers, page-view and browser/device information, and your IP address with requests. Processing may take place outside South Africa. We do not send chat messages, scores, player account details or form entries.</p>
+        <p>The Google Analytics account also permits troubleshooting access, aggregated industry contributions and business recommendations using its administrative account information. Details are in our Privacy Policy.</p>
         <p>Under 18, unsure, or sharing this browser with a child? Choose “Continue without analytics”. Games work either way. <Link href="/privacy">Privacy details</Link> · <Link href="/cookies">Cookie details</Link> · <a href="https://policies.google.com/technologies/partner-sites" rel="noreferrer">How Google uses data</a></p>
         {!allowed ? <label className="analyticsAdultChoice"><input type="checkbox" checked={adult} onChange={event => setAdult(event.target.checked)} /> I am 18 or over and using this browser myself.</label> : <p role="status">Analytics is allowed in this tab until you withdraw or reload. Before handing this browser to someone else, withdraw below.</p>}
         <div className="analyticsChoiceActions">
