@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     canonical: "/leaderboard",
   },
   robots: {
-    index: true,
+    index: PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED,
     follow: true,
   },
 };

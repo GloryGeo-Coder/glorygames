@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ANALYTICS_ENABLED } from "@/lib/publicAnalytics";
 
 const year = new Date().getFullYear();
 
@@ -7,18 +8,18 @@ const footerGroups = [
     title: "Play",
     links: [
       { label: "All Games", href: "/games" },
-      { label: "Arcade Games", href: "/games?category=arcade" },
-      { label: "Adventure Games", href: "/games?category=adventure" },
-      { label: "Educational Games", href: "/games?category=educational" },
-      { label: "Kasi Quest", href: "/games/kasi-quest" },
+      { label: "Arcade Games", href: "/categories/arcade" },
+      { label: "Adventure Games", href: "/categories/adventure" },
+      { label: "Educational Games", href: "/categories/educational" },
+      { label: "Kasi Quest", href: "/play/kasi-quest" },
     ],
   },
   {
-    title: "Platform",
+    title: "Playing here",
     links: [
-      { label: "Daily Challenge", href: "/games" },
-      { label: "Popular Games", href: "/games" },
-      { label: "Mobile Browser Games", href: "/games" },
+      { label: "Game guides", href: "/games" },
+      { label: "Parents & Safety", href: "/parents-safety" },
+      { label: "Help & Contact", href: "/contact" },
       { label: "Word & Trivia", href: "/games?category=word-trivia" },
     ],
   },
@@ -55,8 +56,8 @@ export default function SiteFooter() {
             </Link>
 
             <p>
-              Free mobile-first browser games built for instant play, high
-              scores, daily challenges and friendly competition.
+              Free browser games with guides for controls, objectives and
+              local progress. Play as a guest on desktop or mobile.
             </p>
 
             <div className="footerBadges">
@@ -83,7 +84,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <p className="mutedTiny">Optional advertising and analytics are paused. Games may save progress and preferences on this device; existing sign-in uses an essential session cookie. <Link href="/cookies">Cookie information</Link></p>
+        <p className="mutedTiny">Advertising is paused. {ANALYTICS_ENABLED ? "Optional analytics is available to adults who explicitly allow it in Analytics settings below." : "Optional analytics setup is not yet active."} Games may save progress and preferences on this device; existing sign-in uses an essential session cookie. <Link href="/cookies">Cookie information</Link></p>
         <div className="footerBottom">
           <div>
             © {year} WebGameArena.com All rights reserved.
