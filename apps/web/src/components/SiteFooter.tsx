@@ -8,6 +8,7 @@ const footerGroups = [
     title: "Play",
     links: [
       { label: "All Games", href: "/games" },
+      { label: "Leaderboard", href: "/leaderboard" },
       { label: "Arcade Games", href: "/categories/arcade" },
       { label: "Adventure Games", href: "/categories/adventure" },
       { label: "Educational Games", href: "/categories/educational" },

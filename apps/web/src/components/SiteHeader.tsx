@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PUBLIC_SIGNUP_ENABLED, PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
+import { PUBLIC_SIGNUP_ENABLED } from "@/lib/launchPolicy";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
@@ -9,9 +9,7 @@ import { useCurrentUser } from "@/lib/useCurrentUser";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/games", label: "Games" },
-  PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED
-    ? { href: "/leaderboard", label: "Leaderboard" }
-    : { href: "/categories/educational", label: "Learning games" },
+  { href: "/leaderboard", label: "Leaderboard" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact Us" },
 ];
