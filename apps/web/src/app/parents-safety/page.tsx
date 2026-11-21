@@ -2,6 +2,7 @@
 
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
+import { ANALYTICS_ENABLED, ANALYTICS_NOTICE } from "@/lib/publicAnalytics";
 
 export const dynamic = "force-static";
 
@@ -29,9 +30,14 @@ export default function ParentsSafetyPage() {
       eyebrow="Parents & Safety"
       title="Helping families understand safe play on WebGameArena."
       description="WebGameArena is designed as a mobile-first browser gaming platform. This page explains how the platform approaches player safety, younger users, privacy, chat, advertising, leaderboards and responsible play."
-      updated="16 November 2026"
+      updated="20 November 2026"
       sections={[
-{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "New registration, public chat, reviews, score submissions and daily-challenge submissions are paused. Historical leaderboards may still be visible. Existing account sign-in remains available.", "Advertising and optional analytics are paused. Google advertising, Google Analytics and Cloudflare browser analytics scripts are not loaded by the current site layout. Hosting and security services still process the requests needed to deliver and protect the website."]},
+        ...(ANALYTICS_ENABLED ? [{ title: "Children and optional analytics", body: [
+          "Children can play without optional analytics. The Google Analytics choice is for adults who confirm they are 18 or over and are using this browser themselves. Under-18s, unsure visitors and people sharing with a child should continue without analytics. This self-declaration is not verified age assurance or parental authorisation to track a child.",
+          "No Google Analytics script or consent ping is sent before opt-in. If an adult opts in, Google receives cookie/session identifiers, filtered page views and IP/browser/device request information, potentially outside South Africa. Open Analytics settings and withdraw before handing the browser to someone else. Reloading the page also requires a new opt-in. See Privacy and Cookie Policy for processing, retention and withdrawal details."
+        ] }] : []),
+
+{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "New registration, public chat, reviews, score submissions and daily-challenge submissions are paused. Historical leaderboard display is paused while older records are reviewed. Existing account sign-in remains available.", ANALYTICS_NOTICE]},
 {"title": "Family audience and privacy boundaries", "body": ["Including children in our audience is not a declaration that every game has the same age rating. Review each game’s description and content with your child. Recycle Rush’s separate portal submission does not establish a rating for the whole catalogue.", "Public chat and new public player submissions are paused. Please do not put a child’s real name, school, address, telephone number or other private details into local player-name fields or support messages.", "Contact support@webgamearena.com for safety concerns, privacy@webgamearena.com for privacy requests and games@webgamearena.com for game-content concerns. Describe the issue and page address without sending sensitive attachments."]},
         {
           title: "1. What is WebGameArena?",

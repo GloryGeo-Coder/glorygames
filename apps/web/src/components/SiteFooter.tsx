@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ANALYTICS_ENABLED } from "@/lib/publicAnalytics";
 
 const year = new Date().getFullYear();
 
@@ -83,7 +84,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <p className="mutedTiny">Optional advertising and analytics are paused. Games may save progress and preferences on this device; existing sign-in uses an essential session cookie. <Link href="/cookies">Cookie information</Link></p>
+        <p className="mutedTiny">Advertising is paused. {ANALYTICS_ENABLED ? "Optional analytics is available to adults who explicitly allow it in Analytics settings below." : "Optional analytics setup is not yet active."} Games may save progress and preferences on this device; existing sign-in uses an essential session cookie. <Link href="/cookies">Cookie information</Link></p>
         <div className="footerBottom">
           <div>
             © {year} WebGameArena.com All rights reserved.
