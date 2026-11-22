@@ -1,4 +1,9 @@
 import test from "node:test";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { gameLaunchPath } from "../src/lib/gameLaunchPath";
+import { gamePagePath } from "../src/lib/gamePaths";
+import sitemap from "../src/app/sitemap";
 import assert from "node:assert/strict";
 import { GAME_CATALOG, catalogGame } from "../src/lib/gameCatalog";
 import { fallbackGames } from "../src/lib/fallbackGames";
@@ -18,6 +23,11 @@ test("all 24 public catalog summaries and information-page summaries agree", () 
     const escapedOverview = guide.overview[0].replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#x27;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
     assert.ok(rendered.includes(escapedOverview), slug);
     assert.match(rendered, /Frequently asked questions/);
+    const href = gameLaunchPath(slug);
+    assert.notEqual(href, gamePagePath(slug), `Guide play link loops back: ${slug}`);
+    assert.ok(rendered.includes(`href="${href}" target="_blank" rel="noopener noreferrer"`), slug);
+    assert.ok(rendered.includes("opens in a new tab"), slug);
+    if (href.startsWith("/games/")) assert.ok(existsSync(path.resolve("public", href.slice(1))), `Missing game entry: ${slug}`);
     for (const field of [guide.overview, guide.story, guide.howToPlay, guide.desktop, guide.mobile, guide.progression, guide.tips, guide.faqs]) assert.ok(field.length > 0, slug);
     assert.doesNotMatch(JSON.stringify(guide), /coming soon|prototype|development placeholder|no long scripted campaign|six-level campaign|ten-level sequence|game contains ten levels|game has ten stages/i, slug);
   }
@@ -72,4 +82,13 @@ test("Recycle Rush retains Fibre Circle sponsorship and its final story and arca
   const guide = GAME_EDITORIALS["recycle-rush"], copy = JSON.stringify(guide);
   assert.equal(guide.sponsor, "Fibre Circle"); assert.match(copy, /Verdale/); assert.match(copy, /25/); assert.match(copy, /20/);
   assert.doesNotMatch(copy, /PETCO|Polyco|Polyco SA|MetPac|eWASA/i);
+});
+
+
+test("sitemap includes canonical game guides and the restored leaderboard without private or standalone game URLs", () => {
+  const urls = sitemap().map(entry => entry.url);
+  assert.equal(urls.length, new Set(urls).size);
+  assert.ok(urls.some(url => new URL(url).pathname === "/leaderboard"));
+  for (const slug of Object.keys(GAME_CATALOG)) assert.ok(urls.some(url => new URL(url).pathname === gamePagePath(slug)), slug);
+  for (const url of urls) assert.doesNotMatch(new URL(url).pathname, /\/api\/|\/login|\/signup|\/index\.html/);
 });
