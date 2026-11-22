@@ -1256,10 +1256,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "recycle-rush": {
     "category": "Educational",
-    "sponsor": "Fibre Circle",
     "summary": "Restore Verdale with Circuit through 25 untimed story missions and 450 recovery tasks, plus 20 arcade missions with animated bosses, material cards and power-ups.",
     "overview": [
-      "Bring colour back to Verdale in Recycle Rush: Restore Verdale, a recycling adventure sponsored by Fibre Circle. Join Circuit and Professor Loop as they help a community rebuild its collection points, share useful goods and connect everyday recovery choices to a cleaner town.",
+      "Bring colour back to Verdale in Recycle Rush: Restore Verdale, a recycling adventure. Join Circuit and Professor Loop as they help a community rebuild its collection points, share useful goods and connect everyday recovery choices to a cleaner town.",
       "Explore 25 story missions across the school, neighbourhood, market, recovery district, repair quarter and civic square. Inspect each object, prepare accepted packaging, share usable books and clothes, and refer electrical repairs to qualified experts. Solve community requests, complete saved community work orders and plan collection rounds, choosing pickups and accepted deliveries while managing the vehicle’s available load space.",
       "Choose community projects, build clean sorting streaks and use recovered energy to face Grime in five showdowns. Animated characters and original mission music accompany untimed story play, with clues, feedback and checkpoints saved on your device. For a faster challenge, enter the separate 20-mission Arcade Campaign with animated bosses, illustrated powers and clear material cards. Master its sorting waves, and complete it to unlock endless Loop Mode."
     ],
