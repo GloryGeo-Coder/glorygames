@@ -78,9 +78,9 @@ test("final game names override legacy database names without changing routes or
   assert.deepEqual(catalogGame(unknown), unknown);
 });
 
-test("Recycle Rush retains Fibre Circle sponsorship and its final story and arcade scope", () => {
+test("Recycle Rush keeps its story and arcade scope without a sponsorship claim", () => {
   const guide = GAME_EDITORIALS["recycle-rush"], copy = JSON.stringify(guide);
-  assert.equal(guide.sponsor, "Fibre Circle"); assert.match(copy, /Verdale/); assert.match(copy, /25/); assert.match(copy, /20/);
+  assert.equal(guide.sponsor, undefined); assert.doesNotMatch(copy, /sponsored by Fibre Circle/i); assert.match(copy, /Verdale/); assert.match(copy, /25/); assert.match(copy, /20/);
   assert.doesNotMatch(copy, /PETCO|Polyco|Polyco SA|MetPac|eWASA/i);
 });
 
