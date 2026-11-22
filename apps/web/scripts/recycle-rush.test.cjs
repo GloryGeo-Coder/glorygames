@@ -242,3 +242,14 @@ test('new arcade art provenance, entry references and budget cover 32 boss frame
  assert.equal(Object.keys(manifest.assets).length,10);assert.ok(bytes<1024*1024);assert.equal(manifest.assets['bosses-a.webp'].frames+manifest.assets['bosses-b.webp'].frames,32);for(const src of A.assetPaths)assert.ok(fs.existsSync(path.join(root,src)));
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.ok(html.indexOf('arcade-art.js')<html.indexOf('src="game.js"'));assert.ok(html.includes('id="powerSlotText"'));const metadata=JSON.parse(fs.readFileSync(path.join(root,'game.json')));assert.equal(metadata.features.arcadeBossFrames,32);assert.equal(metadata.features.arcadeBosses,8);assert.equal(metadata.features.arcadePowerSprites,4);
 });
+
+
+test('sorting instruction stays opaque, readable and within narrow and wide canvases',async()=>{
+ for(const [width,height] of [[320,330],[390,500],[844,190],[1440,650]]){
+  const r=await boot({width,height});r.probe.initLevel(19);r.probe.draw();
+  const label=r.textPaints.find(p=>p.text==='SELECT THE MATCHING MATERIAL');assert.ok(label);
+  assert.equal(label.fillStyle,'#f0fff7');assert.ok(label.maxWidth>0);
+  assert.ok(label.x-label.maxWidth/2>=0&&label.x+label.maxWidth/2<=width);
+  assert.ok(label.y>=0&&label.y<height);
+ }
+});

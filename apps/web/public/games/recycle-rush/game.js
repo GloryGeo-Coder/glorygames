@@ -792,7 +792,11 @@
     const y = catchLine();
     ctx.save();
     ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.setLineDash([10,12]); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(state.W,y); ctx.stroke();
-    ctx.setLineDash([]); ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font='800 12px system-ui'; ctx.textAlign='right'; ctx.fillText('SELECT THE MATCHING MATERIAL',state.W-14,y-8);
+    ctx.setLineDash([]); ctx.font='800 12px system-ui';
+    const label='SELECT THE MATCHING MATERIAL';
+    const width=Math.min(state.W-20,ctx.measureText(label).width+20), left=state.W-10-width;
+    ctx.fillStyle='#071c23'; roundRect(left,y-28,width,24,6,true,false);
+    ctx.fillStyle='#f0fff7'; ctx.textAlign='center'; ctx.fillText(label,left+width/2,y-12,width-12);
     ctx.restore();
   }
 
@@ -809,12 +813,12 @@
     drawCover(chapter().bg, grime);
     visuals.backdrop(state.W,state.H,prog,chapter().color,state.time);
     visuals.circuit(state.W,state.H,catchLine(),state.time);
-    drawCatchLine();
     drawBoss();
     drawItems();
     if(!save.settings.reducedMotion)drawParticles();
     drawBins();
     visuals.feedback(state.time);
+    drawCatchLine();
     if(!state.running && !ui.overlay.classList.contains('active')){
       ctx.save(); ctx.fillStyle='rgba(0,0,0,.35)'; ctx.fillRect(0,0,state.W,state.H); ctx.restore();
     }

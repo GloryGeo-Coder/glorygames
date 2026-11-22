@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        width: ['390', '1440']
+        width: ['320', '390', '1440']
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -51,7 +51,7 @@ jobs:
           google-chrome --version
           npm install --prefix "$RUNNER_TEMP/recycle-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
           echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/recycle-browser/node_modules/playwright" >> "$GITHUB_ENV"
-      - name: Play all 25 story missions through real controls
+      - name: Story progression, unobscured item cards and real controls
         run: node apps/web/scripts/recycle-rush-browser.cjs
         env:
           RECYCLE_BROWSER_CHANNEL: chrome
