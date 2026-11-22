@@ -92,3 +92,16 @@ test("sitemap includes canonical game guides and the restored leaderboard withou
   for (const slug of Object.keys(GAME_CATALOG)) assert.ok(urls.some(url => new URL(url).pathname === gamePagePath(slug)), slug);
   for (const url of urls) assert.doesNotMatch(new URL(url).pathname, /\/api\/|\/login|\/signup|\/index\.html/);
 });
+
+
+test("every catalogue thumbnail loads an existing file first without repeated format probes", async () => {
+  const { gameThumbnailSources } = await import("../src/lib/gameThumbnails");
+  const { GameThumb } = await import("../src/components/GameThumb");
+  for (const slug of Object.keys(GAME_CATALOG)) {
+    const sources = gameThumbnailSources(slug);
+    assert.equal(sources.length, new Set(sources).size);
+    assert.ok(existsSync(path.resolve("public", sources[0].slice(1))), slug);
+    const html = renderToStaticMarkup(React.createElement(GameThumb, {slug, title: "Game preview"}));
+    assert.ok(html.includes(`src="${sources[0]}"`), slug);
+  }
+});
