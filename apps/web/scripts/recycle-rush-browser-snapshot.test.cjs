@@ -1,8 +1,9 @@
 const test = require('node:test'), assert = require('node:assert/strict'), vm = require('node:vm');
 const {readGrimeTarget,readSortTarget,readPromptProof} = require('./helpers/recycle-browser-snapshot.cjs');
+const aimArgs={mapping:{'paper.webp':'paper','metal.webp':'metal','bottle.webp':'plastic'},binArt:{paper:'paper.webp',metal:'metal.webp',plastic:'bottle.webp'}};
 function snapshot(paints, nodes = {scoreValue: {textContent: '108'}, bossFill: {style: {width: '86.5%'}}}) {
   // Match page.evaluate serialization, with native DOM textContent represented as a string property.
-  return vm.runInNewContext('('+readGrimeTarget.toString()+')()', {window: {__arcadePaints: paints}, document: {getElementById: id => nodes[id]}});
+  return vm.runInNewContext('('+readGrimeTarget.toString()+')()', scene(paints,nodes));
 }
 test('serialized browser snapshot reads HUD properties and the current visible Grime target', () => {
   const painted = {src: 'assets/animated/grime-atlas.webp', x: 120, y: 75, w: 48, h: 48};
@@ -14,8 +15,12 @@ test('an absent target is explicit and unavailable HUD values cannot pass as zer
   assert.throws(() => snapshot([], {}), /HUD values are unavailable/);
 });
 
-const aimArgs={mapping:{'paper.webp':'paper','metal.webp':'metal','bottle.webp':'plastic'},binArt:{paper:'paper.webp',metal:'metal.webp',plastic:'bottle.webp'}};
-function aim(paints){return vm.runInNewContext('('+readSortTarget.toString()+')(args)',{window:{__arcadePaints:paints},args:aimArgs});}
+function scene(paints,nodes={},options={}){
+ const rect={left:0,top:0,width:320,height:400,...options.rect};
+ const canvas={getBoundingClientRect:()=>rect};
+ return {window:{__arcadePaints:paints,innerWidth:320,innerHeight:500},document:{getElementById:id=>id==='gameCanvas'?canvas:nodes[id],elementFromPoint:()=>options.blocked?{}:canvas},args:aimArgs};
+}
+function aim(paints,options={}){return vm.runInNewContext('('+readSortTarget.toString()+')(args)',scene(paints,{},options));}
 const picture=(name,x,y,w=50)=>({src:'assets/'+name,x,y,w,h:w});
 test('aiming rejects the recorded overlapping Grime case and chooses an uncovered material',()=>{
  const clear=picture('bottle.webp',85,90),covered=picture('metal.webp',201,41),grime=picture('grime-atlas.webp',201.3998,40.8353,56.65);
@@ -46,4 +51,22 @@ test('contrast proof samples the correct physical pixel on a scaled canvas',()=>
 });
 test('a cleared canvas is reported as transparent rather than passing the contrast proof',()=>{
  assert.deepEqual(Array.from(proof([0,0,0,0]).result.rgba),[0,0,0,0]);
+});
+
+test('offscreen edge-spawned materials cannot be selected for native taps',()=>{
+ const bin=picture('metal.webp',150,230,28);
+ assert.equal(aim([picture('metal.webp',-37.2219,41.0282),bin]),null);
+ assert.equal(aim([picture('metal.webp',340,80),bin]),null);
+ assert.equal(aim([picture('metal.webp',100,420),bin]),null);
+});
+test('the recorded hazard beyond the canvas edge is skipped for a visible hazard',()=>{
+ const outside=picture('grime-atlas.webp',379.0879,251.4872,55),inside=picture('grime-atlas.webp',145,138,49);
+ assert.equal(snapshot([outside,inside]).hazard,inside);
+ assert.equal(snapshot([outside]).hazard,null);
+});
+test('canvas targets covered by a DOM overlay are rejected',()=>{
+ assert.equal(aim([picture('paper.webp',100,80),picture('paper.webp',100,230,28)],{blocked:true}),null);
+});
+test('a visible canvas can still have a bin below the browser viewport',()=>{
+ assert.equal(aim([picture('paper.webp',100,80),picture('paper.webp',100,230,28)],{rect:{top:300}}),null);
 });

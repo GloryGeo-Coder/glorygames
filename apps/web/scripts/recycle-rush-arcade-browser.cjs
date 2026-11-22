@@ -39,7 +39,15 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
   const drawn=await page.evaluate(({sheet,row})=>window.__arcadePaints.find(p=>p.src.endsWith(sheet)&&p.sy===row*256),{sheet:boss.sheet,row:boss.row});assert.ok(drawn.x-drawn.w/2>=0&&drawn.x+drawn.w/2<=area.width+1&&drawn.y-drawn.h/2>=0&&drawn.y+drawn.h/2<=area.height+1);
   const mapping=Object.fromEntries(Object.entries(A.variants).flatMap(([cat,list])=>list.map(id=>[id+'.webp',cat]))),binArt=Object.fromEntries(Object.entries(A.variants).map(([cat,list])=>[cat,list[0]+'.webp']));
   await page.waitForFunction(readSortTarget,{mapping,binArt});
-  const point=async(x,y)=>touch?page.touchscreen.tap(area.x+x,area.y+y):page.mouse.click(area.x+x,area.y+y);
+  const point=async(x,y)=>{
+   assert.ok(Number.isFinite(x)&&Number.isFinite(y),'Finite canvas coordinates required');
+   const destination=await page.evaluate(({x,y})=>{
+    const canvas=document.getElementById('gameCanvas'),rect=canvas.getBoundingClientRect(),clientX=rect.left+x,clientY=rect.top+y;
+    return {clientX,clientY,inside:x>=4&&y>=4&&x<=rect.width-4&&y<=rect.height-4&&clientX>=4&&clientY>=4&&clientX<=innerWidth-4&&clientY<=innerHeight-4,receivesCanvas:document.elementFromPoint(clientX,clientY)===canvas};
+   },{x,y});
+   assert.ok(destination.inside&&destination.receivesCanvas,'Native tap must hit the current visible canvas: '+JSON.stringify({x,y,...destination}));
+   if(touch)await page.touchscreen.tap(destination.clientX,destination.clientY);else await page.mouse.click(destination.clientX,destination.clientY);
+  };
   const freezeFrame=async()=>{
    await page.clock.pauseAt(new Date(await page.evaluate(()=>Date.now())+250));
    await page.clock.runFor(16);
@@ -64,8 +72,9 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
    await page.waitForFunction(id=>window.__arcadeSeen?.[id]?.includes(256),seenId);await page.waitForFunction(()=>window.__arcadePaints?.some(p=>p.src.includes('grime-atlas')&&p.y>10&&p.w>=40));
    await freezeFrame();
    try {
-    const target=await page.evaluate(readGrimeTarget);
-    assert.ok(target.hazard,'A live rendered Grime hazard is available');
+    let target=await page.evaluate(readGrimeTarget);
+    for(let frame=0;frame<60&&!target.hazard;frame++){await page.clock.runFor(16);target=await page.evaluate(readGrimeTarget);}
+    assert.ok(target.hazard,'A visible native-tappable Grime hazard is required');
     await page.evaluate(target=>{window.__plannedTarget={kind:'hazard',...target};},target);
     await point(target.hazard.x,target.hazard.y);await page.clock.runFor(32);
     assert.ok(Number(await page.locator('#scoreValue').textContent())>=target.score+30,'Native pointer hit credits hazard points');
