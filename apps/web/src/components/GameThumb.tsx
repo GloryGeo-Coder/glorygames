@@ -1,26 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import { gameThumbnailSources } from "@/lib/gameThumbnails";
 
 type Props = {
   slug: string;
   title?: string;
 };
 
-const EXT_ORDER = ["webp", "png", "svg", "jpg", "jpeg"] as const;
-
 export function GameThumb({ slug, title = "Game" }: Props) {
-  const sources = useMemo(
-    () => {
-      // Science ships a PNG; make its server-rendered source resolve immediately.
-      const order = ["science-lab-dash", "space-pilot-platformer"].includes(slug)
-        ? ["png", ...EXT_ORDER.filter((ext) => ext !== "png")]
-        : EXT_ORDER;
-      return order.map((ext) => `/games/${slug}/thumb.${ext}`);
-    },
-    [slug]
-  );
+  const sources = useMemo(() => gameThumbnailSources(slug), [slug]);
 
   const [i, setI] = useState(0);
   const [dead, setDead] = useState(false);

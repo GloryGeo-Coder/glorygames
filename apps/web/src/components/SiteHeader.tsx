@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { PUBLIC_SIGNUP_ENABLED } from "@/lib/launchPolicy";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const navLinks = [
@@ -18,6 +18,7 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const { user, loading } = useCurrentUser();
 
+  const menuButton = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -125,6 +126,13 @@ export default function SiteHeader() {
 
   return (
     <header
+      onFocusCapture={() => setHidden(false)}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && menuOpen) {
+          setMenuOpen(false);
+          menuButton.current?.focus();
+        }
+      }}
       className={[
         "wgaHeader",
         scrolled ? "isScrolled" : "",
@@ -162,6 +170,8 @@ export default function SiteHeader() {
         <button
           type="button"
           className="wgaMenuButton"
+          ref={menuButton}
+          aria-controls="wga-mobile-navigation"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           onClick={() => {
@@ -175,7 +185,7 @@ export default function SiteHeader() {
         </button>
       </div>
 
-      <div className="wgaMobilePanel" aria-hidden={!menuOpen}>
+      <div id="wga-mobile-navigation" className="wgaMobilePanel" hidden={!menuOpen}>
         <nav className="wgaMobileNav" aria-label="Mobile navigation">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href}>

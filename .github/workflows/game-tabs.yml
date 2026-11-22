@@ -7,6 +7,11 @@ on:
       - 'apps/web/src/components/GameLaunch*'
       - 'apps/web/src/components/GameEditorial.tsx'
       - 'apps/web/src/lib/gameLaunchPath.ts'
+      - 'apps/web/src/lib/gameThumbnails.ts'
+      - 'apps/web/src/components/GameThumb.tsx'
+      - 'apps/web/src/components/SiteHeader.tsx'
+      - 'apps/web/src/app/globals.css'
+      - 'apps/web/scripts/loading-keyboard-browser.cjs'
       - 'apps/web/scripts/game-content.test.tsx'
       - 'apps/web/src/lib/gameTabScores.ts'
       - 'apps/web/scripts/game-tab*'
@@ -20,6 +25,11 @@ on:
       - 'apps/web/src/components/GameLaunch*'
       - 'apps/web/src/components/GameEditorial.tsx'
       - 'apps/web/src/lib/gameLaunchPath.ts'
+      - 'apps/web/src/lib/gameThumbnails.ts'
+      - 'apps/web/src/components/GameThumb.tsx'
+      - 'apps/web/src/components/SiteHeader.tsx'
+      - 'apps/web/src/app/globals.css'
+      - 'apps/web/scripts/loading-keyboard-browser.cjs'
       - 'apps/web/scripts/game-content.test.tsx'
       - 'apps/web/src/lib/gameTabScores.ts'
       - 'apps/web/scripts/game-tab*'
@@ -41,3 +51,29 @@ jobs:
         run: node --test scripts/game-tab-score.test.mjs scripts/game-tab-ui.test.mjs
       - working-directory: apps/web
         run: node --import tsx --test scripts/game-tabs.test.tsx scripts/sky-temple-launch.test.tsx scripts/game-content.test.tsx
+
+  loading-keyboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: npm ci --workspaces=false --ignore-scripts --no-audit --no-fund
+        working-directory: apps/web
+      - name: Prepare pinned browser driver and existing sandboxed Chrome
+        run: |
+          google-chrome --version
+          npm install --prefix "$RUNNER_TEMP/wga-loading-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          echo "PLAYWRIGHT_PATH=$RUNNER_TEMP/wga-loading-browser/node_modules/playwright" >> "$GITHUB_ENV"
+      - run: node node_modules/prisma/build/index.js generate
+        working-directory: apps/web
+      - run: node node_modules/next/dist/bin/next build --webpack
+        working-directory: apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - run: node scripts/loading-keyboard-browser.cjs
+        working-directory: apps/web
