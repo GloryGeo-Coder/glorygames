@@ -13,6 +13,10 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
  await page.clock.install(); // Install before the game creates its animation timers.
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url());});
  await context.addInitScript(()=>{
+  for(const type of ['pointerdown','pointerup','pointercancel','gotpointercapture','lostpointercapture'])document.addEventListener(type,event=>{
+   if(event.target?.id!=='gameCanvas')return;
+   const trace=window.__nativePointerTrace??=[];trace.push({type,pointerId:event.pointerId,x:event.clientX,y:event.clientY,score:document.getElementById('scoreValue')?.textContent});if(trace.length>24)trace.shift();
+  },true);
   const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(...options){const ctx=original.apply(this,options);if(this.id==='gameCanvas'&&ctx&&!ctx.__arcadeRecorded){ctx.__arcadeRecorded=true;const text=ctx.fillText;ctx.fillText=function(label,x,y,maxWidth){if(label==='SELECT THE MATCHING MATERIAL')window.__sortPrompt={x,y,maxWidth,fill:this.fillStyle,frame:window.__arcadeFrame,canvasWidth:this.canvas.width,canvasHeight:this.canvas.height};return text.apply(this,arguments);};const draw=ctx.drawImage;ctx.drawImage=function(image,...args){const src=image.src||'';if(src.includes('/backgrounds/')){window.__arcadePaints=[];window.__arcadeFrame=(window.__arcadeFrame||0)+1;}if(args.length===4||args.length===8){const offset=args.length===8?4:0,[x,y,w,h]=args.slice(offset),m=ctx.getTransform(),dpr=ctx.canvas.width/ctx.canvas.getBoundingClientRect().width||1;const paint={src,x:(m.e+m.a*(x+w/2)+m.c*(y+h/2))/dpr,y:(m.f+m.b*(x+w/2)+m.d*(y+h/2))/dpr,w,h,sx:args.length===8?args[0]:null,sy:args.length===8?args[1]:null};(window.__arcadePaints??=[]).push(paint);if(src.includes('/arcade/bosses-')){window.__arcadeSeen??={};const id=src.split('/').at(-1)+':'+paint.sy;(window.__arcadeSeen[id]??=[]).push(paint.sx);window.__arcadeSeen[id]=[...new Set(window.__arcadeSeen[id])];}}return draw.call(this,image,...args);};}return ctx;};
  });
  const activate=async locator=>touch?locator.tap():locator.click(),noOverflow=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight+1));
@@ -49,7 +53,8 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
     if(!target)await page.clock.runFor(16);
    }
    assert.ok(target,'An unobscured rendered item and matching bin are required');
-   await point(target.item.x,target.item.y);await point(target.bin.x,target.bin.y);
+   await page.evaluate(target=>{window.__plannedTarget={kind:'sort',...target};},target);
+   await point(target.item.x,target.item.y);await page.clock.runFor(16);await point(target.bin.x,target.bin.y);
    await page.clock.runFor(32);
    assert.ok(Number(await page.locator('#scoreValue').textContent())>=108);
    assert.match(await page.locator('#objectiveText').textContent(),/1\/\d+ clean sorts/);
@@ -61,6 +66,7 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
    try {
     const target=await page.evaluate(readGrimeTarget);
     assert.ok(target.hazard,'A live rendered Grime hazard is available');
+    await page.evaluate(target=>{window.__plannedTarget={kind:'hazard',...target};},target);
     await point(target.hazard.x,target.hazard.y);await page.clock.runFor(32);
     assert.ok(Number(await page.locator('#scoreValue').textContent())>=target.score+30,'Native pointer hit credits hazard points');
     assert.ok(await page.locator('#bossFill').evaluate((el,previous)=>parseFloat(el.style.width)<previous,target.bossWidth),'Native pointer hit damages the boss');
@@ -85,8 +91,8 @@ fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(results,null,2)
  for(const context of browser?.contexts()||[])for(const page of context.pages()){
   try{
    const size=page.viewportSize();await page.screenshot({path:path.join(output,`failure-${size.width}-${size.height}.png`),timeout:5000});
-   const diagnostic=await page.evaluate(()=>({score:document.getElementById('scoreValue')?.textContent,lives:document.getElementById('livesValue')?.textContent,objective:document.getElementById('objectiveText')?.textContent,pause:document.getElementById('pauseBtn')?.textContent,overlayActive:document.getElementById('screenOverlay')?.classList.contains('active'),visibleGrime:(window.__arcadePaints||[]).filter(p=>p.src.includes('grime-atlas')).map(({x,y,w,h})=>({x,y,w,h}))}));
-   fs.writeFileSync(path.join(output,`failure-${size.width}-${size.height}.json`),JSON.stringify(diagnostic,null,2));
+   const diagnostic=await page.evaluate(()=>({score:document.getElementById('scoreValue')?.textContent,lives:document.getElementById('livesValue')?.textContent,objective:document.getElementById('objectiveText')?.textContent,pause:document.getElementById('pauseBtn')?.textContent,overlayActive:document.getElementById('screenOverlay')?.classList.contains('active'),plannedTarget:window.__plannedTarget,pointerTrace:window.__nativePointerTrace,visibleGrime:(window.__arcadePaints||[]).filter(p=>p.src.includes('grime-atlas')).map(({x,y,w,h})=>({x,y,w,h}))}));
+   fs.writeFileSync(path.join(output,`failure-${size.width}-${size.height}.json`),JSON.stringify(diagnostic,null,2));console.error('BROWSER_DIAGNOSTIC '+JSON.stringify(diagnostic));
   }catch{}
  }
  throw error;

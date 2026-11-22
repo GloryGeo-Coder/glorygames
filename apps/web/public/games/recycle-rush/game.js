@@ -874,7 +874,8 @@
     }
   }
 
-  function cancelPointer(){
+  function cancelPointer(event){
+    if(event && event.pointerId!==undefined && event.pointerId!==state.pointerId) return;
     const id=state.pointerId;state.pointerId=null;state.selectedItem=null;
     if(id!==null && canvas.hasPointerCapture?.(id)) canvas.releasePointerCapture(id);
   }
@@ -941,7 +942,7 @@
     canvas.addEventListener('pointermove',pointerMove);
     canvas.addEventListener('pointerup',pointerUp);
     canvas.addEventListener('pointercancel',cancelPointer);
-    canvas.addEventListener('lostpointercapture',()=>{if(state.pointerId!==null)cancelPointer();});
+    canvas.addEventListener('lostpointercapture',event=>{if(event.pointerId===state.pointerId)cancelPointer(event);});
     document.addEventListener('visibilitychange',()=>{if(document.hidden&&state.running&&!state.paused)togglePause();});
     window.addEventListener('blur',()=>{cancelPointer();if(state.running&&!state.paused)togglePause();});
   }

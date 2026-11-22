@@ -253,3 +253,17 @@ test('sorting instruction stays opaque, readable and within narrow and wide canv
   assert.ok(label.y>=0&&label.y<height);
  }
 });
+
+
+test('a delayed capture-loss event from an earlier touch must not cancel the next gesture',async()=>{
+ const r=await boot(),p=r.probe;p.initLevel(0);const item={kind:'item',cat:'paper',x:20,y:20,w:50,h:50};p.state.items.push(item);
+ r.emit('pointerdown',{clientX:30,clientY:30,pointerId:11});r.emit('pointerup',{clientX:30,clientY:30,pointerId:11});
+ const bin=p.state.bins.find(b=>b.cat==='paper');r.emit('pointerdown',{clientX:bin.x+bin.w/2,clientY:bin.y+bin.h/2,pointerId:12});
+ r.emit('lostpointercapture',{pointerId:11});assert.equal(p.state.pointerId,12);assert.equal(p.state.selectedItem,item);
+ r.emit('pointerup',{clientX:bin.x+bin.w/2,clientY:bin.y+bin.h/2,pointerId:12});assert.equal(p.state.sorted,1);
+});
+test('a stale pointer cancellation must not clear a different active touch',async()=>{
+ const r=await boot();r.probe.initLevel(0);r.emit('pointerdown',{clientX:30,clientY:30,pointerId:22});
+ r.emit('pointerdown',{clientX:60,clientY:60,pointerId:21});r.emit('pointercancel',{pointerId:21});assert.equal(r.probe.state.pointerId,22);
+ r.emit('pointercancel',{pointerId:22});assert.equal(r.probe.state.pointerId,null);
+});
