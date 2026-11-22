@@ -8,6 +8,7 @@ const ts = createRequire(new URL('../../apps/web/package.json', import.meta.url)
 import { createStandaloneScoreBridge } from '../../apps/web/public/games/_shared/game-tab-score.mjs';
 
 const policySource = await readFile(new URL('../../apps/web/src/lib/launchPolicy.ts', import.meta.url), 'utf8');
+const heldPolicySource = policySource.replace(/(PUBLIC_(?:CHAT|SCORE_SUBMISSIONS|HISTORICAL_LEADERBOARDS)_ENABLED: boolean = )true/g, "$1false");
 const transpile = source => ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
 for (const [route, method] of [
   ['auth/signup', 'POST'], ['chat', 'POST'], ['chat/report', 'POST'],
@@ -15,7 +16,7 @@ for (const [route, method] of [
   ['games/[slug]/review', 'POST'], ['games/[slug]/session/start', 'POST'],
   ['games/[slug]/session/end', 'POST'], ['chat', 'GET'], ['daily-challenge', 'GET'],
 ]) {
-  test(`${method} ${route} stops before body, identity, database or parameter access`, async () => {
+  test(`${method} ${route} when held stops before body, identity, database or parameter access`, async () => {
     const forbidden = () => { throw Error('Launch hold allowed an application side effect'); };
     const context = vm.createContext({ console, Response });
     const dependencies = {
@@ -27,7 +28,7 @@ for (const [route, method] of [
       '@/lib/auth': Object.fromEntries(['getSessionUser', 'getSessionCookieName', 'getSessionCookieOptions', 'isAuthConfigured', 'signSession'].map(name => [name, forbidden])),
       '@/lib/gamesDb': { isPublicGameSlug: forbidden },
     };
-    const policy = new vm.SourceTextModule(transpile(policySource), { context });
+    const policy = new vm.SourceTextModule(transpile(heldPolicySource), { context });
     await policy.link(forbidden); await policy.evaluate();
     const source = await readFile(new URL(`../../apps/web/src/app/api/${route}/route.ts`, import.meta.url), 'utf8');
     const module = new vm.SourceTextModule(transpile(source), { context });
@@ -47,7 +48,7 @@ for (const [route, method] of [
   });
 }
 
-test('standalone game scores remain local without any identity or score HTTP request', async () => {
+test('standalone bridge defaults to local scores without an explicit network opt-in', async () => {
   const local = []; let requests = 0;
   const bridge = createStandaloneScoreBridge({ slug: 'recycle-rush', origin: 'https://example.test',
     fetcher: async () => { requests++; throw Error('Unexpected HTTP'); }, onScore: score => local.push(score) });

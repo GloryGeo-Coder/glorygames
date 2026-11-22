@@ -62,7 +62,7 @@ export function mountGameTab(win = globalThis.window) {
   doc.documentElement.dataset.wgaTab = slug;
   const transport = createGameScoreTransport({ window: win, slug });
   let storage = null; try { storage = win.localStorage; } catch {}
-  const scoreBridge = createStandaloneScoreBridge({ slug, origin: win.location.origin, storage,
+  const scoreBridge = createStandaloneScoreBridge({ slug, origin: win.location.origin, storage, networkEnabled: true,
     fetcher: new URLSearchParams(win.location.search).get('scores') === '0' ? null : win.fetch?.bind(win),
     onScore: score => transport.emit(score), onStatus: (score, status) => transport.emit(score, status) });
   const message = event => { if (event.source === win && event.origin === win.location.origin) scoreBridge.report(event.data); };

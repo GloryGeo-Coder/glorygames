@@ -501,8 +501,8 @@ export default async function HomePage() {
                 <div className="playerValueLabel">Your own progress</div>
                 <h3>Play at your own pace.</h3>
                 <p>
-                  Games with local saves keep progress on this device. Online
-                  leaderboards and score submissions are currently paused.
+                  Games with local saves keep progress on this device. Join daily
+                  challenges, share a score or visit the Leaderboard.
                 </p>
               </div>
             </div>

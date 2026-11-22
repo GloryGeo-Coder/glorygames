@@ -41,8 +41,14 @@ export default function PrivacyPage() {
           "User/event retention is set to two months without resetting on new activity. This setting does not delete standard aggregated reports. Analytics settings lets you withdraw; withdrawal stops further collection, clears this property's browser cookies and reloads the page to remove the loaded tag. It does not recall data already received by Google. Contact privacy@webgamearena.com for privacy requests; do not send passwords or unnecessary child information."
         ] }] : []),
 
-{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "New registration, public chat, reviews, score submissions and daily-challenge submissions are paused. Historical leaderboard display is also paused while we review older records. This display hold does not delete stored records. Existing account sign-in remains available.", ANALYTICS_NOTICE]},
-{"title": "Current service providers and local saves", "body": ["Cloudflare hosts and protects the website and receives technical request information such as IP addresses and browser/request details. Neon provides the database for existing account and historical platform records.", "Game progress and settings may be stored locally in your browser. These local saves are not an account backup and may be lost if browser data is cleared. The current shared score bridge does not send new scores to the platform.", "Messages sent to support@, privacy@, games@ or ads@webgamearena.com pass through Cloudflare Email Routing to the operator’s monitored Gmail inbox. Do not send passwords, identity documents, payment details or unnecessary information about children.", "Some games offer educational source links. Following a link opens a separate website whose privacy practices apply. Those links are different from advertising or analytics integrations."]},
+{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "Public chat, score submissions, daily challenges and historical leaderboards are available. Existing account sign-in remains available. New registration and reviews remain paused.", ANALYTICS_NOTICE]},
+{"title": "Current service providers and local saves", "body": ["Cloudflare hosts and protects the website and receives technical request information such as IP addresses and browser/request details. Neon provides the database for existing account and historical platform records.", "Game progress and settings may be stored locally in your browser. These local saves are not an account backup and may be lost if browser data is cleared. Supported games can submit scores: global scores require an existing signed-in account; daily challenges also accept a guest nickname. Public leaderboard entries can include older stored scores.", "Messages sent to support@, privacy@, games@ or ads@webgamearena.com pass through Cloudflare Email Routing to the operatorâ€™s monitored Gmail inbox. Do not send passwords, identity documents, payment details or unnecessary information about children.", "Some games offer educational source links. Following a link opens a separate website whose privacy practices apply. Those links are different from advertising or analytics integrations."]},
+        { title: "Community information and abuse prevention", body: [
+          "Chat nicknames, messages and timestamps are visible to players on that game page. The chat view shows recent messages; this does not automatically delete older stored messages. Reports hide a message from public chat and retain the message reference, reporting time and reporting account identifier where signed in.",
+          "Scores store the game, score, mode or challenge, nickname, time and account reference where signed in. Nicknames, games and scores appear publicly, including historical entries; account emails and password hashes are excluded from public responses. Scores are reported by games and are not independently certified or a basis for prizes.",
+          "To limit spam and repeated submissions, the server keeps keyed identifiers derived from an account or network address, counts and expiry times. These are pseudonymous information. Expired counters are removed during later community requests, so they may remain longer during inactivity or in recovery backups. This does not enable advertising or optional analytics.",
+          "Chat has message-length, content and rate checks, and a Report control. Automated checks cannot identify all unsafe content. Avoid personal details, use Report for inappropriate messages and contact support@webgamearena.com for safety concerns or privacy@webgamearena.com for privacy requests."
+        ] },
         {
           title: "1. Information we may collect",
           body: [
@@ -96,7 +102,7 @@ export default function PrivacyPage() {
         },
         {
           title: "8. Children and younger players",
-          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, when choosing games and learning safe online habits. New registration, public chat and score submissions remain paused.",
+          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, when choosing games and learning safe online habits. Chat and leaderboard names and content are visible to other visitors. Parents and guardians should guide younger players, choose non-identifying nicknames and help them report inappropriate content. New registration remains paused.",
         },
         {
           title: "9. Data protection and security",
@@ -130,7 +136,7 @@ export default function PrivacyPage() {
         },
       ]}
     />
-    {ANALYTICS_ENABLED ? <p className="container"><a href="https://policies.google.com/technologies/partner-sites" rel="noreferrer">How Google uses information from sites or apps that use its services</a> · <a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></p> : null}
+    {ANALYTICS_ENABLED ? <p className="container"><a href="https://policies.google.com/technologies/partner-sites" rel="noreferrer">How Google uses information from sites or apps that use its services</a> Â· <a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></p> : null}
     </>
   );
 }

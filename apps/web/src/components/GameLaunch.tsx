@@ -13,7 +13,7 @@ export default function GameLaunch({ slug, title }: { slug: string; title: strin
           <span className={styles.srOnly}> — opens in a new tab</span>
         </a>
         <p className={styles.note}>Opens in a dedicated game tab. Use Enter Fullscreen in the game menu where your browser supports it.</p>
-        <p className={styles.note}>Keep this page open for instructions and historical scores. Chat and online score submissions are paused.</p>
+        <p className={styles.note}>Keep this page open for instructions, scores and game chat. Use a nickname and keep personal details out of public messages.</p>
       </div>
     </section>
   );
