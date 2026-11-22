@@ -29,7 +29,7 @@ const footerGroups = [
     links: [
       { label: "About WebGameArena", href: "/about" },
       { label: "Contact", href: "/contact" },
-      { label: "Submit a Game", href: "/submit-game" },
+      { label: "Game submissions", href: "/submit-game" },
       { label: "Advertise", href: "/advertise" },
     ],
   },

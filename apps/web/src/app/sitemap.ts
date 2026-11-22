@@ -1,3 +1,4 @@
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 import type { MetadataRoute } from "next";
 import { gamePagePath } from "@/lib/gamePaths";
 import { GAME_EDITORIALS } from "@/content/gameEditorials";
@@ -15,6 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const pages: MetadataRoute.Sitemap = [
     { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/games`, changeFrequency: "weekly", priority: 0.9 },
+    ...(PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? [{ url: `${SITE_URL}/leaderboard`, changeFrequency: "daily" as const, priority: 0.6 }] : []),
     ...CATEGORY_HUBS.map((category) => ({
       url: `${SITE_URL}/categories/${category}`,
       changeFrequency: "monthly" as const,
