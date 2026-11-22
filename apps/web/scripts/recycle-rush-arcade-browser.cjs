@@ -1,7 +1,7 @@
 /* Optional real-browser arcade art QA. Supplies completed-hub saves, then uses ordinary controls. */
 const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright-core');
 const assert=require('node:assert/strict'),fs=require('node:fs'),http=require('node:http'),path=require('node:path'),os=require('node:os');
-const {readGrimeTarget,readSortTarget}=require('./helpers/recycle-browser-snapshot.cjs');
+const {readGrimeTarget,readSortTarget,readPromptProof}=require('./helpers/recycle-browser-snapshot.cjs');
 const A=require('../public/games/recycle-rush/arcade-art.js'),root=path.resolve(__dirname,'../public'),output=process.env.RECYCLE_QA_OUTPUT||fs.mkdtempSync(path.join(os.tmpdir(),'recycle-arcade-'));fs.mkdirSync(output,{recursive:true});
 const key='wga_recycle_rush_2_save_v1',bossLevels=[2,5,8,11,14,16,18,19];
 const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.url.split('?')[0]),file=path.resolve(root,'.'+route,route.endsWith('/')?'index.html':'');if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}try{res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.json':'application/json'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
@@ -13,9 +13,17 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
  await page.clock.install(); // Install before the game creates its animation timers.
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url());});
  await context.addInitScript(()=>{
-  const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(...options){const ctx=original.apply(this,options);if(this.id==='gameCanvas'&&ctx&&!ctx.__arcadeRecorded){ctx.__arcadeRecorded=true;const text=ctx.fillText;ctx.fillText=function(label,x,y,maxWidth){if(label==='SELECT THE MATCHING MATERIAL')window.__sortPrompt={x,y,maxWidth,fill:this.fillStyle};return text.apply(this,arguments);};const draw=ctx.drawImage;ctx.drawImage=function(image,...args){const src=image.src||'';if(src.includes('/backgrounds/'))window.__arcadePaints=[];if(args.length===4||args.length===8){const offset=args.length===8?4:0,[x,y,w,h]=args.slice(offset),m=ctx.getTransform(),dpr=ctx.canvas.width/ctx.canvas.getBoundingClientRect().width||1;const paint={src,x:(m.e+m.a*(x+w/2)+m.c*(y+h/2))/dpr,y:(m.f+m.b*(x+w/2)+m.d*(y+h/2))/dpr,w,h,sx:args.length===8?args[0]:null,sy:args.length===8?args[1]:null};(window.__arcadePaints??=[]).push(paint);if(src.includes('/arcade/bosses-')){window.__arcadeSeen??={};const id=src.split('/').at(-1)+':'+paint.sy;(window.__arcadeSeen[id]??=[]).push(paint.sx);window.__arcadeSeen[id]=[...new Set(window.__arcadeSeen[id])];}}return draw.call(this,image,...args);};}return ctx;};
+  const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(...options){const ctx=original.apply(this,options);if(this.id==='gameCanvas'&&ctx&&!ctx.__arcadeRecorded){ctx.__arcadeRecorded=true;const text=ctx.fillText;ctx.fillText=function(label,x,y,maxWidth){if(label==='SELECT THE MATCHING MATERIAL')window.__sortPrompt={x,y,maxWidth,fill:this.fillStyle,frame:window.__arcadeFrame,canvasWidth:this.canvas.width,canvasHeight:this.canvas.height};return text.apply(this,arguments);};const draw=ctx.drawImage;ctx.drawImage=function(image,...args){const src=image.src||'';if(src.includes('/backgrounds/')){window.__arcadePaints=[];window.__arcadeFrame=(window.__arcadeFrame||0)+1;}if(args.length===4||args.length===8){const offset=args.length===8?4:0,[x,y,w,h]=args.slice(offset),m=ctx.getTransform(),dpr=ctx.canvas.width/ctx.canvas.getBoundingClientRect().width||1;const paint={src,x:(m.e+m.a*(x+w/2)+m.c*(y+h/2))/dpr,y:(m.f+m.b*(x+w/2)+m.d*(y+h/2))/dpr,w,h,sx:args.length===8?args[0]:null,sy:args.length===8?args[1]:null};(window.__arcadePaints??=[]).push(paint);if(src.includes('/arcade/bosses-')){window.__arcadeSeen??={};const id=src.split('/').at(-1)+':'+paint.sy;(window.__arcadeSeen[id]??=[]).push(paint.sx);window.__arcadeSeen[id]=[...new Set(window.__arcadeSeen[id])];}}return draw.call(this,image,...args);};}return ctx;};
  });
  const activate=async locator=>touch?locator.tap():locator.click(),noOverflow=async()=>assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight+1));
+ const resizeWithPaint=async viewport=>{
+  const previous=await page.evaluate(()=>window.__arcadeFrame||0);
+  await page.setViewportSize(viewport);
+  await page.waitForFunction(previous=>{
+   const p=window.__sortPrompt,c=document.getElementById('gameCanvas');
+   return (window.__arcadeFrame||0)>previous&&p?.frame===window.__arcadeFrame&&p.canvasWidth===c.width&&p.canvasHeight===c.height;
+  },previous);
+ };
  await page.goto(`http://127.0.0.1:${server.address().port}/games/recycle-rush/?scores=0`);await page.waitForFunction(()=>window.RecycleArcade&&window.__wgaGameTab);assert.equal(await page.locator('.arcade-boss-preview').count(),8);
  await page.evaluate(({key,save})=>localStorage.setItem(key,JSON.stringify(save)),{key,save:saved(2)});
  for(let chapter=0;chapter<8;chapter++){
@@ -59,13 +67,11 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
    } finally {await page.clock.resume();}
   }
   await activate(page.locator('#pauseBtn'));assert.equal(await page.locator('#pauseBtn').textContent(),'Resume');const frame=await page.evaluate(({sheet,row})=>window.__arcadePaints.find(p=>p.src.endsWith(sheet)&&p.sy===row*256)?.sx,{sheet:boss.sheet,row:boss.row});await page.waitForTimeout(120);assert.equal(await page.evaluate(({sheet,row})=>window.__arcadePaints.find(p=>p.src.endsWith(sheet)&&p.sy===row*256)?.sx,{sheet:boss.sheet,row:boss.row}),frame);
-  if(chapter===7&&width===390){const lives=await page.locator('#livesValue').textContent();await page.setViewportSize({width:844,height:390});await noOverflow();await page.setViewportSize({width,height});assert.equal(await page.locator('#livesValue').textContent(),lives);}
-  assert.equal(await page.evaluate(()=>{
-   const p=window.__sortPrompt;if(!p||p.fill!=='#f0fff7')return false;
-   const canvas=document.getElementById('gameCanvas'),dpr=canvas.width/canvas.getBoundingClientRect().width;
-   const rgba=canvas.getContext('2d').getImageData(Math.floor((p.x-(p.maxWidth+12)/2+4)*dpr),Math.floor((p.y-4)*dpr),1,1).data;
-   return rgba[0]===7&&rgba[1]===28&&rgba[2]===35&&rgba[3]===255;
-  }),true,'Sorting instruction has white text over an opaque dark panel');
+  if(chapter===7&&width===390){const lives=await page.locator('#livesValue').textContent();await resizeWithPaint({width:844,height:390});await noOverflow();await resizeWithPaint({width,height});assert.equal(await page.locator('#livesValue').textContent(),lives);}
+  const proof=await page.evaluate(readPromptProof);
+  assert.ok(proof,'Sorting instruction was rendered');
+  assert.equal(proof.fill,'#f0fff7','Sorting instruction text stays light');
+  assert.deepEqual(proof.rgba,[7,28,35,255],`Opaque sorting panel at ${JSON.stringify(proof)}`);
   await page.screenshot({path:path.join(output,`${width}-${height}-${boss.id}.png`)});console.log(`  ${boss.id}: sprite animation, sort, pause and bounds passed`);
  }
  // A reduced-motion save keeps the idle frame fixed while essential falling gameplay continues.

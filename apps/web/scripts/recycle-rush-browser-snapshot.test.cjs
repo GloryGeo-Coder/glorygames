@@ -1,5 +1,5 @@
 const test = require('node:test'), assert = require('node:assert/strict'), vm = require('node:vm');
-const {readGrimeTarget,readSortTarget} = require('./helpers/recycle-browser-snapshot.cjs');
+const {readGrimeTarget,readSortTarget,readPromptProof} = require('./helpers/recycle-browser-snapshot.cjs');
 function snapshot(paints, nodes = {scoreValue: {textContent: '108'}, bossFill: {style: {width: '86.5%'}}}) {
   // Match page.evaluate serialization, with native DOM textContent represented as a string property.
   return vm.runInNewContext('('+readGrimeTarget.toString()+')()', {window: {__arcadePaints: paints}, document: {getElementById: id => nodes[id]}});
@@ -31,4 +31,19 @@ test('a later power sprite also blocks a material target while a clear scene rem
  const item=picture('paper.webp',100,80),bin=picture('paper.webp',100,230,28);
  assert.equal(aim([item,bin,picture('magnet.webp',100,80)]),null);
  assert.equal(aim([item,bin]).item,item);
+});
+
+function proof(pixels){
+ let sample;
+ const result=vm.runInNewContext('('+readPromptProof.toString()+')()',{
+  window:{__sortPrompt:{x:150,y:80,maxWidth:200,fill:'#f0fff7',frame:12}},
+  document:{getElementById:()=>({width:640,height:400,getBoundingClientRect:()=>({width:320}),getContext:()=>({getImageData:(...args)=>{sample=args;return{data:pixels};}})})}
+ });return {result,sample};
+}
+test('contrast proof samples the correct physical pixel on a scaled canvas',()=>{
+ const {result,sample}=proof([7,28,35,255]);assert.deepEqual(sample,[96,152,1,1]);
+ assert.deepEqual(Array.from(result.rgba),[7,28,35,255]);assert.equal(result.frame,12);
+});
+test('a cleared canvas is reported as transparent rather than passing the contrast proof',()=>{
+ assert.deepEqual(Array.from(proof([0,0,0,0]).result.rgba),[0,0,0,0]);
 });

@@ -22,4 +22,10 @@ function readSortTarget({mapping, binArt}) {
   }
   return null;
 }
-module.exports = { readGrimeTarget, readSortTarget };
+function readPromptProof() {
+  const p=window.__sortPrompt;if(!p)return null;
+  const canvas=document.getElementById('gameCanvas'),dpr=canvas.width/canvas.getBoundingClientRect().width;
+  const x=Math.floor((p.x-(p.maxWidth+12)/2+4)*dpr),y=Math.floor((p.y-4)*dpr);
+  return {fill:p.fill,x,y,canvasWidth:canvas.width,canvasHeight:canvas.height,frame:p.frame,rgba:Array.from(canvas.getContext('2d').getImageData(x,y,1,1).data)};
+}
+module.exports = { readGrimeTarget, readSortTarget, readPromptProof };
