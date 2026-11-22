@@ -30,3 +30,71 @@ jobs:
           node-version: '24'
       - run: for file in apps/web/public/games/recycle-rush/*.js; do node --check "$file"; done
       - run: node --test apps/web/scripts/recycle-rush.test.cjs
+
+  story-browser:
+    name: story-${{ matrix.width }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        width: ['390', '1440']
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - name: Prepare pinned browser driver and sandboxed Chrome
+        run: |
+          google-chrome --version
+          npm install --prefix "$RUNNER_TEMP/recycle-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/recycle-browser/node_modules/playwright" >> "$GITHUB_ENV"
+      - name: Play all 25 story missions through real controls
+        run: node apps/web/scripts/recycle-rush-browser.cjs
+        env:
+          RECYCLE_BROWSER_CHANNEL: chrome
+          RECYCLE_QA_WIDTH: ${{ matrix.width }}
+          RECYCLE_QA_OUTPUT: ${{ runner.temp }}/recycle-story-evidence
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: recycle-story-${{ matrix.width }}
+          path: ${{ runner.temp }}/recycle-story-evidence
+          if-no-files-found: warn
+          retention-days: 7
+
+  arcade-browser:
+    name: arcade-${{ matrix.width }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        width: ['320', '390', '1440']
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - name: Prepare pinned browser driver and sandboxed Chrome
+        run: |
+          google-chrome --version
+          npm install --prefix "$RUNNER_TEMP/recycle-browser" --no-save --package-lock=false --ignore-scripts playwright@1.64.0
+          echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/recycle-browser/node_modules/playwright" >> "$GITHUB_ENV"
+      - name: Check all eight boss encounters, sorting and pause with real browser input
+        run: node apps/web/scripts/recycle-rush-arcade-browser.cjs
+        env:
+          RECYCLE_BROWSER_CHANNEL: chrome
+          RECYCLE_QA_WIDTH: ${{ matrix.width }}
+          RECYCLE_QA_OUTPUT: ${{ runner.temp }}/recycle-arcade-evidence
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: recycle-arcade-${{ matrix.width }}
+          path: ${{ runner.temp }}/recycle-arcade-evidence
+          if-no-files-found: warn
+          retention-days: 7
