@@ -1,6 +1,7 @@
 /* Optional real-browser arcade art QA. Supplies completed-hub saves, then uses ordinary controls. */
 const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright-core');
 const assert=require('node:assert/strict'),fs=require('node:fs'),http=require('node:http'),path=require('node:path'),os=require('node:os');
+const {readGrimeTarget,readSortTarget}=require('./helpers/recycle-browser-snapshot.cjs');
 const A=require('../public/games/recycle-rush/arcade-art.js'),root=path.resolve(__dirname,'../public'),output=process.env.RECYCLE_QA_OUTPUT||fs.mkdtempSync(path.join(os.tmpdir(),'recycle-arcade-'));fs.mkdirSync(output,{recursive:true});
 const key='wga_recycle_rush_2_save_v1',bossLevels=[2,5,8,11,14,16,18,19];
 const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.url.split('?')[0]),file=path.resolve(root,'.'+route,route.endsWith('/')?'index.html':'');if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}try{res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.json':'application/json'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
@@ -25,7 +26,7 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
   await page.waitForFunction(({sheet,row})=>window.__arcadePaints?.some(p=>p.src.endsWith(sheet)&&p.sy===row*256),{sheet:boss.sheet,row:boss.row});
   const drawn=await page.evaluate(({sheet,row})=>window.__arcadePaints.find(p=>p.src.endsWith(sheet)&&p.sy===row*256),{sheet:boss.sheet,row:boss.row});assert.ok(drawn.x-drawn.w/2>=0&&drawn.x+drawn.w/2<=area.width+1&&drawn.y-drawn.h/2>=0&&drawn.y+drawn.h/2<=area.height+1);
   const mapping=Object.fromEntries(Object.entries(A.variants).flatMap(([cat,list])=>list.map(id=>[id+'.webp',cat]))),binArt=Object.fromEntries(Object.entries(A.variants).map(([cat,list])=>[cat,list[0]+'.webp']));
-  await page.waitForFunction(mapping=>window.__arcadePaints?.some(p=>[44,50].includes(p.w)&&p.y>35&&mapping[p.src.split('/').at(-1)]),mapping);
+  await page.waitForFunction(readSortTarget,{mapping,binArt});
   const point=async(x,y)=>touch?page.touchscreen.tap(area.x+x,area.y+y):page.mouse.click(area.x+x,area.y+y);
   const freezeFrame=async()=>{
    await page.clock.pauseAt(new Date(await page.evaluate(()=>Date.now())+250));
@@ -34,12 +35,12 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
   };
   await freezeFrame();
   try {
-   const target=await page.evaluate(({mapping,binArt})=>{
-    const item=window.__arcadePaints.find(p=>[44,50].includes(p.w)&&p.y>35&&mapping[p.src.split('/').at(-1)]);
-    const category=item&&mapping[item.src.split('/').at(-1)];
-    const bin=category&&window.__arcadePaints.find(p=>p.w===28&&p.src.endsWith('/'+binArt[category]));
-    return {item,bin};
-   },{mapping,binArt});assert.ok(target.item&&target.bin,'Current rendered item and matching bin');
+   let target=null;
+   for(let frame=0;frame<60&&!target;frame++){
+    target=await page.evaluate(readSortTarget,{mapping,binArt});
+    if(!target)await page.clock.runFor(16);
+   }
+   assert.ok(target,'An unobscured rendered item and matching bin are required');
    await point(target.item.x,target.item.y);await point(target.bin.x,target.bin.y);
    await page.clock.runFor(32);
    assert.ok(Number(await page.locator('#scoreValue').textContent())>=108);
@@ -50,7 +51,7 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
    await page.waitForFunction(id=>window.__arcadeSeen?.[id]?.includes(256),seenId);await page.waitForFunction(()=>window.__arcadePaints?.some(p=>p.src.includes('grime-atlas')&&p.y>10&&p.w>=40));
    await freezeFrame();
    try {
-    const target=await page.evaluate(()=>({hazard:window.__arcadePaints.find(p=>p.src.includes('grime-atlas')&&p.y>10&&p.w>=40),score:Number(document.getElementById('scoreValue').textContent()),bossWidth:parseFloat(document.getElementById('bossFill').style.width)}));
+    const target=await page.evaluate(readGrimeTarget);
     assert.ok(target.hazard,'A live rendered Grime hazard is available');
     await point(target.hazard.x,target.hazard.y);await page.clock.runFor(32);
     assert.ok(Number(await page.locator('#scoreValue').textContent())>=target.score+30,'Native pointer hit credits hazard points');
