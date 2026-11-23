@@ -1804,77 +1804,55 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ]
   },
   "word-dash": {
-    "category": "Educational",
-    "summary": "Complete four themed word missions by typing or tapping letters, building spelling streaks and using Hint, Freeze and extra-time powers.",
+    "category": "Word & Trivia",
+    "summary": "Shoot loose letters and spell drifting word comets to power four orbital beacons. Each correct key fires a bolt. Salvage checkpoints let you return to the same sector.",
     "overview": [
-      "Word Dash turns spelling and vocabulary practice into a fast sequence of word challenges. Players match target words using physical or on-screen letters while managing a timer, improving accuracy and building streaks.",
-      "Rather than repeating one plain keyboard exercise, the game moves through themed environments such as a library, city of words, mountain focus setting and neon letters area. Mission progression and helpful power-ups make it feel like an arcade challenge as well as a learning exercise."
+      "Your salvage ship guards a dashed shield line. Small amber targets carry one letter; larger comets carry words. Pick the target nearest the line or commit to a longer word for more points."
     ],
     "story": [
-      "The premise is a sprint through a series of language-focused arenas. Each location gives the word task a new visual setting, but the centre of the challenge remains the same: recognise a target and enter it accurately.",
-      "Each round challenges you to recognise and enter target words before time runs out. Correct answers build streaks, while Hint, Freeze and extra-time powers give you options when the timer starts running low."
+      "Four silent relays mark the route from Amber Relay through Tideglass Belt and Violet Drift to Last Light. Spelling each sector’s final beacon word brings it back online."
     ],
     "howToPlay": [
-      "Start a word mission and read the target word carefully.",
-      "Type the letters in the correct order or tap them on the mobile keyboard.",
-      "Use Enter to submit a word when playing with a physical keyboard.",
-      "Correct mistakes with Backspace before submitting.",
-      "Build streaks through consecutive correct entries while watching the timer.",
-      "Use Hint, Freeze or extra time when a mission becomes difficult, then continue toward the next themed level."
+      "Launch a flight. Type a target’s first letter or tap that letter on the game keyboard. A loose letter breaks in one shot.",
+      "For a word, keep typing the remaining letters in order. Each correct key fires immediately. Finish the word before it reaches your shield.",
+      "Watch Salvaged for your sector goal. Finish the beacon word, then select Next sector for a fresh shield."
     ],
     "desktop": [
-      "Type with the keyboard, press Enter to submit and Backspace to delete an incorrect letter.",
-      "Use the displayed power-up buttons when Hint, Freeze or extra time is available."
+      "Use A–Z to aim and fire. A wrong key leaves your spelling intact. Backspace releases the lock and resets that word.",
+      "Escape pauses or resumes. Sound off/on is available above the flight deck."
     ],
     "mobile": [
-      "Tap letters on the in-game keyboard.",
-      "Use the on-screen Hint, Freeze and +Time controls, along with Pause or Restart."
+      "Tap the built-in QWERTY keys to shoot. You can also tap a loose letter to clear it directly or tap a word to select it before spelling.",
+      "Tap ⌫ to drop a lock, or Pause to hold the field. The game keypad works without opening the phone’s system keyboard."
     ],
     "systems": [
       {
-        "title": "Spelling and vocabulary",
-        "body": "Recognising and reproducing target words accurately is the central task."
+        "title": "Shield line",
+        "body": "An escaped target costs one shield point. Three escapes end the sector attempt."
       },
       {
-        "title": "Streaks and time pressure",
-        "body": "Successful sequences encourage speed, but rushing at the expense of spelling accuracy can interrupt momentum."
-      },
-      {
-        "title": "Three support powers",
-        "body": "Hint, Freeze and +Time are tools for difficult moments."
+        "title": "Salvage score",
+        "body": "Each recovered letter is worth 10 points in a completed target. A completed beacon adds a further 100. Partial words earn no points."
       }
     ],
     "progression": [
-      "Word Dash includes four mission-based levels with different visual themes.",
-      "Scores and streaks provide immediate feedback, while repeated play helps users identify words or typing patterns they need to practise."
+      "The four sectors require 6, 8, 10 and 12 targets including their beacons. Incoming targets get faster. Retry sector restarts that sector with three shield points and the score you had on arrival."
     ],
     "tips": [
-      "Read the whole word before entering the first letter.",
-      "Aim for accuracy first; a fast incorrect entry often wastes more time than a careful correct one.",
-      "Use Backspace as soon as you notice an error.",
-      "Save Freeze or extra-time help for a demanding portion of the run.",
-      "Treat Hint as a learning aid: try to remember the word on the next encounter."
+      "Watch the lowest target first. Loose letters take one shot; start long words while there is still room.",
+      "After a mistyped key, read the next letter under Lock. You can keep firing without retyping your correct letters."
     ],
     "learning": [
-      "Practise spelling accuracy, word recognition, vocabulary and keyboard familiarity.",
-      "Develop proofreading habits under mild time pressure."
+      "Practise letter recognition and spelling under time pressure. Watch for a short definition when you salvage a word."
     ],
     "faqs": [
       {
-        "q": "How many levels or missions can I play?",
-        "a": "There are four themed mission levels with target words, streak scoring and power-ups."
+        "q": "Where does Continue flight take me?",
+        "a": "In the same browser, it restores your sector, recovered target count, score and shield after the last completed target or shield hit. Incoming targets are dealt again; unfinished spellings start over. Pause and Resume keep the targets exactly where they are while the tab is open."
       },
       {
-        "q": "How do I submit a word on desktop?",
-        "a": "Enter submits the current word and Backspace removes the last input."
-      },
-      {
-        "q": "Can I play without a physical keyboard?",
-        "a": "Yes. The game provides on-screen letter keys for mobile play."
-      },
-      {
-        "q": "What power-ups are available?",
-        "a": "Hint, Freeze and +Time are in the game."
+        "q": "What happened to my previous Word Dash best?",
+        "a": "If this browser has a best from the original typing game, the flight menu lists it separately as Classic best."
       }
     ]
   }
