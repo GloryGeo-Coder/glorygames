@@ -73,10 +73,10 @@ test('a visible canvas can still have a bin below the browser viewport',()=>{
 
 function progress(score,objective){return vm.runInNewContext('('+readSortProgress.toString()+')()', {document:{getElementById:id=>({textContent:id==='scoreValue'?score:objective})}});}
 test('native sort acceptance measures the first sort from its pre-input HUD',()=>{
- assertSortProgress(progress('0','Boss: The Bog: 0/24 clean sorts • Defeat The Bog'),progress('108','Boss: The Bog: 1/24 clean sorts • Defeat The Bog'));
+ assertSortProgress(progress('0','Boss: The Bog: 0/24 clean sorts \u2022 Defeat The Bog'),progress('108','Boss: The Bog: 1/24 clean sorts \u2022 Defeat The Bog'));
 });
 test('the recorded second clean sort passes relative acceptance',()=>{
- assertSortProgress(progress('108','Boss: The Bog: 1/24 clean sorts • Defeat The Bog'),progress('216','Boss: The Bog: 2/24 clean sorts • Defeat The Bog'));
+ assertSortProgress(progress('108','Boss: The Bog: 1/24 clean sorts \u2022 Defeat The Bog'),progress('216','Boss: The Bog: 2/24 clean sorts \u2022 Defeat The Bog'));
 });
 test('existing points or unrelated points cannot replace a new clean sort',()=>{
  const before={score:108,sorted:1,target:24};
@@ -87,4 +87,14 @@ test('existing points or unrelated points cannot replace a new clean sort',()=>{
 });
 test('sort acceptance rejects missing or malformed HUD evidence',()=>{
  for(const [score,text]of [['','Boss: The Bog: 1/24 clean sorts'],['NaN','Boss: The Bog: 1/24 clean sorts'],['108',''],['108','Boss: The Bog: unknown/24 clean sorts']])assert.throws(()=>progress(score,text),/HUD is unavailable/);
+});
+
+test('sort HUD reader accepts the actual game objective template',()=>{
+ const fs=require('node:fs'),path=require('node:path');
+ const source=fs.readFileSync(path.join(__dirname,'../public/games/recycle-rush/game.js'),'utf8');
+ const expression=source.match(/ui\.objective\.textContent = ([^\n]+);/)[1];
+ for(const sorted of [0,1,2]){
+  const objective=vm.runInNewContext(expression,{state:{loop:false,sorted,boss:{}},lv:{name:'Boss: Hallway Sludge',target:18},chapter:()=>({boss:'Hallway Sludge'})});
+  assert.equal(progress(String(sorted*108),objective).sorted,sorted);
+ }
 });

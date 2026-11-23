@@ -36,7 +36,7 @@ function readPromptProof() {
 function readSortProgress() {
   const scoreText=document.getElementById('scoreValue')?.textContent;
   const objective=document.getElementById('objectiveText')?.textContent;
-  const progress=objective?.match(/(?:^|: )([0-9]+)\/([0-9]+) clean sorts(?: •|$)/);
+  const progress=objective?.match(/(?:^|: )([0-9]+)\/([0-9]+) clean sorts(?: \u2022|$)/);
   if(!scoreText?.trim() || !Number.isFinite(Number(scoreText)) || !progress)throw Error('Sort progress HUD is unavailable');
   return {score:Number(scoreText),sorted:Number(progress[1]),target:Number(progress[2])};
 }
