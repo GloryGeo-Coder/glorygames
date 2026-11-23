@@ -25,7 +25,7 @@
       <header id="hud" class="hud">
         <div class="hudGroup">
           <div class="chip"><span class="k">Level</span><strong class="v"><span id="levelNum">1</span></strong></div>
-          <div class="chip"><span class="k">Coins</span><strong class="v" id="coins">0</strong></div>
+          <div class="chip"><span class="k">Pickups</span><strong class="v" id="coins">0</strong></div>
           <div class="chip optional"><span class="k">Wallet</span><strong class="v" id="wallet">0</strong></div>
         </div>
         <div class="hudGroup hudGroupRight">
@@ -70,7 +70,7 @@
             </div>
 
             <div class="btnRow">
-              <button class="primary" id="btnStart" type="button">Start</button>
+              <button class="primary" id="btnStart" type="button" disabled>Start</button>
               <button id="btnDaily" type="button" title="Play today's generated challenge">Daily</button>
               <button id="btnPause" type="button" title="Resume your current run" hidden>Resume</button>
               <button id="btnMute" type="button" title="Mute or unmute">Mute</button>
@@ -106,7 +106,8 @@
             </div>
             <details class="campaignPicker">
               <summary id="campaignProgress">Campaign · 1/20 levels unlocked</summary>
-              <p class="tiny">Finish each mission and reach its gate to unlock the next level. Checkpoint flags save your place during a run.</p>
+              <p class="tiny">Watch the mission counter. When it says Gate open, walk through the exit to unlock the next level. Losing a life returns you to your last flag, or the start if you haven’t reached one.</p>
+              <p class="tiny">On this browser, Continue campaign restores your flag, remaining lives and mission progress. Restart and the level picker start a fresh attempt. Daily is a separate challenge.</p>
               <div class="levelGrid" id="levelGrid"></div>
             </details>
           </div>

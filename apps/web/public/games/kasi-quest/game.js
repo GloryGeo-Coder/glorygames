@@ -24,6 +24,7 @@
   const STARS_KEY = `${STORE_PREFIX}_stars`;
   const DAILY_KEY = `${STORE_PREFIX}_daily_best`;
   const PROGRESS_KEY = `${STORE_PREFIX}_campaign`;
+  const RUN_KEY = `${STORE_PREFIX}_campaign_run`;
 
   const $ = (id) => document.getElementById(id);
   const canvas = $("c");
@@ -283,6 +284,9 @@
   let unlockedLevel = Math.max(legacyUnlocked,
     Number.isInteger(progress?.unlocked) ? clamp(progress.unlocked, 1, LEVEL_COUNT) : 1);
   let checkpoint = null;
+  let pendingRun = safeJsonGet(RUN_KEY, null);
+  if (pendingRun?.version !== 1 || !Number.isInteger(pendingRun.level) ||
+      pendingRun.level < 1 || pendingRun.level > unlockedLevel) pendingRun = null;
   let timeGrace = 0;
   let dailyBestStore = safeJsonGet(DAILY_KEY, {});
   let upgrades = Object.assign({ fireRate: 0, shield: 0, doubleJump: 0, extraLife: 0 }, safeJsonGet(UPGRADES_KEY, {}));
@@ -455,6 +459,7 @@ const SCALE = {
   window.addEventListener("blur", pauseForInterruption);
   window.addEventListener("pagehide", pauseForInterruption);
   function pauseForInterruption() {
+    saveCampaignRun();
     resetInput();
     if (defeatRemaining > 0) { defeatRemaining = 0; syncPlayUI(); }
     if (running || loading) interrupted = true;
@@ -513,7 +518,7 @@ const SCALE = {
       solids: normalizeRectList(raw.solids),
       platforms: normalizeRectList(raw.platforms),
       hazards: normalizeRectList(raw.hazards || raw.spikes),
-      coins: (Array.isArray(raw.coins) ? raw.coins : []).map((c) => ({ x: Number(c.x) || 0, y: Number(c.y) || 0 })),
+      coins: (Array.isArray(raw.coins) ? raw.coins : []).map((c, index) => ({ index, x: Number(c.x) || 0, y: Number(c.y) || 0 })),
       collectibles: normalizeCollectibles(raw.collectibles),
       powerups: (Array.isArray(raw.powerups) ? raw.powerups : []).map((p) => ({ x: Number(p.x) || 0, y: Number(p.y) || 0, type: String(p.type || "shield"), taken: false })),
       enemies: Array.isArray(raw.enemies) ? raw.enemies : [],
@@ -991,11 +996,12 @@ const y = rawY - (h - baseH);
   }
 
   function damagePlayer(reason = "hit") {
-    if (player.invuln > 0) return;
+    const fell = reason === "fall";
+    if (!fell && player.invuln > 0) return;
     noDamage = false;
     comboCount = 0;
     comboTimer = 0;
-    if (player.shield > 0) {
+    if (!fell && player.shield > 0) {
       player.shield -= 1;
       player.invuln = 1.0;
       player.vx = -player.face * 190;
@@ -1009,6 +1015,7 @@ const y = rawY - (h - baseH);
     award(-55, player.x, player.y, reason === "time" ? "Time penalty" : "-55");
     beep(120, 0.09, "sawtooth", 0.05);
     if (player.lives <= 0) {
+      if (mode === "campaign") safeJsonSet(RUN_KEY, null);
       animation?.play(player, "player", "defeat");
       defeatRemaining = animation?.has("player") && reason !== "fall" ? animation.duration("player", "defeat") + 0.1 : 0;
       postScore(mode === "daily" ? "daily_game_over" : "game_over");
@@ -1033,6 +1040,69 @@ const y = rawY - (h - baseH);
     cameraState = null;
     snapPlayerToGroundAtSpawn();
     animation?.play(player, "player", "hurt");
+    saveCampaignRun();
+  }
+
+  function saveCampaignRun() {
+    if (!running || loading || mode !== "campaign" || player.lives <= 0) return;
+    safeJsonSet(RUN_KEY, {
+      version:1, level:currentLevel, flag:level.checkpoints.findIndex(c => c.x === checkpoint?.x),
+      lives:player.lives, shield:player.shield, rapidFire:Math.max(0, player.fireBoostUntil-totalRunTime),
+      score, levelTime, totalRunTime, timeGrace, noDamage, maxCombo, walletEarnedThisRun, enemiesDefeated,
+      remainingCoins:level.coins.map(c => c.index),
+      items:level.collectibles.map(c => c.taken), powers:level.powerups.map(p => p.taken),
+      enemyHp:enemies.map(e => e.alive ? e.hp : 0), bossHp:bosses.map(b => b.alive ? b.hp : 0),
+      switches:switches.map(s => s.pressed)
+    });
+  }
+
+  function restoreCampaignRun(run) {
+    const amount = (v, max=1e9) => Number.isFinite(v) ? clamp(v, 0, max) : 0;
+    score = amount(run.score);
+    totalRunTime = amount(run.totalRunTime);
+    walletEarnedThisRun = amount(run.walletEarnedThisRun);
+    if (run.freshStage) return;
+    levelTime = amount(run.levelTime);
+    timeGrace = amount(run.timeGrace);
+    noDamage = run.noDamage === true;
+    maxCombo = Math.max(1, amount(run.maxCombo));
+    player.lives = Math.max(1, Math.floor(amount(run.lives, 30)));
+    player.shield = Math.floor(amount(run.shield, 30));
+    player.fireBoostUntil = totalRunTime + amount(run.rapidFire, 8);
+    if (Array.isArray(run.remainingCoins)) {
+      const remaining = new Set(run.remainingCoins);
+      const count = level.coins.length;
+      level.coins = level.coins.filter(c => remaining.has(c.index));
+      coinsCollected = count - level.coins.length;
+    }
+    level.collectibles.forEach((item, i) => { item.taken = run.items?.[i] === true; });
+    level.powerups.forEach((item, i) => { item.taken = run.powers?.[i] === true; });
+    collectiblesCollected = level.collectibles.filter(c => c.taken).length;
+    function restoreHealth(actors, health) {
+      actors.forEach((actor, i) => {
+        if (!Number.isInteger(health?.[i])) return;
+        actor.hp = amount(health[i], actor.maxHp);
+        actor.alive = actor.hp > 0;
+      });
+    }
+    restoreHealth(enemies, run.enemyHp);
+    restoreHealth(bosses, run.bossHp);
+    for (const boss of bosses) boss.phase = boss.hp <= Math.ceil(boss.maxHp / 2) ? 2 : 1;
+    enemiesDefeated = Math.floor(amount(run.enemiesDefeated, enemies.filter(e => !e.alive).length));
+    bossesDefeated = bosses.filter(b => !b.alive).length;
+    switches.forEach((sw, i) => {
+      if (run.switches?.[i] !== true) return;
+      sw.pressed = true;
+      for (const door of doors) if (door.id === sw.id) door.open = true;
+    });
+    const flag = Number.isInteger(run.flag) && level.checkpoints[run.flag];
+    if (flag) {
+      checkpoint = {x:flag.x, y:flag.y};
+      for (const c of level.checkpoints) c.reached = c.x <= flag.x;
+      player.x = flag.x * tileSize + tileSize * 0.15;
+      player.y = flag.y * tileSize;
+      snapPlayerToGroundAtSpawn();
+    }
   }
 
   function setHUD() {
@@ -1071,6 +1141,7 @@ const y = rawY - (h - baseH);
     walletEarnedThisRun += Number(c.wallet || 2);
     saveEconomy();
     addCombo(Number(c.points || 100), c.x * tileSize, c.y * tileSize, `${c.label} +${c.points}`);
+    saveCampaignRun();
     beep(980, 0.05, "triangle", 0.04);
   }
   function collectPowerup(index) {
@@ -1237,7 +1308,7 @@ projectiles.push({
     const worldH = level.height * tileSize;
     if (!wasGrounded && player.onGround) animation?.play(player, "player", "land");
     player.x = clamp(player.x, 0, Math.max(0, worldW - player.w));
-    if (player.y > worldH + 360) damagePlayer("fall");
+    if (player.y > worldH + 360) { damagePlayer("fall"); return; }
     if (player.invuln > 0) player.invuln -= dt;
 
   for (let i = level.coins.length - 1; i >= 0; i--) {
@@ -1295,6 +1366,7 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
         c.reached = true;
         if (!checkpoint || c.x > checkpoint.x) {
           checkpoint = { x: c.x, y: c.y };
+          saveCampaignRun();
           addText("Checkpoint reached", player.x, player.y - 28, 2);
           beep(740, 0.07, "triangle", 0.03);
         }
@@ -1659,6 +1731,9 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     const timeBonus = Math.max(0, Math.floor((Number(level.meta.timeLimit || 120) - levelTime) * 10));
     const starBonus = starCount * 180;
     award(650 + timeBonus + starBonus, player.x, player.y, `${"★".repeat(starCount)} +${650 + timeBonus + starBonus}`);
+    if (mode === "campaign") safeJsonSet(RUN_KEY, currentLevel < LEVEL_COUNT ? {
+      version:1, freshStage:true, level:currentLevel+1, score, totalRunTime, walletEarnedThisRun
+    } : null);
     beep(660, 0.07, "triangle", 0.05);
     beep(880, 0.07, "triangle", 0.05);
     postScore(mode === "daily" ? "daily_complete" : (currentLevel >= LEVEL_COUNT ? "complete" : "level_complete"), { stars: starCount });
@@ -2129,6 +2204,8 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
         running = false;
         setPaused(false);
         currentLevel = i;
+        pendingRun = null;
+        btnStart.textContent = "Start";
         mode = "campaign";
         updateLevelButtons();
         try {
@@ -2183,6 +2260,11 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       if (mode !== "daily") await loadLevel(Number.isFinite(Number(currentLevel)) ? Number(currentLevel) : 1);
       else await loadDailyLevel();
       resetLevelState({ resetScore: true });
+      if (mode === "campaign" && pendingRun?.level === currentLevel) {
+        restoreCampaignRun(pendingRun);
+        setHUD();
+      }
+      pendingRun = null;
       running = true;
       setPaused(!!document.hidden || interrupted);
       btnStart.textContent = "Restart";
@@ -2195,9 +2277,11 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
       running = false;
       setPaused(true, "The level could not load. Check your connection and try again.");
     } finally { setLoading(false); }
+    saveCampaignRun();
   }
   async function startDaily() {
     if (loading) return;
+    saveCampaignRun();
     setLoading(true);
     resetInput();
     interrupted = false;
@@ -2254,7 +2338,11 @@ for (let i = level.powerups.length - 1; i >= 0; i--) {
     best = Number(safeGet(BEST_KEY, "0")) || 0;
     wallet = Number(safeGet(WALLET_KEY, "0")) || 0;
     await loadAssetsOptional();
-    try { await loadLevel(unlockedLevel); resetLevelState({ resetScore: true }); } catch (e) { console.warn(e); }
+    try {
+      await loadLevel(pendingRun?.level || unlockedLevel);
+      resetLevelState({ resetScore: true });
+      if (pendingRun) btnStart.textContent = "Continue campaign";
+    } catch (e) { console.warn(e); }
     buildLevelGrid();
     setLoading(false);
     syncPlayUI();
