@@ -5,6 +5,6 @@ export default function QuickPlay(){
     {slug:"bubble-pop-arena",title:"Pop a chain",goal:"Coral Kingdom starts with a countdown. Keep the combo going and watch for bubbles that add time.",controls:"Tap or drag to pop. Avoid red bombs."},
     {slug:"stack-tower",title:"Land a perfect drop",goal:"Harbour Heights opens with a three-perfect-drop contract. Line up each moving block with the one below.",controls:"Tap to drop when the edges meet."},
     {slug:"fruit-slice",title:"Slice your first 13 fruit",goal:"First Slice starts with 50 seconds, a 270-point target and 13 fruit to slice.",controls:"Drag or swipe across fruit. Let bombs pass."},
-    {slug:"word-dash",title:"Type eight words",goal:"The Neon Library opens with an eight-word mission against the clock. Accuracy keeps your streak alive.",controls:"Use the keyboard to type the displayed word."}
+    {slug:"word-dash",title:"Light the first beacon",goal:"Salvage six targets in Amber Relay, including its beacon word.",controls:"Type or tap letters to shoot. Spell a whole comet to break it."}
   ]}/>;
 }
