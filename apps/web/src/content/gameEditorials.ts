@@ -626,19 +626,19 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Coins, collectible rewards and an upgrade shop provide reasons to explore beyond the shortest route. NPC encounters lead you toward fresh missions, while bosses and daily challenges test the movement and combat skills developed during the adventure."
     ],
     "howToPlay": [
-      "Start a level and pay attention to the current mission or NPC instructions.",
+      "On Warm-Up Rooftops, pass Lebo to hear the mission. Collect 18 coins and four kasi items, defeat five foes, then beat Spaza Guard.",
       "Move through the platform area, time jumps and avoid enemy or environmental hazards.",
       "Collect coins and other rewards while following the mission route.",
       "Use the upgrade shop when available to strengthen your options for later stages.",
       "Approach boss fights patiently and learn their movement or attack patterns.",
-      "Try daily challenges or replay a level to improve your combo and score."
+      "When the mission counter says Gate open, walk through the exit. If you lose a life, your mission counts carry back to the last flag. Continue campaign on the same browser to pick up there after closing the game."
     ],
     "desktop": [
-      "Follow the on-screen movement, jump and interaction controls. Read each level's prompts before setting off so you know which actions are available."
+      "Move with A/D or the arrow keys. Hold Space, W or Up for a higher jump. Hold E, Enter or Shift to fire. Press P or Escape to pause."
     ],
     "mobile": [
-      "Use the platformer's on-screen movement and action controls.",
-      "Use the in-game help screen whenever you want a reminder of movement, jumping or interaction buttons."
+      "Hold a direction with one thumb and use Jump or Shoot with the other. Holding Jump gives you more height.",
+      "Tap Pause to read the mission, check your upgrades or resume the run."
     ],
     "systems": [
       {
