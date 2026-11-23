@@ -1,5 +1,5 @@
 const test = require('node:test'), assert = require('node:assert/strict'), vm = require('node:vm');
-const {readGrimeTarget,readSortTarget,readPromptProof,readSortProgress,assertSortProgress} = require('./helpers/recycle-browser-snapshot.cjs');
+const {readGrimeTarget,readSortTarget,readPromptProof,readSortProgress,assertSortProgress,waitForSortTarget} = require('./helpers/recycle-browser-snapshot.cjs');
 const aimArgs={mapping:{'paper.webp':'paper','metal.webp':'metal','bottle.webp':'plastic'},binArt:{paper:'paper.webp',metal:'metal.webp',plastic:'bottle.webp'}};
 function snapshot(paints, nodes = {scoreValue: {textContent: '108'}, bossFill: {style: {width: '86.5%'}}}) {
   // Match page.evaluate serialization, with native DOM textContent represented as a string property.
@@ -97,4 +97,20 @@ test('sort HUD reader accepts the actual game objective template',()=>{
   const objective=vm.runInNewContext(expression,{state:{loop:false,sorted,boss:{}},lv:{name:'Boss: Hallway Sludge',target:18},chapter:()=>({boss:'Hallway Sludge'})});
   assert.equal(progress(String(sorted*108),objective).sorted,sorted);
  }
+});
+
+test('sort target waiting allows a later visible item without fabricating a target',async()=>{
+ let frames=0;const target={item:picture('paper.webp',100,80),bin:picture('paper.webp',100,230,28)};
+ const result=await waitForSortTarget({read:async()=>frames>=72?target:null,advance:async ms=>{assert.equal(ms,16);frames++;},isActive:async()=>true});
+ assert.equal(result,target);assert.equal(frames,72);
+});
+test('sort target waiting has a finite simulation budget and never accepts absence',async()=>{
+ let advances=0;
+ await assert.rejects(waitForSortTarget({read:async()=>null,advance:async()=>advances++,isActive:async()=>true}),/within 4800ms/);
+ assert.equal(advances,300);
+});
+test('sort target waiting stops on encounter loss instead of advancing through the end screen',async()=>{
+ let advances=0;
+ await assert.rejects(waitForSortTarget({read:async()=>null,advance:async()=>advances++,isActive:async()=>advances<2}),/Encounter stopped/);
+ assert.equal(advances,2);
 });

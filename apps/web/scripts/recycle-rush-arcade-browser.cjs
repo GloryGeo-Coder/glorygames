@@ -1,7 +1,7 @@
 /* Optional real-browser arcade art QA. Supplies completed-hub saves, then uses ordinary controls. */
 const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright-core');
 const assert=require('node:assert/strict'),fs=require('node:fs'),http=require('node:http'),path=require('node:path'),os=require('node:os');
-const {readGrimeTarget,readSortTarget,readPromptProof,readSortProgress,assertSortProgress}=require('./helpers/recycle-browser-snapshot.cjs');
+const {readGrimeTarget,readSortTarget,readPromptProof,readSortProgress,assertSortProgress,waitForSortTarget}=require('./helpers/recycle-browser-snapshot.cjs');
 const A=require('../public/games/recycle-rush/arcade-art.js'),root=path.resolve(__dirname,'../public'),output=process.env.RECYCLE_QA_OUTPUT||fs.mkdtempSync(path.join(os.tmpdir(),'recycle-arcade-'));fs.mkdirSync(output,{recursive:true});
 const key='wga_recycle_rush_2_save_v1',bossLevels=[2,5,8,11,14,16,18,19];
 const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.url.split('?')[0]),file=path.resolve(root,'.'+route,route.endsWith('/')?'index.html':'');if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}try{res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.json':'application/json'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
@@ -55,12 +55,11 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
   };
   await freezeFrame();
   try {
-   let target=null;
-   for(let frame=0;frame<60&&!target;frame++){
-    target=await page.evaluate(readSortTarget,{mapping,binArt});
-    if(!target)await page.clock.runFor(16);
-   }
-   assert.ok(target,'An unobscured rendered item and matching bin are required');
+   const target=await waitForSortTarget({
+    read:()=>page.evaluate(readSortTarget,{mapping,binArt}),
+    advance:milliseconds=>page.clock.runFor(milliseconds),
+    isActive:()=>page.evaluate(()=>!document.getElementById('screenOverlay').classList.contains('active')&&document.getElementById('pauseBtn').textContent==='Pause')
+   });
    const before=await page.evaluate(readSortProgress);
    await page.evaluate(target=>{window.__plannedTarget={kind:'sort',...target};},target);
    await point(target.item.x,target.item.y);await page.clock.runFor(16);await point(target.bin.x,target.bin.y);
@@ -100,7 +99,7 @@ fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(results,null,2)
  for(const context of browser?.contexts()||[])for(const page of context.pages()){
   try{
    const size=page.viewportSize();await page.screenshot({path:path.join(output,`failure-${size.width}-${size.height}.png`),timeout:5000});
-   const diagnostic=await page.evaluate(()=>({score:document.getElementById('scoreValue')?.textContent,lives:document.getElementById('livesValue')?.textContent,objective:document.getElementById('objectiveText')?.textContent,pause:document.getElementById('pauseBtn')?.textContent,overlayActive:document.getElementById('screenOverlay')?.classList.contains('active'),plannedTarget:window.__plannedTarget,pointerTrace:window.__nativePointerTrace,visibleGrime:(window.__arcadePaints||[]).filter(p=>p.src.includes('grime-atlas')).map(({x,y,w,h})=>({x,y,w,h}))}));
+   const diagnostic=await page.evaluate(()=>({score:document.getElementById('scoreValue')?.textContent,lives:document.getElementById('livesValue')?.textContent,objective:document.getElementById('objectiveText')?.textContent,pause:document.getElementById('pauseBtn')?.textContent,overlayActive:document.getElementById('screenOverlay')?.classList.contains('active'),plannedTarget:window.__plannedTarget,pointerTrace:window.__nativePointerTrace,paintedSprites:window.__arcadePaints,visibleGrime:(window.__arcadePaints||[]).filter(p=>p.src.includes('grime-atlas')).map(({x,y,w,h})=>({x,y,w,h}))}));
    fs.writeFileSync(path.join(output,`failure-${size.width}-${size.height}.json`),JSON.stringify(diagnostic,null,2));console.error('BROWSER_DIAGNOSTIC '+JSON.stringify(diagnostic));
   }catch{}
  }

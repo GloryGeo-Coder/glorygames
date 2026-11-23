@@ -46,4 +46,13 @@ function assertSortProgress(before,after) {
   assert.equal(after.sorted,before.sorted+1,'Native taps complete exactly one additional clean sort');
   assert.ok(after.score>=before.score+100,'Native taps add the clean-sort points to the previous score');
 }
-module.exports = { readGrimeTarget, readSortTarget, readPromptProof, readSortProgress, assertSortProgress };
+async function waitForSortTarget({read,advance,isActive},maxFrames=300) {
+  for(let frame=0;frame<=maxFrames;frame++){
+    if(!await isActive())throw Error('Encounter stopped while waiting for a visible sort target');
+    const target=await read();
+    if(target)return target;
+    if(frame<maxFrames)await advance(16);
+  }
+  throw Error('No unobscured native-tappable item and matching bin within '+(maxFrames*16)+'ms of simulated gameplay');
+}
+module.exports = { readGrimeTarget, readSortTarget, readPromptProof, readSortProgress, assertSortProgress, waitForSortTarget };
