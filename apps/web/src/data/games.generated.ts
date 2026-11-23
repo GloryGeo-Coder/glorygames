@@ -148,7 +148,7 @@ export const games = [
   },
   {
     "slug": "word-dash",
-    "title": "Word Dash",
+    "title": "Word Dash: Letter Salvage",
     "href": "/games/word-dash/index.html",
     "thumbnail": "/games/word-dash/thumb.png",
     "category": "Arcade",
