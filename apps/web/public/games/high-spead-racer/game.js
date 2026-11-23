@@ -2082,8 +2082,11 @@
     saveProfile();
     refreshGarageUi();
     if (ui.finalStats) {
+      const progress = state.careerJob
+        ? `Job: ${career.JOBS.indexOf(state.careerJob) + 1}/${career.JOBS.length}`
+        : `Level: ${state.level + 1}/${LEVELS.length}`;
       ui.finalStats.textContent =
-        `Final Score: ${Math.floor(state.score)} • Position: ${state.racePosition}/${state.rivalsTotal + 1} • Laps: ${state.passedFinishLines}/${state.totalLaps} • Checkpoints: ${state.passedCheckpoints} • Overtakes: ${state.overtakes} • Coins Earned: ${coinReward} • Total Coins: ${Math.floor(profile.coins)} • Level: ${state.level + 1}/${LEVELS.length}`;
+        `Final Score: ${Math.floor(state.score)} • Position: ${state.racePosition}/${state.rivalsTotal + 1} • Laps: ${state.passedFinishLines}/${state.totalLaps} • Checkpoints: ${state.passedCheckpoints} • Overtakes: ${state.overtakes} • Coins Earned: ${coinReward} • Total Coins: ${Math.floor(profile.coins)} • ${progress}`;
     }
     $("careerResult").textContent = result ? `${win ? state.careerJob.outro : "Mara · The garage is still here. Bring what you learned and try again."}  ${state.raceTime.toFixed(1)}s · ${Math.round(state.condition)}% condition · ${state.boostSeconds.toFixed(1)}s under boost · +${result.reputation} reputation.` : `${state.impacts} contacts · ${state.raceTime.toFixed(1)}s · ${Math.round(state.condition)}% condition`;
     $("nextJobBtn").classList.toggle("hidden", !result || !win || chosenJob >= career.JOBS.length - 1);
