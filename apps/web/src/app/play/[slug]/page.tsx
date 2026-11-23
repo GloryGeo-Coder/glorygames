@@ -251,6 +251,7 @@ export default async function PlayPage({
           <span aria-current="page">{title}</span>
         </nav>
         <GameEditorial slug={game.slug} title={title} />
+        {["recycle-rush", "science-lab-dash"].includes(game.slug) && <Link className="pill" href="/game-saves">How to resume this game</Link>}
 
         {relatedGames.length ? (
           <section className="section relatedGamesSection">

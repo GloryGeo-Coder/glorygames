@@ -51,7 +51,7 @@ export function communityScore(value: unknown) {
   return value;
 }
 
-export async function communityRateKey(request: Request, actor?: string | null) {
+export async function communityRateKey(request: Pick<Request, "headers">, actor?: string | null) {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) throw new CommunityInputError(503, "Community service unavailable.");
   const encoder = new TextEncoder();

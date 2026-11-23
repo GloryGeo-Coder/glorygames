@@ -1,3 +1,4 @@
+import { selectRelated } from "@/lib/relatedGames";
 import { GAME_CATALOG, catalogGame } from "@/lib/gameCatalog";
 
 export type FallbackGame = {
@@ -62,6 +63,5 @@ export function getFallbackGameBySlug(slug: string) {
 
 export function getRelatedFallbackGames(slug: string, category?: string | null) {
   const games = getFallbackGames().filter((game) => game.slug !== slug).map(catalogGame);
-  const matching = category ? games.filter((game) => game.category === category) : games;
-  return [...matching, ...games.filter((g) => !matching.includes(g))].slice(0, 4);
+  return selectRelated(slug, category, games);
 }

@@ -295,6 +295,7 @@ export default async function GameDetailsPage({
           </section>
 
           <GameEditorial slug={game.slug} title={game.title} />
+        {["recycle-rush", "science-lab-dash"].includes(game.slug) && <Link className="pill" href="/game-saves">How to resume this game</Link>}
 
           <section className="section gameDetailInfoSection">
             <div className="gameDetailInfoGrid">

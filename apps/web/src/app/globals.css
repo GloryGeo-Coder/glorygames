@@ -3226,3 +3226,14 @@ button, input{ font:inherit; }
   outline: 3px solid #a8cdff;
   outline-offset: 3px;
 }
+
+.discoveryLinks { display:flex; flex-wrap:wrap; gap:.65rem; margin:1rem 0; }
+.board { max-width:54rem; }
+.board .heroCard { margin:1.5rem 0; padding:clamp(1rem, 3vw, 2rem); }
+.board form { display:grid; gap:.65rem; justify-items:start; margin:.8rem 0; }
+.board label { display:grid; gap:.35rem; width:100%; }
+.board input:not([type=hidden]), .board textarea { width:100%; font:inherit; padding:.55rem; color:inherit; background:#111827; border:1px solid #777f91; border-radius:.4rem; }
+.board button { font:inherit; cursor:pointer; padding:.4rem .8rem; }
+.board p, .board h2 { overflow-wrap:anywhere; }
+.boardBody { white-space:pre-line; }
+.updateShot { display:block; width:100%; height:auto; margin:1rem 0; border-radius:.5rem; }

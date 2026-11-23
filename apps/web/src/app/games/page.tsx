@@ -1,5 +1,6 @@
 // apps/web/src/app/games/page.tsx
 
+import DiscoveryLinks from "@/components/DiscoveryLinks";
 import { gamePagePath } from "@/lib/gamePaths";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -317,6 +318,7 @@ export default async function GamesPage({
               gap: 12,
             }}
           >
+            <DiscoveryLinks />
             <form className="toolbar" action="/games" method="get">
               {category ? (
                 <input
