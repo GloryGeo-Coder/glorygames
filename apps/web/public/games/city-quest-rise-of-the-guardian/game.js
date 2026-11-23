@@ -77,7 +77,7 @@
       story: 'The guardian journey begins on the rooftops. The mentor will guide your first mission.',
       bg: './assets/backgrounds/level-01.png', width: 2800, target: 9,
       start:{x:120,y:100}, exit:{x:2640,y:470,w:62,h:100},
-      npcs:[{x:300,y:476,kind:'npc',text:'Guardian, collect coins and the first taxi token. Reach the glowing exit when ready.'}],
+      npcs:[{x:300,y:476,kind:'npc',text:'Coins, taxi tokens and badges each count as one keepsake. Fill the mission counter, then head for the glowing gate.'}],
       platforms:[
         {x:0,y:590,w:620,h:110},{x:700,y:540,w:360,h:160},{x:1130,y:510,w:280,h:190},
         {x:1510,y:560,w:440,h:140},{x:2010,y:540,w:310,h:160},{x:2370,y:560,w:430,h:140}
@@ -396,6 +396,11 @@
     out.campaignVersion=22;
     out.lives=clamp(Math.floor(Number(out.lives)||3),1,5);
     if(!['hero_blue','hero_green','hero_shadow'].includes(out.skin)||out.skin==='hero_green'&&out.coins<25||out.skin==='hero_shadow'&&out.coins<60)out.skin='hero_blue';
+    const run = out.missionReturn;
+    const level = levelDefs[out.levelIndex];
+    if (run?.version !== 1 || run.level !== level.id || !Number.isInteger(run.beacon) || !level.checkpoints[run.beacon]) {
+      delete out.missionReturn;
+    }
     out.started=false;out.paused=false;out.onMap=false;out.muted=!!out.muted;
     for(const key of ['musicVolume','effectsVolume'])out[key]=Number.isFinite(Number(out[key]))?clamp(Number(out[key]),0,1):defaultState()[key];
     return out;
@@ -403,7 +408,56 @@
 
   function saveState() {
     state.best=Math.max(state.best,state.score);
-    try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));localStorage.setItem(BEST_KEY,String(Math.floor(state.best)));}catch{}
+    const saved = {...state};
+    if (state.started) {
+      delete saved.missionReturn;
+      if (game.levelComplete) {
+        saved.levelIndex = Math.min(state.levelIndex + 1, levelDefs.length - 1);
+        saved.lives = 3;
+      } else if (!game.gameOver && state.lives > 0 && checkpoint) {
+        const run = {version:1, level:currentLevel().id, beacon:checkpoint.index,
+          guide:game.missionAccepted, shield:player.shield, blaster:player.blasterTimer,
+          enemyHp:currentLevel().enemies.map(() => 0), bossHp:game.boss?.hp};
+        for (const enemy of game.enemies) run.enemyHp[enemy.spawnIndex] = enemy.dead ? 0 : enemy.hp;
+        for (const kind of ['coins','tokens','badges','powers']) {
+          run[kind] = game[kind].flatMap((item, index) => item.taken ? [index] : []);
+        }
+        saved.missionReturn = run;
+      }
+    }
+    try{localStorage.setItem(SAVE_KEY,JSON.stringify(saved));localStorage.setItem(BEST_KEY,String(Math.floor(state.best)));}catch{}
+  }
+
+  function restoreMission(run) {
+    checkpoint = {...currentLevel().checkpoints[run.beacon], index:run.beacon};
+    player.x = checkpoint.x;
+    player.y = checkpoint.y;
+    player.invuln = 1.6;
+    player.shield = run.shield === 1 ? 1 : 0;
+    player.blasterTimer = Number.isFinite(run.blaster) ? clamp(run.blaster, 0, 8) : 0;
+    game.missionAccepted = game.missionShown = run.guide === true;
+    for (const kind of ['coins','tokens','badges','powers']) {
+      if (!Array.isArray(run[kind])) continue;
+      for (const index of run[kind]) {
+        const item = Number.isInteger(index) && game[kind][index];
+        if (!item || item.taken) continue;
+        item.taken = true;
+        if (kind !== 'powers') game.objectiveCount++;
+      }
+    }
+    game.enemies.forEach((enemy, index) => {
+      const hp = run.enemyHp?.[index];
+      if (!Number.isInteger(hp)) return;
+      enemy.hp = clamp(hp, 0, enemy.maxHp);
+      enemy.dead = enemy.hp === 0;
+      if (enemy.dead) enemy.deadTime = 1;
+    });
+    if (game.boss && Number.isInteger(run.bossHp)) {
+      game.boss.hp = clamp(run.bossHp, 0, game.boss.hp);
+      game.boss.alive = game.boss.hp > 0;
+      if (!game.boss.alive) game.boss.defeatAt = -1;
+    }
+    computeCamera();
   }
 
   function loadOne(src) {
@@ -569,7 +623,7 @@
     game.tokens = makeRuntimeItems(lv.tokens || [], 'token');
     game.badges = makeRuntimeItems(lv.badges || [], 'badge');
     game.powers = (lv.powers || []).map(([type,x,y]) => ({type,x,y,w:42,h:42,taken:false}));
-    game.enemies = (lv.enemies || []).map(e => ({...e, w:e.type === 'drone' ? 72 : 64, h:e.type === 'drone' ? 54 : 74, dir:1, dead:false, animTime:0, hurt:0, windup:0, flash:0, maxHp:e.hp, shootTimer:e.cooldown || 1.5}));
+    game.enemies = (lv.enemies || []).map((e, spawnIndex) => ({...e, spawnIndex, w:e.type === 'drone' ? 72 : 64, h:e.type === 'drone' ? 54 : 74, dir:1, dead:false, animTime:0, hurt:0, windup:0, flash:0, maxHp:e.hp, shootTimer:e.cooldown || 1.5}));
     game.obstacles = (lv.obstacles || []).map(o => ({...o, dir:1}));
     game.platforms = (lv.platforms || []).map(p => ({...p, baseX:p.x, baseY:p.y, dir:1, prevX:p.x, prevY:p.y}));
     game.projectiles = [];
@@ -589,17 +643,17 @@
     state.started = true;
     state.onMap = false;
     state.paused = false;
-    state.lives = Math.max(3, state.lives || 3);
+    if (!state.missionReturn) state.lives = Math.max(3, state.lives);
     ui.startOverlay.classList.remove('active');
     ui.levelOverlay.classList.remove('active');
     ui.gameOverOverlay.classList.remove('active');
     ui.mapOverlay.classList.remove('active');
-    loadLevel(state.levelIndex || 0, true);
+    loadLevel(state.levelIndex || 0, true, state.missionReturn);
     startMusic();
     saveState();
   }
 
-  function loadLevel(index, preserveLives=false) {
+  function loadLevel(index, preserveLives=false, missionReturn=null) {
     state.levelIndex = clamp(Math.floor(Number(index)||0), 0, Math.min(state.unlockedLevels-1,levelDefs.length - 1));
     sound.selectLevel(state.levelIndex);
     for(const id of ["pauseOverlay","levelOverlay","gameOverOverlay","mapOverlay"])document.getElementById(id).classList.remove("active");
@@ -607,6 +661,7 @@
     state.paused = false;
     state.onMap = false;
     resetLevelRuntime();
+    if (missionReturn) restoreMission(missionReturn);
     syncUI();
     renderMap();
     saveState();
@@ -751,7 +806,7 @@
     if(player.vy<0)for(const p of surfaces)if(!p.move&&!p.ledge&&player.x+player.w>p.x&&player.x<p.x+p.w&&oldY>=p.y+p.h-1&&player.y<p.y+p.h){player.y=p.y+p.h;player.vy=0;}
     if(player.y>DESIGN_H+180){loseLife('You fell!');return;}
     const next=currentLevel().checkpoints.findLast((c,i)=>i>checkpoint.index&&player.x>=c.x&&player.x<c.x+110&&Math.abs(player.y-c.y)<260);
-    if(next){checkpoint={...next,index:currentLevel().checkpoints.indexOf(next)};game.speechText='Checkpoint reached';game.speechTimer=2;sfx('checkpoint');}
+    if(next){checkpoint={...next,index:currentLevel().checkpoints.indexOf(next)};game.speechText='Checkpoint reached';game.speechTimer=2;sfx('checkpoint');saveState();}
     if(player.onGround) {
       coyote=.11;
     }else coyote=Math.max(0,coyote-dt);
@@ -1272,8 +1327,9 @@
     window.addEventListener('keyup',e=>{delete keys[e.code];});
     const interrupt=()=>{resetInput();stopMusic();setPaused(true);last=performance.now();};
     window.addEventListener('blur',interrupt);
-    document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt();});
-    window.addEventListener('pagehide',()=>{interrupt();saveState();});
+    const suspend = () => {interrupt();if(state.started)saveState();};
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();});
+    window.addEventListener('pagehide',suspend);
     window.addEventListener('resize',resizeCanvas);
     window.visualViewport?.addEventListener('resize',resizeCanvas);
     window.addEventListener('message', ev => {
@@ -1296,7 +1352,8 @@
 
   loadImages().then(() => {
     bindEvents();
-    document.getElementById('playBtn').disabled=false;document.getElementById('playBtn').textContent='Start Story';
+    document.getElementById('playBtn').disabled=false;
+    document.getElementById('playBtn').textContent=state.missionReturn || state.completedLevels ? 'Continue Story' : 'Start Story';
     resizeCanvas();
     syncUI();
     renderMap();
