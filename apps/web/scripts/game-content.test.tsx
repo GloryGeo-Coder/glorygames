@@ -55,7 +55,7 @@ test("published progression facts match the implemented finite paths and continu
     "space-dodger": [/18|eighteen/i, /GLB/, /escort/],
     "space-pilot-platformer": [/eight|8/i, /Final Gate/],
     "stack-tower": [/endless/, /Focus Mode/],
-    "swipe-racer": [/four|4/i],
+    "swipe-racer": [/25 events/i, /seven settings/i, /Horizon Championship/],
     "word-dash": [/four|4/i],
   };
   for (const [slug, patterns] of Object.entries(facts)) {

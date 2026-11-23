@@ -1,6 +1,6 @@
 {
   "title": "Swipe Racer",
-  "description": "Enhanced mobile-first racing game. Swipe to steer a 3D-style car through traffic, use nitro, collect pickups, and clear multiple mission-based levels across city, mountain, coast, and neon night routes.",
+  "description": "Drive 25 Horizon Circuit events, starting with Metro Rush. Steer through traffic, protect cargo and race Kai across the harbour, desert and mountain roads.",
   "tags": ["racing", "mobile", "touch", "missions", "arcade", "3d-style", "endless", "score-attack"],
   "controls": [
     { "key": "Swipe / Drag", "action": "Steer left and right" },
@@ -14,13 +14,16 @@
     "backgroundMusic": true,
     "enhancedAnimations": true,
     "scoreEvents": ["GG_SCORE", "gg:score"],
-    "levels": 4,
+    "levels": 25,
     "missions": true,
     "backgrounds": [
       "bg-city-day.png",
       "bg-mountain-pass.png",
       "bg-coast-sunset.png",
-      "bg-neon-night.png"
+      "bg-neon-night.png",
+      "horizon-harbour.webp",
+      "horizon-desert.webp",
+      "horizon-snow.webp"
     ]
   },
   "version": "2.0.0"
