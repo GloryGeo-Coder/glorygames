@@ -105,7 +105,7 @@ const HUBS: Record<string, Hub> = {
     description: "Play arcade racing, traffic-dodging and futuristic hover runner games. Discover controls, boosts and smart driving strategies.",
     introduction: [
       "The strongest racing runs depend on more than pressing a boost button. You need to anticipate obstacles, understand how the vehicle responds and decide when a risky overtake is worth attempting. WebGameArena's racing collection explores those decisions through conventional cars and a futuristic hover track.",
-      "High Spead Racer has a garage, rivals, checkpoint gates and a multi-level campaign. Swipe Racer takes you from Metro Rush to the Horizon Championship across 25 events, while Neon Hover Runner blends steering, jumping and energy pickups. Each game has a different rhythm, so learning its controls matters as much as reacting quickly."
+      "High Spead Racer has a garage, rivals, checkpoint gates and a multi-level campaign. Swipe Racer offers two short head-to-head races on the harbour road and the snowy pass, while Neon Hover Runner blends steering, jumping and energy pickups. Each game has a different rhythm, so learning its controls matters as much as reacting quickly."
     ],
     skillsTitle: "Core racing skills",
     skills: [
@@ -118,7 +118,7 @@ const HUBS: Record<string, Hub> = {
     chooseTitle: "Which racer should you play?",
     choose: [
       "Choose High Spead Racer for a longer campaign with AI rivals, a garage, unlockable cars, checkpoints and laps.",
-      "Choose Swipe Racer for gesture-controlled traffic dodging through city, mountain, coastal and neon-night routes.",
+      "Choose Swipe Racer for a duel against Kai at the harbour or Mara in the mountains.",
       "Choose Neon Hover Runner if you prefer a futuristic challenge with jumping, shields, magnets and energy pickups."
     ],
     faqs:[
@@ -128,7 +128,7 @@ const HUBS: Record<string, Hub> = {
     ],
     games:[
       {slug:"high-spead-racer",title:"High Spead Racer",whyPlay:"Race rivals through a campaign using checkpoints, nitro and garage upgrades."},
-      {slug:"swipe-racer",title:"Swipe Racer",whyPlay:"Swipe through traffic, collect pickups and race through the Horizon Circuit."},
+      {slug:"swipe-racer",title:"Swipe Racer",whyPlay:"Charge Boost through gold gates at the harbour or by coasting over ice on Frostline Pass."},
       {slug:"neon-hover-runner",title:"Neon Hover Runner",whyPlay:"Steer, jump and boost through a glowing futuristic obstacle track."}
     ]
   },

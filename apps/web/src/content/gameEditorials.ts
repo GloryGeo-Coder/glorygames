@@ -1743,71 +1743,63 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "swipe-racer": {
     "category": "Racing",
-    "summary": "Drive 25 Horizon Circuit events, starting with Metro Rush. Steer through traffic, protect cargo and race Kai across the harbour, desert and mountain roads.",
+    "summary": "Race Kai through Harbour Duel or chase Mara up Frostline Pass. Steer through gold gates, coast across ice to earn Boost, and beat your best time on each course.",
     "overview": [
-      "Swipe Racer is an arcade driving game designed around steering gestures and quick decisions. You navigate a 3D-style car through traffic and collect helpful items while looking ahead to the next safe space in the road.",
-      "The Horizon Circuit opens with Metro Rush. Later events ask you to beat the clock, deliver cargo with a collision limit, or catch Kai before the finish."
+      "Your yellow coupe starts alongside a rival. Both cars accelerate automatically. Read the gap in metres and look one lane beyond the next gate before you commit to an overtake.",
+      "Both courses are open from the start. Harbour Duel runs for 1,440 metres through Breakwater and Crane Row. Frostline Pass climbs 1,590 metres from Pine Hollow to Summit Lodge."
     ],
     "story": [
-      "Maya introduces you to the Horizon crew at the start of Metro Rush.",
-      "You first meet Kai at Dockside Duel. The rivalry returns in the final Horizon Championship."
+      "Kai brings a red coupe to the harbour and challenges you to reach the ferry terminal first.",
+      "Mara takes the purple car into the switchbacks. The blue strips on her road change where it pays to accelerate."
     ],
     "howToPlay": [
-      "Start the current route or mission and familiarise yourself with steering sensitivity.",
-      "Swipe or drag left and right to move your car across the roadway.",
-      "Watch the position and movement of traffic ahead before changing direction.",
-      "Collect useful pickups when a safe route leads through them.",
-      "Use nitro when available to gain speed, but avoid activating it directly into a dense group of cars.",
-      "Finish Metro Rush to unlock City Clock. The event picker lets you return to races you have unlocked."
+      "Choose your course and press Race Kai or Race Mara. After the countdown, swipe or use the arrow keys to pick a lane.",
+      "Drive between the two gold posts to gain one Boost charge. You start with one and can hold three.",
+      "Spend Boost on a clear stretch. A traffic hit slows the car and ends an active boost.",
+      "Cross the chequered line to see your time, position outcome and race score. Replay or switch courses from the result screen."
     ],
     "desktop": [
-      "The game features swipe/drag steering; use pointer dragging and the game's on-screen buttons."
+      "Press the left or right arrow to change lanes and Space to boost. You can also drag across the road.",
+      "Press P or Escape to pause. Choose Resume to continue the same race."
     ],
     "mobile": [
-      "Swipe or drag horizontally to steer.",
-      "Tap or press the Boost button to use nitro when charged; use the Pause, Submit, Restart and Sound controls as needed."
+      "Swipe across the road or tap the left and right buttons to change lanes. Tap Boost when you have a charge.",
+      "Use the pause button to stop mid-race. The pause menu also lets you restart."
     ],
     "systems": [
       {
-        "title": "Horizon Circuit routes",
-        "body": "After the opening city, mountain, coast and neon events, the circuit takes you through the harbour, desert and snowy passes."
+        "title": "Harbour Duel",
+        "body": "The first gold gate is in the middle lane. A traffic car sits just beyond it. Take the charge, steer clear, then boost past Kai."
       },
       {
-        "title": "Traffic and pickups",
-        "body": "Avoiding other vehicles keeps the run alive while selected pickups offer extra opportunities."
+        "title": "Frostline Pass",
+        "body": "Hold your lane and coast from the beginning of a blue ice strip to its end to earn a charge. Boosting on the ice causes a skid. There are six strips on the climb."
       },
       {
-        "title": "Nitro boost",
-        "body": "Boost rewards planning: gaining speed is useful only if the route remains clear."
+        "title": "Race results",
+        "body": "Pace relative to your rival sets your base score. Each gold gate and clean ice strip adds 20 points. Winning adds 100."
       }
     ],
     "progression": [
-      "Finish an event to earn one star. A collision-free finish earns another, and two or more near misses earn a third.",
-      "Completed events save your best star count and unlock the next event in this browser. You can replay an event to improve its stars."
+      "Each course records its own fastest finish in this browser. A faster time counts even if your rival wins.",
+      "Reopening the game brings back the last course you selected. A new race starts at the grid."
     ],
     "tips": [
-      "Aim for an empty lane before you reach a vehicle rather than swiping at the last second.",
-      "Watch two or three cars ahead to avoid escaping one obstacle into another.",
-      "Use nitro on clear sections and plan how you will slow your decisions afterward.",
-      "Steer smoothly instead of making long frantic movements.",
-      "Replay a route to learn its visual cues before focusing on maximum speed."
+      "On the harbour road, check for traffic behind the gate posts before spending your charge.",
+      "On Frostline Pass, wait for the clean-ice message before pressing Boost. If a boost is still running as you enter the next strip, change to a dry lane."
     ],
     "faqs": [
       {
-        "q": "How many levels or missions can I play?",
-        "a": "There are 25 events, from Metro Rush to the Horizon Championship."
+        "q": "Do I have to win at the harbour to race in the snow?",
+        "a": "Both courses are available immediately. Select Frostline Pass on the opening screen, or switch after any finish."
       },
       {
-        "q": "How do I steer?",
-        "a": "Swipe or drag left and right, including on a touch screen."
+        "q": "Why did my car skid on the blue strip?",
+        "a": "Boost was active on the ice. Coast across the full strip in its lane to collect a charge, then accelerate on dry road."
       },
       {
-        "q": "Can I use nitro?",
-        "a": "Yes. The game includes a boost control for nitro."
-      },
-      {
-        "q": "Are there different roads?",
-        "a": "Yes. The seven settings include city streets, mountain passes, coastal roads, neon highways, the harbour, the desert and snowy alpine roads."
+        "q": "How do I keep my personal best?",
+        "a": "Finish a race and return using the same browser profile. The game stores one best time per course when local storage is available."
       }
     ]
   },

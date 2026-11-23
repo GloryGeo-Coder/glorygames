@@ -35,7 +35,7 @@ const TITLES: Record<string, string> = {
   "space-dodger": "Space Dodger 3D: Starfall Odyssey",
   "space-pilot-platformer": "Space Pilot Platformer",
   "stack-tower": "Stack Tower",
-  "swipe-racer": "Swipe Racer",
+  "swipe-racer": "Swipe Racer: Harbour Duel & Frostline Pass",
   "word-dash": "Word Dash"
 };
 

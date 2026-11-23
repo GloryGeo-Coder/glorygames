@@ -1,30 +1,36 @@
 {
-  "title": "Swipe Racer",
-  "description": "Drive 25 Horizon Circuit events, starting with Metro Rush. Steer through traffic, protect cargo and race Kai across the harbour, desert and mountain roads.",
-  "tags": ["racing", "mobile", "touch", "missions", "arcade", "3d-style", "endless", "score-attack"],
+  "title": "Swipe Racer: Harbour Duel & Frostline Pass",
+  "description": "Race Kai through Harbour Duel or chase Mara up Frostline Pass. Steer through gold gates, coast across ice to earn Boost, and beat your best time on each course.",
+  "tags": [
+    "racing",
+    "touch",
+    "time trial"
+  ],
   "controls": [
-    { "key": "Swipe / Drag", "action": "Steer left and right" },
-    { "key": "Tap", "action": "Use nitro if charged" },
-    { "key": "Boost button", "action": "Use nitro" },
-    { "key": "Buttons", "action": "Pause / Submit / Restart / Sound" }
+    {
+      "key": "Swipe / Drag / Arrow keys",
+      "action": "Change lanes"
+    },
+    {
+      "key": "Space / Boost",
+      "action": "Use one Boost charge"
+    },
+    {
+      "key": "P / Escape / Pause",
+      "action": "Pause the race"
+    }
   ],
   "features": {
     "mobileFirst": true,
-    "sound": true,
-    "backgroundMusic": true,
-    "enhancedAnimations": true,
-    "scoreEvents": ["GG_SCORE", "gg:score"],
-    "levels": 25,
-    "missions": true,
+    "courses": [
+      "Harbour Duel",
+      "Frostline Pass"
+    ],
     "backgrounds": [
-      "bg-city-day.png",
-      "bg-mountain-pass.png",
-      "bg-coast-sunset.png",
-      "bg-neon-night.png",
       "horizon-harbour.webp",
-      "horizon-desert.webp",
       "horizon-snow.webp"
-    ]
+    ],
+    "localBestTimes": true
   },
-  "version": "2.0.0"
+  "version": "3.0.0"
 }

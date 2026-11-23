@@ -53,9 +53,9 @@ const games = [
   },
   {
     slug: "swipe-racer",
-    title: "Swipe Racer",
+    title: "Swipe Racer: Harbour Duel & Frostline Pass",
     description:
-      "Swipe through lanes, avoid traffic, and push your reaction time to the limit.",
+      "Race Kai through Harbour Duel or chase Mara up Frostline Pass. Steer through gold gates, coast across ice to earn Boost, and beat your best time on each course.",
     category: GameCategory.RACING,
     tags: ["driving", "swipe", "speed", "mobile", "reflex"],
   },
