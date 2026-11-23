@@ -139,6 +139,23 @@
     mode: 'copy', runWords: 0, runMisses: 0, correctChars: 0, activeSeconds: 0,
   };
 
+  // WPM measures real active time, independently of the capped gameplay step.
+  // Settle intervals at transitions too: RAF may not run at all during a pause.
+  let activeSince = null;
+  function isWpmActive() {
+    return state.running && !state.paused && !state.gameOver && !state.levelClear && !state.victory && !document.hidden;
+  }
+  function syncActiveTime(now = performance.now()) {
+    if (activeSince !== null) state.activeSeconds += Math.max(0, now - activeSince) / 1000;
+    activeSince = isWpmActive() ? now : null;
+  }
+  function setActivity(changes) {
+    const now = performance.now();
+    syncActiveTime(now);
+    Object.assign(state, changes);
+    activeSince = isWpmActive() ? now : null;
+  }
+
   // ---------------- Score bridge ----------------
   let lastLiveScore = -1, lastLiveAt = 0;
   function postScore(mode = 'live') {
@@ -310,6 +327,7 @@
   }
   function focusEntry() { elEntry?.focus?.({preventScroll:true}); }
   function updateHUD() {
+    syncActiveTime();
     if (elScore) elScore.textContent = String(Math.floor(state.score));
     if (elTime) elTime.textContent = Math.max(0, state.timeLeft).toFixed(1);
     if (elStreak) elStreak.textContent = String(state.streak);
@@ -330,11 +348,7 @@
 
   function resetLevelState() {
     const lvl = currentLevel();
-    state.running = false;
-    state.paused = false;
-    state.gameOver = false;
-    state.levelClear = false;
-    state.victory = false;
+    setActivity({ running: false, paused: false, gameOver: false, levelClear: false, victory: false });
     state.timeLeft = lvl.time;
     state.streak = 0;
     state.bestStreak = 0;
@@ -353,6 +367,7 @@
     toast('Tap Start to begin.', 'neutral');
   }
   function resetRun() {
+    setActivity({ running: false });
     state.levelIndex = 0;
     state.score = 0;
     state.runWords = 0; state.runMisses = 0; state.correctChars = 0; state.activeSeconds = 0;
@@ -363,11 +378,7 @@
   }
   function startLevel() {
     if (state.levelIndex === 0 && !state.runWords && challengeMode) state.mode = challengeMode.value === 'spelling' ? 'spelling' : 'copy';
-    state.running = true;
-    state.paused = false;
-    state.gameOver = false;
-    state.levelClear = false;
-    state.victory = false;
+    setActivity({ running: true, paused: false, gameOver: false, levelClear: false, victory: false });
     setEntry('');
     setTarget(pickWord());
     hidePanel();
@@ -385,8 +396,7 @@
     showPanel(levelTitle(), `Mission:\n${missionText()}\n\nClear this route before time runs out.`, 'Start next level');
   }
   function completeLevel() {
-    state.running = false;
-    state.levelClear = true;
+    setActivity({ running: false, levelClear: true });
     stopMusic();
     sfx('level');
     spawnFx(window.innerWidth / 2, window.innerHeight * 0.35, 'LEVEL CLEAR!', '#ffe08a', 34);
@@ -395,7 +405,7 @@
       try { localStorage.setItem(BEST_KEY, String(state.best)); } catch {}
     }
     if (state.levelIndex >= LEVELS.length - 1) {
-      state.victory = true;
+      setActivity({ victory: true });
       postScore('victory');
       showPanel('Word Dash Champion!', `You cleared all ${LEVELS.length} levels.\n\n${runSummary()}\nFinal score: ${Math.floor(state.score)} • Best: ${state.best}\nTap Start to play again.`, 'Play again');
     } else {
@@ -404,9 +414,7 @@
     updateHUD();
   }
   function endGame(reason) {
-    state.gameOver = true;
-    state.running = false;
-    state.paused = false;
+    setActivity({ gameOver: true, running: false, paused: false });
     stopMusic();
     if (state.score > state.best) {
       state.best = Math.floor(state.score);
@@ -419,7 +427,7 @@
   }
   function togglePause() {
     if (!state.running || state.gameOver || state.levelClear || state.victory) return;
-    state.paused = !state.paused;
+    setActivity({ paused: !state.paused });
     if (state.paused) { stopMusic(); showPanel('Paused', 'Tap Start or Pause to continue.', 'Resume'); }
     else { hidePanel(); focusEntry(); startMusic(); }
   }
@@ -583,10 +591,10 @@
     if (state.victory || state.gameOver) { resetRun(); startLevel(); return; }
     if (state.levelClear) { loadNextLevel(); startLevel(); return; }
     if (!state.running) startLevel();
-    else if (state.paused) { state.paused = false; hidePanel(); focusEntry(); startMusic(); }
+    else if (state.paused) { setActivity({ paused: false }); hidePanel(); focusEntry(); startMusic(); }
   });
   btnInfo?.addEventListener('click', () => {
-    if (state.running && !state.paused) { state.paused = true; stopMusic(); }
+    if (state.running && !state.paused) { setActivity({ paused: true }); stopMusic(); }
     showPanel('How to play', 'Type the target word using your keyboard or the on-screen keypad.\n\n• Correct words build streak multipliers\n• Wrong words cost time and increase misses\n• Complete each level mission to unlock the next word world\n• Hint adds the next letter\n• Freeze stops the timer briefly\n• +Time adds six seconds');
   });
   btnPause?.addEventListener('click', togglePause);
@@ -623,7 +631,7 @@
     const data = ev.data || {};
     const type = data.type || data.event;
     if (type === 'GG_PAUSE') {
-      state.paused = !!(data.payload?.paused ?? data.paused);
+      setActivity({ paused: !!(data.payload?.paused ?? data.paused) });
       if (state.paused) stopMusic(); else if (state.running) startMusic();
     }
     if (type === 'GG_MUTE') {
@@ -634,14 +642,16 @@
     }
     if (type === 'GG_RESTART') { resetRun(); startLevel(); }
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && state.running && !state.paused) togglePause(); });
+  document.addEventListener('visibilitychange', () => {
+    syncActiveTime();
+    if (document.hidden && state.running && !state.paused) togglePause();
+  });
 
   let last = performance.now();
   function loop(now) {
     const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
     last = now;
     if (state.running && !state.paused && !state.gameOver && !state.levelClear && !state.victory) {
-      state.activeSeconds += dt;
       if (state.freezeTimer > 0) state.freezeTimer = Math.max(0, state.freezeTimer - dt);
       else state.timeLeft -= dt;
       if (state.timeLeft <= 0) {

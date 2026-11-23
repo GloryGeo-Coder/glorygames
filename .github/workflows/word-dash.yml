@@ -1,0 +1,28 @@
+name: Word Dash checks
+on:
+  pull_request:
+    paths:
+      - 'apps/web/public/games/word-dash/**'
+      - 'apps/web/tests/word-dash-*.test.cjs'
+      - '.github/workflows/word-dash.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/public/games/word-dash/**'
+      - 'apps/web/tests/word-dash-*.test.cjs'
+      - '.github/workflows/word-dash.yml'
+permissions:
+  contents: read
+jobs:
+  word-dash:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+      - run: node --check apps/web/public/games/word-dash/game.js && node --check apps/web/tests/word-dash-wpm.test.cjs
+      - run: node --test apps/web/tests/word-dash-wpm.test.cjs apps/web/tests/word-dash-vocabulary.test.cjs
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run build
