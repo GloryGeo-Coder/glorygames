@@ -1,56 +1,36 @@
 {
-  "title": "Word Dash",
-  "description": "Enhanced word sprint game. Type or tap letters to match target words, build streaks, use power-ups, and complete mission-based levels across themed 3D-style backgrounds.",
+  "title": "Word Dash: Letter Salvage",
+  "description": "Shoot loose letters and spell drifting word comets to power four orbital beacons. Each correct key fires a bolt. Salvage checkpoints let you return to the same sector.",
   "tags": [
     "word",
-    "mobile",
-    "touch",
+    "arcade",
     "typing",
-    "puzzle",
-    "missions",
-    "score-attack",
-    "enhanced"
+    "touch",
+    "space"
   ],
   "controls": [
     {
-      "key": "Keyboard",
-      "action": "Type letters, Enter submits, Backspace deletes"
+      "key": "A–Z / on-screen keyboard",
+      "action": "Fire a letter. Spell the locked comet to break it."
     },
     {
-      "key": "On-screen keys",
-      "action": "Tap letters on mobile"
+      "key": "Tap a target",
+      "action": "Shoot a loose letter or select a word comet."
     },
     {
-      "key": "Power-up buttons",
-      "action": "Use Hint, Freeze, or +Time"
+      "key": "Backspace / ⌫",
+      "action": "Release a word lock and reset its letters."
     },
     {
-      "key": "Buttons",
-      "action": "Pause / Submit / Restart / Sound"
+      "key": "Escape / Pause",
+      "action": "Pause or resume the flight."
     }
   ],
   "features": {
     "mobileFirst": true,
-    "sound": true,
-    "backgroundMusic": true,
-    "enhancedAnimations": true,
-    "scoreEvents": [
-      "GG_SCORE",
-      "gg:score"
-    ],
-    "levels": 4,
-    "missions": true,
-    "powerups": [
-      "Hint",
-      "Freeze",
-      "+Time"
-    ],
-    "backgrounds": [
-      "bg-library.png",
-      "bg-city-words.png",
-      "bg-mountain-focus.png",
-      "bg-neon-letters.png"
-    ]
+    "sectors": 4,
+    "localCheckpoints": true,
+    "sound": true
   },
-  "version": "2.0.0"
+  "version": "3.0.0"
 }
