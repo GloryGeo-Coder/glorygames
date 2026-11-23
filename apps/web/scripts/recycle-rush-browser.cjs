@@ -13,13 +13,25 @@ async function localOnly(context){await context.route('**/*',route=>{const u=new
  await page.goto(`http://127.0.0.1:${server.address().port}/games/recycle-rush/?scores=0`);await page.waitForFunction(()=>window.__wgaGameTab&&window.RecycleArcade);await page.locator('#mapGrid .hub-card').first().waitFor();assert.equal(await page.locator('#storyMissionList button:disabled').count(),L.missions.length-1);assert.equal(await page.locator('#mapGrid .hub-card').count(),8);
  await activate('#storyStartBtn');await named('Start Mission');await noOverflow();await page.waitForFunction(()=>document.getElementById('storyCircuit').classList.contains('sprite-ready')&&document.getElementById('storyCircuitCanvas').dataset.frame!==undefined);await bounds('#storyScene');await bounds('#storyPauseBtn');
  for(let i=0;i<6;i++){await bounds('#story-item-'+i);const b=await page.locator('#story-item-'+i).boundingBox();assert.ok(b.width>=44&&b.height>=44);}
+ const circuitClear=async()=>{
+  await page.waitForTimeout(450);
+  assert.equal(await page.evaluate(()=>{
+   const a=document.getElementById('storyCircuit').getBoundingClientRect();
+   const carried=document.getElementById('storyCarried');
+   const actors=[a,...(!carried.hidden?[carried.getBoundingClientRect()]:[])];
+   return [...document.querySelectorAll('.story-object:not(.done)')].every(el=>{
+    const b=el.getBoundingClientRect();return actors.every(r=>r.right<=b.left||r.left>=b.right||r.bottom<=b.top||r.top>=b.bottom);
+   });
+  }),true,'Circuit must not overlap item cards or their labels');
+ };
+ for(const i of [0,2,3,5]){await activate('#story-item-'+i);await circuitClear();}
  await activate('#story-item-0');await bounds('[data-route="paper"]');await activate('[data-route="containers"]');assert.match(await page.locator('#storyStatus').textContent(),/try again/i);await activate('#storyHintBtn');assert.match(await page.locator('#storyStatus').textContent(),/paper/i);assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).session.hints,L.SAVE_KEY),1);
  await page.screenshot({path:path.join(output,`${width}-${height}-story.png`)});
  if(width===390&&await page.locator('#storyFullscreen .wga-tab-fullscreen').count()){await activate('#storyFullscreen .wga-tab-fullscreen');await page.waitForFunction(()=>document.fullscreenElement);await activate('#storyFullscreen .wga-tab-fullscreen');await page.waitForFunction(()=>!document.fullscreenElement);}
 
  await activate('#storyBoardBtn');assert.match(await page.locator('#storyModalTitle').textContent(),/service/i);assert.match(await page.locator('#storyModalContent').textContent(),/fictional/);const source=page.locator('#storyModalContent a');assert.equal(await source.textContent(),'Fibre Circle · Zithande Mzansi');assert.equal(await source.getAttribute('href'),L.SOURCES[0]);await named('Back to Mission');
  await activate('#storyPauseBtn');await page.keyboard.press('Tab');assert.equal(await page.locator('#storyModal').evaluate(el=>el.contains(document.activeElement)),true);await named('Resume');
- if(width===390){await page.setViewportSize({width:844,height:390});await noOverflow();await bounds('[data-route="paper"]');assert.match(await page.locator('#storyItemName').textContent(),/newspaper/i);await page.setViewportSize({width,height});await bounds('#storyPauseBtn');}
+ if(width===390){await page.setViewportSize({width:844,height:390});await noOverflow();await circuitClear();await bounds('[data-route="paper"]');assert.match(await page.locator('#storyItemName').textContent(),/newspaper/i);await page.setViewportSize({width,height});await bounds('#storyPauseBtn');}
  if(width===390){
   const cdp=await context.newCDPSession(page),target=await page.locator('#story-item-0').boundingBox(),route=await page.locator('[data-route="paper"]').boundingBox();
   const start={x:target.x+target.width/2,y:target.y+target.height/2},end={x:route.x+route.width/2,y:route.y+route.height/2};

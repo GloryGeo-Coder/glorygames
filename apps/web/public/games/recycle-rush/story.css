@@ -99,3 +99,6 @@ button{touch-action:manipulation}
 /* Saved work orders and the complete city celebration. */
 .order-progress{display:flex;align-items:center;gap:12px}.order-progress img{width:46px;height:46px;object-fit:contain}.order-progress p{flex:1;font-size:12px}.order-progress progress{width:100px;max-width:30%;accent-color:#9aecb5}.order-record{padding-left:24px;color:#bdf1d0;font:12px/1.5 system-ui}.order-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#storyRoot .order-actions button{min-height:66px;text-align:left;font-size:12px;line-height:1.35;overflow-wrap:anywhere}#storyRoot .order-actions button:disabled{opacity:1;color:#bdf1d0;background:#234e40}.story-districts{list-style:none;padding:0;display:grid;gap:8px}.story-districts li{padding:10px;border:1px solid #83e9bc55;border-radius:10px;background:#113b38;color:#ccebdc;font:12px/1.4 system-ui}.story-districts strong{display:block;color:#a4f4c2;margin-bottom:3px}.story-ending-summary{color:#a4f4c2!important;font-weight:700}
 @media(max-width:360px){#storyRoot .order-actions button{font-size:11px;padding:8px;min-height:72px}.order-progress{gap:6px}}
+
+/* Circuit travels in the reserved left lane, away from item art and labels. */
+#storyRoot .story-circuit{left:1%;width:14%;max-width:150px;height:auto;aspect-ratio:82/94}
