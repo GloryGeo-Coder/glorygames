@@ -19,6 +19,11 @@ const footerGroups = [
     title: "Playing here",
     links: [
       { label: "Game guides", href: "/games" },
+      { label: "Learning Arcade", href: "/learning-arcade" },
+      { label: "Quick Play", href: "/quick-play" },
+      { label: "Game Saves & Resume", href: "/game-saves" },
+      { label: "Community", href: "/community" },
+      { label: "Game updates", href: "/game-updates" },
       { label: "Parents & Safety", href: "/parents-safety" },
       { label: "Help & Contact", href: "/contact" },
       { label: "Word & Trivia", href: "/games?category=word-trivia" },

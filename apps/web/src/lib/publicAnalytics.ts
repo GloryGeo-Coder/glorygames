@@ -6,6 +6,7 @@ export const ANALYTICS_NOTICE = ANALYTICS_ENABLED
   : "Advertising remains paused. Optional Google Analytics is being prepared and is not active in this release. Google advertising, Google Analytics and Cloudflare browser analytics scripts are not loaded. Hosting and security services still process requests needed to deliver and protect the website.";
 
 const PAGES: Record<string, string> = {
+  "/learning-arcade": "Learning Arcade", "/quick-play": "Quick Play", "/game-saves": "Game saves", "/game-updates": "Game updates",
   "/": "Home", "/games": "Games", "/leaderboard": "Leaderboard",
   "/about": "About", "/contact": "Contact", "/advertise": "Advertise",
   "/parents-safety": "Parents and safety", "/privacy": "Privacy",

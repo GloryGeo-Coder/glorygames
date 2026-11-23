@@ -28,7 +28,7 @@ test('historical API hold returns empty no-store data before request or database
 });
 for(const library of ['gamesDb','leaderboard','leaderboardPreview'])test(`historical hold prevents ${library} readers from reaching either database client`,async()=>{
   const forbidden=()=>{throw new Error('Paused library accessed private data');};
-  const {namespace}=await load('',{'@/lib/launchPolicy':{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED:false},'@/lib/prisma':{prisma:new Proxy({},{get:forbidden})},'@/lib/neon':{getNeonSql:forbidden,hasUsableNeonDatabaseUrl:forbidden},'@/lib/gameCatalog':{catalogGame:forbidden}},`../../apps/web/src/lib/${library}.ts`);
+  const {namespace}=await load('',{'@/lib/launchPolicy':{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED:false},'@/lib/prisma':{prisma:new Proxy({},{get:forbidden})},'@/lib/neon':{getNeonSql:forbidden,hasUsableNeonDatabaseUrl:forbidden},'@/lib/gameCatalog':{catalogGame:forbidden},'@/lib/relatedGames':{selectRelated:forbidden}},`../../apps/web/src/lib/${library}.ts`);
   if(library==='gamesDb'){
     assert.equal((await namespace.getGlobalLeaderboardFromDatabase()).length,0);
     assert.equal((await namespace.getLeaderboardForGameFromDatabase({slug:'fixture'})).length,0);

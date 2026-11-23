@@ -1,3 +1,4 @@
+import { selectRelated } from "@/lib/relatedGames";
 // apps/web/src/lib/gamesDb.ts
 
 import { getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
@@ -150,24 +151,8 @@ export async function getRelatedGamesFromDatabase({
   category?: string | null;
   limit?: number;
 }): Promise<DbGameListItem[]> {
-  if (!hasUsableNeonDatabaseUrl()) return [];
-  const sql = getNeonSql();
-
-  // Classify in application code first: legacy database rows may all be ARCADE.
-  // Do not filter by the stale SQL enum until the authorised sync has run.
-  const rows = await sql`
-    SELECT id, slug, title, description, category::text AS category, tags
-    FROM "Game"
-    WHERE slug <> ${slug}
-      AND LEFT(slug, 1) <> '_'
-      AND LOWER(slug) NOT LIKE '%template%'
-      AND LOWER(title) NOT LIKE '%template%'
-    ORDER BY title ASC
-    LIMIT 120
-  `;
-  const games = rows.map(normalizeGameRow).filter((g) => isPublicGameSlug(g.slug));
-  const sameCategory = category ? games.filter((g) => g.category === category) : games;
-  return [...sameCategory, ...games.filter((g) => !sameCategory.includes(g))].slice(0, limit);
+  const games = await getGamesFromDatabase();
+  return selectRelated(slug, category, games, limit);
 }
 
 export async function getSitemapGamesFromDatabase(): Promise<DbSitemapGame[]> {
