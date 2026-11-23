@@ -33,4 +33,17 @@ function readPromptProof() {
   const x=Math.floor((p.x-(p.maxWidth+12)/2+4)*dpr),y=Math.floor((p.y-4)*dpr);
   return {fill:p.fill,x,y,canvasWidth:canvas.width,canvasHeight:canvas.height,frame:p.frame,rgba:Array.from(canvas.getContext('2d').getImageData(x,y,1,1).data)};
 }
-module.exports = { readGrimeTarget, readSortTarget, readPromptProof };
+function readSortProgress() {
+  const scoreText=document.getElementById('scoreValue')?.textContent;
+  const objective=document.getElementById('objectiveText')?.textContent;
+  const progress=objective?.match(/(?:^|: )([0-9]+)\/([0-9]+) clean sorts(?: •|$)/);
+  if(!scoreText?.trim() || !Number.isFinite(Number(scoreText)) || !progress)throw Error('Sort progress HUD is unavailable');
+  return {score:Number(scoreText),sorted:Number(progress[1]),target:Number(progress[2])};
+}
+function assertSortProgress(before,after) {
+  const assert=require('node:assert/strict');
+  assert.equal(after.target,before.target,'The encounter target stays unchanged');
+  assert.equal(after.sorted,before.sorted+1,'Native taps complete exactly one additional clean sort');
+  assert.ok(after.score>=before.score+100,'Native taps add the clean-sort points to the previous score');
+}
+module.exports = { readGrimeTarget, readSortTarget, readPromptProof, readSortProgress, assertSortProgress };

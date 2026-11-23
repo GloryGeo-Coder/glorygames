@@ -1,7 +1,7 @@
 /* Optional real-browser arcade art QA. Supplies completed-hub saves, then uses ordinary controls. */
 const{chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright-core');
 const assert=require('node:assert/strict'),fs=require('node:fs'),http=require('node:http'),path=require('node:path'),os=require('node:os');
-const {readGrimeTarget,readSortTarget,readPromptProof}=require('./helpers/recycle-browser-snapshot.cjs');
+const {readGrimeTarget,readSortTarget,readPromptProof,readSortProgress,assertSortProgress}=require('./helpers/recycle-browser-snapshot.cjs');
 const A=require('../public/games/recycle-rush/arcade-art.js'),root=path.resolve(__dirname,'../public'),output=process.env.RECYCLE_QA_OUTPUT||fs.mkdtempSync(path.join(os.tmpdir(),'recycle-arcade-'));fs.mkdirSync(output,{recursive:true});
 const key='wga_recycle_rush_2_save_v1',bossLevels=[2,5,8,11,14,16,18,19];
 const server=http.createServer((req,res)=>{const route=decodeURIComponent(req.url.split('?')[0]),file=path.resolve(root,'.'+route,route.endsWith('/')?'index.html':'');if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}try{res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.json':'application/json'})[path.extname(file)]||'application/octet-stream');res.end(fs.readFileSync(file));}catch{res.writeHead(404).end();}});
@@ -61,11 +61,11 @@ for(const[width,height,touch]of [[320,568,true],[390,844,true],[844,390,true],[7
     if(!target)await page.clock.runFor(16);
    }
    assert.ok(target,'An unobscured rendered item and matching bin are required');
+   const before=await page.evaluate(readSortProgress);
    await page.evaluate(target=>{window.__plannedTarget={kind:'sort',...target};},target);
    await point(target.item.x,target.item.y);await page.clock.runFor(16);await point(target.bin.x,target.bin.y);
    await page.clock.runFor(32);
-   assert.ok(Number(await page.locator('#scoreValue').textContent())>=108);
-   assert.match(await page.locator('#objectiveText').textContent(),/1\/\d+ clean sorts/);
+   assertSortProgress(before,await page.evaluate(readSortProgress));
   } finally {await page.clock.resume();}
   const seenId=boss.sheet.split('/').at(-1)+':'+boss.row*256;await page.waitForFunction(id=>window.__arcadeSeen?.[id]?.includes(768),seenId);await page.waitForFunction(id=>window.__arcadeSeen?.[id]?.includes(512),seenId);
   if(width===390||width===1440||chapter===7){

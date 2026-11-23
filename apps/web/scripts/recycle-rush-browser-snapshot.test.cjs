@@ -1,5 +1,5 @@
 const test = require('node:test'), assert = require('node:assert/strict'), vm = require('node:vm');
-const {readGrimeTarget,readSortTarget,readPromptProof} = require('./helpers/recycle-browser-snapshot.cjs');
+const {readGrimeTarget,readSortTarget,readPromptProof,readSortProgress,assertSortProgress} = require('./helpers/recycle-browser-snapshot.cjs');
 const aimArgs={mapping:{'paper.webp':'paper','metal.webp':'metal','bottle.webp':'plastic'},binArt:{paper:'paper.webp',metal:'metal.webp',plastic:'bottle.webp'}};
 function snapshot(paints, nodes = {scoreValue: {textContent: '108'}, bossFill: {style: {width: '86.5%'}}}) {
   // Match page.evaluate serialization, with native DOM textContent represented as a string property.
@@ -69,4 +69,22 @@ test('canvas targets covered by a DOM overlay are rejected',()=>{
 });
 test('a visible canvas can still have a bin below the browser viewport',()=>{
  assert.equal(aim([picture('paper.webp',100,80),picture('paper.webp',100,230,28)],{rect:{top:300}}),null);
+});
+
+function progress(score,objective){return vm.runInNewContext('('+readSortProgress.toString()+')()', {document:{getElementById:id=>({textContent:id==='scoreValue'?score:objective})}});}
+test('native sort acceptance measures the first sort from its pre-input HUD',()=>{
+ assertSortProgress(progress('0','Boss: The Bog: 0/24 clean sorts • Defeat The Bog'),progress('108','Boss: The Bog: 1/24 clean sorts • Defeat The Bog'));
+});
+test('the recorded second clean sort passes relative acceptance',()=>{
+ assertSortProgress(progress('108','Boss: The Bog: 1/24 clean sorts • Defeat The Bog'),progress('216','Boss: The Bog: 2/24 clean sorts • Defeat The Bog'));
+});
+test('existing points or unrelated points cannot replace a new clean sort',()=>{
+ const before={score:108,sorted:1,target:24};
+ assert.throws(()=>assertSortProgress(before,before),/additional clean sort/);
+ assert.throws(()=>assertSortProgress(before,{...before,score:216}),/additional clean sort/);
+ assert.throws(()=>assertSortProgress(before,{...before,sorted:2}),/clean-sort points/);
+ assert.throws(()=>assertSortProgress(before,{score:216,sorted:2,target:30}),/target stays/);
+});
+test('sort acceptance rejects missing or malformed HUD evidence',()=>{
+ for(const [score,text]of [['','Boss: The Bog: 1/24 clean sorts'],['NaN','Boss: The Bog: 1/24 clean sorts'],['108',''],['108','Boss: The Bog: unknown/24 clean sorts']])assert.throws(()=>progress(score,text),/HUD is unavailable/);
 });
