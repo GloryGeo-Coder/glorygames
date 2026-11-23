@@ -38,7 +38,13 @@ export default async function Community({searchParams}:{searchParams:Promise<Par
   } catch { /* Keep editorial updates readable during database maintenance. */ }
   return <div className="container section board"><h1>Community</h1>
     <p>Game updates from the WebGameArena team and conversations with players.</p>
-    <Link href="/game-updates">Game updates archive</Link>{" · "}<Link href="/community-guidelines">Community guidelines</Link>{" · "}<Link href="/contact">Report a concern</Link>
+    <nav className="discoveryLinks" aria-label="Explore WebGameArena">
+      <Link className="pill" href="/learning-arcade">Learning Arcade</Link>
+      <Link className="pill" href="/quick-play">Quick Play</Link>
+      <Link className="pill" href="/game-saves">Game Saves &amp; Resume</Link>
+      <Link className="pill" href="/game-updates">Game Updates</Link>
+    </nav>
+    <Link href="/community-guidelines">Community guidelines</Link>{" · "}<Link href="/contact">Report a concern</Link>
     {q.notice && notices[q.notice] && <p role="status">{notices[q.notice]}</p>}
     {!available && <p role="status">Community posts and reactions are temporarily unavailable.</p>}
     {available && editor && <section className="heroCard"><h2>Publish a post</h2>
