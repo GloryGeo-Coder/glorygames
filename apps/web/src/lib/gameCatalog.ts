@@ -32,7 +32,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "space-pilot-platformer": { title: "Space Pilot Platformer: The Starfall Rift", category: "PLATFORMER", description: "Join Pilot Nova across 30 Starfall Rift missions in six worlds, rescue the expedition, restore the portal network and face the NOVA-X Commander, with saved checkpoints, original level music and the separate eight-mission route." },
   "stack-tower": { category: "PUZZLE", description: "Build through three skylines, take on daily and timed construction challenges, and unlock tower styles." },
   "swipe-racer": { title: "Swipe Racer: Harbour Duel & Frostline Pass", category: "RACING", description: "Race Kai through Harbour Duel or chase Mara up Frostline Pass. Steer through gold gates, coast across ice to earn Boost, and beat your best time on each course." },
-  "word-dash": { category: "WORD_TRIVIA", description: "Complete four themed word missions by typing or tapping letters, building spelling streaks and using Hint, Freeze and extra-time powers." },
+  "word-dash": { title: "Word Dash: Letter Salvage", category: "WORD_TRIVIA", description: "Shoot loose letters and spell drifting word comets to power four orbital beacons. Each correct key fires a bolt. Salvage checkpoints let you return to the same sector." },
 };
 
 export function catalogCategory(slug: string, fallback: string | null | undefined = "ARCADE"): GameCategoryValue {
