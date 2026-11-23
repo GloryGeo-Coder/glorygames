@@ -31,7 +31,7 @@ export const GAME_CATALOG: Record<string, CatalogEntry> = {
   "space-dodger": { category: "ACTION", description: "Pilot a GLB spacecraft through 18 story sectors with cinematic space backgrounds, rescue and escort objectives, reactive bosses, saved checkpoints and separate audio controls." },
   "space-pilot-platformer": { title: "Space Pilot Platformer: The Starfall Rift", category: "PLATFORMER", description: "Join Pilot Nova across 30 Starfall Rift missions in six worlds, rescue the expedition, restore the portal network and face the NOVA-X Commander, with saved checkpoints, original level music and the separate eight-mission route." },
   "stack-tower": { category: "PUZZLE", description: "Build through three skylines, take on daily and timed construction challenges, and unlock tower styles." },
-  "swipe-racer": { category: "RACING", description: "Race through four city, mountain, coastal and neon-night missions. Swipe around traffic, collect pickups, use nitro and complete route objectives." },
+  "swipe-racer": { category: "RACING", description: "Drive 25 Horizon Circuit events, starting with Metro Rush. Steer through traffic, protect cargo and race Kai across the harbour, desert and mountain roads." },
   "word-dash": { category: "WORD_TRIVIA", description: "Complete four themed word missions by typing or tapping letters, building spelling streaks and using Hint, Freeze and extra-time powers." },
 };
 

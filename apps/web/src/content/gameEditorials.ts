@@ -1743,14 +1743,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "swipe-racer": {
     "category": "Racing",
-    "summary": "Race through four city, mountain, coastal and neon-night missions. Swipe around traffic, collect pickups, use nitro and complete route objectives.",
+    "summary": "Drive 25 Horizon Circuit events, starting with Metro Rush. Steer through traffic, protect cargo and race Kai across the harbour, desert and mountain roads.",
     "overview": [
       "Swipe Racer is an arcade driving game designed around steering gestures and quick decisions. You navigate a 3D-style car through traffic and collect helpful items while looking ahead to the next safe space in the road.",
-      "It combines the replayability of an endless traffic dodger with a four-part mission structure. The racing environments include a daytime city, a mountain pass, a coastal sunset route and a neon night scene, each bringing a different visual atmosphere."
+      "The Horizon Circuit opens with Metro Rush. Later events ask you to beat the clock, deliver cargo with a collision limit, or catch Kai before the finish."
     ],
     "story": [
-      "The game follows a driver's progression through a sequence of increasingly demanding routes rather than a named protagonist's scripted journey.",
-      "The campaign's four environments provide a sense of travel from city streets toward scenic and nighttime roads. Successful driving is about responding to traffic patterns while making considered use of nitro."
+      "Maya introduces you to the Horizon crew at the start of Metro Rush.",
+      "You first meet Kai at Dockside Duel. The rivalry returns in the final Horizon Championship."
     ],
     "howToPlay": [
       "Start the current route or mission and familiarise yourself with steering sensitivity.",
@@ -1758,7 +1758,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Watch the position and movement of traffic ahead before changing direction.",
       "Collect useful pickups when a safe route leads through them.",
       "Use nitro when available to gain speed, but avoid activating it directly into a dense group of cars.",
-      "Continue through missions and compare your results across the four environments."
+      "Finish Metro Rush to unlock City Clock. The event picker lets you return to races you have unlocked."
     ],
     "desktop": [
       "The game features swipe/drag steering; use pointer dragging and the game's on-screen buttons."
@@ -1769,8 +1769,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "systems": [
       {
-        "title": "Four themed routes",
-        "body": "City, mountain, coast and neon-night backdrops distinguish the mission environments."
+        "title": "Horizon Circuit routes",
+        "body": "After the opening city, mountain, coast and neon events, the circuit takes you through the harbour, desert and snowy passes."
       },
       {
         "title": "Traffic and pickups",
@@ -1782,8 +1782,8 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       }
     ],
     "progression": [
-      "Complete missions across four racing environments: city streets, mountain passes, coastal roads and neon night routes. Pickups, nitro and careful traffic navigation help you build stronger runs.",
-      "Anticipation and smooth steering are the foundations of a good result. Follow the game's on-screen score and mission feedback while learning when a pickup is worth the detour."
+      "Finish an event to earn one star. A collision-free finish earns another, and two or more near misses earn a third.",
+      "Completed events save your best star count and unlock the next event in this browser. You can replay an event to improve its stars."
     ],
     "tips": [
       "Aim for an empty lane before you reach a vehicle rather than swiping at the last second.",
@@ -1795,7 +1795,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     "faqs": [
       {
         "q": "How many levels or missions can I play?",
-        "a": "There are four mission routes: city streets, a mountain pass, the coast and a neon-night road."
+        "a": "There are 25 events, from Metro Rush to the Horizon Championship."
       },
       {
         "q": "How do I steer?",
@@ -1807,7 +1807,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       },
       {
         "q": "Are there different roads?",
-        "a": "The game includes city, mountain, coastal and neon-night routes across four levels."
+        "a": "Yes. The seven settings include city streets, mountain passes, coastal roads, neon highways, the harbour, the desert and snowy alpine roads."
       }
     ]
   },
