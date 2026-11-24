@@ -700,7 +700,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Among the threats are snakes, frogs, spiders, bats, stone monkeys, boars, armored crawlers, sun wasps and stone sentries. Every route ends with a guardian encounter, including the Monkey King, Spider Queen and Sun Guardian. Their corrupted allies challenge Ari throughout the expedition."
     ],
     "howToPlay": [
-      "Move through the level while watching the ground, platforms and upcoming traps.",
+      "For the first Sun Relic, head right. Jump the first gap to reach the checkpoint flag. Jump the second gap, land on the raised bank and walk into the relic. The counter should read 1/6.",
       "Jump over gaps or onto safe ledges; use a dash attack when appropriate.",
       "Collect coins and Sun Relics, and look for keys needed by locked gates.",
       "Observe pressure-plate puzzles instead of walking blindly into suspicious temple areas.",
@@ -731,7 +731,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "progression": [
       "Explore 25 long jungle stages across five story chapters, with distinctive backgrounds, expedition maps and new challenges. Checkpoint beacons offer safe recovery as you collect the items needed to open gates and restore the five Sun Seals.",
-      "The side-scrolling adventure is built around careful platforming, relic collection, puzzles and timed encounters. Each cleared section opens the way to another part of the expedition."
+      "Close the game and choose Continue Expedition in the same browser to return to your last checkpoint flag, or the trailhead if you have yet to reach one. Your collected relics, keys, coins, score and remaining lives carry over."
     ],
     "tips": [
       "Look for the landing area before jumping from a narrow platform.",
