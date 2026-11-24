@@ -1,7 +1,12 @@
 // apps/web/src/lib/auth.ts
 
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify, base64url } from "jose";
 import { cookies } from "next/headers";
+import { getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
+
+const SESSION_SECONDS = 60 * 60;
+const SESSION_ISSUER = "https://webgamearena.com";
+const SESSION_AUDIENCE = "webgamearena-session";
 
 export type SessionUser = {
   id: string;
@@ -33,33 +38,77 @@ export function getSessionCookieOptions() {
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: SESSION_SECONDS,
   };
 }
 
-export async function signSession(user: SessionUser) {
+async function accountProofKey(key: Uint8Array) {
+  return crypto.subtle.importKey(
+    "raw", new Uint8Array(key), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]
+  );
+}
+
+function accountProofInput(id: string, passwordHash: string) {
+  return new TextEncoder().encode(JSON.stringify(["wga-account-session-v1", id, passwordHash]));
+}
+
+export async function signSession(user: SessionUser, passwordHash: string) {
   const key = getSecret();
 
   if (!key) {
     throw new Error("JWT_SECRET is missing");
   }
 
+  if (!user.id || !passwordHash) throw new Error("Account session cannot be issued");
+  const proof = await crypto.subtle.sign(
+    "HMAC", await accountProofKey(key), accountProofInput(user.id, passwordHash)
+  );
+
   return new SignJWT({
-    id: user.id,
-    email: user.email,
-    displayName: user.displayName,
+    ver: 2,
+    accountProof: base64url.encode(new Uint8Array(proof)),
   })
-    .setProtectedHeader({ alg: "HS256" })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setSubject(user.id)
+    .setJti(crypto.randomUUID())
+    .setIssuer(SESSION_ISSUER)
+    .setAudience(SESSION_AUDIENCE)
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime("1h")
     .sign(key);
 }
 
-export async function createSession(user: SessionUser) {
-  const token = await signSession(user);
+export async function createSession(user: SessionUser, passwordHash: string) {
+  const token = await signSession(user, passwordHash);
   const cookieStore = await cookies();
 
   cookieStore.set(getSessionCookieName(), token, getSessionCookieOptions());
+}
+
+async function sessionPayload(token: string) {
+  const key = getSecret();
+  if (!key || !token || token.length > 4096) return null;
+  try {
+    const { payload } = await jwtVerify(token, key, {
+      algorithms: ["HS256"], typ: "JWT", issuer: SESSION_ISSUER,
+      audience: SESSION_AUDIENCE, maxTokenAge: SESSION_SECONDS,
+      requiredClaims: ["sub", "iat", "exp", "jti"],
+    });
+    if (payload.ver !== 2 || typeof payload.sub !== "string" || !payload.sub ||
+        typeof payload.iat !== "number" || typeof payload.exp !== "number" ||
+        payload.exp - payload.iat > SESSION_SECONDS ||
+        typeof payload.jti !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.jti) ||
+        typeof payload.accountProof !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(payload.accountProof)) return null;
+    return { sub: payload.sub, jti: payload.jti, exp: payload.exp, accountProof: payload.accountProof };
+  } catch { return null; }
+}
+
+async function tokenFingerprint(session: { sub: string; jti: string }) {
+  // A JWT signature can have equivalent base64url encodings. Bind revocation
+  // to the verified account/session identity, never its serialized token bytes.
+  const identity = JSON.stringify(["wga-session-revocation-v2", session.sub, session.jti]);
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(identity));
+  return Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -69,25 +118,36 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return null;
   }
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get(getSessionCookieName())?.value;
-
-  if (!token) {
-    return null;
-  }
-
   try {
-    const verified = await jwtVerify(token, key);
-    const payload = verified.payload as Partial<SessionUser>;
+    const cookieStore = await cookies();
+    const token = cookieStore.get(getSessionCookieName())?.value;
+    const payload = token ? await sessionPayload(token) : null;
+    if (!payload || !token || !hasUsableNeonDatabaseUrl()) return null;
 
-    if (!payload.id || !payload.email || !payload.displayName) {
-      return null;
-    }
-
+    // Use only the existing four granted fields. Never trust cached profile
+    // claims or accept a deleted account / changed password from an old token.
+    const sql = getNeonSql();
+    const rows = await sql`
+      SELECT id, email, "displayName", "passwordHash"
+      FROM "User" WHERE id = ${payload.sub} LIMIT 1
+    `;
+    const account = rows[0] as (SessionUser & { passwordHash: string }) | undefined;
+    if (!account || account.id !== payload.sub || typeof account.email !== "string" ||
+        typeof account.displayName !== "string" || typeof account.passwordHash !== "string" ||
+        !account.passwordHash) return null;
+    const matches = await crypto.subtle.verify(
+      "HMAC", await accountProofKey(key), new Uint8Array(base64url.decode(payload.accountProof)),
+      accountProofInput(account.id, account.passwordHash)
+    );
+    if (!matches) return null;
+    const fingerprint = await tokenFingerprint(payload);
+    const status = await sql`SELECT wga_session_private.is_revoked(${fingerprint}) AS revoked`;
+    // Missing or unavailable revocation state must never authenticate a token.
+    if (status[0]?.revoked !== false) return null;
     return {
-      id: payload.id,
-      email: payload.email,
-      displayName: payload.displayName,
+      id: account.id,
+      email: account.email,
+      displayName: account.displayName,
     };
   } catch {
     return null;
@@ -96,6 +156,21 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
 export async function destroySession() {
   const cookieStore = await cookies();
+  const token = cookieStore.get(getSessionCookieName())?.value;
+  if (token && !getSecret()) throw new Error("Session revocation unavailable");
+  const payload = token ? await sessionPayload(token) : null;
+  if (payload && token) {
+    if (!hasUsableNeonDatabaseUrl()) throw new Error("Session revocation unavailable");
+    const fingerprint = await tokenFingerprint(payload);
+    const sql = getNeonSql();
+    // The role keeps its read-only default and no business-table write grants.
+    // Explicitly open just this transaction for the narrow revocation function.
+    const results = await sql.transaction([
+      sql`SET TRANSACTION READ WRITE`,
+      sql`SELECT wga_session_private.revoke(${fingerprint}, ${payload.exp}::bigint) AS revoked`,
+    ], { readOnly: false });
+    if (results[1]?.[0]?.revoked !== true) throw new Error("Session revocation not confirmed");
+  }
 
   cookieStore.set(getSessionCookieName(), "", {
     httpOnly: true,

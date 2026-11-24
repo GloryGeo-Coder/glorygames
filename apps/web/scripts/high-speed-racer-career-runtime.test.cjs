@@ -46,7 +46,9 @@ test('all six story jobs complete through actual race progression; failed requir
   selectJob(i);elements.get('driverName').value='Alex';r.launchCareer();assert.equal(r.state.careerJob.id,r.career.JOBS[i].id);
   r.state.mode='running';r.state.raceTime=25;r.state.boostSeconds=9;r.state.condition=95;
   r.rivalCars.forEach(car=>car.progress=r.state.levelDistance-20);
-  r.advanceLevel();assert.ok(r.career.data.completed[r.career.JOBS[i].id]);assert.equal(r.state.mode,'ended');r.returnToMenu();
+  r.advanceLevel();assert.ok(r.career.data.completed[r.career.JOBS[i].id]);assert.equal(r.state.mode,'ended');
+  assert.ok(elements.get('finalStats').textContent.endsWith(`Job: ${i+1}/${r.career.JOBS.length}`));
+  r.returnToMenu();
  }
  assert.equal(r.career.next(),-1);assert.match(elements.get('garageCareer').textContent,/Crew garage/);
  elements.get('routeSelect').value='campaign';r.startGame();assert.equal(r.state.rivalsTotal,7);assert.equal(r.state.totalLaps,3);assert.equal(r.state.careerJob,null);await close(r);

@@ -1,6 +1,7 @@
 // apps/web/src/app/games/[slug]/page.tsx
 
 import { gamePagePath } from "@/lib/gamePaths";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 import type { Metadata } from "next";
 import PlayPage from "@/app/play/[slug]/page";
 import Link from "next/link";
@@ -92,7 +93,7 @@ async function getGame(slug: string): Promise<GameForPage | null> {
       return normalizeGame(dbGame);
     }
   } catch (error) {
-    console.warn("[game-detail] Database game lookup failed", error);
+    console.warn("[game-detail] Database game lookup failed");
   }
 
   return normalizeGame(getFallbackGameBySlug(slug));
@@ -110,7 +111,7 @@ async function getRelatedGames(game: GameForPage): Promise<RelatedGame[]> {
       return dbRelated.map(normalizeGame).filter(Boolean) as RelatedGame[];
     }
   } catch (error) {
-    console.warn("[game-detail] Related games lookup failed", error);
+    console.warn("[game-detail] Related games lookup failed");
   }
 
   return getRelatedFallbackGames(game.slug, game.category)
@@ -206,7 +207,7 @@ export default async function GameDetailsPage({
       limit: 10,
     });
   } catch (error) {
-    console.warn("[game-detail] Leaderboard unavailable", error);
+    console.warn("[game-detail] Leaderboard unavailable");
     leaderboard = [];
   }
 
@@ -294,6 +295,7 @@ export default async function GameDetailsPage({
           </section>
 
           <GameEditorial slug={game.slug} title={game.title} />
+        {["recycle-rush", "science-lab-dash"].includes(game.slug) && <Link className="pill" href="/game-saves">How to resume this game</Link>}
 
           <section className="section gameDetailInfoSection">
             <div className="gameDetailInfoGrid">
@@ -304,7 +306,7 @@ export default async function GameDetailsPage({
 
                 {leaderboard.length === 0 ? (
                   <p className="muted">
-                    No scores yet. Play now and be the first on the leaderboard.
+                    {PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? "No scores yet." : "Historical leaderboard display is paused. You can still play this game."}
                   </p>
                 ) : (
                   <div className="gameDetailScores">

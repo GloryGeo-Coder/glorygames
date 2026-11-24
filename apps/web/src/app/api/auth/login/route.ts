@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       displayName: userRow.displayName,
     };
 
-    const token = await signSession(user);
+    const token = await signSession(user, userRow.passwordHash);
 
     const response = NextResponse.json({
       ok: true,

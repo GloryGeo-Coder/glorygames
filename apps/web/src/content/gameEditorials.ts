@@ -108,14 +108,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Classic Arcade keeps the pure paddle-and-ball score challenge available whenever you want a quick run. The campaign adds designed objectives, enemy warnings and a saved route through the city."
     ],
     "howToPlay": [
-      "Choose Classic Arcade or an unlocked Neon Grid mission, then use Launch to release the ball.",
+      "Choose Classic Arcade or an unlocked Neon Grid mission. Press Start or Start Mission, then Launch Ball. If the last ball passes your paddle, you lose one life. The bricks you cleared stay gone. Launch the replacement ball to keep playing.",
       "Steer with the dedicated control strip below the arena. Choose relative drag or direct positioning in Settings.",
       "Keep the ball from passing the paddle while aiming rebounds toward unbroken bricks.",
       "Watch for power-ups during play and use the opportunities they provide to maintain momentum.",
       "When the round finishes, review your score and use the available score submission or restart controls."
     ],
     "desktop": [
-      "Move the paddle with the input displayed in the game; dragging moves the paddle.",
+      "Steer with the left and right arrow keys, A and D, or drag across the control strip. Press Space to launch and P to pause.",
       "Tap or click the launch control to release the ball and continue when prompted."
     ],
     "mobile": [
@@ -142,7 +142,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "progression": [
       "Complete the five Neon Grid missions in order. Best scores, unlocks and one-to-three-star results save on the same browser when storage is available. Fewer lives lost earns a stronger star result.",
-      "Campaign missions begin with three lives. Classic Arcade remains a separate repeatable score challenge, with six collectible power-ups and progressively generated brick formations."
+      "In Classic Arcade, clearing a board earns a score bonus and restores one life up to the six-life limit. Choose Continue to start the next board. Closing the game ends that run. On reopening, Classic starts at level one with three lives and zero points. Your steering, sound and background settings carry over in the same browser."
     ],
     "tips": [
       "Watch the ball's trajectory, not just its current location; move before it reaches the paddle.",
@@ -626,19 +626,19 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Coins, collectible rewards and an upgrade shop provide reasons to explore beyond the shortest route. NPC encounters lead you toward fresh missions, while bosses and daily challenges test the movement and combat skills developed during the adventure."
     ],
     "howToPlay": [
-      "Start a level and pay attention to the current mission or NPC instructions.",
+      "On Warm-Up Rooftops, pass Lebo to hear the mission. Collect 18 coins and four kasi items, defeat five foes, then beat Spaza Guard.",
       "Move through the platform area, time jumps and avoid enemy or environmental hazards.",
       "Collect coins and other rewards while following the mission route.",
       "Use the upgrade shop when available to strengthen your options for later stages.",
       "Approach boss fights patiently and learn their movement or attack patterns.",
-      "Try daily challenges or replay a level to improve your combo and score."
+      "When the mission counter says Gate open, walk through the exit. If you lose a life, your mission counts carry back to the last flag. Continue campaign on the same browser to pick up there after closing the game."
     ],
     "desktop": [
-      "Follow the on-screen movement, jump and interaction controls. Read each level's prompts before setting off so you know which actions are available."
+      "Move with A/D or the arrow keys. Hold Space, W or Up for a higher jump. Hold E, Enter or Shift to fire. Press P or Escape to pause."
     ],
     "mobile": [
-      "Use the platformer's on-screen movement and action controls.",
-      "Use the in-game help screen whenever you want a reminder of movement, jumping or interaction buttons."
+      "Hold a direction with one thumb and use Jump or Shoot with the other. Holding Jump gives you more height.",
+      "Tap Pause to read the mission, check your upgrades or resume the run."
     ],
     "systems": [
       {
@@ -700,7 +700,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Among the threats are snakes, frogs, spiders, bats, stone monkeys, boars, armored crawlers, sun wasps and stone sentries. Every route ends with a guardian encounter, including the Monkey King, Spider Queen and Sun Guardian. Their corrupted allies challenge Ari throughout the expedition."
     ],
     "howToPlay": [
-      "Move through the level while watching the ground, platforms and upcoming traps.",
+      "For the first Sun Relic, head right. Jump the first gap to reach the checkpoint flag. Jump the second gap, land on the raised bank and walk into the relic. The counter should read 1/6.",
       "Jump over gaps or onto safe ledges; use a dash attack when appropriate.",
       "Collect coins and Sun Relics, and look for keys needed by locked gates.",
       "Observe pressure-plate puzzles instead of walking blindly into suspicious temple areas.",
@@ -731,7 +731,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "progression": [
       "Explore 25 long jungle stages across five story chapters, with distinctive backgrounds, expedition maps and new challenges. Checkpoint beacons offer safe recovery as you collect the items needed to open gates and restore the five Sun Seals.",
-      "The side-scrolling adventure is built around careful platforming, relic collection, puzzles and timed encounters. Each cleared section opens the way to another part of the expedition."
+      "Close the game and choose Continue Expedition in the same browser to return to your last checkpoint flag, or the trailhead if you have yet to reach one. Your collected relics, keys, coins, score and remaining lives carry over."
     ],
     "tips": [
       "Look for the landing area before jumping from a narrow platform.",
@@ -1256,10 +1256,9 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "recycle-rush": {
     "category": "Educational",
-    "sponsor": "Fibre Circle",
     "summary": "Restore Verdale with Circuit through 25 untimed story missions and 450 recovery tasks, plus 20 arcade missions with animated bosses, material cards and power-ups.",
     "overview": [
-      "Bring colour back to Verdale in Recycle Rush: Restore Verdale, a recycling adventure sponsored by Fibre Circle. Join Circuit and Professor Loop as they help a community rebuild its collection points, share useful goods and connect everyday recovery choices to a cleaner town.",
+      "Bring colour back to Verdale in Recycle Rush: Restore Verdale, a recycling adventure. Join Circuit and Professor Loop as they help a community rebuild its collection points, share useful goods and connect everyday recovery choices to a cleaner town.",
       "Explore 25 story missions across the school, neighbourhood, market, recovery district, repair quarter and civic square. Inspect each object, prepare accepted packaging, share usable books and clothes, and refer electrical repairs to qualified experts. Solve community requests, complete saved community work orders and plan collection rounds, choosing pickups and accepted deliveries while managing the vehicle’s available load space.",
       "Choose community projects, build clean sorting streaks and use recovered energy to face Grime in five showdowns. Animated characters and original mission music accompany untimed story play, with clues, feedback and checkpoints saved on your device. For a faster challenge, enter the separate 20-mission Arcade Campaign with animated bosses, illustrated powers and clear material cards. Master its sorting waves, and complete it to unlock endless Loop Mode."
     ],
@@ -1744,146 +1743,116 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
   },
   "swipe-racer": {
     "category": "Racing",
-    "summary": "Race through four city, mountain, coastal and neon-night missions. Swipe around traffic, collect pickups, use nitro and complete route objectives.",
+    "summary": "Race Kai through Harbour Duel or chase Mara up Frostline Pass. Steer through gold gates, coast across ice to earn Boost, and beat your best time on each course.",
     "overview": [
-      "Swipe Racer is an arcade driving game designed around steering gestures and quick decisions. You navigate a 3D-style car through traffic and collect helpful items while looking ahead to the next safe space in the road.",
-      "It combines the replayability of an endless traffic dodger with a four-part mission structure. The racing environments include a daytime city, a mountain pass, a coastal sunset route and a neon night scene, each bringing a different visual atmosphere."
+      "Your yellow coupe starts alongside a rival. Both cars accelerate automatically. Read the gap in metres and look one lane beyond the next gate before you commit to an overtake.",
+      "Both courses are open from the start. Harbour Duel runs for 1,440 metres through Breakwater and Crane Row. Frostline Pass climbs 1,590 metres from Pine Hollow to Summit Lodge."
     ],
     "story": [
-      "The game follows a driver's progression through a sequence of increasingly demanding routes rather than a named protagonist's scripted journey.",
-      "The campaign's four environments provide a sense of travel from city streets toward scenic and nighttime roads. Successful driving is about responding to traffic patterns while making considered use of nitro."
+      "Kai brings a red coupe to the harbour and challenges you to reach the ferry terminal first.",
+      "Mara takes the purple car into the switchbacks. The blue strips on her road change where it pays to accelerate."
     ],
     "howToPlay": [
-      "Start the current route or mission and familiarise yourself with steering sensitivity.",
-      "Swipe or drag left and right to move your car across the roadway.",
-      "Watch the position and movement of traffic ahead before changing direction.",
-      "Collect useful pickups when a safe route leads through them.",
-      "Use nitro when available to gain speed, but avoid activating it directly into a dense group of cars.",
-      "Continue through missions and compare your results across the four environments."
+      "Choose your course and press Race Kai or Race Mara. After the countdown, swipe or use the arrow keys to pick a lane.",
+      "Drive between the two gold posts to gain one Boost charge. You start with one and can hold three.",
+      "Spend Boost on a clear stretch. A traffic hit slows the car and ends an active boost.",
+      "Cross the chequered line to see your time, position outcome and race score. Replay or switch courses from the result screen."
     ],
     "desktop": [
-      "The game features swipe/drag steering; use pointer dragging and the game's on-screen buttons."
+      "Press the left or right arrow to change lanes and Space to boost. You can also drag across the road.",
+      "Press P or Escape to pause. Choose Resume to continue the same race."
     ],
     "mobile": [
-      "Swipe or drag horizontally to steer.",
-      "Tap or press the Boost button to use nitro when charged; use the Pause, Submit, Restart and Sound controls as needed."
+      "Swipe across the road or tap the left and right buttons to change lanes. Tap Boost when you have a charge.",
+      "Use the pause button to stop mid-race. The pause menu also lets you restart."
     ],
     "systems": [
       {
-        "title": "Four themed routes",
-        "body": "City, mountain, coast and neon-night backdrops distinguish the mission environments."
+        "title": "Harbour Duel",
+        "body": "The first gold gate is in the middle lane. A traffic car sits just beyond it. Take the charge, steer clear, then boost past Kai."
       },
       {
-        "title": "Traffic and pickups",
-        "body": "Avoiding other vehicles keeps the run alive while selected pickups offer extra opportunities."
+        "title": "Frostline Pass",
+        "body": "Hold your lane and coast from the beginning of a blue ice strip to its end to earn a charge. Boosting on the ice causes a skid. There are six strips on the climb."
       },
       {
-        "title": "Nitro boost",
-        "body": "Boost rewards planning: gaining speed is useful only if the route remains clear."
+        "title": "Race results",
+        "body": "Pace relative to your rival sets your base score. Each gold gate and clean ice strip adds 20 points. Winning adds 100."
       }
     ],
     "progression": [
-      "Complete missions across four racing environments: city streets, mountain passes, coastal roads and neon night routes. Pickups, nitro and careful traffic navigation help you build stronger runs.",
-      "Anticipation and smooth steering are the foundations of a good result. Follow the game's on-screen score and mission feedback while learning when a pickup is worth the detour."
+      "Each course records its own fastest finish in this browser. A faster time counts even if your rival wins.",
+      "Reopening the game brings back the last course you selected. A new race starts at the grid."
     ],
     "tips": [
-      "Aim for an empty lane before you reach a vehicle rather than swiping at the last second.",
-      "Watch two or three cars ahead to avoid escaping one obstacle into another.",
-      "Use nitro on clear sections and plan how you will slow your decisions afterward.",
-      "Steer smoothly instead of making long frantic movements.",
-      "Replay a route to learn its visual cues before focusing on maximum speed."
+      "On the harbour road, check for traffic behind the gate posts before spending your charge.",
+      "On Frostline Pass, wait for the clean-ice message before pressing Boost. If a boost is still running as you enter the next strip, change to a dry lane."
     ],
     "faqs": [
       {
-        "q": "How many levels or missions can I play?",
-        "a": "There are four mission routes: city streets, a mountain pass, the coast and a neon-night road."
+        "q": "Do I have to win at the harbour to race in the snow?",
+        "a": "Both courses are available immediately. Select Frostline Pass on the opening screen, or switch after any finish."
       },
       {
-        "q": "How do I steer?",
-        "a": "Swipe or drag left and right, including on a touch screen."
+        "q": "Why did my car skid on the blue strip?",
+        "a": "Boost was active on the ice. Coast across the full strip in its lane to collect a charge, then accelerate on dry road."
       },
       {
-        "q": "Can I use nitro?",
-        "a": "Yes. The game includes a boost control for nitro."
-      },
-      {
-        "q": "Are there different roads?",
-        "a": "The game includes city, mountain, coastal and neon-night routes across four levels."
+        "q": "How do I keep my personal best?",
+        "a": "Finish a race and return using the same browser profile. The game stores one best time per course when local storage is available."
       }
     ]
   },
   "word-dash": {
-    "category": "Educational",
-    "summary": "Complete four themed word missions by typing or tapping letters, building spelling streaks and using Hint, Freeze and extra-time powers.",
+    "category": "Word & Trivia",
+    "summary": "Shoot loose letters and spell drifting word comets to power four orbital beacons. Each correct key fires a bolt. Salvage checkpoints let you return to the same sector.",
     "overview": [
-      "Word Dash turns spelling and vocabulary practice into a fast sequence of word challenges. Players match target words using physical or on-screen letters while managing a timer, improving accuracy and building streaks.",
-      "Rather than repeating one plain keyboard exercise, the game moves through themed environments such as a library, city of words, mountain focus setting and neon letters area. Mission progression and helpful power-ups make it feel like an arcade challenge as well as a learning exercise."
+      "Your salvage ship guards a dashed shield line. Small amber targets carry one letter; larger comets carry words. Pick the target nearest the line or commit to a longer word for more points."
     ],
     "story": [
-      "The premise is a sprint through a series of language-focused arenas. Each location gives the word task a new visual setting, but the centre of the challenge remains the same: recognise a target and enter it accurately.",
-      "Each round challenges you to recognise and enter target words before time runs out. Correct answers build streaks, while Hint, Freeze and extra-time powers give you options when the timer starts running low."
+      "Four silent relays mark the route from Amber Relay through Tideglass Belt and Violet Drift to Last Light. Spelling each sector’s final beacon word brings it back online."
     ],
     "howToPlay": [
-      "Start a word mission and read the target word carefully.",
-      "Type the letters in the correct order or tap them on the mobile keyboard.",
-      "Use Enter to submit a word when playing with a physical keyboard.",
-      "Correct mistakes with Backspace before submitting.",
-      "Build streaks through consecutive correct entries while watching the timer.",
-      "Use Hint, Freeze or extra time when a mission becomes difficult, then continue toward the next themed level."
+      "Launch a flight. Type a target’s first letter or tap that letter on the game keyboard. A loose letter breaks in one shot.",
+      "For a word, keep typing the remaining letters in order. Each correct key fires immediately. Finish the word before it reaches your shield.",
+      "Watch Salvaged for your sector goal. Finish the beacon word, then select Next sector for a fresh shield."
     ],
     "desktop": [
-      "Type with the keyboard, press Enter to submit and Backspace to delete an incorrect letter.",
-      "Use the displayed power-up buttons when Hint, Freeze or extra time is available."
+      "Use A–Z to aim and fire. A wrong key leaves your spelling intact. Backspace releases the lock and resets that word.",
+      "Escape pauses or resumes. Sound off/on is available above the flight deck."
     ],
     "mobile": [
-      "Tap letters on the in-game keyboard.",
-      "Use the on-screen Hint, Freeze and +Time controls, along with Pause or Restart."
+      "Tap the built-in QWERTY keys to shoot. You can also tap a loose letter to clear it directly or tap a word to select it before spelling.",
+      "Tap ⌫ to drop a lock, or Pause to hold the field. The game keypad works without opening the phone’s system keyboard."
     ],
     "systems": [
       {
-        "title": "Spelling and vocabulary",
-        "body": "Recognising and reproducing target words accurately is the central task."
+        "title": "Shield line",
+        "body": "An escaped target costs one shield point. Three escapes end the sector attempt."
       },
       {
-        "title": "Streaks and time pressure",
-        "body": "Successful sequences encourage speed, but rushing at the expense of spelling accuracy can interrupt momentum."
-      },
-      {
-        "title": "Three support powers",
-        "body": "Hint, Freeze and +Time are tools for difficult moments."
+        "title": "Salvage score",
+        "body": "Each recovered letter is worth 10 points in a completed target. A completed beacon adds a further 100. Partial words earn no points."
       }
     ],
     "progression": [
-      "Word Dash includes four mission-based levels with different visual themes.",
-      "Scores and streaks provide immediate feedback, while repeated play helps users identify words or typing patterns they need to practise."
+      "The four sectors require 6, 8, 10 and 12 targets including their beacons. Incoming targets get faster. Retry sector restarts that sector with three shield points and the score you had on arrival."
     ],
     "tips": [
-      "Read the whole word before entering the first letter.",
-      "Aim for accuracy first; a fast incorrect entry often wastes more time than a careful correct one.",
-      "Use Backspace as soon as you notice an error.",
-      "Save Freeze or extra-time help for a demanding portion of the run.",
-      "Treat Hint as a learning aid: try to remember the word on the next encounter."
+      "Watch the lowest target first. Loose letters take one shot; start long words while there is still room.",
+      "After a mistyped key, read the next letter under Lock. You can keep firing without retyping your correct letters."
     ],
     "learning": [
-      "Practise spelling accuracy, word recognition, vocabulary and keyboard familiarity.",
-      "Develop proofreading habits under mild time pressure."
+      "Practise letter recognition and spelling under time pressure. Watch for a short definition when you salvage a word."
     ],
     "faqs": [
       {
-        "q": "How many levels or missions can I play?",
-        "a": "There are four themed mission levels with target words, streak scoring and power-ups."
+        "q": "Where does Continue flight take me?",
+        "a": "In the same browser, it restores your sector, recovered target count, score and shield after the last completed target or shield hit. Incoming targets are dealt again; unfinished spellings start over. Pause and Resume keep the targets exactly where they are while the tab is open."
       },
       {
-        "q": "How do I submit a word on desktop?",
-        "a": "Enter submits the current word and Backspace removes the last input."
-      },
-      {
-        "q": "Can I play without a physical keyboard?",
-        "a": "Yes. The game provides on-screen letter keys for mobile play."
-      },
-      {
-        "q": "What power-ups are available?",
-        "a": "Hint, Freeze and +Time are in the game."
+        "q": "What happened to my previous Word Dash best?",
+        "a": "If this browser has a best from the original typing game, the flight menu lists it separately as Classic best."
       }
     ]
   }

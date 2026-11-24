@@ -242,3 +242,28 @@ test('new arcade art provenance, entry references and budget cover 32 boss frame
  assert.equal(Object.keys(manifest.assets).length,10);assert.ok(bytes<1024*1024);assert.equal(manifest.assets['bosses-a.webp'].frames+manifest.assets['bosses-b.webp'].frames,32);for(const src of A.assetPaths)assert.ok(fs.existsSync(path.join(root,src)));
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.ok(html.indexOf('arcade-art.js')<html.indexOf('src="game.js"'));assert.ok(html.includes('id="powerSlotText"'));const metadata=JSON.parse(fs.readFileSync(path.join(root,'game.json')));assert.equal(metadata.features.arcadeBossFrames,32);assert.equal(metadata.features.arcadeBosses,8);assert.equal(metadata.features.arcadePowerSprites,4);
 });
+
+
+test('sorting instruction stays opaque, readable and within narrow and wide canvases',async()=>{
+ for(const [width,height] of [[320,330],[390,500],[844,190],[1440,650]]){
+  const r=await boot({width,height});r.probe.initLevel(19);r.probe.draw();
+  const label=r.textPaints.find(p=>p.text==='SELECT THE MATCHING MATERIAL');assert.ok(label);
+  assert.equal(label.fillStyle,'#f0fff7');assert.ok(label.maxWidth>0);
+  assert.ok(label.x-label.maxWidth/2>=0&&label.x+label.maxWidth/2<=width);
+  assert.ok(label.y>=0&&label.y<height);
+ }
+});
+
+
+test('a delayed capture-loss event from an earlier touch must not cancel the next gesture',async()=>{
+ const r=await boot(),p=r.probe;p.initLevel(0);const item={kind:'item',cat:'paper',x:20,y:20,w:50,h:50};p.state.items.push(item);
+ r.emit('pointerdown',{clientX:30,clientY:30,pointerId:11});r.emit('pointerup',{clientX:30,clientY:30,pointerId:11});
+ const bin=p.state.bins.find(b=>b.cat==='paper');r.emit('pointerdown',{clientX:bin.x+bin.w/2,clientY:bin.y+bin.h/2,pointerId:12});
+ r.emit('lostpointercapture',{pointerId:11});assert.equal(p.state.pointerId,12);assert.equal(p.state.selectedItem,item);
+ r.emit('pointerup',{clientX:bin.x+bin.w/2,clientY:bin.y+bin.h/2,pointerId:12});assert.equal(p.state.sorted,1);
+});
+test('a stale pointer cancellation must not clear a different active touch',async()=>{
+ const r=await boot();r.probe.initLevel(0);r.emit('pointerdown',{clientX:30,clientY:30,pointerId:22});
+ r.emit('pointerdown',{clientX:60,clientY:60,pointerId:21});r.emit('pointercancel',{pointerId:21});assert.equal(r.probe.state.pointerId,22);
+ r.emit('pointercancel',{pointerId:22});assert.equal(r.probe.state.pointerId,null);
+});

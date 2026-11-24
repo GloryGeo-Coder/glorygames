@@ -140,7 +140,7 @@ export const games = [
   },
   {
     "slug": "swipe-racer",
-    "title": "Swipe Racer",
+    "title": "Swipe Racer: Harbour Duel & Frostline Pass",
     "href": "/games/swipe-racer/index.html",
     "thumbnail": "/games/swipe-racer/thumb.png",
     "category": "Arcade",
@@ -148,7 +148,7 @@ export const games = [
   },
   {
     "slug": "word-dash",
-    "title": "Word Dash",
+    "title": "Word Dash: Letter Salvage",
     "href": "/games/word-dash/index.html",
     "thumbnail": "/games/word-dash/thumb.png",
     "category": "Arcade",

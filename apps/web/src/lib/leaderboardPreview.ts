@@ -1,6 +1,7 @@
 // apps/web/src/lib/leaderboardPreview.ts
 
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 
 export type TopScore = {
   displayName: string;
@@ -10,6 +11,7 @@ export type TopScore = {
 export async function getTopScoreForGame(
   gameSlug: string
 ): Promise<TopScore | null> {
+  if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) return null;
   const game = await prisma.game.findUnique({
     where: { slug: gameSlug },
     select: { id: true },

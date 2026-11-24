@@ -239,7 +239,7 @@
     clearTimeout(walkTimer);
     const target = $('story-item-' + value).getBoundingClientRect(), area = $('storyScene').getBoundingClientRect();
     const hero = $('storyCircuit').getBoundingClientRect();
-    const x = Math.max(0, Math.min(area.width - hero.width, target.left - area.left - hero.width * .25));
+    const x = 0; // Stay in the reserved left lane instead of covering the selected card.
     const y = Math.min(0, target.bottom - area.bottom + hero.height * .25);
     $('storyCircuit').style.setProperty('--circuit-x', `${x}px`); $('storyCircuit').style.setProperty('--circuit-y', `${y}px`);
     pose('walk');

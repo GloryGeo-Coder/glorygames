@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ANALYTICS_ENABLED } from "@/lib/publicAnalytics";
 
 const year = new Date().getFullYear();
 
@@ -7,18 +8,24 @@ const footerGroups = [
     title: "Play",
     links: [
       { label: "All Games", href: "/games" },
-      { label: "Arcade Games", href: "/games?category=arcade" },
-      { label: "Adventure Games", href: "/games?category=adventure" },
-      { label: "Educational Games", href: "/games?category=educational" },
-      { label: "Kasi Quest", href: "/games/kasi-quest" },
+      { label: "Leaderboard", href: "/leaderboard" },
+      { label: "Arcade Games", href: "/categories/arcade" },
+      { label: "Adventure Games", href: "/categories/adventure" },
+      { label: "Educational Games", href: "/categories/educational" },
+      { label: "Kasi Quest", href: "/play/kasi-quest" },
     ],
   },
   {
-    title: "Platform",
+    title: "Playing here",
     links: [
-      { label: "Daily Challenge", href: "/games" },
-      { label: "Popular Games", href: "/games" },
-      { label: "Mobile Browser Games", href: "/games" },
+      { label: "Game guides", href: "/games" },
+      { label: "Learning Arcade", href: "/learning-arcade" },
+      { label: "Quick Play", href: "/quick-play" },
+      { label: "Game Saves & Resume", href: "/game-saves" },
+      { label: "Community", href: "/community" },
+      { label: "Game updates", href: "/game-updates" },
+      { label: "Parents & Safety", href: "/parents-safety" },
+      { label: "Help & Contact", href: "/contact" },
       { label: "Word & Trivia", href: "/games?category=word-trivia" },
     ],
   },
@@ -27,7 +34,7 @@ const footerGroups = [
     links: [
       { label: "About WebGameArena", href: "/about" },
       { label: "Contact", href: "/contact" },
-      { label: "Submit a Game", href: "/submit-game" },
+      { label: "Game submissions", href: "/submit-game" },
       { label: "Advertise", href: "/advertise" },
     ],
   },
@@ -55,8 +62,8 @@ export default function SiteFooter() {
             </Link>
 
             <p>
-              Free mobile-first browser games built for instant play, high
-              scores, daily challenges and friendly competition.
+              Free browser games with guides for controls, objectives and
+              local progress. Play as a guest on desktop or mobile.
             </p>
 
             <div className="footerBadges">
@@ -83,6 +90,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
+        <p className="mutedTiny">Advertising is paused. {ANALYTICS_ENABLED ? "Optional analytics is available to adults who explicitly allow it in Analytics settings below." : "Optional analytics setup is not yet active."} Games may save progress and preferences on this device; existing sign-in uses an essential session cookie. <Link href="/cookies">Cookie information</Link></p>
         <div className="footerBottom">
           <div>
             © {year} WebGameArena.com All rights reserved.

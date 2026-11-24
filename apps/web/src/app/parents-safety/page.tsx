@@ -2,6 +2,7 @@
 
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
+import { ANALYTICS_ENABLED, ANALYTICS_NOTICE } from "@/lib/publicAnalytics";
 
 export const dynamic = "force-static";
 
@@ -29,11 +30,18 @@ export default function ParentsSafetyPage() {
       eyebrow="Parents & Safety"
       title="Helping families understand safe play on WebGameArena."
       description="WebGameArena is designed as a mobile-first browser gaming platform. This page explains how the platform approaches player safety, younger users, privacy, chat, advertising, leaderboards and responsible play."
-      updated="15 June 2026"
+      updated="21 November 2026"
       sections={[
+        ...(ANALYTICS_ENABLED ? [{ title: "Children and optional analytics", body: [
+          "Children can play without optional analytics. The Google Analytics choice is for adults who confirm they are 18 or over and are using this browser themselves. Under-18s, unsure visitors and people sharing with a child should continue without analytics. This self-declaration is not verified age assurance or parental authorisation to track a child.",
+          "No Google Analytics script or consent ping is sent before opt-in. If an adult opts in, Google receives cookie/session identifiers, filtered page views and IP/browser/device request information, potentially outside South Africa. Open Analytics settings and withdraw before handing the browser to someone else. Reloading the page also requires a new opt-in. See Privacy and Cookie Policy for processing, retention and withdrawal details."
+        ] }] : []),
+
+{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "Public chat, score submissions, daily challenges and historical leaderboards are available. Existing account sign-in remains available. New registration and reviews remain paused.", ANALYTICS_NOTICE]},
+{"title": "Family audience and privacy boundaries", "body": ["Including children in our audience is not a declaration that every game has the same age rating. Review each game’s description and content with your child. Recycle Rush’s separate portal submission does not establish a rating for the whole catalogue.", "Chat messages and leaderboard nicknames are public. Please do not put a child’s real name, school, address, telephone number or other private details into chat, player-name fields or support messages.", "Contact support@webgamearena.com for safety concerns, privacy@webgamearena.com for privacy requests and games@webgamearena.com for game-content concerns. Describe the issue and page address without sending sensitive attachments."]},
         {
           title: "1. What is WebGameArena?",
-          body: "WebGameArena is a browser-based gaming platform where players can play free games instantly without downloads. The platform includes game categories, leaderboards, daily challenges, game detail pages and selected social features such as game chat.",
+          body: "WebGameArena is a browser-based gaming platform where players can play free games instantly without downloads. The current launch includes game categories, game detail pages, guest play and historical leaderboard viewing. Chat, daily challenges and score submissions are available. New registration and reviews remain paused.",
         },
         {
           title: "2. Guidance for younger players",
@@ -64,11 +72,11 @@ export default function ParentsSafetyPage() {
         {
           title: "5. Chat and community safety",
           body: [
-            "Game chat is intended for short, friendly messages related to play.",
+            "Game chat accepts short public messages with nicknames. Parents and guardians should supervise younger players using chat.",
             "Players should not share private information in chat.",
-            "Chat may include filters, message reporting, hiding or moderation.",
+            "Message-length, content and rate checks help reduce abuse. These automated checks cannot catch every unsafe message. Use Report to hide an inappropriate message from public chat; contact support for safety concerns.",
             "Parents should remind younger players not to click links from strangers or continue conversations that feel uncomfortable.",
-            "Players can report problem messages and contact support@webgamearena.com for help.",
+            "Contact support@webgamearena.com about safety concerns or historical content.",
           ],
         },
         {

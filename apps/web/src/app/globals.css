@@ -3207,3 +3207,33 @@ button, input{ font:inherit; }
 @supports not (height: 100dvh) {
   .ggStage.ggStageExpanded { height: 100vh; }
 }
+
+.analyticsChoices { padding: 1rem; border-top: 1px solid #394256; background: #101622; color: #f3f5fa; }
+.analyticsChoicePanel { max-width: 58rem; margin: 1rem auto; line-height: 1.6; }
+.analyticsChoicePanel h2 { font-size: 1.2rem; }
+.analyticsChoicePanel a { color: #a8cdff; text-decoration: underline; }
+.analyticsAdultChoice { display: flex; align-items: flex-start; gap: .65rem; margin: 1rem 0; }
+.analyticsAdultChoice input { width: 1.25rem; height: 1.25rem; margin-top: .2rem; flex-shrink: 0; }
+.analyticsChoiceActions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.analyticsChoices button { min-height: 44px; }
+.analyticsChoices button:disabled { opacity: .5; cursor: not-allowed; }
+.analyticsChoices button:focus-visible, .analyticsChoices input:focus-visible { outline: 3px solid #a8cdff; outline-offset: 3px; }
+
+/* Keep navigation available to keyboard users when the scrolling header hides. */
+.wgaHeader.isHidden:focus-within { transform: translateY(0); }
+.wgaMobilePanel[hidden] { display: none; }
+.wgaHeader a:focus-visible, .wgaHeader button:focus-visible {
+  outline: 3px solid #a8cdff;
+  outline-offset: 3px;
+}
+
+.discoveryLinks { display:flex; flex-wrap:wrap; gap:.65rem; margin:1rem 0; }
+.board { max-width:54rem; }
+.board .heroCard { margin:1.5rem 0; padding:clamp(1rem, 3vw, 2rem); }
+.board form { display:grid; gap:.65rem; justify-items:start; margin:.8rem 0; }
+.board label { display:grid; gap:.35rem; width:100%; }
+.board input:not([type=hidden]), .board textarea { width:100%; font:inherit; padding:.55rem; color:inherit; background:#111827; border:1px solid #777f91; border-radius:.4rem; }
+.board button { font:inherit; cursor:pointer; padding:.4rem .8rem; }
+.board p, .board h2 { overflow-wrap:anywhere; }
+.boardBody { white-space:pre-line; }
+.updateShot { display:block; width:100%; height:auto; margin:1rem 0; border-radius:.5rem; }

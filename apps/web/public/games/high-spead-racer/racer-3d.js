@@ -53,10 +53,11 @@
     }
 
     if (!quality.compact && !quality.reducedMotion && !app.graphicsDevice.isNull) {
-      try {
+      // The effect registers itself with the running PlayCanvas application.
+      import('./vendor/posteffect-bloom-2.23.1.js').then(() => {
         camera.addComponent('script');
         camera.script.create('bloom',{attributes:{bloomIntensity:.35,bloomThreshold:.82,blurAmount:3}});
-      } catch (error) { console.warn('Bloom unavailable; standard rendering retained.',error); }
+      }).catch(error => console.warn('Bloom unavailable; standard rendering retained.',error));
     }
     function attachCar(car) {
       if (!car || car.neonShadow) return;

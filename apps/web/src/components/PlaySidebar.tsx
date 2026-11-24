@@ -3,6 +3,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PUBLIC_CHAT_ENABLED, PUBLIC_SCORE_SUBMISSIONS_ENABLED, PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 type LeaderboardEntry = {
@@ -77,6 +78,12 @@ export default function PlaySidebar({
   }, []);
 
   useEffect(() => {
+    if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) {
+      setLeaderboard([]);
+      setTopScore(null);
+      setLoading(false);
+      return;
+    }
     if (!safeSlug) return;
 
     let cancelled = false;
@@ -238,7 +245,7 @@ export default function PlaySidebar({
         {loading && <p className="muted">Loading…</p>}
 
         {!loading && leaderboard.length === 0 && (
-          <p className="muted">No scores yet</p>
+          <p className="muted">{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? "No scores yet" : "Historical leaderboard display is paused."}</p>
         )}
 
         {leaderboard.map((row, i) => {
@@ -269,7 +276,8 @@ export default function PlaySidebar({
         })}
       </div>
 
-      <div className="ggChat sidebarChat">
+      {!PUBLIC_SCORE_SUBMISSIONS_ENABLED ? <p className="mutedTiny">Online score submissions are paused. Game progress and personal bests can still save on this device.</p> : null}
+      {PUBLIC_CHAT_ENABLED ? <div className="ggChat sidebarChat">
         <div className="ggChatHeader">
           <div style={{ display: "grid", gap: 2 }}>
             <b>Game Chat</b>
@@ -350,7 +358,7 @@ export default function PlaySidebar({
             Send
           </button>
         </div>
-      </div>
+      </div> : <section className="sidebarChat" aria-label="Chat status"><h3>Chat is paused</h3><p>Enjoy the games while we improve community safety.</p></section>}
     </aside>
   );
 }

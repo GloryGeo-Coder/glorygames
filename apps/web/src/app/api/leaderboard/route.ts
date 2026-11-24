@@ -1,6 +1,7 @@
 // apps/web/src/app/api/leaderboard/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 import {
   getGlobalLeaderboardFromDatabase,
   getLeaderboardForGameFromDatabase,
@@ -10,6 +11,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  if (!PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED) {
+    return NextResponse.json(
+      { ok: true, paused: true, entries: [], rows: [], topScore: null },
+      { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } }
+    );
+  }
   try {
     const { searchParams } = new URL(req.url);
 
@@ -31,7 +38,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         ok: true,
-        entries,
+        entries: entries.map(({ rank, displayName, score, gameSlug, gameTitle }) => ({
+          rank, displayName, score, gameSlug, gameTitle,
+        })),
         rows: entries.map((entry) => ({
           name: entry.displayName,
           score: entry.score,
@@ -47,7 +56,9 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("[api/leaderboard] failed", error);
+    console.error("[api/leaderboard] failed", {
+      errorClass: error instanceof Error ? error.name : "UnknownError",
+    });
 
     return NextResponse.json(
       {

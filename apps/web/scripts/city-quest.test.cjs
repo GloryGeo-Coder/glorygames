@@ -52,6 +52,70 @@ test('normal shield contact absorbs one hit and invulnerability prevents stacked
  r.player.invuln=0;r.loseLife();r.loseLife();assert.equal(r.state.lives,2);
 });
 
+test('returning to a beacon preserves guide, pickups, remaining lives and encounter progress', async () => {
+  const first = await boot();
+  first.startGame();
+  const level = first.levelDefs[0];
+  Object.assign(first.player, {x:level.npcs[0].x, y:level.npcs[0].y-first.player.h});
+  first.tryAction();
+  const coin = first.game.coins[0];
+  Object.assign(first.player, {x:coin.x, y:coin.y});
+  first.collectThings();
+  const beacon = level.checkpoints[1];
+  Object.assign(first.player, {x:beacon.x, y:beacon.y});
+  first.applyPhysics(1/120);
+  first.player.shield = 1;
+  first.game.enemies.shift(); // Defeated enemies leave the live array after their animation.
+  first.loseLife('You fell!');
+  first.win.emit('pagehide');
+
+  const next = await boot({saved:first.saved});
+  assert.equal(next.elements.get('playBtn').textContent, 'Continue Story');
+  next.startGame();
+  assert.equal(next.checkpoint.index, 1);
+  assert.equal(next.player.x, beacon.x);
+  assert.equal(next.player.y, beacon.y);
+  assert.equal(next.player.shield, 1);
+  assert.equal(next.state.lives, 2);
+  assert.equal(next.game.missionAccepted, true);
+  assert.equal(next.game.enemies[0].dead, true);
+  assert.equal(next.game.objectiveCount, first.game.objectiveCount);
+  Object.assign(next.player, {x:coin.x, y:coin.y});
+  next.collectThings();
+  assert.equal(next.state.coins, first.state.coins);
+  assert.equal(next.state.score, first.state.score);
+  next.loadLevel(0);
+  assert.equal(next.checkpoint.index, 0);
+  assert.equal(next.game.objectiveCount, 0);
+  assert.equal(next.state.lives, 3);
+});
+
+test('closing the results screen resumes the newly unlocked mission', async () => {
+  const first = await boot();
+  first.startGame();
+  first.completeLevel();
+  first.win.emit('pagehide');
+  const next = await boot({saved:first.saved});
+  next.startGame();
+  assert.equal(next.state.levelIndex, 1);
+  assert.equal(next.game.objectiveCount, 0);
+  assert.equal(next.state.score, first.state.score);
+});
+
+test('a failed mission and an obsolete beacon both allow a fresh attempt', async () => {
+  const first = await boot();
+  first.startGame();
+  first.state.lives = 1;
+  first.loseLife('You fell!');
+  for (const beacon of [null, {version:1,level:1,beacon:9000}, {version:1,level:2,beacon:1}]) {
+    const data = {...JSON.parse(first.saved.get(saveKey)), missionReturn:beacon};
+    const next = await boot({saved:new Map([[saveKey, JSON.stringify(data)]])});
+    next.startGame();
+    assert.equal(next.state.lives, 3);
+    assert.equal(next.checkpoint.index, 0);
+  }
+});
+
 test('existing progress, currency, outfit and record survive reload; locked levels stay locked',async()=>{
  const saved=new Map([[saveKey,JSON.stringify({levelIndex:4,unlockedLevels:5,coins:86,score:1234,best:9000,skin:'hero_shadow'})],[bestKey,'12000']]);
  const r=await boot({saved});r.startGame();assert.equal(r.state.levelIndex,4);assert.equal(r.state.coins,86);assert.equal(r.state.skin,'hero_shadow');assert.equal(r.state.best,12000);

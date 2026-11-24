@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { PUBLIC_SIGNUP_ENABLED } from "@/lib/launchPolicy";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/games", label: "Games" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/community", label: "Community" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact Us" },
 ];
@@ -17,9 +19,12 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const { user, loading } = useCurrentUser();
 
+  const menuButton = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
 
   const isPlayRoute = pathname?.startsWith("/play");
 
@@ -81,14 +86,20 @@ export default function SiteHeader() {
   }, [menuOpen]);
 
   async function signOut() {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-      cache: "no-store",
-    });
-
-    window.dispatchEvent(new Event("wga:user-changed"));
-    window.location.href = "/";
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError("");
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST", credentials: "include", cache: "no-store",
+      });
+      if (!response.ok) throw new Error("Sign-out unconfirmed");
+      window.dispatchEvent(new Event("wga:user-changed"));
+      window.location.href = "/";
+    } catch {
+      setSignOutError("Sign-out could not be confirmed. Please retry.");
+      setSigningOut(false);
+    }
   }
 
   const activePath = pathname || "/";
@@ -99,9 +110,10 @@ export default function SiteHeader() {
         👤 {user.displayName}
       </span>
 
-      <button type="button" className="wgaLogoutButton" onClick={signOut}>
-        Sign out
+      <button type="button" className="wgaLogoutButton" onClick={signOut} disabled={signingOut}>
+        {signingOut ? "Signing out…" : "Sign out"}
       </button>
+      {signOutError ? <span role="alert">{signOutError}</span> : null}
     </>
   ) : (
     <>
@@ -109,14 +121,19 @@ export default function SiteHeader() {
         {loading ? "Checking…" : "Sign in"}
       </Link>
 
-      <Link className="cta smallCta" href="/signup">
-        Create account
-      </Link>
+      {PUBLIC_SIGNUP_ENABLED ? <Link className="cta smallCta" href="/signup">Create account</Link> : <Link className="cta smallCta" href="/games">Play as guest</Link>}
     </>
   );
 
   return (
     <header
+      onFocusCapture={() => setHidden(false)}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && menuOpen) {
+          setMenuOpen(false);
+          menuButton.current?.focus();
+        }
+      }}
       className={[
         "wgaHeader",
         scrolled ? "isScrolled" : "",
@@ -154,6 +171,8 @@ export default function SiteHeader() {
         <button
           type="button"
           className="wgaMenuButton"
+          ref={menuButton}
+          aria-controls="wga-mobile-navigation"
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
           onClick={() => {
@@ -167,7 +186,7 @@ export default function SiteHeader() {
         </button>
       </div>
 
-      <div className="wgaMobilePanel" aria-hidden={!menuOpen}>
+      <div id="wga-mobile-navigation" className="wgaMobilePanel" hidden={!menuOpen}>
         <nav className="wgaMobileNav" aria-label="Mobile navigation">
           {navLinks.map((link) => (
             <Link key={link.href} href={link.href}>

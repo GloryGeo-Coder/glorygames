@@ -1,4 +1,9 @@
 import test from "node:test";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { gameLaunchPath } from "../src/lib/gameLaunchPath";
+import { gamePagePath } from "../src/lib/gamePaths";
+import sitemap from "../src/app/sitemap";
 import assert from "node:assert/strict";
 import { GAME_CATALOG, catalogGame } from "../src/lib/gameCatalog";
 import { fallbackGames } from "../src/lib/fallbackGames";
@@ -18,6 +23,11 @@ test("all 24 public catalog summaries and information-page summaries agree", () 
     const escapedOverview = guide.overview[0].replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("'", "&#x27;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
     assert.ok(rendered.includes(escapedOverview), slug);
     assert.match(rendered, /Frequently asked questions/);
+    const href = gameLaunchPath(slug);
+    assert.notEqual(href, gamePagePath(slug), `Guide play link loops back: ${slug}`);
+    assert.ok(rendered.includes(`href="${href}" target="_blank" rel="noopener noreferrer"`), slug);
+    assert.ok(rendered.includes("opens in a new tab"), slug);
+    if (href.startsWith("/games/")) assert.ok(existsSync(path.resolve("public", href.slice(1))), `Missing game entry: ${slug}`);
     for (const field of [guide.overview, guide.story, guide.howToPlay, guide.desktop, guide.mobile, guide.progression, guide.tips, guide.faqs]) assert.ok(field.length > 0, slug);
     assert.doesNotMatch(JSON.stringify(guide), /coming soon|prototype|development placeholder|no long scripted campaign|six-level campaign|ten-level sequence|game contains ten levels|game has ten stages/i, slug);
   }
@@ -45,7 +55,7 @@ test("published progression facts match the implemented finite paths and continu
     "space-dodger": [/18|eighteen/i, /GLB/, /escort/],
     "space-pilot-platformer": [/eight|8/i, /Final Gate/],
     "stack-tower": [/endless/, /Focus Mode/],
-    "swipe-racer": [/four|4/i],
+    "swipe-racer": [/Harbour Duel/, /Frostline Pass/, /six strips/i, /Mara/],
     "word-dash": [/four|4/i],
   };
   for (const [slug, patterns] of Object.entries(facts)) {
@@ -68,8 +78,30 @@ test("final game names override legacy database names without changing routes or
   assert.deepEqual(catalogGame(unknown), unknown);
 });
 
-test("Recycle Rush retains Fibre Circle sponsorship and its final story and arcade scope", () => {
+test("Recycle Rush keeps its story and arcade scope without a sponsorship claim", () => {
   const guide = GAME_EDITORIALS["recycle-rush"], copy = JSON.stringify(guide);
-  assert.equal(guide.sponsor, "Fibre Circle"); assert.match(copy, /Verdale/); assert.match(copy, /25/); assert.match(copy, /20/);
+  assert.equal(guide.sponsor, undefined); assert.doesNotMatch(copy, /sponsored by Fibre Circle/i); assert.match(copy, /Verdale/); assert.match(copy, /25/); assert.match(copy, /20/);
   assert.doesNotMatch(copy, /PETCO|Polyco|Polyco SA|MetPac|eWASA/i);
+});
+
+
+test("sitemap includes canonical game guides and the restored leaderboard without private or standalone game URLs", () => {
+  const urls = sitemap().map(entry => entry.url);
+  assert.equal(urls.length, new Set(urls).size);
+  assert.ok(urls.some(url => new URL(url).pathname === "/leaderboard"));
+  for (const slug of Object.keys(GAME_CATALOG)) assert.ok(urls.some(url => new URL(url).pathname === gamePagePath(slug)), slug);
+  for (const url of urls) assert.doesNotMatch(new URL(url).pathname, /\/api\/|\/login|\/signup|\/index\.html/);
+});
+
+
+test("every catalogue thumbnail loads an existing file first without repeated format probes", async () => {
+  const { gameThumbnailSources } = await import("../src/lib/gameThumbnails");
+  const { GameThumb } = await import("../src/components/GameThumb");
+  for (const slug of Object.keys(GAME_CATALOG)) {
+    const sources = gameThumbnailSources(slug);
+    assert.equal(sources.length, new Set(sources).size);
+    assert.ok(existsSync(path.resolve("public", sources[0].slice(1))), slug);
+    const html = renderToStaticMarkup(React.createElement(GameThumb, {slug, title: "Game preview"}));
+    assert.ok(html.includes(`src="${sources[0]}"`), slug);
+  }
 });

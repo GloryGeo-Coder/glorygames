@@ -2,6 +2,7 @@
 
 import { PrismaClient } from "@/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { getRuntimeDatabaseUrl, hasUsableRuntimeDatabaseUrl } from "@/lib/runtimeDatabaseUrl";
 
 type GeneratedPrismaClient = PrismaClient;
 
@@ -10,34 +11,12 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 export function hasUsableDatabaseUrl() {
-  const url = process.env.DATABASE_URL;
-
-  if (!url) return false;
-  if (url.includes("127.0.0.1")) return false;
-  if (url.includes("localhost")) return false;
-
-  return true;
-}
-
-function getDatabaseUrl() {
-  const url = process.env.DATABASE_URL;
-
-  if (!url) {
-    throw new Error("DATABASE_URL is missing.");
-  }
-
-  if (!hasUsableDatabaseUrl()) {
-    throw new Error(
-      "DATABASE_URL is not usable in production."
-    );
-  }
-
-  return url;
+  return hasUsableRuntimeDatabaseUrl();
 }
 
 function createPrismaClient() {
   const adapter = new PrismaPg({
-    connectionString: getDatabaseUrl(),
+    connectionString: getRuntimeDatabaseUrl(),
   });
 
   return new PrismaClient({

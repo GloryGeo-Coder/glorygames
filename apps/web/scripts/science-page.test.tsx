@@ -32,7 +32,7 @@ test('canonical descriptions and titles replace stale database and fallback valu
  for(const g of [normalized,fallback]){assert.equal(g.title,manifest.title);assert.equal(g.description,guide.summary);assert.equal(g.category,'EDUCATIONAL');}assert.equal(normalized.id,'existing');assert.deepEqual(normalized.tags,['science']);
 });
 test('rendered launch retains the thumbnail, dedicated tab, score and sidebar chat',()=>{
- const html=renderToStaticMarkup(React.createElement(PlayClient,getFallbackGameBySlug(slug)));assert.doesNotMatch(html,/<iframe/);assert.match(html,/\/games\/science-lab-dash\/thumb.png/);assert.match(html,/href="\/games\/science-lab-dash\/index.html" target="_blank" rel="noopener noreferrer"/);assert.match(html,/Game Chat/);assert.match(html,/Live score/);
+ const html=renderToStaticMarkup(React.createElement(PlayClient,getFallbackGameBySlug(slug)));assert.doesNotMatch(html,/<iframe/);assert.match(html,/\/games\/science-lab-dash\/thumb.png/);assert.match(html,/href="\/games\/science-lab-dash\/index.html" target="_blank" rel="noopener noreferrer"/);assert.match(html,/Game Chat/);assert.match(html,/ggChatInput/);assert.doesNotMatch(html,/Chat is paused/);assert.match(html,/Live score/);
 });
 test('both information routes derive metadata and FAQs from the final guide and keep related games',()=>{
  for(const file of ['src/app/play/[slug]/page.tsx','src/app/games/[slug]/page.tsx']){const s=readFileSync(file,'utf8');assert.match(s,/editorial\?\.summary/);assert.match(s,/GameEditorial/);assert.match(s,/getGameEditorial/);assert.match(s,/relatedGames/);}

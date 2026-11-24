@@ -1,5 +1,6 @@
 // apps/web/src/app/games/page.tsx
 
+import DiscoveryLinks from "@/components/DiscoveryLinks";
 import { gamePagePath } from "@/lib/gamePaths";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -51,7 +52,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   "EDUCATIONAL": "Learning games turn geography, mathematics, science, recycling and cybersecurity concepts into interactive challenges. Find experiences focused on observation, problem solving and practical knowledge.",
   "PUZZLE": "Puzzle games reward planning, timing and accurate decisions. Stack Tower turns precise block placement into a challenge to build as high as you can.",
   "RACING": "Racing and runner games require anticipation, smooth movement and good boost timing. Navigate traffic in Swipe Racer or High Spead Racer, or steer a futuristic hover craft around hazards.",
-  "WORD_TRIVIA": "Word and trivia games focus on language, recognition and recall. Type target spellings, build streaks and work through timed missions in Word Dash.",
+  "WORD_TRIVIA": "Word and trivia games focus on language, recognition and recall. Shoot loose letters and spell drifting word comets to recover four beacons in Word Dash.",
   "STRATEGY": "Strategy games put planning and considered choices first. Explore the library as new strategy titles are added.",
   "SPORTS": "Sports games focus on timing, tactical decisions and skill development. Browse this category when new titles become available.",
   "SIMULATION": "Simulation games model activities and scenarios through interactive choices. Browse this category when new titles become available.",
@@ -224,7 +225,7 @@ export default async function GamesPage({
       allGames = normalizeGameRows(dbGames);
     }
   } catch (error) {
-    console.warn("[games] Falling back to static game list", error);
+    console.warn("[games] Falling back to static game list");
     allGames = fallbackGameList();
   }
 
@@ -317,6 +318,7 @@ export default async function GamesPage({
               gap: 12,
             }}
           >
+            <DiscoveryLinks />
             <form className="toolbar" action="/games" method="get">
               {category ? (
                 <input

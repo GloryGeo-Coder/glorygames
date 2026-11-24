@@ -55,3 +55,21 @@ for(const [name,w,h] of [['portrait',390,650],['landscape',844,235]])test('real 
  }
  assert.equal(r.probe.state.level,3);assert.ok(r.probe.state.score>1000);assert.ok(r.probe.state.lives>0);assert.ok(!r.probe.state.gameOver);
 });
+
+test('tapping the selected mode in Pause preserves both Classic and campaign runs',()=>{
+  for (const mode of ['btnClassic','btnCampaign']) {
+    const r=boot();
+    r.elements.get(mode).click();
+    start(r);
+    r.probe.setState({score:320,lives:2});
+    r.elements.get('btnPause').click();
+    const board=r.probe.bricks;
+    r.elements.get(mode).click();
+    assert.equal(r.probe.state.paused,true);
+    assert.equal(r.probe.state.score,320);
+    assert.equal(r.probe.state.lives,2);
+    assert.equal(r.probe.bricks,board);
+    r.elements.get('btnStart').click();
+    assert.equal(r.probe.state.paused,false);
+  }
+});

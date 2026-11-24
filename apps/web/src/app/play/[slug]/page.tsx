@@ -97,7 +97,7 @@ async function getGame(slug: string): Promise<PlayGame | null> {
       return normalizeGame(dbGame);
     }
   } catch (error) {
-    console.warn("[play] Database game lookup failed", error);
+    console.warn("[play] Database game lookup failed");
   }
 
   return normalizeGame(getFallbackGameBySlug(slug));
@@ -115,7 +115,7 @@ async function getRelatedGames(game: PlayGame): Promise<PlayGame[]> {
       return dbRelated.map(normalizeGame).filter(Boolean) as PlayGame[];
     }
   } catch (error) {
-    console.warn("[play] Related games lookup failed", error);
+    console.warn("[play] Related games lookup failed");
   }
 
   return getRelatedFallbackGames(game.slug, game.category)
@@ -251,6 +251,7 @@ export default async function PlayPage({
           <span aria-current="page">{title}</span>
         </nav>
         <GameEditorial slug={game.slug} title={title} />
+        {["recycle-rush", "science-lab-dash"].includes(game.slug) && <Link className="pill" href="/game-saves">How to resume this game</Link>}
 
         {relatedGames.length ? (
           <section className="section relatedGamesSection">

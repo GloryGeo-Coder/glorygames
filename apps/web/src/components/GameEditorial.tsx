@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { gameLaunchPath } from "@/lib/gameLaunchPath";
 import { getGameEditorial } from "@/content/gameEditorials";
 
 type Props = {
@@ -64,9 +64,9 @@ export default function GameEditorial({ slug, title }: Props) {
             progression and useful strategies.
           </p>
         </div>
-        <Link className="pill" href={`/play/${slug}`}>
+        <a className="pill" href={gameLaunchPath(slug)} target="_blank" rel="noopener noreferrer" aria-label={`Play ${title} (opens in a new tab)`}>
           Play {title} →
-        </Link>
+        </a>
       </div>
 
       <article className="heroCard gameDetailPanel" style={{ marginTop: 16 }}>

@@ -217,10 +217,60 @@
     out.lives=clamp(Math.floor(Number(out.lives)||3),1,5);out.muted=!!out.muted;
     for(const key of ['musicVolume','effectsVolume'])out[key]=typeof raw[key]==='number'&&Number.isFinite(raw[key])?clamp(raw[key],0,1):stateDefaults()[key];
     out.started=false;out.paused=false;out.gameOver=false;out.completed=false;out.campaignVersion=24;
+    const trail = raw.trail;
+    if (trail?.version !== 1 || trail.level !== out.levelIndex ||
+        !Array.isArray(trail.items) || !Number.isInteger(trail.flag)) out.trail = null;
     return out;
   }
 
+  // The route generator gives each pickup a stable ID within its level.
+  // Resume from safe ground even if the last save happened during a jump.
+  const equipmentLimits = {ammo:MAX_AMMO, shield:1, torchTimer:10, shootPowerTimer:12, magnetTimer:12, jumpBootsTimer:14};
+
+  function captureTrail() {
+    const equipment = {};
+    for (const key of Object.keys(equipmentLimits)) equipment[key] = player[key];
+    return {
+      version:1, level:state.levelIndex, flag:game.checkpointIndex,
+      items:game.items.filter(item => item.taken).map(item => item.id),
+      enemies:game.enemies.filter(enemy => !enemy.dead).map(enemy => enemy.id),
+      bossHP:game.boss?.alive ? game.boss.hp : 0, equipment
+    };
+  }
+
+  function restoreTrail(trail) {
+    const taken = new Set(trail.items);
+    for (const item of game.items) {
+      if (!taken.has(item.id)) continue;
+      item.taken = true;
+      if (item.type === 'relic') game.relics++;
+      if (item.type === 'key') game.keys++;
+      if (item.type === 'plate') game.plateActive = true;
+    }
+    if (Array.isArray(trail.enemies)) {
+      const remaining = new Set(trail.enemies);
+      game.enemies = game.enemies.filter(enemy => remaining.has(enemy.id));
+    }
+    if (game.boss && Number.isFinite(trail.bossHP)) {
+      game.boss.hp = clamp(trail.bossHP, 0, game.boss.hp);
+      game.boss.alive = game.boss.hp > 0;
+    }
+    for (const [key, max] of Object.entries(equipmentLimits)) {
+      const value = trail.equipment?.[key];
+      if (Number.isFinite(value)) player[key] = clamp(value, 0, max);
+    }
+    game.checkpointIndex = clamp(trail.flag, 0, game.checkpoints.length - 1);
+    const flag = game.checkpoints[game.checkpointIndex];
+    Object.assign(player, {x:flag.x, y:flag.y, invuln:1.6});
+    game.speech = game.checkpointIndex ? 'Expedition resumed at your last flag.' : 'Expedition resumed at the trailhead.';
+    computeCamera(true);
+    syncUI();
+  }
+
   function saveState(){
+    if (state.started) {
+      state.trail = state.gameOver || state.completed || game.levelComplete || game.storyOpen ? null : captureTrail();
+    }
     state.best=Math.max(state.best,state.score);
     try{localStorage.setItem(BEST_KEY,String(Math.floor(state.best)));localStorage.setItem(SAVE_KEY,JSON.stringify({...state,started:false,paused:false,gameOver:false,completed:false}));}catch{}
   }
@@ -312,9 +362,17 @@
   }
 
   function startGame(){
-    state=loadState();state.started=true;state.paused=false;state.completed=false;state.gameOver=false;state.lives=Math.max(3,state.lives);
+    state=loadState();state.started=true;state.paused=false;state.completed=false;state.gameOver=false;
+    if (!state.trail) state.lives=Math.max(3,state.lives);
     for(const id of ['startOverlay','completeOverlay','gameOverOverlay','mapOverlay','pauseOverlay'])document.getElementById(id).classList.remove('active');
-    ensureAudio();buildLevel();showCutscene();saveState();
+    ensureAudio();buildLevel();
+    if (state.trail) {
+      restoreTrail(state.trail);
+      continueCutscene();
+    } else {
+      showCutscene();
+    }
+    saveState();
   }
 
   function showCutscene(){
@@ -324,7 +382,7 @@
   }
 
   function continueCutscene(){
-    ui.cutsceneOverlay.classList.remove('active');game.storyOpen=false;state.paused=false;resetInput();startMusic();canvas.focus();
+    ui.cutsceneOverlay.classList.remove('active');game.storyOpen=false;state.paused=false;resetInput();startMusic();canvas.focus();saveState();
   }
 
   function addPlatform(x,y,w,h,type='solid', props={}) {
@@ -575,6 +633,7 @@
 
 
   function collectItems() {
+    let collected = false;
     for (const it of game.items) {
       if (it.taken) continue;
       const box = {x:it.x,y:it.y,w:it.w||52,h:it.h||52};
@@ -588,7 +647,9 @@
       if (it.type === 'key') collectKey(it);
       if (it.type === 'power') collectPower(it);
       if (it.type === 'plate') activatePlate(it);
+      if (it.taken) collected = true;
     }
+    if (collected) saveState();
   }
 
   function collectCoin(it) {
@@ -1366,7 +1427,8 @@
     ui.powerText.textContent = `Tool: ${tools.length ? tools.join(' • ') : 'None'}`;
 
     let mission;
-    if (game.relics < lv.relicTarget) mission = `Collect ${lv.relicTarget - game.relics} more Sun Relic(s).`;
+    if (lv.id === 1 && !game.relics) mission = 'First Sun Relic: jump right past the first flag, cross the second gap and land on the raised bank.';
+    else if (game.relics < lv.relicTarget) mission = `Collect ${lv.relicTarget - game.relics} more Sun Relic(s).`;
     else if (game.keys < lv.keyTarget) mission = `Find ${lv.keyTarget - game.keys} more Temple Key(s).`;
     else if (!game.plateActive) mission = 'Step on the glowing pressure plate.';
     else if (game.boss?.alive) mission = `Defeat ${game.boss.displayName||game.boss.name}.`;
@@ -1455,7 +1517,7 @@
     });
     window.addEventListener('keyup',e=>{delete keys[e.code];});
     const interrupt=()=>{resetInput();stopMusic();setPaused(true);last=performance.now();accumulator=0;};
-    window.addEventListener('blur',interrupt);document.addEventListener('visibilitychange',()=>{if(document.hidden)interrupt();});window.addEventListener('pagehide',()=>{interrupt();saveState();});
+    window.addEventListener('blur',interrupt);document.addEventListener('visibilitychange',()=>{if(document.hidden){interrupt();if(state.started)saveState();}});window.addEventListener('pagehide',()=>{interrupt();if(state.started)saveState();});
     window.addEventListener('resize',resizeCanvas);window.visualViewport?.addEventListener('resize',resizeCanvas);
     window.addEventListener('message',ev=>{
       if(ev.source!==window.parent||ev.origin!==window.location.origin)return;const data=ev.data||{},type=data.type||data.event;
@@ -1473,7 +1535,7 @@
   bindEvents();resizeCanvas();buildLevel();
   game.loading.then(()=>{
     document.getElementById('playBtn').disabled=false;
-    document.getElementById('playBtn').textContent=state.levelIndex>0?'Continue Expedition':'Start Expedition';
+    document.getElementById('playBtn').textContent=state.trail||state.levelIndex>0?'Continue Expedition':'Start Expedition';
     resizeCanvas();requestAnimationFrame(loop);
   });
 })();

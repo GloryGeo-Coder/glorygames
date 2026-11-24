@@ -2,6 +2,7 @@
 
 import type { Metadata } from "next";
 import InfoPage from "@/components/InfoPage";
+import { ANALYTICS_ENABLED, ANALYTICS_NOTICE } from "@/lib/publicAnalytics";
 
 export const dynamic = "force-static";
 
@@ -25,12 +26,30 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
+    <>
     <InfoPage
       eyebrow="Privacy Policy"
       title="Your privacy matters when you play."
       description="This Privacy Policy explains how WebGameArena may collect, use and protect information when players visit the website, create an account, play games, use chat features, interact with leaderboards, or view advertising."
-      updated="15 June 2026"
+      updated="23 November 2026"
       sections={[
+        ...(ANALYTICS_ENABLED ? [{ title: "Optional adult analytics", body: [
+          "Google Analytics 4 is provided by Google under its standard service and data-processing terms. When you explicitly allow it, requests disclose your IP address and browser/device information to Google, and first-party cookies identify the browsing session. We send page views using fixed public-page titles and coarse game/collection paths. Query strings, fragments, referring URLs, account routes, chat text, scores, emails, account identifiers and form entries are excluded from our analytics events. This does not make analytics anonymous.",
+          "Google may process information outside South Africa, including in the United States and other countries where Google and its subprocessors operate. Google signals, advertising personalization, enhanced measurement and Google Ads links are disabled for this setup. No optional analytics is required for play or sign-in.",
+          "The Analytics account permits Google support staff to access Analytics data for troubleshooting, contributions to aggregated industry insights, and business recommendations using the Google Analytics administrative account information. The broader Google products & services sharing option is off. These account choices do not enable advertisements or Google signals.",
+          "The choice is for adults using the browser themselves; it is a self-declaration, not identity or age verification and not parental permission to track a child. If you are under 18, unsure, or sharing with a child, continue without analytics. Before handing the browser to someone else, withdraw in Analytics settings. A reload or new document requires another opt-in; consent is not taken from your account.",
+          "User/event retention is set to two months without resetting on new activity. This setting does not delete standard aggregated reports. Analytics settings lets you withdraw; withdrawal stops further collection, clears this property's browser cookies and reloads the page to remove the loaded tag. It does not recall data already received by Google. Contact privacy@webgamearena.com for privacy requests; do not send passwords or unnecessary child information."
+        ] }] : []),
+
+{"title": "Current guest-play launch", "body": ["Families, including under-18s, can browse and play available games without creating an account. Parents and guardians should help children choose suitable games and take regular breaks.", "Public chat, score submissions, daily challenges and historical leaderboards are available. Existing account sign-in remains available. New registration and reviews remain paused.", ANALYTICS_NOTICE]},
+{"title": "Current service providers and local saves", "body": ["Cloudflare hosts and protects the website and receives technical request information such as IP addresses and browser/request details. Neon provides the database for existing account and historical platform records.", "Game progress and settings may be stored locally in your browser. These local saves are not an account backup and may be lost if browser data is cleared. Supported games can submit scores: global scores require an existing signed-in account; daily challenges also accept a guest nickname. Public leaderboard entries can include older stored scores.", "Messages sent to support@, privacy@, games@ or ads@webgamearena.com pass through Cloudflare Email Routing to the operatorâ€™s monitored Gmail inbox. Do not send passwords, identity documents, payment details or unnecessary information about children.", "Some games offer educational source links. Following a link opens a separate website whose privacy practices apply. Those links are different from advertising or analytics integrations."]},
+        { title: "Community information and abuse prevention", body: [
+          "Community posts are published by the team. Signed-in players can add or remove a like and submit a comment for review. The database links likes and comments to an account. Visitors see like totals and approved comment text. The public discussion omits player account names and email addresses. Use the support contact to report a published comment.",
+          "Chat nicknames, messages and timestamps are visible to players on that game page. The chat view shows recent messages; this does not automatically delete older stored messages. Reports hide a message from public chat and retain the message reference, reporting time and reporting account identifier where signed in.",
+          "Scores store the game, score, mode or challenge, nickname, time and account reference where signed in. Nicknames, games and scores appear publicly, including historical entries; account emails and password hashes are excluded from public responses. Scores are reported by games and are not independently certified or a basis for prizes.",
+          "To limit spam and repeated submissions, the server keeps keyed identifiers derived from an account or network address, counts and expiry times. These are pseudonymous information. Expired counters are removed during later community requests, so they may remain longer during inactivity or in recovery backups. This does not enable advertising or optional analytics.",
+          "Chat has message-length, content and rate checks, and a Report control. Automated checks cannot identify all unsafe content. Avoid personal details, use Report for inappropriate messages and contact support@webgamearena.com for safety concerns or privacy@webgamearena.com for privacy requests."
+        ] },
         {
           title: "1. Information we may collect",
           body: [
@@ -84,7 +103,7 @@ export default function PrivacyPage() {
         },
         {
           title: "8. Children and younger players",
-          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, especially when creating accounts, using chat or sharing public scores.",
+          body: "WebGameArena is designed to be player-friendly and broadly accessible. Younger players should use the platform with guidance from a parent or guardian, when choosing games and learning safe online habits. Chat and leaderboard names and content are visible to other visitors. Parents and guardians should guide younger players, choose non-identifying nicknames and help them report inappropriate content. New registration remains paused.",
         },
         {
           title: "9. Data protection and security",
@@ -118,5 +137,7 @@ export default function PrivacyPage() {
         },
       ]}
     />
+    {ANALYTICS_ENABLED ? <p className="container"><a href="https://policies.google.com/technologies/partner-sites" rel="noreferrer">How Google uses information from sites or apps that use its services</a> Â· <a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></p> : null}
+    </>
   );
 }

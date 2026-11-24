@@ -55,10 +55,10 @@ export function subscribeGameTabScores({ window: win = globalThis.window, slug, 
 
 /** Existing daily/global endpoints remain the only server score writers. */
 export function createStandaloneScoreBridge({ slug, origin, fetcher = globalThis.fetch, storage,
-  timers = globalThis, onScore = () => {}, onStatus = () => {}, interval = 5000 } = {}) {
+  timers = globalThis, onScore = () => {}, onStatus = () => {}, interval = 5000, networkEnabled = false } = {}) {
   let playerName = 'Guest Player', signedIn = false, identity = null, disposed = false, identityKey = null, failures = 0;
   let latest = 0, best = 0, lastDaily = 0, lastGlobal = 0, timer = null, sending = null;
-  const network = typeof fetcher === 'function' && /^https?:\/\//.test(origin || '');
+  const network = networkEnabled === true && typeof fetcher === 'function' && /^https?:\/\//.test(origin || '');
   try { playerName = cleanName(storage?.getItem('wga_guest_player_name') || storage?.getItem('gg_player_name')); } catch {}
   function connect() {
     if (!network || disposed) return Promise.resolve();

@@ -1,31 +1,14 @@
 // apps/web/src/lib/neon.ts
 
 import { neon } from "@neondatabase/serverless";
+import { getRuntimeDatabaseUrl, hasUsableRuntimeDatabaseUrl } from "@/lib/runtimeDatabaseUrl";
 
 export function hasUsableNeonDatabaseUrl() {
-  const url = process.env.DATABASE_URL;
-
-  if (!url) return false;
-  if (url.includes("127.0.0.1")) return false;
-  if (url.includes("localhost")) return false;
-
-  return true;
+  return hasUsableRuntimeDatabaseUrl();
 }
 
 export function getNeonSql() {
-  const url = process.env.DATABASE_URL;
-
-  if (!url) {
-    throw new Error("DATABASE_URL is missing.");
-  }
-
-  if (!hasUsableNeonDatabaseUrl()) {
-    throw new Error(
-      "DATABASE_URL is not usable in production. Use your hosted Neon connection string."
-    );
-  }
-
-  return neon(url);
+  return neon(getRuntimeDatabaseUrl());
 }
 
 export function createId() {

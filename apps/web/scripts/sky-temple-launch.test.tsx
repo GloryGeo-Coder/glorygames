@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url);
 require.extensions[".css"] = (module: any) => {
   module.exports = new Proxy({}, { get: (_target, key) => key === "__esModule" ? false : String(key) });
 };
+const { gameThumbnailSources } = require("../src/lib/gameThumbnails.ts");
 const React = require("react");
 const { renderToStaticMarkup } = require("react-dom/server");
 const PlayClient = require("../src/app/play/[slug]/play-client.tsx").default;
@@ -20,16 +21,16 @@ test("Sky Temple's actual play page opens the deployed campaign without an old-g
   assert.ok(!html.includes("<iframe"));
   assert.ok(html.includes(`href="${SKY_TEMPLE.href}" target="_blank" rel="noopener noreferrer"`));
   assert.match(html, /Play Game/);
-  assert.match(html, /Game Chat/);
-  assert.ok(html.includes(`/games/${SKY_TEMPLE.slug}/thumb.webp`));
+  assert.match(html, /Game Chat/); assert.match(html, /ggChatInput/); assert.match(html, /Chat rules/); assert.doesNotMatch(html, /Chat is paused/);
+  assert.ok(html.includes(gameThumbnailSources(SKY_TEMPLE.slug)[0]));
   assert.ok(existsSync(path.resolve("public", SKY_TEMPLE.href.slice(1))));
   assert.ok(!html.includes("Exit Fullscreen"));
 });
-test("other games open their original entry in a dedicated tab and retain chat", () => {
+test("other games open their original entry in a dedicated tab and show available chat", () => {
   const html = render("brick-blaster");
   assert.ok(!html.includes("<iframe"));
   assert.match(html, /href="\/games\/brick-blaster\/index.html" target="_blank"/);
   assert.match(html, /Play Game/);
-  assert.match(html, /Game Chat/);
+  assert.match(html, /Game Chat/); assert.match(html, /ggChatInput/); assert.match(html, /Chat rules/); assert.doesNotMatch(html, /Chat is paused/);
   assert.ok(!html.includes(SKY_TEMPLE.href));
 });

@@ -1,7 +1,9 @@
+import { communityWrite } from "@/lib/communityHttp";
+import { PUBLIC_SCORE_SUBMISSIONS_ENABLED } from "@/lib/launchPolicy";
 // apps/web/src/app/api/daily-challenge/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { createId, getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
+import { getNeonSql, hasUsableNeonDatabaseUrl } from "@/lib/neon";
 import { getSessionUser } from "@/lib/auth";
 import { isPublicGameSlug } from "@/lib/gamesDb";
 
@@ -21,23 +23,13 @@ function sanitizePlayerName(value?: string | null) {
   return clean || "Guest Player";
 }
 
-async function getOrCreateChallenge(sql: ReturnType<typeof getNeonSql>, gameId: string) {
-  const day = todayUtc();
-  const id = createId();
-  const seed = Math.floor(Math.random() * 1_000_000_000);
-
-  const rows = await sql`
-    INSERT INTO "DailyChallenge" (id, day, seed, "gameId", "createdAt")
-    VALUES (${id}, ${day}, ${seed}, ${gameId}, NOW())
-    ON CONFLICT (day, "gameId")
-    DO UPDATE SET day = EXCLUDED.day
-    RETURNING id, day, seed
-  `;
-
-  return rows[0] as { id: string; day: string; seed: number };
+async function getOrCreateChallenge(_sql: ReturnType<typeof getNeonSql>, slug: string) {
+  const rows = await communityWrite(sql => sql`SELECT wga_community_private.daily_context(${slug}) AS context`);
+  return rows[0]?.context as { id: string; day: string; seed: number };
 }
 
 export async function GET(req: NextRequest) {
+  if (!PUBLIC_SCORE_SUBMISSIONS_ENABLED) return NextResponse.json({ ok: true, rows: [], status: "paused" }, { headers: { "Cache-Control": "no-store" } });
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json({ ok: true, rows: [], entries: [], me: null });
@@ -72,7 +64,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ ok: true, rows: [], entries: [], me: null });
     }
 
-    const challenge = await getOrCreateChallenge(sql, game.id);
+    const challenge = await getOrCreateChallenge(sql, game.slug);
 
     const scoreRows = await sql`
       SELECT
@@ -157,7 +149,7 @@ export async function GET(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("[api/daily-challenge] failed", error);
+    console.warn("[api/daily-challenge] unavailable");
 
     return NextResponse.json(
       { ok: false, rows: [], entries: [], me: null, error: "Daily challenge unavailable" },

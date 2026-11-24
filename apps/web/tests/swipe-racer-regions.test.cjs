@@ -2,75 +2,64 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const vm = require('node:vm');
 const path = require('node:path');
+const vm = require('node:vm');
 const root = path.join(__dirname, '../public/games/swipe-racer');
-const key = 'wga_swipe_racer_horizon_v1';
 
-function game(seed = {}, blocked = false) {
-  const storage = { ...seed }, elements = {};
-  const context2d = new Proxy({}, { get: (o, p) => o[p] || (() => {}), set: (o, p, v) => (o[p] = v, true) });
-  function el(id) {
-    return elements[id] ||= { style:{}, textContent:'', value:'', addEventListener(){}, appendChild(){}, getBoundingClientRect(){return {width:390,height:700,left:0,top:0}}, getContext(){return context2d}, setPointerCapture(){} };
+function game(storage = new Map()) {
+  const ui = new Map();
+  const scores = [];
+  function element(key) {
+    if (!ui.has(key)) ui.set(key, { style: {}, focus() {}, addEventListener() {},
+      getBoundingClientRect: () => ({ width: 390, height: 844 }), getContext: () => ({setTransform() {}}) });
+    return ui.get(key);
   }
-  const document = { getElementById:el, createElement:()=>({}), addEventListener(){}, hidden:false };
-  const window = { innerWidth:390, innerHeight:700, devicePixelRatio:1, addEventListener(){}, parent:{postMessage(){}} };
-  const localStorage = { getItem:k=>{if(blocked) throw Error('blocked');return storage[k]??null}, setItem:(k,v)=>{if(blocked) throw Error('blocked');storage[k]=v} };
-  const sandbox = { document, window, localStorage, performance:{now:()=>1000}, requestAnimationFrame(){}, setInterval:()=>1, clearInterval(){}, Image:class {set src(v){this.onload?.()}}, fetch:()=>Promise.reject(Error('offline')), Promise, Math, console };
-  sandbox.globalThis = sandbox;
-  const source = fs.readFileSync(path.join(root, 'game.js'), 'utf8').replace('  resetRun();\n  requestAnimationFrame(loop);', '  globalThis.api = {state, progress, LEVELS, loadLevel, startLevel, step, togglePause, missionText};\n  resetRun();');
-  assert(source.includes('globalThis.api ='), 'runtime test hook inserted');
-  vm.runInNewContext(source, sandbox);
-  return { api:sandbox.api, storage, elements };
+  const context = vm.createContext({
+    document: {querySelector: element, addEventListener() {}},
+    window: {addEventListener() {}, GG: {endRound: value => scores.push(value)}},
+    localStorage: {getItem: key => storage.get(key), setItem: (key,value) => storage.set(key,value)},
+    Image: class {}, devicePixelRatio: 1, requestAnimationFrame() {}
+  });
+  vm.runInContext(fs.readFileSync(path.join(root,'game.js'),'utf8'), context);
+  return {run: expr => vm.runInContext(expr,context), scores};
 }
 
-test('migrates completed original campaign while preserving stars and unfinished saves', () => {
-  const complete = {version:1, unlocked:7, stars:[3,2,1,1,1,1,1,2]};
-  const migrated = game({[key]:JSON.stringify(complete)}).api.progress;
-  assert.equal(migrated.unlocked,8); assert.equal(migrated.stars.length,25); assert.equal(migrated.stars[7],2);
-  const unfinished = game({[key]:JSON.stringify({...complete, stars:[3,2,1,1,1,1,1,0]})}).api.progress;
-  assert.equal(unfinished.unlocked,7);
-  const fifteen={version:1,unlocked:14,stars:Array(15).fill(2)};
-  assert.equal(game({[key]:JSON.stringify(fifteen)}).api.progress.unlocked,15);
-  fifteen.stars[14]=0;
-  assert.equal(game({[key]:JSON.stringify(fifteen)}).api.progress.unlocked,14);
-  assert.equal(game({[key]:'not json'}).api.progress.unlocked,0);
-  assert.equal(game({},true).api.progress.unlocked,0);
-});
-
-test('all 25 events finish naturally on a clean run and persist sequential progress', () => {
-  const {api, storage} = game();
-  assert.equal(api.LEVELS.length,25);
-  for (let i=0; i<api.LEVELS.length; i++) {
-    api.loadLevel(i); api.startLevel(); api.state.spawnT=Infinity; api.state.pickupT=Infinity;
-    for (let n=0; n<10000 && api.state.running; n++) api.step(.033);
-    assert.equal(api.state.gameOver,false, `event ${i+1} should be achievable without random pickups`);
-    assert.equal(api.state.levelClear,true, `event ${i+1} completed`);
-    assert.equal(api.progress.unlocked,Math.min(i+1,24));
+test('both courses are available on first visit and keep independent records', () => {
+  const storage = new Map([['wga_swipe_racer_horizon_v1','legacy campaign']]);
+  const {run, scores} = game(storage);
+  for (const [id,time] of [['harbour',31],['frostline',34]]) {
+    run(`showCourse('${id}'); begin(); race.time=${time}; done()`);
+    assert.equal(run('best'),time);
   }
-  const saved=JSON.parse(storage[key]); assert.equal(saved.unlocked,24); assert.equal(saved.stars.length,25);
-  const reloaded=game(storage).api.progress; assert.equal(reloaded.unlocked,24); assert.equal(reloaded.stars[24],2);
+  assert.equal(scores.length,2);
+  for (const result of scores) {
+    assert.equal(result.gameSlug,'swipe-racer');
+    assert.ok(Number.isInteger(result.score) && result.score>0);
+  }
+  const reopened=game(storage);
+  assert.equal(reopened.run('courseId'),'frostline');
+  assert.equal(reopened.run('best'),34);
+  assert.equal(reopened.run("showCourse('harbour'); best"),31);
+  assert.equal(storage.get('wga_swipe_racer_horizon_v1'),'legacy campaign');
 });
 
-test('rival advances, pauses, wins or loses consistently with the player', () => {
-  const {api,elements}=game(); api.loadLevel(9); api.startLevel(); api.state.spawnT=Infinity; api.state.pickupT=Infinity;
-  const start=api.state.rivalDistance; api.step(1); assert(api.state.rivalDistance>start); assert.match(api.missionText(),/Rival/);
-  api.togglePause(); const paused=api.state.rivalDistance; api.step(2); assert.equal(api.state.rivalDistance,paused); api.togglePause();
-  api.state.distance=100; api.state.rivalDistance=api.LEVELS[9].targetDistance-1; api.step(.1);
-  assert.equal(api.state.gameOver,true); assert.match(elements.panelText.textContent,/Kai reached the finish first/); assert.equal(api.progress.unlocked,0);
-  api.loadLevel(9); api.startLevel(); api.state.spawnT=Infinity; api.state.pickupT=Infinity;
-  api.state.distance=api.LEVELS[9].targetDistance-1; api.state.rivalDistance=100; api.step(.1);
-  assert.equal(api.state.levelClear,true); assert.equal(api.state.gameOver,false);
-  api.loadLevel(9); api.startLevel(); api.state.spawnT=Infinity; api.state.pickupT=Infinity;
-  api.state.distance=api.LEVELS[9].targetDistance-5; api.state.rivalDistance=api.LEVELS[9].targetDistance-1; api.step(.1);
-  assert.equal(api.state.gameOver,true,'rival crosses first within the same frame');
-  api.loadLevel(9); api.startLevel(); api.state.spawnT=Infinity; api.state.pickupT=Infinity;
-  api.state.distance=api.LEVELS[9].targetDistance-1; api.state.rivalDistance=api.LEVELS[9].targetDistance-5; api.step(.1);
-  assert.equal(api.state.levelClear,true,'player crosses first within the same frame');
+test('coasting the full ice strip awards one charge and boosting on the strip skids', () => {
+  const {run}=game();
+  run("showCourse('frostline'); setMode('race'); race.dist=231; crossIce(229); race.dist=304; crossIce(303)");
+  assert.equal(run('race.cleanStrips'),1);
+  assert.equal(run('race.charges'),2);
+  run("race.x=lanes[0]; race.dist=466; crossIce(464); boost(); race.dist=525; crossIce(524)");
+  assert.equal(run('race.skids'),1);
+  assert.equal(run('race.cleanStrips'),1);
+  assert.equal(run('race.charges'),1);
 });
 
-test('all referenced local assets exist', () => {
-  const source=fs.readFileSync(path.join(root,'game.js'),'utf8');
-  const assets=[...source.matchAll(/'\.\/(assets\/[^']+)'/g)].map(match=>match[1]);
-  assert(assets.length>=3); for(const asset of assets) assert(fs.existsSync(path.join(root,asset)),asset);
+test('the playable entry uses the existing bridge and bundled course artwork', () => {
+  const js=fs.readFileSync(path.join(root,'game.js'),'utf8');
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(html,/id="btnStart"/);
+  assert.match(html,/game-tab\.mjs\?v=1/);
+  const assets=[...js.matchAll(/'\.\/(assets\/[^']+)'/g)].map(match=>match[1]);
+  assert.equal(assets.length,2);
+  for (const asset of assets) assert.ok(fs.existsSync(path.join(root,asset)));
 });

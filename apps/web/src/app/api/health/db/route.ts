@@ -1,89 +1,28 @@
-// apps/web/src/app/api/health/db/route.ts
-
 import { NextResponse } from "next/server";
 import { hasUsableNeonDatabaseUrl, getNeonSql } from "@/lib/neon";
-import { isAuthConfigured } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
+const headers = { "Cache-Control": "no-store" };
 
-function maskDatabaseUrl(url?: string | null) {
-  if (!url) return null;
-
-  try {
-    const parsed = new URL(url);
-
-    return {
-      protocol: parsed.protocol,
-      hostname: parsed.hostname,
-      database: parsed.pathname.replace("/", ""),
-      sslmode: parsed.searchParams.get("sslmode"),
-      isLocalhost:
-        parsed.hostname.includes("localhost") ||
-        parsed.hostname.includes("127.0.0.1"),
-    };
-  } catch {
-    return {
-      invalid: true,
-    };
-  }
-}
-
+// Public readiness reports availability, never infrastructure or visitor counts.
 export async function GET() {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  const report = {
-    ok: false,
-    runtime: "cloudflare-worker",
-    driver: "neon-serverless-http",
-    hasDatabaseUrl: Boolean(databaseUrl),
-    usableDatabaseUrl: hasUsableNeonDatabaseUrl(),
-    database: maskDatabaseUrl(databaseUrl),
-    hasJwtSecret: isAuthConfigured(),
-    cookieName: process.env.COOKIE_NAME ?? "gg_session",
-    nodeEnv: process.env.NODE_ENV,
-  };
-
   try {
     if (!hasUsableNeonDatabaseUrl()) {
       return NextResponse.json(
-        {
-          ...report,
-          error:
-            "DATABASE_URL is missing or points to localhost/127.0.0.1, which cannot work on Cloudflare.",
-        },
-        { status: 503 }
+        { ok: false, error: "Database unavailable" },
+        { status: 503, headers }
       );
     }
-
     const sql = getNeonSql();
-
-    const userRows = await sql`
-      SELECT COUNT(*)::int AS count
-      FROM "User"
-    `;
-
-    const gameRows = await sql`
-      SELECT COUNT(*)::int AS count
-      FROM "Game"
-    `;
-
-    return NextResponse.json({
-      ...report,
-      ok: true,
-      userCount: userRows[0]?.count ?? 0,
-      gameCount: gameRows[0]?.count ?? 0,
-    });
+    await sql`SELECT 1`;
+    return NextResponse.json({ ok: true }, { headers });
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-
-    console.error("[health/db] failed", error);
-
+    console.error("[health/db] failed", {
+      errorClass: error instanceof Error ? error.name : "UnknownError",
+    });
     return NextResponse.json(
-      {
-        ...report,
-        error: message,
-      },
-      { status: 500 }
+      { ok: false, error: "Database unavailable" },
+      { status: 500, headers }
     );
   }
 }

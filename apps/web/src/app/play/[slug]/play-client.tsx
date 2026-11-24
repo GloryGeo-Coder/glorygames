@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import PlaySidebar from "@/components/PlaySidebar";
+import { PUBLIC_CHAT_ENABLED } from "@/lib/launchPolicy";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 import SkyTempleLaunch from "@/components/SkyTempleLaunch";
 import { SKY_TEMPLE } from "@/lib/skyTempleLaunch";
@@ -126,7 +127,9 @@ export default function PlayClient({ slug, title }: Props) {
 
       const incoming = normalizeMessages(data);
 
-      setMessages((current) => mergeMessages(current, incoming));
+      // A successful poll is the current visible snapshot. Keeping older rows
+      // would leave reported/hidden messages visible in other players' tabs.
+      setMessages(mergeMessages([], incoming));
       setChatStatus("connected");
     } catch (error) {
       console.warn("[PlayClient] chat fetch failed", error);
@@ -135,6 +138,7 @@ export default function PlayClient({ slug, title }: Props) {
   }, [slug]);
 
   useEffect(() => {
+    if (!PUBLIC_CHAT_ENABLED) return;
     let cancelled = false;
 
     async function run() {
@@ -167,6 +171,7 @@ export default function PlayClient({ slug, title }: Props) {
   }, [slug, isSkyTemple]);
 
   async function sendChat(text: string, playerName?: string) {
+    if (!PUBLIC_CHAT_ENABLED) return;
     const cleanText = text.trim();
     if (!cleanText) return;
 

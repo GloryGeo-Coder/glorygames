@@ -3,18 +3,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getGlobalLeaderboardFromDatabase } from "@/lib/gamesDb";
+import { PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED } from "@/lib/launchPolicy";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Global Leaderboard | WebGameArena",
   description:
-    "View top WebGameArena scores across free browser games and compete for the highest ranking.",
+    "View recorded WebGameArena scores, player nicknames and games on the global leaderboard.",
   alternates: {
     canonical: "/leaderboard",
   },
   robots: {
-    index: true,
+    index: PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED,
     follow: true,
   },
 };
@@ -25,7 +26,9 @@ export default async function LeaderboardPage() {
   try {
     rows = await getGlobalLeaderboardFromDatabase(50);
   } catch (error) {
-    console.warn("[leaderboard] failed", error);
+    console.warn("[leaderboard] failed", {
+      errorClass: error instanceof Error ? error.name : "UnknownError",
+    });
     rows = [];
   }
 
@@ -41,8 +44,8 @@ export default async function LeaderboardPage() {
             <h1>Top WebGameArena Players</h1>
 
             <p>
-              Compete across the game library, save your best scores and climb
-              the global leaderboard.
+              Recorded scores from across WebGameArena. Scoring rules vary by game.
+              Player nicknames and scores are visible to other visitors.
             </p>
           </div>
 
@@ -56,7 +59,7 @@ export default async function LeaderboardPage() {
             <div style={{ display: "grid", gap: 8 }}>
               {rows.map((row) => (
                 <div
-                  key={`${row.rank}-${row.userId}-${row.gameSlug}`}
+                  key={`${row.rank}-${row.gameSlug}`}
                   className="gameDetailScoreRow"
                   style={{
                     display: "grid",
@@ -82,10 +85,10 @@ export default async function LeaderboardPage() {
             </div>
           ) : (
             <div style={{ color: "rgba(255,255,255,.72)", lineHeight: 1.65 }}>
-              <b>No leaderboard scores yet.</b>
+              <b>{PUBLIC_HISTORICAL_LEADERBOARDS_ENABLED ? "No leaderboard scores yet." : "Historical leaderboard display is paused."}</b>
               <p>
-                Play a game, save a score and return here to see the global
-                rankings.
+                Play a game and sign in with an existing account to submit a global
+                score. Daily challenges also accept guest nicknames.
               </p>
 
               <Link className="cta" href="/games">

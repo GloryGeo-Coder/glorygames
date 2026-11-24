@@ -50,6 +50,62 @@ test('daily completion never advances campaign progression',async()=>{
  await r.completeLevel();assert.equal(r.state.unlockedLevel,1);assert.equal(JSON.parse(r.saved.get('wga_kasi_quest_v3_campaign')).unlocked,1);
 });
 
+test('reopening after a lost life restores the flag and earned mission progress exactly once', async () => {
+  const first = await boot();
+  await first.startOrRestart();
+  first.collectCoin(0);
+  first.collectCollectible(0);
+  const foe = first.state.enemies[0];
+  first.defeatEnemy(foe, foe.x, foe.y);
+  const boss = first.state.bosses[0];
+  first.hitBoss(boss, 2);
+  const flag = first.state.level.checkpoints[0];
+  Object.assign(first.player, {x:flag.x * 32, y:15 * 32 - first.player.h, onGround:true});
+  first.updatePlayer(1/60);
+  assert.equal(first.state.checkpoint.x, flag.x);
+  first.player.invuln = 1;
+  first.player.shield = 1;
+  first.damagePlayer('fall');
+  assert.equal(first.player.shield, 1);
+  first.win.emit('pagehide');
+  const again = await boot({saved:first.saved});
+  assert.equal(again.elements.get('btnStart').textContent, 'Continue campaign');
+  await again.startOrRestart();
+  assert.equal(again.player.x, first.player.x);
+  assert.equal(again.player.lives, 2);
+  assert.equal(again.player.shield, 1);
+  assert.equal(again.state.wallet, first.state.wallet);
+  assert.equal(again.state.score, first.state.score);
+  assert.equal(again.state.level.coins.length, first.state.level.coins.length);
+  assert.equal(again.state.level.collectibles[0].taken, true);
+  assert.equal(again.state.enemies[0].alive, false);
+  assert.equal(again.state.bosses[0].hp, boss.hp);
+  assert.match(again.elements.get('missionProgress').textContent, /Coins 1\/18.*Items 1\/4.*Foes 1\/5/);
+  await again.startOrRestart();
+  assert.equal(again.state.checkpoint, null);
+  assert.equal(again.state.score, 0);
+  assert.equal(again.player.lives, 3);
+});
+
+test('daily play preserves the campaign return and a failed campaign starts fresh', async () => {
+  const r = await boot();
+  await r.startOrRestart();
+  r.collectCoin(0);
+  await r.startDaily();
+  r.win.emit('pagehide');
+  const next = await boot({saved:r.saved});
+  await next.startOrRestart();
+  assert.match(next.elements.get('missionProgress').textContent, /Coins 1\/18/);
+  next.player.lives = 1;
+  next.player.invuln = 0;
+  next.damagePlayer('hit');
+  next.win.emit('pagehide');
+  const retry = await boot({saved:r.saved});
+  await retry.startOrRestart();
+  assert.equal(retry.player.lives, 3);
+  assert.equal(retry.state.score, 0);
+});
+
 test('route files reproduce exactly, retain original backgrounds and offer spare mission targets',()=>{
  const names=new Set();
  for(let n=1;n<=20;n++){

@@ -118,3 +118,51 @@ for(let n=0;n<25;n++)test(`route ${n+1}: guardian blocks exit and is beatable wi
  r.player.ammo=0;r.player.shootPowerTimer=0;r.player.dashTimer=.2;const attacks=Math.ceil(b.hp/2);for(let i=0;i<attacks;i++){b.hurt=0;r.damageBoss();}
  assert.equal(b.alive,false);Object.assign(r.player,w.exit);r.checkGateAndExit();assert.equal(w.levelComplete,true);
 });
+
+test('first relic and last flag survive closing and reopening with no repeat pickup reward',async()=>{
+ const saved=new Map(), first=await play({saved});
+ assert.match(first.elements.get('missionText').textContent,/second gap/);
+ const flag=first.game.checkpoints[1];
+ Object.assign(first.player,{x:flag.x,y:flag.y});
+ first.updatePlayer(1/120);
+ const relic=first.game.items.find(item=>item.type==='relic');
+ Object.assign(first.player,{x:relic.x,y:relic.y});
+ first.collectItems();
+
+ assert.equal(first.game.relics,1);
+ first.player.ammo=4;
+ first.loseLife('fall',true);
+ const points=first.state.score;
+ first.win.emit('pagehide');
+ const menu=await boot({saved});
+ assert.equal(menu.elements.get('playBtn').textContent,'Continue Expedition');
+ menu.win.emit('pagehide');
+ const resumed=await boot({saved});
+ resumed.startGame();
+ assert.equal(resumed.game.storyOpen,false);
+ assert.equal(resumed.game.checkpointIndex,1);
+ assert.equal(resumed.player.x,flag.x);
+ assert.equal(resumed.player.ammo,4);
+ assert.equal(resumed.state.lives,2);
+ assert.equal(resumed.state.score,points);
+ assert.equal(resumed.game.relics,1);
+ assert.equal(resumed.game.items.find(it=>it.id===relic.id).taken,true);
+ Object.assign(resumed.player,{x:relic.x,y:relic.y});
+ resumed.collectItems();
+ assert.equal(resumed.state.score,points);
+ assert.equal(resumed.game.relics,1);
+ resumed.resetRun();
+ assert.equal(resumed.game.relics,0);
+ assert.equal(resumed.game.checkpointIndex,0);
+ assert.equal(resumed.game.items.find(it=>it.id===relic.id).taken,false);
+});
+
+test('another level or an incomplete trail record cannot supply its pickups',async()=>{
+ for(const trail of [{version:1,level:1,items:[62],flag:1},{version:1,level:0,items:null,flag:1}]){
+  const saved=new Map([[saveKey,JSON.stringify({score:500,trail})]]);
+  const r=await play({saved});
+  assert.equal(r.state.score,500);
+  assert.equal(r.game.relics,0);
+  assert.equal(r.game.checkpointIndex,0);
+ }
+});
