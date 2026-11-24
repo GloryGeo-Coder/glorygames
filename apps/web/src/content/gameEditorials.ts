@@ -108,14 +108,14 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
       "Classic Arcade keeps the pure paddle-and-ball score challenge available whenever you want a quick run. The campaign adds designed objectives, enemy warnings and a saved route through the city."
     ],
     "howToPlay": [
-      "Choose Classic Arcade or an unlocked Neon Grid mission, then use Launch to release the ball.",
+      "Choose Classic Arcade or an unlocked Neon Grid mission. Press Start or Start Mission, then Launch Ball. If the last ball passes your paddle, you lose one life. The bricks you cleared stay gone. Launch the replacement ball to keep playing.",
       "Steer with the dedicated control strip below the arena. Choose relative drag or direct positioning in Settings.",
       "Keep the ball from passing the paddle while aiming rebounds toward unbroken bricks.",
       "Watch for power-ups during play and use the opportunities they provide to maintain momentum.",
       "When the round finishes, review your score and use the available score submission or restart controls."
     ],
     "desktop": [
-      "Move the paddle with the input displayed in the game; dragging moves the paddle.",
+      "Steer with the left and right arrow keys, A and D, or drag across the control strip. Press Space to launch and P to pause.",
       "Tap or click the launch control to release the ball and continue when prompted."
     ],
     "mobile": [
@@ -142,7 +142,7 @@ export const GAME_EDITORIALS: Record<string, GameEditorial> = {
     ],
     "progression": [
       "Complete the five Neon Grid missions in order. Best scores, unlocks and one-to-three-star results save on the same browser when storage is available. Fewer lives lost earns a stronger star result.",
-      "Campaign missions begin with three lives. Classic Arcade remains a separate repeatable score challenge, with six collectible power-ups and progressively generated brick formations."
+      "In Classic Arcade, clearing a board earns a score bonus and restores one life up to the six-life limit. Choose Continue to start the next board. Closing the game ends that run. On reopening, Classic starts at level one with three lives and zero points. Your steering, sound and background settings carry over in the same browser."
     ],
     "tips": [
       "Watch the ball's trajectory, not just its current location; move before it reaches the paddle.",
