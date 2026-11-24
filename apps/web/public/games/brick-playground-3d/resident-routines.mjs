@@ -1,5 +1,5 @@
 import { beginWorkShift, workSpaceBlocker } from './work-shift.mjs';
-import { visitFront } from './resident-trip.mjs';
+import { isMaintenanceEntrance, visitFront } from './resident-trip.mjs';
 import { householdsFor, DEPARTURES } from './settlement.mjs';
 // A settlement day takes 96 seconds of active simulation time.
 export const DAY = 1440;
@@ -72,7 +72,7 @@ export function nextIdleDeparture(city) {
     if (trip.work && trip.phase === 'shopping' && !trip.returning) {
       const door = city.pieces.find(p => p.id === trip.shop);
       const front = visitFront(city, door);
-      if (trip.paused || !trip.work.worked || !front ||
+      if (trip.paused || !trip.work.worked || !front || (trip.maintenance && !isMaintenanceEntrance(city, door)) ||
           Math.hypot(trip.x - front.inside.x, trip.z - front.inside.z) > 0.025 ||
           Math.abs(trip.y - door.y) > 0.65 || workSpaceBlocker(city, front, trip.y)) return null;
       if (trip.work.endsAt > now) next = Math.min(next, trip.work.endsAt);

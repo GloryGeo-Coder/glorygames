@@ -115,7 +115,8 @@ export const VISITS = {
   clinic: { destination: 'Clinic', activity: 'At clinic appointment' },
   hall: { destination: 'Community hall', activity: 'Visiting the hall' },
   park: { destination: 'Park bench', activity: 'Resting in the park' },
-  work: { destination: 'Workplace', activity: 'Working at workplace' }
+  work: { destination: 'Workplace', activity: 'Working at workplace' },
+  maintenance: { destination: 'Civic workplace', activity: 'On civic maintenance duty' }
 };
 export const LESSON_SECONDS = 8;
 export const CLINIC_SECONDS = 8;
@@ -142,8 +143,13 @@ export function entranceAvailable(city, id, visit) {
   if (visit !== 'market' && id === city.market?.shop) return false;
   return !householdsFor(city).some(({ key }) => {
     const trip = city[key];
-    return trip?.shop === id && ((trip.school && visit !== 'school') || (trip.clinic && visit !== 'clinic') || (trip.service && visit !== 'service') || (trip.work && visit !== 'work'));
+    return trip?.shop === id && ((trip.school && visit !== 'school') || (trip.clinic && visit !== 'clinic') ||
+      (trip.service && visit !== 'service') || (trip.work && visit !== (trip.maintenance ? 'maintenance' : 'work')) ||
+      (visit === 'maintenance' && !trip.maintenance));
   });
+}
+export function maintenanceDoorClaimed(city, id) {
+  return householdsFor(city).some(({ key }) => city[key]?.maintenance && city[key].shop === id);
 }
 export function homeClaimed(city, home, except) {
   return householdsFor(city).some((p) => p.key !== except && city[p.key]?.home === home);
@@ -167,11 +173,15 @@ export function moveIn(city, name, visit, trip, key = MOVE_IN_SLOTS.find((k) => 
     (visit === 'school') !== !!trip?.school ||
     (visit === 'clinic') !== !!trip?.clinic ||
     (visit === 'service') !== !!trip?.service ||
-    (visit === 'work') !== !!trip?.work ||
-    ((visit === 'work' || visit === 'school' || visit === 'clinic' || visit === 'service') && !entranceAvailable(city, trip?.shop, visit)) ||
+    (['work', 'maintenance'].includes(visit)) !== !!trip?.work ||
+    (visit === 'maintenance') !== (trip?.maintenance === true) ||
+    (['work', 'maintenance', 'school', 'clinic', 'service'].includes(visit) && !entranceAvailable(city, trip?.shop, visit)) ||
+    (visit !== 'maintenance' && maintenanceDoorClaimed(city, trip?.shop)) ||
+    (visit === 'maintenance' && homeClaimed(city, trip?.shop, key)) ||
     !trip?.home ||
     !trip.shop ||
     trip.home === trip.shop ||
+    maintenanceDoorClaimed(city, trip.home) ||
     homeClaimed(city, trip.home, key)
   )
     return null;
@@ -228,6 +238,7 @@ export function restoreTrip(v) {
     ...((v.park === true || school) && restoreCompanionPath(v.companionPath, v)
       ? { companionPath: restoreCompanionPath(v.companionPath, v) } : {}),
     wait: Math.max(0, Math.min(service ? SERVICE_SECONDS : clinic ? CLINIC_SECONDS : school ? LESSON_SECONDS : v.park === true ? PARK_REST_SECONDS : 1.5, v.wait)),
+    ...(work && v.maintenance === true ? { maintenance: true } : {}),
     ...(work ? { work, routine: { hour: work.startHour, visits: routine?.visits ?? 0 } } : routine ? { routine } : {}),
     grounded: v.grounded === true,
     paused: v.paused === true,
