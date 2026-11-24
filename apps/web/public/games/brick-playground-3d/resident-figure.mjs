@@ -111,7 +111,7 @@ export function residentFigure(B, scene, material, profile) {
     groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
   }
   const contents =
-    profile.visit === 'park' || profile.visit === 'school' || profile.visit === 'clinic' || profile.keeper || child
+    profile.visit === 'park' || profile.visit === 'school' || profile.visit === 'clinic' || profile.visit === 'service' || profile.keeper || child
       ? null
       : groceries.mesh(
           hallVisitor

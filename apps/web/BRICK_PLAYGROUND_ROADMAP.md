@@ -30,9 +30,13 @@ The first Homes, jobs and services increment assigns an adult household a home e
 
 Set a block’s land use to School and build a ground-floor classroom entrance. The Neighbourhood classroom plan provides a furnished starting point. Move in a household, choose Accompanied school visit and name its child. The adult and learner walk together, queue at the school, stay for a short lesson and return home. Players can schedule a daily departure or send the family immediately. The learner’s lesson count, position trail and remaining lesson time survive a device reload.
 
-## Current increment: Clinic visits
+## Previous increment: Clinic visits
 
 Mark a block as Clinic and place the furnished Neighbourhood clinic plan or build a dedicated ground-floor entrance with clear indoor space. An adult household walks along pavements, queues for an eight-second active-simulation appointment and walks home. Completed appointments and remaining visit time survive pause and reload; blocked interiors and changed land use interrupt the visit until repaired. This is an optional civic journey, not a medical diagnosis, treatment, payroll or health-worker simulation. School families, workplace shifts and shops remain separate.
+
+## Current increment: Community-service trips
+
+Choose Community service visit for an adult household, mark its destination block Civic and use the existing Community hall plan or a dedicated ground-floor entrance. The adult follows pavements, queues, receives an eight-second service and walks home. Completed service visits and remaining time survive pause/reload. Missing streets, obstructed interiors and changed land use stop progress until repaired. Daily departures remain optional. This bounded civic journey adds no worker staffing, payments or resource production.
 
 ## Next NPC increments
 
@@ -53,4 +57,4 @@ Mark a block as Clinic and place the furnished Neighbourhood clinic plan or buil
 - Review captured game views and keep controls compact enough to see the city.
 - Merge verified source to `GloryGeo-Coder/glorygames`; Cloudflare deployment remains with Glory.
 
-These are planned increments, not a claim that traffic, schools, clinics or emergency services already exist. Workplace assignments and same-day shifts begin Homes, jobs and services; accompanied school visits follow. Clinic visits follow school visits; community-service trips remain next.
+These are planned increments, not a claim that traffic, schools, clinics or emergency services already exist. Workplace assignments and same-day shifts begin Homes, jobs and services; accompanied school visits follow. Clinic visits follow school visits; community-service trips now follow clinics. Specialist service roles remain unfinished within Homes, jobs and services; choose one bounded role before moving on to autonomous traffic.

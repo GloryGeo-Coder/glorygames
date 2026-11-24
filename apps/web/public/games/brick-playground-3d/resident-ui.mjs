@@ -20,6 +20,7 @@ import {
   isParkBench,
   isSchoolEntrance,
   isClinicEntrance,
+  isServiceEntrance,
   visitFront,
   newTrip,
   practiceHallTrip,
@@ -53,6 +54,7 @@ function status(trip, runtime, profile, data) {
     if (flower) return flower === 'daisy' ? 'Resting by African daisies' : 'Resting by marigolds';
   }
   if (trip.work && trip.phase === 'shopping' && !trip.returning) return 'Working at workplace';
+  if (trip.service && trip.phase === 'shopping' && !trip.returning) return 'At community service';
   if (trip.clinic && trip.phase === 'shopping' && !trip.returning) return 'At clinic appointment';
   if (waitingAtTill(data, profile, trip)) return 'At the till';
   if (trip.phase === 'shopping') return profile.activity;
@@ -145,6 +147,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       (trip.school.lessons === 1 ? '' : 's') + (routine ? ' · Daily at ' + String(routine.hour).padStart(2, '0') + ':00' : ''));
     label(
       'resRoutineNote',
+      (trip?.service ? trip.service.visits + ' completed community service visit' +
+        (trip.service.visits === 1 ? '' : 's') + (routine ? ' · Daily at ' + String(routine.hour).padStart(2, '0') + ':00' : '') : '') ||
       (trip?.clinic ? trip.clinic.appointments + ' completed clinic appointment' +
         (trip.clinic.appointments === 1 ? '' : 's') + (routine ? ' · Daily at ' + String(routine.hour).padStart(2, '0') + ':00' : '') : '') || lessonNote || (trip?.work
         ? 'Shift ' + String(trip.work.startHour).padStart(2, '0') + ':00–' +
@@ -204,6 +208,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     const destinations =
       p.visit === 'park' ? data.pieces.filter((piece) => isParkBench(data, piece))
         : p.visit === 'school' ? doors.filter(d => isSchoolEntrance(data, d))
+        : p.visit === 'service' ? doors.filter(d => isServiceEntrance(data, d))
         : p.visit === 'clinic' ? doors.filter(d => isClinicEntrance(data, d))
         : p.visit === 'work' ? doors.filter(d => entranceAvailable(data, d.id, 'work')) : doors;
     const homes = doors.filter((d) => !homeClaimed(data, d.id, p.key));
@@ -237,7 +242,9 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     label('resDestination', p.destination);
     label(
       'resDescription',
-      p.visit === 'clinic'
+      p.visit === 'service'
+        ? 'Mark the destination block as Civic and place a Community hall or build a dedicated ground-floor entrance with clear indoor space. The adult queues for an eight-second community service visit, then walks home.'
+        : p.visit === 'clinic'
         ? 'Mark the destination block as Clinic on the settlement map. Choose a dedicated ground-floor entrance with clear space inside. The adult walks to an eight-second appointment, then returns home. No treatment or medical details are simulated.'
         : p.visit === 'school'
         ? 'Mark the destination block as School on the settlement map. Choose a ground-floor entrance with clear space inside for a lesson.'
@@ -340,6 +347,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       destination = $('resShop').value;
     const clinic = configProfile().visit === 'clinic';
     const problem = workProblem() ||
+      (configProfile().visit === 'service' && destination && !isServiceEntrance(city(), city().pieces.find(d => d.id === destination))
+        ? 'Choose a dedicated entrance on a Civic block.' : '') ||
       (clinic && destination && !isClinicEntrance(city(), city().pieces.find(d => d.id === destination))
         ? 'Choose a dedicated entrance on a Clinic block.' : '') ||
       (configProfile().visit === 'work' && destination === city().market?.shop
@@ -361,6 +370,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
                 ? 'Build a ground-floor bench in a block with Park land use.'
                 : configProfile().visit === 'school'
                   ? 'Set a block’s land use to School and give it a ground-floor entrance.'
+                  : configProfile().visit === 'service'
+                    ? 'Set a block’s land use to Civic and give it a dedicated ground-floor entrance.'
                   : configProfile().visit === 'clinic'
                     ? 'Set a block’s land use to Clinic and give it a dedicated ground-floor entrance.'
                     : 'Choose a different entrance for the destination.'
@@ -442,8 +453,10 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       return;
     if (workProblem() || (p.visit === 'work' && !entranceAvailable(data, shop.id, 'work'))) return;
     if (p.visit === 'school' && !isSchoolEntrance(data, shop)) return;
+    if (p.visit === 'service' && !isServiceEntrance(data, shop)) return;
     if (p.visit === 'clinic' && !isClinicEntrance(data, shop)) return;
     const trip = newTrip(home, shop, data);
+    if (p.visit === 'service') trip.service = { visits: data[p.key]?.service?.visits ?? 0 };
     if (p.visit === 'clinic') trip.clinic = { appointments: data[p.key]?.clinic?.appointments ?? 0 };
     if (p.visit === 'school') trip.school = { lessons: data[p.key]?.school?.lessons ?? 0 };
     if (p.visit === 'work' && data[p.key]?.work) trip.work = { ...data[p.key].work };
