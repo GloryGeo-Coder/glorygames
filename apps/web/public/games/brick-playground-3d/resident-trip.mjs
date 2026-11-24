@@ -12,6 +12,7 @@ import {
   blockInfo,
   householdsFor,
   entranceAvailable,
+  homeClaimed,
   PARK_REST_SECONDS,
   LESSON_SECONDS,
   CLINIC_SECONDS,
@@ -61,6 +62,10 @@ export function isClinicEntrance(city, piece) {
 export function isServiceEntrance(city, piece) {
   return isEntrance(piece) && blockInfo(city, blockAt(piece.x, piece.z)).zone === 'civic' &&
     entranceAvailable(city, piece.id, 'service');
+}
+export function isMaintenanceEntrance(city, piece) {
+  return isEntrance(piece) && blockInfo(city, blockAt(piece.x, piece.z)).zone === 'civic' &&
+    entranceAvailable(city, piece.id, 'maintenance') && !homeClaimed(city, piece.id);
 }
 export function isParkBench(city, p) {
   return p?.type === 'bench' && p.y <= 0.365 && blockInfo(city, blockAt(p.x, p.z)).zone === 'park';
@@ -255,7 +260,7 @@ export function advanceTrip(city, t, rt, dt) {
   const edited =
     rt.items !== city.pieces ||
     rt.observedStreets !== city.streets ||
-    ((t.park || t.school || t.clinic || t.service) && rt.observedBlocks !== city.blocks);
+    ((t.park || t.school || t.clinic || t.service || t.maintenance) && rt.observedBlocks !== city.blocks);
   if (rt.issue && !edited) return;
   if (edited) {
     rt.issue = '';
@@ -292,6 +297,10 @@ export function advanceTrip(city, t, rt, dt) {
     rt.issue = 'Community service unavailable. Restore Civic land use and a dedicated entrance, or choose another community facility.';
     return;
   }
+  if (t.maintenance && !t.returning && !isMaintenanceEntrance(city, stops.get(t.shop))) {
+    rt.issue = 'Civic maintenance workplace unavailable. Restore Civic land use and a dedicated staff entrance.';
+    return;
+  }
   const from = t.returning ? destination : home,
     to = t.returning ? home : destination;
   if (
@@ -320,7 +329,7 @@ export function advanceTrip(city, t, rt, dt) {
     const blocker = workSpaceBlocker(city, destination, t.y);
     if (blocker || Math.abs(t.y - door.y) > 0.65) {
       rt.blocker = blocker;
-      rt.issue = t.service ? 'Community service space is blocked or uneven. Clear the floor inside the entrance.' : t.clinic ? 'Clinic waiting space is blocked or uneven. Clear the floor inside the entrance.' : t.school ? 'Classroom space is blocked or uneven. Clear the floor inside the entrance.' : 'Workplace standing space is blocked or uneven. Clear the interior beside the entrance.';
+      rt.issue = t.service ? 'Community service space is blocked or uneven. Clear the floor inside the entrance.' : t.clinic ? 'Clinic waiting space is blocked or uneven. Clear the floor inside the entrance.' : t.school ? 'Classroom space is blocked or uneven. Clear the floor inside the entrance.' : t.maintenance ? 'Civic maintenance workspace is blocked or uneven. Clear the floor at the staff entrance.' : 'Workplace standing space is blocked or uneven. Clear the interior beside the entrance.';
       return;
     }
     if (t.work?.endsAt !== undefined && (city.clockMinutes ?? 450) < t.work.endsAt) t.work.worked = true;

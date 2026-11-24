@@ -34,9 +34,13 @@ Set a block’s land use to School and build a ground-floor classroom entrance. 
 
 Mark a block as Clinic and place the furnished Neighbourhood clinic plan or build a dedicated ground-floor entrance with clear indoor space. An adult household walks along pavements, queues for an eight-second active-simulation appointment and walks home. Completed appointments and remaining visit time survive pause and reload; blocked interiors and changed land use interrupt the visit until repaired. This is an optional civic journey, not a medical diagnosis, treatment, payroll or health-worker simulation. School families, workplace shifts and shops remain separate.
 
-## Current increment: Community-service trips
+## Previous increment: Community-service trips
 
 Choose Community service visit for an adult household, mark its destination block Civic and use the existing Community hall plan or a dedicated ground-floor entrance. The adult follows pavements, queues, receives an eight-second service and walks home. Completed service visits and remaining time survive pause/reload. Missing streets, obstructed interiors and changed land use stop progress until repaired. Daily departures remain optional. This bounded civic journey adds no worker staffing, payments or resource production.
+
+## Current increment: Civic maintenance shifts
+
+Move in an adult household and choose Civic maintenance shift. Assign a home and a separate ground-floor staff doorway on a Civic block; keep the visitor doorway free for community-service trips. The worker wears a high-visibility vest, follows the existing pavement network and reports on duty only after reaching clear indoor space. Schedule a same-day shift, inspect it in Citizen journey, and see a completed shift after the worker walks home. Lost access or changed zoning stops the shift until repaired. Status, schedule and shift history survive reload. Staffing is optional: services still run without a worker and no repairs, wages or supplies are generated.
 
 ## Next NPC increments
 
@@ -57,4 +61,4 @@ Choose Community service visit for an adult household, mark its destination bloc
 - Review captured game views and keep controls compact enough to see the city.
 - Merge verified source to `GloryGeo-Coder/glorygames`; Cloudflare deployment remains with Glory.
 
-These are planned increments, not a claim that traffic, schools, clinics or emergency services already exist. Workplace assignments and same-day shifts begin Homes, jobs and services; accompanied school visits follow. Clinic visits follow school visits; community-service trips now follow clinics. Specialist service roles remain unfinished within Homes, jobs and services; choose one bounded role before moving on to autonomous traffic.
+These are planned increments, not a claim that traffic, schools, clinics or emergency services already exist. Workplace assignments and same-day shifts begin Homes, jobs and services; accompanied school visits follow. Clinic visits follow school visits; community-service trips now follow clinics. Civic maintenance begins specialist roles within Homes, jobs and services. Shop assistants, teachers and health workers remain optional future increments; they are not present in the simulation.

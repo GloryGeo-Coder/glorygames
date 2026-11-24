@@ -10,6 +10,7 @@ import {
   householdsFor,
   entranceAvailable,
   homeClaimed,
+  maintenanceDoorClaimed,
   moveInProblem,
   moveIn,
   endHousehold
@@ -21,6 +22,7 @@ import {
   isSchoolEntrance,
   isClinicEntrance,
   isServiceEntrance,
+  isMaintenanceEntrance,
   visitFront,
   newTrip,
   practiceHallTrip,
@@ -40,6 +42,7 @@ import {
 } from './resident-routines.mjs';
 
 import { stepHousehold, waitingAtTill } from './market-day.mjs';
+const isShift = p => p.visit === 'work' || p.visit === 'maintenance';
 const $ = (id) => document.getElementById(id);
 function status(trip, runtime, profile, data) {
   if (!trip) return 'No trip';
@@ -53,7 +56,7 @@ function status(trip, runtime, profile, data) {
     const flower = data.garden?.displays.find((p) => p.id === trip.shop)?.flower;
     if (flower) return flower === 'daisy' ? 'Resting by African daisies' : 'Resting by marigolds';
   }
-  if (trip.work && trip.phase === 'shopping' && !trip.returning) return 'Working at workplace';
+  if (trip.work && trip.phase === 'shopping' && !trip.returning) return trip.maintenance ? 'On civic maintenance duty' : 'Working at workplace';
   if (trip.service && trip.phase === 'shopping' && !trip.returning) return 'At community service';
   if (trip.clinic && trip.phase === 'shopping' && !trip.returning) return 'At clinic appointment';
   if (waitingAtTill(data, profile, trip)) return 'At the till';
@@ -210,8 +213,9 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
         : p.visit === 'school' ? doors.filter(d => isSchoolEntrance(data, d))
         : p.visit === 'service' ? doors.filter(d => isServiceEntrance(data, d))
         : p.visit === 'clinic' ? doors.filter(d => isClinicEntrance(data, d))
-        : p.visit === 'work' ? doors.filter(d => entranceAvailable(data, d.id, 'work')) : doors;
-    const homes = doors.filter((d) => !homeClaimed(data, d.id, p.key));
+        : p.visit === 'maintenance' ? doors.filter(d => isMaintenanceEntrance(data, d))
+        : p.visit === 'work' ? doors.filter(d => entranceAvailable(data, d.id, 'work')) : doors.filter(d => !maintenanceDoorClaimed(data, d.id));
+    const homes = doors.filter((d) => !homeClaimed(data, d.id, p.key) && !maintenanceDoorClaimed(data, d.id));
     for (const [id, list] of [
       ['resHome', homes],
       ['resShop', destinations]
@@ -248,6 +252,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
         ? 'Mark the destination block as Clinic on the settlement map. Choose a dedicated ground-floor entrance with clear space inside. The adult walks to an eight-second appointment, then returns home. No treatment or medical details are simulated.'
         : p.visit === 'school'
         ? 'Mark the destination block as School on the settlement map. Choose a ground-floor entrance with clear space inside for a lesson.'
+        : p.visit === 'maintenance'
+        ? 'Choose a home and a dedicated staff doorway on a Civic block. Leave a different doorway for visitors. The worker walks to the facility, works until shift end, then returns home.'
         : p.visit === 'work'
         ? 'Choose a home and a different workplace entrance. Use a dedicated entrance, not an active market counter. Keep the route, doorway and indoor standing space clear. The resident walks to work, stays until shift end and returns home.'
         : p.visit === 'park'
@@ -282,13 +288,13 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     label('resEnd', MOVE_IN_SLOTS.includes(p.key) ? 'Move out' : 'End trip');
     $('resPause').textContent = trip?.paused ? 'Resume' : 'Pause';
     $('resPause').disabled = trip?.phase === 'done' && !trip?.routine;
-    $('resSchedule').value = String(trip?.routine?.hour ?? (p.visit === 'work' ? 8 : ''));
+    $('resSchedule').value = String(trip?.routine?.hour ?? (isShift(p) ? 8 : ''));
     $('resWorkEnd').value = String(trip?.work?.endHour ?? 17);
     scheduleControls();
     canStart();
   }
   function scheduleControls() {
-    const p = configProfile(), trip = city()[p.key], work = p.visit === 'work';
+    const p = configProfile(), trip = city()[p.key], work = isShift(p);
     $('resWorkFields').hidden = !work;
     $('resSchedule').options[0].disabled = work;
     if (work && !$('resSchedule').value) $('resSchedule').value = '8';
@@ -321,7 +327,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     const data = city(),
       trip = data[active().key];
     if (!trip || $('resApplySchedule').disabled) return;
-    if (configProfile().visit === 'work') {
+    if (isShift(configProfile())) {
       if (trip.phase !== 'done' || workProblem()) { canStart(); return; }
       if (!setWorkShift(trip, Number($('resSchedule').value), Number($('resWorkEnd').value))) return;
     } else setRoutine(trip, Number($('resSchedule').value));
@@ -337,7 +343,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
     }
   };
   function workProblem() {
-    if (configProfile().visit !== 'work') return '';
+    if (!isShift(configProfile())) return '';
     const start = Number($('resSchedule').value), end = Number($('resWorkEnd').value);
     return !DEPARTURES.includes(start) || !Number.isInteger(end) || end <= start || end > 23
       ? 'Choose a shift end after departure, no later than 23:00. Overnight shifts are not available.' : '';
@@ -347,6 +353,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       destination = $('resShop').value;
     const clinic = configProfile().visit === 'clinic';
     const problem = workProblem() ||
+      (configProfile().visit === 'maintenance' && destination && !isMaintenanceEntrance(city(), city().pieces.find(d => d.id === destination))
+        ? 'Choose a separate staff entrance on a Civic block.' : '') ||
       (configProfile().visit === 'service' && destination && !isServiceEntrance(city(), city().pieces.find(d => d.id === destination))
         ? 'Choose a dedicated entrance on a Civic block.' : '') ||
       (clinic && destination && !isClinicEntrance(city(), city().pieces.find(d => d.id === destination))
@@ -354,7 +362,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       (configProfile().visit === 'work' && destination === city().market?.shop
         ? 'Choose a dedicated workplace entrance, not the active market counter.' : '') ||
       (joining ? moveInProblem(city(), $('resName').value) : '');
-    const work = configProfile().visit === 'work', trip = city()[configProfile().key];
+    const work = isShift(configProfile()), trip = city()[configProfile().key];
     $('resApplySchedule').disabled = work && (!!problem || trip?.phase !== 'done');
     if (work && !joining) label('resSetupHint', problem || (trip?.phase !== 'done'
       ? 'Apply schedule is available when this resident is home. Restart routine deliberately starts a new trip from the selected home.'
@@ -368,6 +376,8 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
             : !destination || home === destination
               ? $('resVisit').value === 'park'
                 ? 'Build a ground-floor bench in a block with Park land use.'
+                : configProfile().visit === 'maintenance'
+                  ? 'Set a block’s land use to Civic and build a separate staff entrance.'
                 : configProfile().visit === 'school'
                   ? 'Set a block’s land use to School and give it a ground-floor entrance.'
                   : configProfile().visit === 'service'
@@ -406,7 +416,7 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
   $('resVisit').onchange = () => {
     const schedule = $('resSchedule').value;
     options($('resShop').value, $('resHome').value);
-    $('resSchedule').value = configProfile().visit === 'work' ? schedule || '8' : schedule;
+    $('resSchedule').value = isShift(configProfile()) ? schedule || '8' : schedule;
     scheduleControls();
   };
   $('resOther').onclick = () => {
@@ -448,24 +458,28 @@ export function residentControls({ city, editing, save, add, focus, removeModel 
       !isEntrance(home) ||
       !(p.visit === 'park' ? isParkBench(data, shop) : isEntrance(shop)) ||
       home === shop ||
+      maintenanceDoorClaimed(data, home.id) ||
+      (p.visit !== 'maintenance' && maintenanceDoorClaimed(data, shop.id)) ||
       homeClaimed(data, home.id, p.key)
     )
       return;
     if (workProblem() || (p.visit === 'work' && !entranceAvailable(data, shop.id, 'work'))) return;
     if (p.visit === 'school' && !isSchoolEntrance(data, shop)) return;
+    if (p.visit === 'maintenance' && !isMaintenanceEntrance(data, shop)) return;
     if (p.visit === 'service' && !isServiceEntrance(data, shop)) return;
     if (p.visit === 'clinic' && !isClinicEntrance(data, shop)) return;
     const trip = newTrip(home, shop, data);
     if (p.visit === 'service') trip.service = { visits: data[p.key]?.service?.visits ?? 0 };
     if (p.visit === 'clinic') trip.clinic = { appointments: data[p.key]?.clinic?.appointments ?? 0 };
     if (p.visit === 'school') trip.school = { lessons: data[p.key]?.school?.lessons ?? 0 };
-    if (p.visit === 'work' && data[p.key]?.work) trip.work = { ...data[p.key].work };
-    if (p.visit === 'work' && !setWorkShift(trip, Number($('resSchedule').value), Number($('resWorkEnd').value))) return;
+    if (p.visit === 'maintenance') trip.maintenance = true;
+    if (isShift(p) && data[p.key]?.work) trip.work = { ...data[p.key].work };
+    if (isShift(p) && !setWorkShift(trip, Number($('resSchedule').value), Number($('resWorkEnd').value))) return;
     const profile = joining ? moveIn(data, $('resName').value, $('resVisit').value, trip, undefined, {family: $('resFamily').checked, childName: $('resChildName').value}) : p;
     if (!profile) return;
     data[profile.key] = trip;
     if ($('resSchedule').value) {
-      if (p.visit !== 'work') setRoutine(trip, Number($('resSchedule').value));
+      if (!isShift(p)) setRoutine(trip, Number($('resSchedule').value));
       trip.phase = 'done';
       data.clockMinutes ??= START_TIME;
     }

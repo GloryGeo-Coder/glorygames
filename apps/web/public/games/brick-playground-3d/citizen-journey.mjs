@@ -4,7 +4,7 @@ import { blockAt } from './settlement.mjs';
 export function journeySummary(city, profile, trip, runtime = {}) {
   if (!trip) return 'No trip assigned.';
   const family = profile.family;
-  const role = profile.visit === 'service' ? 'Adult community service visitor' : profile.visit === 'clinic' ? 'Adult clinic visitor' : profile.visit === 'school' ? 'School visit' : family ? 'Family park visit' : trip.work ? 'Adult commuter' : 'Adult resident';
+  const role = profile.visit === 'service' ? 'Adult community service visitor' : profile.visit === 'clinic' ? 'Adult clinic visitor' : profile.visit === 'school' ? 'School visit' : family ? 'Family park visit' : trip.maintenance ? 'Civic maintenance worker' : trip.work ? 'Adult commuter' : 'Adult resident';
   const companion = family ? ` · ${profile.childName}, child accompanied by ${profile.name}` : '';
   const destination = city?.pieces?.find(p => p.id === (trip.returning ? trip.home : trip.shop));
   const target = trip.returning ? 'home' : (profile.destination || 'destination').toLowerCase();
@@ -15,7 +15,7 @@ export function journeySummary(city, profile, trip, runtime = {}) {
     : runtime.waitingForCrossing ? 'Looking before using the marked crossing.'
     : trip.phase === 'queue' ? 'Waiting beside the entrance. Keep the doorway and queue clear.'
     : runtime.waitingForSeat ? 'Waiting for the park bench to become free.'
-    : trip.work && trip.phase === 'shopping' && !trip.returning ? 'Working at workplace until ' + String(trip.work.endHour).padStart(2, '0') + ':00.'
+    : trip.work && trip.phase === 'shopping' && !trip.returning ? (trip.maintenance ? 'On civic maintenance duty until ' : 'Working at workplace until ') + String(trip.work.endHour).padStart(2, '0') + ':00.'
     : trip.service && trip.phase === 'shopping' && !trip.returning ? 'At community service · ' + Math.ceil(trip.wait || 0) + ' seconds remaining.'
     : trip.clinic && trip.phase === 'shopping' && !trip.returning ? 'At clinic appointment · ' + Math.ceil(trip.wait || 0) + ' seconds remaining.'
     : trip.phase === 'shopping' ? (profile.activity || 'Visiting') + '.'

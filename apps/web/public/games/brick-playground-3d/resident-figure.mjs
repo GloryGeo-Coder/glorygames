@@ -80,6 +80,10 @@ export function residentFigure(B, scene, material, profile) {
     0.017,
     '#efcb7d'
   );
+  if (profile.visit === 'maintenance') {
+    // High-visibility vest strips make this specialist distinguishable during the commute.
+    for (const side of [-1, 1]) body.cord([[side * .145, 1.005, .093], [side * .12, .86, .132], [side * .099, .65, .128]], .022, '#ffc743');
+  }
   if (profile.keeper) {
     body.profile(0, .158, [[.57, .17, .012], [.8, .16, .012], [.97, .12, .012]], '#f8e6ba');
     body.oval(0, .76, .179, .07, .05, .009, '#dfad47');
@@ -111,7 +115,7 @@ export function residentFigure(B, scene, material, profile) {
     groceries.oval(0.224, 0.659, 0.065, 0.032, 0.035, 0.031, '#ed963d');
   }
   const contents =
-    profile.visit === 'park' || profile.visit === 'school' || profile.visit === 'clinic' || profile.visit === 'service' || profile.keeper || child
+    profile.visit === 'park' || profile.visit === 'school' || profile.visit === 'clinic' || profile.visit === 'service' || profile.visit === 'maintenance' || profile.keeper || child
       ? null
       : groceries.mesh(
           hallVisitor
