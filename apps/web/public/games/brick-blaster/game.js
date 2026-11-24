@@ -302,7 +302,7 @@
   function showPanel(title, text, buttonText = "Start") {
     if (panelTitle) panelTitle.textContent = title;
     if (panelText) panelText.textContent = text;
-    if (btnStart) btnStart.textContent = buttonText;
+    if (btnStart) { btnStart.textContent = buttonText; btnStart.disabled = false; }
     if (panel) panel.hidden = false;
     syncSettings(); btnRestart.hidden = !running && !gameOver; btnSubmit.hidden = score === 0;
     btnStart.focus?.({ preventScroll: true });
@@ -382,7 +382,7 @@
     if (missionCleared) { advanceFromPanel(); return; }
     ensureAudio(); resetInput(); running = true; paused = false; gameOver = false; hidePanel(); accumulator = 0; lastTick = now(); updateHud();
   }
-  function setPaused(value, message = "Your round and power-ups are paused. Continue when you are ready.") {
+  function setPaused(value, message = "Choose Continue to keep this round. Restarting or switching modes starts a fresh run.") {
     if (!running || gameOver) return;
     if (!value && (GG_PAUSED || document.hidden)) return;
     paused = value; resetInput(); accumulator = 0; lastTick = now();
@@ -456,7 +456,7 @@
     postScore("level_complete", { completedLevel: level - 1 });
     buildLevel(level);
     running = false;
-    showPanel(`Level ${level}`, "Great clear! You earned a bonus life. Tap Start to continue.", "Continue");
+    showPanel(`Level ${level}`, "Board cleared! One bonus life, up to six. Choose Continue, then Launch Ball to serve. Closing the tab ends this Classic run.", "Continue");
   }
 
   // ----------------------------
@@ -510,8 +510,8 @@
   });
   window.addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
   btnStart?.addEventListener("click", advanceFromPanel);
-  $("btnClassic").addEventListener("click", () => { gameMode = "classic"; resetGame(); });
-  $("btnCampaign").addEventListener("click", () => selectMission(missionIndex));
+  $("btnClassic").addEventListener("click", () => { if (gameMode !== "classic") { gameMode = "classic"; resetGame(); } });
+  $("btnCampaign").addEventListener("click", () => { if (gameMode !== "campaign") selectMission(missionIndex); });
   for (let i = 0; i < 5; i++) $("mission" + i).addEventListener("click", () => selectMission(i));
   $("sceneryMode").addEventListener("change", () => { if (["grid", "illustrated"].includes($("sceneryMode").value)) prefs.scenery = $("sceneryMode").value; savePrefs(); syncSettings(); });
   function openOverlay() { if (running) setPaused(true); try { window.GG?.openOverlay?.(); } catch (_) {} }
@@ -694,7 +694,7 @@
       updateHud();
       sfx("life");
       if (lives <= 0) { endGame(); return; }
-      toast("Life lost");
+      toast("Life lost. Launch Ball to serve again.", 3);
       balls = [makeBall(true)];
       comboCount = 0;
       comboTimer = 0;
